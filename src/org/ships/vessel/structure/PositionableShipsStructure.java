@@ -21,4 +21,8 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     default Collection<BlockPosition> getAll(Class<? extends TileEntity> class1){
         return Collections.unmodifiableCollection(getPositions(this::getPosition).stream().filter(p -> p.getTileEntity().isPresent()).filter(p -> class1.isInstance(p.getTileEntity().get())).collect(Collectors.toSet()));
     }
+
+    default Collection<BlockPosition> getPositions(){
+        return ShipsStructure.super.getPositions(this.getPosition());
+    }
 }

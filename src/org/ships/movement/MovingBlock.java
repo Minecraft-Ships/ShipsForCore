@@ -10,6 +10,7 @@ public interface MovingBlock {
     BlockPosition getAfterPosition();
     MovingBlock setAfterPosition(BlockPosition position);
     BlockDetails getCurrentBlockData();
+    BlockPriority getBlockPriority();
 
     default MovingBlock move(BlockDetails beforePos){
         getBeforePosition().setBlock(beforePos);
@@ -46,5 +47,7 @@ public interface MovingBlock {
     default MovingBlock moveUnderWater(){
         return move(BlockTypes.WATER.getDefaultBlockDetails());
     }
+
+
 
 }
