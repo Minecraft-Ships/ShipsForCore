@@ -20,8 +20,8 @@ public class Ships6Movement implements BasicMovement {
 
     private static class ProcessBlocks implements Runnable {
 
-        List<MovingBlock> toProcess;
-        int waterLevel;
+        private List<MovingBlock> toProcess;
+        private int waterLevel;
 
         public ProcessBlocks(int level, List<MovingBlock> blocks){
             this.toProcess = blocks;
@@ -30,13 +30,14 @@ public class Ships6Movement implements BasicMovement {
 
         @Override
         public void run() {
-            this.toProcess.stream().forEach(m -> {
+            this.toProcess.forEach(m -> {
                 if(this.waterLevel > m.getAfterPosition().getY()){
-                    m.moveUnderWater();
+                    m.removeUnderWater();
                 }else{
-                    m.moveOverAir();
+                    m.removeOverAir();
                 }
             });
+            this.toProcess.forEach(m -> m.setMovingTo());
         }
     }
 

@@ -29,7 +29,7 @@ public class Movement {
     protected Optional<FailedMovement> move(ShipsVessel vessel, MovingBlockSet blocks, BasicMovement movement) {
         Set<Entity> entities = vessel.getEntities();
         Map<Entity, MovingBlock> entityBlock = new HashMap<>();
-        entities.stream().forEach(e -> e.setMoving(false));
+        entities.stream().forEach(e -> e.setGravity(true));
         entities.stream().forEach(e -> entityBlock.put(e, blocks.getBefore(e)));
         Optional<MovingBlock> opLicence = blocks.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
         if (!opLicence.isPresent()) {
@@ -55,7 +55,7 @@ public class Movement {
             return opMovement;
         }
         entityBlock.entrySet().stream().forEach(e -> e.getKey().setPosition(e.getValue().getAfterPosition()));
-        entities.stream().forEach(e -> e.setMoving(true));
+        entities.stream().forEach(e -> e.setGravity(false));
         return Optional.empty();
     }
 

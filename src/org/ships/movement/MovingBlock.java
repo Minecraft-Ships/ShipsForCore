@@ -12,8 +12,12 @@ public interface MovingBlock {
     BlockDetails getCurrentBlockData();
     BlockPriority getBlockPriority();
 
-    default MovingBlock move(BlockDetails beforePos){
+    default MovingBlock remove(BlockDetails beforePos){
         getBeforePosition().setBlock(beforePos);
+        return this;
+    }
+
+    default MovingBlock setMovingTo(){
         getAfterPosition().setBlock(getCurrentBlockData());
         return this;
     }
@@ -40,12 +44,12 @@ public interface MovingBlock {
         return this;
     }
 
-    default MovingBlock moveOverAir(){
-        return move(BlockTypes.AIR.getDefaultBlockDetails());
+    default MovingBlock removeOverAir(){
+        return remove(BlockTypes.AIR.getDefaultBlockDetails());
     }
 
-    default MovingBlock moveUnderWater(){
-        return move(BlockTypes.WATER.getDefaultBlockDetails());
+    default MovingBlock removeUnderWater(){
+        return remove(BlockTypes.WATER.getDefaultBlockDetails());
     }
 
 

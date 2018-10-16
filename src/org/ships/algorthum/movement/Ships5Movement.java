@@ -24,11 +24,12 @@ public class Ships5Movement implements BasicMovement {
         final int finalWaterLevel = waterLevel;
         blocks.stream().forEach(m -> {
             if(finalWaterLevel > m.getAfterPosition().getY()){
-                m.moveUnderWater();
+                m.removeUnderWater();
             }else{
-                m.moveOverAir();
+                m.removeOverAir();
             }
         });
+        blocks.forEach(m -> m.setMovingTo());
         return Optional.empty();
     }
 

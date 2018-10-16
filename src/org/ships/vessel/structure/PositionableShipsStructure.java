@@ -1,5 +1,6 @@
 package org.ships.vessel.structure;
 
+import org.core.vector.types.Vector3Int;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
@@ -13,6 +14,17 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
 
     @Override
     public BlockPosition getPosition();
+
+    default boolean addPosition(BlockPosition position){
+        Vector3Int original = getPosition().getPosition();
+        Vector3Int next = position.getPosition();
+        return addPosition(new Vector3Int((next.getX() - original.getX()), (next.getY() - original.getY()), (next.getZ() - original.getZ())));
+    }
+    default boolean removePosition(BlockPosition position){
+        Vector3Int original = getPosition().getPosition();
+        Vector3Int next = position.getPosition();
+        return removePosition(new Vector3Int((next.getX() - original.getX()), (next.getY() - original.getY()), (next.getZ() - original.getZ())));
+    }
 
     default Collection<BlockPosition> getAll(BlockType type){
         return Collections.unmodifiableCollection(getPositions(this::getPosition).stream().filter(p -> p.getBlockType().equals(type)).collect(Collectors.toSet()));
