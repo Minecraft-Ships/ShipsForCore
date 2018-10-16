@@ -9,10 +9,46 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 public interface ShipsStructure {
 
-    Set<Vector3Int> getRelitivePositions();
+    Set<Vector3Int> getRelativePositions();
+
+    default int getXSize(){
+        return getSpecificSize(v -> v.getX());
+    }
+
+    default int getYSize(){
+        return getSpecificSize(v -> v.getY());
+    }
+
+    default int getZSize(){
+        return getSpecificSize(v -> v.getZ());
+    }
+
+    default int getSpecificSize(Function<Vector3Int, Integer> function){
+        Integer min = null;
+        Integer max = null;
+        for(Vector3Int vector : getRelativePositions()){
+            int value = function.apply(vector);
+            if(min == null && max == null){
+                max = value;
+                min = value;
+                continue;
+            }
+            if(min > value){
+                min = value;
+            }
+            if(max > value){
+                max = value;
+            }
+        }
+        if(min == 0 && max == 0){
+            return 0;
+        }
+        return max - min;
+    }
 
     default Collection<BlockPosition> getPositions(Positionable positionable){
         BlockPosition bPos = positionable.getPosition() instanceof BlockPosition ? (BlockPosition) positionable.getPosition() : ((ExactPosition)positionable.getPosition()).toBlockPosition();
@@ -21,7 +57,7 @@ public interface ShipsStructure {
 
     default Collection<BlockPosition> getPositions(BlockPosition position){
         Set<BlockPosition> set = new HashSet<>();
-        getRelitivePositions().stream().forEach(v -> set.add(position.getRelative(v)));
+        getRelativePositions().stream().forEach(v -> set.add(position.getRelative(v)));
         return Collections.unmodifiableCollection(set);
     }
 }

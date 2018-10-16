@@ -16,6 +16,12 @@ class PackagedBlockPriority implements BlockPriority{
     }
 
     @Override
+    public BlockPriority setPriorityNumber(int number) {
+        this.number = number;
+        return this;
+    }
+
+    @Override
     public String getId() {
         return "ships:" + getName().toLowerCase();
     }

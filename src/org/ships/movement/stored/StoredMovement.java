@@ -1,5 +1,7 @@
 package org.ships.movement.stored;
 
-public class StoredMovement {
+public interface StoredMovement {
+
+
 
 }

@@ -3,13 +3,13 @@ package org.ships.movement.result;
 import org.core.source.viewer.CommandViewer;
 import org.ships.vessel.common.types.Vessel;
 
-public interface FailedMovement{
+public interface FailedMovement<E extends Object>{
 
-    MovementResult<? extends Object> getResult();
+    MovementResult<E> getResult();
     Vessel getShip();
 
-    default void sendMessage(CommandViewer viewer){
-        getResult().sendMessage(getShip(), viewer);
+    default void sendMessage(CommandViewer viewer, E value){
+        getResult().sendMessage(getShip(), viewer, value);
     }
 
 }
