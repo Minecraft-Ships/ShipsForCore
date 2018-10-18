@@ -12,6 +12,7 @@ public interface Vessel extends Positionable {
 
     String getName();
     PositionableShipsStructure getStructure();
+    ShipType getType();
 
     @Override
     default BlockPosition getPosition(){

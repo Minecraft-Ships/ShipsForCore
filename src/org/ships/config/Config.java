@@ -1,8 +1,8 @@
 package org.ships.config;
 
-import java.io.File;
+import org.core.configuration.ConfigurationFile;
 
 public interface Config {
 
-    public File getFile();
+    public ConfigurationFile getFile();
 }

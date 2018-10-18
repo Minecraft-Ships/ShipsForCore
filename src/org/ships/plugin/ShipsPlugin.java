@@ -5,9 +5,9 @@ import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.Ships5BlockFinder;
 import org.ships.algorthum.movement.Ships5Movement;
 import org.ships.algorthum.movement.Ships6Movement;
-import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.movement.BlockPriority;
+import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.sign.LicenceSign;
 
 import java.util.*;
@@ -17,7 +17,7 @@ public class ShipsPlugin implements Plugin {
 
     private static ShipsPlugin plugin;
     private Set<Identifable> identifable = new HashSet<>();
-    private DefaultBlockList blockList;
+    private DefaultBlockList blockList = new DefaultBlockList();
 
     public ShipsPlugin(){
         plugin = this;
@@ -35,6 +35,7 @@ public class ShipsPlugin implements Plugin {
         this.identifable.add(BlockPriority.ATTACHED);
         this.identifable.add(BlockPriority.NORMAL);
         this.identifable.add(new LicenceSign());
+        this.identifable.add(ShipType.OVERPOWERED_SHIP);
     }
 
     public <T extends Identifable> Optional<T> get(Class<T> class1){

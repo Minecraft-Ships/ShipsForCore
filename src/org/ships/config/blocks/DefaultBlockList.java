@@ -1,21 +1,34 @@
 package org.ships.config.blocks;
 
-import java.io.File;
+import org.core.CorePlugin;
+import org.core.configuration.ConfigurationFile;
+import org.core.world.position.block.BlockType;
+
 import java.util.HashSet;
 import java.util.Set;
 
-public class DefaultBlockList implements BlockList{
+public class DefaultBlockList implements BlockList {
 
-    protected File file;
+    protected ConfigurationFile file;
+    protected Set<BlockInstruction> blocks = new HashSet<>();
 
     @Override
     public Set<BlockInstruction> getBlockList() {
-        Set<BlockInstruction> set = new HashSet<>();
-        return set;
+        if(blocks.size() == 0){
+            return reloadBlockList();
+        }
+        return this.blocks;
     }
 
     @Override
-    public File getFile() {
+    public Set<BlockInstruction> reloadBlockList() {
+        blocks.clear();
+        CorePlugin.getPlatform().get(BlockType.class).stream().forEach(bt -> BlockList.getBlockInstruction(DefaultBlockList.this, bt).ifPresent(bi -> blocks.add(bi)));
+        return this.blocks;
+    }
+
+    @Override
+    public ConfigurationFile getFile() {
         return this.file;
     }
 }

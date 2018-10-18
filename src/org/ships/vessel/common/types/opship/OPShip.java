@@ -5,6 +5,7 @@ import org.ships.movement.MovingBlockSet;
 import org.ships.movement.result.FailedMovement;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.types.AbstractShipsVessel;
+import org.ships.vessel.common.types.ShipType;
 
 import java.util.Optional;
 
@@ -19,4 +20,8 @@ public class OPShip extends AbstractShipsVessel implements AirType {
         return Optional.empty();
     }
 
+    @Override
+    public ShipType getType() {
+        return null;
+    }
 }
