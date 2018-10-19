@@ -15,6 +15,7 @@ import org.ships.movement.Movement;
 import org.ships.movement.result.FailedMovement;
 import org.ships.permissions.vessel.CrewPermission;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -24,6 +25,7 @@ public interface ShipsVessel extends Vessel {
 
     Map<User, CrewPermission> getCrew();
     ExpandedBlockList getBlockList();
+    File getFile();
 
     CrewPermission getDefaultPermission();
 
@@ -99,5 +101,9 @@ public interface ShipsVessel extends Vessel {
 
     default Optional<FailedMovement> rotateClockwiseAround(Position<? extends Number> location, BasicMovement movement){
         return this.rotateLeftAround(location, movement);
+    }
+
+    default String getId(){
+        return getType().getId() + ":" + getName();
     }
 }

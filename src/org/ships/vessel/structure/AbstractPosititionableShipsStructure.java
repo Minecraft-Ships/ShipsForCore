@@ -8,8 +8,8 @@ import java.util.Set;
 
 public class AbstractPosititionableShipsStructure implements PositionableShipsStructure {
 
-    Set<Vector3Int> vectors = new HashSet<>();
-    BlockPosition position;
+    protected Set<Vector3Int> vectors = new HashSet<>();
+    protected BlockPosition position;
 
     public AbstractPosititionableShipsStructure(BlockPosition position){
         this.position = position;
@@ -17,11 +17,27 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
 
     @Override
     public BlockPosition getPosition() {
-        return null;
+        return this.position;
     }
 
     @Override
     public Set<Vector3Int> getRelativePositions() {
-        return null;
+        return this.vectors;
+    }
+
+    @Override
+    public boolean addPosition(Vector3Int add) {
+        if(this.vectors.contains(add)){
+            return false;
+        }
+        return this.vectors.add(add);
+    }
+
+    @Override
+    public boolean removePosition(Vector3Int remove) {
+        if(!this.vectors.contains(remove)){
+            return false;
+        }
+        return this.vectors.remove(remove);
     }
 }

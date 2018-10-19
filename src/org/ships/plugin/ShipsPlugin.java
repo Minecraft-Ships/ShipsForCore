@@ -1,19 +1,23 @@
 package org.ships.plugin;
 
+import org.core.CorePlugin;
 import org.core.platform.Plugin;
 import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.Ships5BlockFinder;
 import org.ships.algorthum.movement.Ships5Movement;
 import org.ships.algorthum.movement.Ships6Movement;
 import org.ships.config.blocks.DefaultBlockList;
+import org.ships.listener.core.CoreEventListener;
 import org.ships.movement.BlockPriority;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.sign.LicenceSign;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public class ShipsPlugin implements Plugin {
+public abstract class ShipsPlugin implements Plugin {
 
     private static ShipsPlugin plugin;
     private Set<Identifable> identifable = new HashSet<>();
@@ -21,11 +25,10 @@ public class ShipsPlugin implements Plugin {
 
     public ShipsPlugin(){
         plugin = this;
+        init();
     }
 
-    public DefaultBlockList getBlockList(){
-        return this.blockList;
-    }
+    public abstract File getShipsConigFolder();
 
     private void init(){
         this.identifable.add(new Ships5Movement());
@@ -36,6 +39,16 @@ public class ShipsPlugin implements Plugin {
         this.identifable.add(BlockPriority.NORMAL);
         this.identifable.add(new LicenceSign());
         this.identifable.add(ShipType.OVERPOWERED_SHIP);
+
+        CorePlugin.getEventManager().register(this, new CoreEventListener());
+    }
+
+    public DefaultBlockList getBlockList(){
+        return this.blockList;
+    }
+
+    public <T extends Identifable> Set<T> getAll(Class<T> class1){
+        return (Set<T>)identifable.stream().filter(i -> class1.isInstance(i)).collect(Collectors.toSet());
     }
 
     public <T extends Identifable> Optional<T> get(Class<T> class1){
@@ -65,15 +78,5 @@ public class ShipsPlugin implements Plugin {
     @Override
     public String getPluginName() {
         return "Ships";
-    }
-
-    @Override
-    public Object getBukkitLauncher() {
-        return null;
-    }
-
-    @Override
-    public Object getSpongeLauncher() {
-        return null;
     }
 }

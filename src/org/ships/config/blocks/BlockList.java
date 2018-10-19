@@ -1,6 +1,5 @@
 package org.ships.config.blocks;
 
-import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.world.position.block.BlockType;
 import org.ships.config.Config;
@@ -19,8 +18,7 @@ public interface BlockList extends Config {
     }
 
     static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes){
-        ConfigurationFile file = list.getFile();
-        ConfigurationNode node = new ConfigurationNode(file.getRootNode(), extraNodes, "BlockList", type.getId());
+        ConfigurationNode node = new ConfigurationNode(extraNodes, "BlockList", type.getId());
         return list.getFile().parse(node, ShipsParsers.NODE_TO_BLOCK_INSTRUCTION);
     }
 }

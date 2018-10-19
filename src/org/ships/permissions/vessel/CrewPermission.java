@@ -7,4 +7,5 @@ public interface CrewPermission extends Identifable {
     boolean canInteract();
     boolean canMove();
     boolean canCommand();
+    boolean canRemove();
 }

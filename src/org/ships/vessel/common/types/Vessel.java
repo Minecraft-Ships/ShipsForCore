@@ -14,6 +14,14 @@ public interface Vessel extends Positionable {
     PositionableShipsStructure getStructure();
     ShipType getType();
 
+    int getMaxSpeed();
+    int getAltitudeSpeed();
+
+    Vessel setMaxSpeed(int speed);
+    Vessel setAltitudeSpeed(int speed);
+
+    void save();
+
     @Override
     default BlockPosition getPosition(){
         return getStructure().getPosition();
