@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class Movement {
+public class Movement{
 
     public static final RotateLeftAroundPosition ROTATE_LEFT_AROUND_POSITION = new RotateLeftAroundPosition();
     public static final RotateRightAroundPosition ROTATE_RIGHT_AROUND_POSITION = new RotateRightAroundPosition();

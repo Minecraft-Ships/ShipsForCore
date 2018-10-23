@@ -18,9 +18,7 @@ import org.ships.vessel.sign.LicenceSign;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ShipsFileLoader implements ShipsLoader {
 
@@ -38,13 +36,15 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public void save(AbstractShipsVessel vessel){
         ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.YAML);
-        Map<ConfigurationNode, String> map = new HashMap<>(vessel.serialize(file));
-        map.put(new ConfigurationNode(SPEED_MAX), vessel.getMaxSpeed() + "");
-        map.put(new ConfigurationNode(SPEED_ALTITUDE), vessel.getAltitudeSpeed() + "");
+        Map<ConfigurationNode, Object> map = new HashMap<>(vessel.serialize(file));
+        map.put(new ConfigurationNode(SPEED_MAX), vessel.getMaxSpeed());
+        map.put(new ConfigurationNode(SPEED_ALTITUDE), vessel.getAltitudeSpeed());
         map.put(new ConfigurationNode(META_LOCATION_WORLD), vessel.getPosition().getWorld().getPlatformUniquieId());
-        map.put(new ConfigurationNode(META_LOCATION_X), vessel.getPosition().getX() + "");
-        map.put(new ConfigurationNode(META_LOCATION_Y), vessel.getPosition().getY() + "");
-        map.put(new ConfigurationNode(META_LOCATION_Z), vessel.getPosition().getZ() + "");
+        map.put(new ConfigurationNode(META_LOCATION_X), vessel.getPosition().getX());
+        map.put(new ConfigurationNode(META_LOCATION_Y), vessel.getPosition().getY());
+        map.put(new ConfigurationNode(META_LOCATION_Z), vessel.getPosition().getZ());
+        map.entrySet().stream().forEach(e -> file.set(e.getKey(), e.getValue()));
+        file.save();
     }
 
     @Override
@@ -93,5 +93,25 @@ public class ShipsFileLoader implements ShipsLoader {
 
         ship.deserializeExtra(file);
         return ship;
+    }
+
+    public static Set<Vessel> loadAll(){
+        Set<Vessel> set = new HashSet<>();
+        File vesselDataFolder = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData");
+        ShipsPlugin.getPlugin().getAll(ShipType.class).stream().forEach(st -> {
+            File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
+            File[] files = typeFolder.listFiles();
+            if(files == null){
+                return;
+            }
+            for(File file : files){
+                try {
+                    set.add(new ShipsFileLoader(file).load());
+                } catch (IOException e) {
+                    return;
+                }
+            }
+        });
+        return set;
     }
 }

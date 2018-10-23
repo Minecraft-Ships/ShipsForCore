@@ -1,4 +1,4 @@
-package org.ships.config.blocks.parsers;
+package org.ships.config.parsers;
 
 import org.core.configuration.parser.Parser;
 import org.core.configuration.parser.StringMapParser;

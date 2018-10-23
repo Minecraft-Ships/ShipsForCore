@@ -3,7 +3,7 @@ package org.ships.config.blocks;
 import org.core.configuration.ConfigurationNode;
 import org.core.world.position.block.BlockType;
 import org.ships.config.Config;
-import org.ships.config.blocks.parsers.ShipsParsers;
+import org.ships.config.parsers.ShipsParsers;
 
 import java.util.Optional;
 import java.util.Set;

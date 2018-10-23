@@ -1,8 +1,10 @@
 package org.ships.vessel.common.types.opship;
 
+import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
+import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
@@ -10,13 +12,27 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
+import java.io.File;
+
 public class OPShipType implements ShipType {
 
     protected ConfigurationFile file;
-    protected ExpandedBlockList blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
+    protected ExpandedBlockList blockList;
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
+
+    public OPShipType(){
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/" + getId().replaceAll(":", ".") + ".temp");
+        boolean created = file.exists();
+        this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.YAML);
+        if(!created){
+            this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
+            this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
+            this.file.save();
+        }
+        this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
+    }
 
     @Override
     public String getDisplayName() {
@@ -40,12 +56,12 @@ public class OPShipType implements ShipType {
 
     @Override
     public boolean canAutopilot() {
-        return false;
+        return true;
     }
 
     @Override
     public ConfigurationFile getFile() {
-        return null;
+        return this.file;
     }
 
     @Override

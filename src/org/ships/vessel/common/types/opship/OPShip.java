@@ -31,7 +31,7 @@ public class OPShip extends AbstractShipsVessel implements AirType {
     }
 
     @Override
-    public Map<ConfigurationNode, String> serialize(ConfigurationFile file) {
+    public Map<ConfigurationNode, Object> serialize(ConfigurationFile file) {
         return new HashMap<>();
     }
 

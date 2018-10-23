@@ -4,7 +4,9 @@ import org.core.event.EventListener;
 import org.core.event.HEvent;
 import org.core.event.events.block.BlockChangeEvent;
 import org.core.event.events.block.tileentity.SignChangeEvent;
+import org.core.event.events.entity.EntityInteractEvent;
 import org.core.text.TextColours;
+import org.core.world.position.BlockPosition;
 import org.core.world.position.block.details.TiledBlockDetails;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
@@ -21,12 +23,33 @@ import java.util.Optional;
 public class CoreEventListener implements EventListener {
 
     @HEvent
+    public void onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer event){
+        BlockPosition position = event.getInteractPosition();
+        if(!(position.getBlockDetails() instanceof TiledBlockDetails)){
+            return;
+        }
+        TileEntitySnapshot lte = ((TiledBlockDetails)position.getBlockDetails()).getTileEntity();
+        if(!(lte instanceof SignTileEntitySnapshot)){
+            return;
+        }
+        SignTileEntitySnapshot stes = (SignTileEntitySnapshot)lte;
+        ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(stes)).forEach(s -> {
+            boolean cancel = s.onSecondClick(event.getEntity(), position);
+            if(cancel){
+                event.setCancelled(true);
+            }
+        });
+    }
+
+    @HEvent
     public void onSignChangeEvent(SignChangeEvent.ByPlayer event){
         ShipsSign sign;
         boolean register = false;
-        if(event.getFrom().getLine(0).equalsIgnoreCase("[Ships]")){
+        if(event.getFrom().getLine(0).equalsIgnoreCase("[Ships]")) {
             sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             register = true;
+        }else if(ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> event.getFrom().getLine(0).equalsIgnoreCase(TextColours.stripColours(s.getFirstLine())))){
+            sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> event.getFrom().getLine(0).equalsIgnoreCase(TextColours.stripColours(s.getFirstLine()))).findAny().get();
         }else{
             System.out.println("No match: " + event.getFrom().getLine(0) + " | " + "[Ships]");
             return;
@@ -44,6 +67,7 @@ public class CoreEventListener implements EventListener {
             ShipType type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equals(typeS)).findAny().get();
             Vessel vessel = type.createNewVessel(stes, event.getPosition());
             System.out.println("Vessel: " + vessel);
+            vessel.save();
             //register ship
         }
         event.setTo(stes);

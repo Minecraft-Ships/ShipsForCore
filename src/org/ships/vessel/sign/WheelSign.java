@@ -1,6 +1,8 @@
 package org.ships.vessel.sign;
 
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.text.TextColours;
+import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 
@@ -20,6 +22,16 @@ public class WheelSign implements ShipsSign {
         stes.setLine(2, TextColours.RED + "==||==");
         stes.setLine(3, TextColours.RED + "//||\\\\");
         return stes;
+    }
+
+    @Override
+    public String getFirstLine() {
+        return TextColours.YELLOW + "[Wheel]";
+    }
+
+    @Override
+    public boolean onSecondClick(LivePlayer player, BlockPosition position) {
+        return false;
     }
 
     @Override

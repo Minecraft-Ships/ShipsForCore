@@ -1,4 +1,4 @@
-package org.ships.config.blocks.parsers.identify;
+package org.ships.config.parsers.identify;
 
 import org.core.configuration.parser.StringParser;
 import org.core.utils.Identifable;

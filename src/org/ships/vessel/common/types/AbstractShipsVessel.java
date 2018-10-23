@@ -35,18 +35,18 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     public AbstractShipsVessel(LiveSignTileEntity licence){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId() + "/" + getName() + ".temp");
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + ".temp");
         this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.YAML), ShipsPlugin.getPlugin().getBlockList());
     }
 
     public AbstractShipsVessel(SignTileEntity ste, BlockPosition position){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equals(TextColours.stripColours(ste.getLine(1)))) + "/" + TextColours.stripColours(ste.getLine(2)) + ".temp");
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equals(TextColours.stripColours(ste.getLine(1)))).findFirst().get().getId().replaceAll(":", ".") + "/" + TextColours.stripColours(ste.getLine(2)) + ".temp");
         this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.YAML), ShipsPlugin.getPlugin().getBlockList());
     }
 
     public abstract Optional<FailedMovement> meetsRequirement(MovingBlockSet movingBlocks);
-    public abstract Map<ConfigurationNode, String> serialize(ConfigurationFile file);
+    public abstract Map<ConfigurationNode, Object> serialize(ConfigurationFile file);
     public abstract AbstractShipsVessel deserializeExtra(ConfigurationFile file);
 
     @Override

@@ -9,5 +9,8 @@ import java.util.Optional;
 
 public interface BasicMovement extends Algorthum {
 
+    Ships5Movement SHIPS_FIVE = new Ships5Movement();
+    Ships6Movement SHIPS_SIX = new Ships6Movement();
+
     Optional<FailedMovement> move(Vessel vessel, MovingBlockSet set);
 }
