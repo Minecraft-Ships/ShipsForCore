@@ -27,7 +27,7 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
 
     @Override
     public boolean addPosition(Vector3Int add) {
-        if(this.vectors.contains(add)){
+        if(this.vectors.stream().anyMatch(v -> v.equals(add))){
             return false;
         }
         return this.vectors.add(add);
@@ -35,7 +35,7 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
 
     @Override
     public boolean removePosition(Vector3Int remove) {
-        if(!this.vectors.contains(remove)){
+        if(!this.vectors.stream().anyMatch(v -> v.equals(remove))){
             return false;
         }
         return this.vectors.remove(remove);

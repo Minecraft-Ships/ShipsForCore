@@ -10,6 +10,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class MovingBlockSet extends HashSet<MovingBlock> {
@@ -58,25 +59,30 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
         return stream().filter(mb -> predicate.test(mb.getCurrentBlockData())).findFirst();
     }
 
-    public MovingBlock getBefore(Positionable positionable){
-        BlockPosition position = positionable instanceof BlockPosition ? (BlockPosition)positionable : ((ExactPosition)positionable).toBlockPosition();
+    public Optional<MovingBlock> getBefore(Positionable positionable){
+        BlockPosition position = positionable.getPosition() instanceof BlockPosition ? (BlockPosition)positionable.getPosition()
+                : ((ExactPosition)positionable.getPosition()).toBlockPosition();
         return getBefore(position);
     }
 
-    public MovingBlock getBefore(BlockPosition position){
-        return get(position, b -> b.getBeforePosition().equals(position));
+    public Optional<MovingBlock> getBefore(BlockPosition position){
+        return get(position, b -> b.getBeforePosition());
     }
 
-    public MovingBlock getAfter(Positionable positionable){
-        BlockPosition position = positionable instanceof BlockPosition ? (BlockPosition)positionable : ((ExactPosition)positionable).toBlockPosition();
-        return getBefore(position);
+    public Optional<MovingBlock> getAfter(Positionable positionable){
+        BlockPosition position = positionable.getPosition() instanceof BlockPosition ? (BlockPosition)positionable.getPosition() : ((ExactPosition)positionable.getPosition()).toBlockPosition();
+        return getAfter(position);
     }
 
-    public MovingBlock getAfter(BlockPosition position){
-        return get(position, b -> b.getAfterPosition().equals(position));
+    public Optional<MovingBlock> getAfter(BlockPosition position){
+        return get(position, b -> b.getAfterPosition());
     }
 
-    private MovingBlock get(BlockPosition position, Predicate<MovingBlock> function){
-        return stream().filter(function).findFirst().get();
+    private Optional<MovingBlock> get(BlockPosition position, Function<MovingBlock, BlockPosition> function){
+        return stream().filter(f -> {
+            BlockPosition bp = function.apply(f);
+            System.out.println(bp.getX() + "," + bp.getY() + "," + bp.getZ() + " - " + position.getX() + "," + position.getY() + "," + position.getZ());
+            return function.apply(f).equals(position);
+        }).findFirst();
     }
 }

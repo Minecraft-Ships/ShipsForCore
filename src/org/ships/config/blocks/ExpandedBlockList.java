@@ -11,7 +11,7 @@ public class ExpandedBlockList implements BlockList{
 
     ConfigurationFile file;
     BlockList expandedOn;
-    Set<BlockInstruction> blocks;
+    Set<BlockInstruction> blocks = new HashSet<>();
 
     public ExpandedBlockList(ConfigurationFile file, BlockList expandedOn){
         this.file = file;
@@ -42,5 +42,10 @@ public class ExpandedBlockList implements BlockList{
     @Override
     public ConfigurationFile getFile() {
         return this.file;
+    }
+
+    @Override
+    public void recreateFile() {
+
     }
 }

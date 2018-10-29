@@ -1,7 +1,6 @@
 package org.ships.vessel.common.types;
 
 import org.core.entity.living.human.player.User;
-import org.core.text.TextColours;
 import org.core.vector.types.Vector3Int;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.ExactPosition;
@@ -14,6 +13,8 @@ import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
 import org.ships.movement.result.FailedMovement;
 import org.ships.permissions.vessel.CrewPermission;
+import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.sign.LicenceSign;
 
 import java.io.File;
 import java.util.Map;
@@ -52,7 +53,8 @@ public interface ShipsVessel extends Vessel {
             throw new NoLicencePresent(this);
         }
         LiveSignTileEntity sign = (LiveSignTileEntity)tile;
-        if(!sign.getLine(0).equals(TextColours.YELLOW + "[Ships]")){
+        LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+        if(!licenceSign.isSign(sign)){
             throw new NoLicencePresent(this);
         }
         return sign;
@@ -65,7 +67,7 @@ public interface ShipsVessel extends Vessel {
 
     default String getName() {
         try {
-            return getSign().getLine(2);
+            return getSign().getLine(2).get();
         } catch (NoLicencePresent e) {
             e.printStackTrace();
         }

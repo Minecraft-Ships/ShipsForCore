@@ -7,11 +7,16 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class WheelSign implements ShipsSign {
     @Override
     public boolean isSign(SignTileEntity entity) {
-        return entity.getLine(0).equals(TextColours.YELLOW + "[Wheel]");
+        Optional<String> opValue = entity.getLine(0);
+        if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -28,7 +28,7 @@ public class BlockInstruction {
 
         DETECT_COLLIDE,
         IGNORE,
-        MATERIAL;
+        MATERIAL
 
     }
 }

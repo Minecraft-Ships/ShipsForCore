@@ -18,7 +18,8 @@ public interface BlockList extends Config {
     }
 
     static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes){
-        ConfigurationNode node = new ConfigurationNode(extraNodes, "BlockList", type.getId());
+        String[] idSplit = type.getId().split(":");
+        ConfigurationNode node = new ConfigurationNode(extraNodes, "BlockList", idSplit[0], idSplit[1]);
         return list.getFile().parse(node, ShipsParsers.NODE_TO_BLOCK_INSTRUCTION);
     }
 }

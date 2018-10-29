@@ -8,7 +8,9 @@ import org.core.event.events.entity.EntityInteractEvent;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.details.TiledBlockDetails;
+import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
@@ -16,6 +18,7 @@ import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.sign.ShipsSign;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -25,34 +28,42 @@ public class CoreEventListener implements EventListener {
     @HEvent
     public void onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer event){
         BlockPosition position = event.getInteractPosition();
-        if(!(position.getBlockDetails() instanceof TiledBlockDetails)){
+        Optional<LiveTileEntity> opTE = position.getTileEntity();
+        if(!opTE.isPresent()){
+            System.out.println("\t-Failed due to the fact TileEntity is not present: " + position.getClass().getName());
             return;
         }
-        TileEntitySnapshot lte = ((TiledBlockDetails)position.getBlockDetails()).getTileEntity();
-        if(!(lte instanceof SignTileEntitySnapshot)){
+        if(!(opTE.get() instanceof LiveSignTileEntity)){
+            System.out.println("\t-Failed due to the fact TileEntity is not a sign. It is a " + opTE.get().getClass());
             return;
         }
-        SignTileEntitySnapshot stes = (SignTileEntitySnapshot)lte;
-        ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(stes)).forEach(s -> {
+        LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
+        ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> {
+                System.out.println("Sign: " + s);
+                return s.isSign(lste);
+        }).forEach(s -> {
             boolean cancel = s.onSecondClick(event.getEntity(), position);
             if(cancel){
                 event.setCancelled(true);
             }
         });
+        System.out.println("Ran shipsSign");
     }
 
     @HEvent
     public void onSignChangeEvent(SignChangeEvent.ByPlayer event){
-        ShipsSign sign;
+        ShipsSign sign = null;
         boolean register = false;
-        if(event.getFrom().getLine(0).equalsIgnoreCase("[Ships]")) {
+        Optional<String> opFirstLine = event.getFrom().getLine(0);
+        if(!opFirstLine.isPresent()){
+            return;
+        }
+        String line = opFirstLine.get();
+        if(line.equalsIgnoreCase("[Ships]")) {
             sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             register = true;
-        }else if(ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> event.getFrom().getLine(0).equalsIgnoreCase(TextColours.stripColours(s.getFirstLine())))){
-            sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> event.getFrom().getLine(0).equalsIgnoreCase(TextColours.stripColours(s.getFirstLine()))).findAny().get();
-        }else{
-            System.out.println("No match: " + event.getFrom().getLine(0) + " | " + "[Ships]");
-            return;
+        }else if(ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> line.equalsIgnoreCase(TextColours.stripColours(s.getFirstLine())))){
+            sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> line.equalsIgnoreCase(TextColours.stripColours(s.getFirstLine()))).findAny().get();
         }
         SignTileEntitySnapshot stes;
         try {
@@ -62,11 +73,11 @@ public class CoreEventListener implements EventListener {
             return;
         }
         if(register){
-            String typeS = TextColours.stripColours(stes.getLine(1));
-            System.out.println("Position: " + event.getPosition());
+            String typeS = TextColours.stripColours(stes.getLine(1).get());
             ShipType type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equals(typeS)).findAny().get();
             Vessel vessel = type.createNewVessel(stes, event.getPosition());
-            System.out.println("Vessel: " + vessel);
+            PositionableShipsStructure pss = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(event.getPosition());
+            vessel.setStructure(pss);
             vessel.save();
             //register ship
         }

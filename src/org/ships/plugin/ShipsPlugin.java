@@ -22,13 +22,14 @@ public abstract class ShipsPlugin implements Plugin {
 
     private static ShipsPlugin plugin;
     private Set<Identifable> identifable = new HashSet<>();
-    private DefaultBlockList blockList = new DefaultBlockList();
+    private DefaultBlockList blockList;
     private ShipsConfig config;
 
     public ShipsPlugin(){
         plugin = this;
         init();
-        new ShipsConfig();
+        this.config = new ShipsConfig();
+        this.blockList = new DefaultBlockList();
     }
 
     public abstract File getShipsConigFolder();

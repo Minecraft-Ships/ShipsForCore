@@ -15,6 +15,7 @@ import org.ships.vessel.common.types.AbstractShipsVessel;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class ShipsFileLoader implements ShipsLoader {
     protected static final String[] META_LOCATION_Y = {"Meta", "Location", "Y"};
     protected static final String[] META_LOCATION_Z = {"Meta", "Location", "Z"};
     protected static final String[] META_LOCATION_WORLD = {"Meta", "Location", "World"};
+    protected static final String[] META_STRUCTURE = {"Meta", "Location", "Structure"};
 
     public ShipsFileLoader(File file){
         this.file = file;
@@ -44,6 +46,7 @@ public class ShipsFileLoader implements ShipsLoader {
         map.put(new ConfigurationNode(META_LOCATION_Y), vessel.getPosition().getY());
         map.put(new ConfigurationNode(META_LOCATION_Z), vessel.getPosition().getZ());
         map.entrySet().stream().forEach(e -> file.set(e.getKey(), e.getValue()));
+        file.set(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT, vessel.getStructure().getRelativePositions());
         file.save();
     }
 
@@ -70,14 +73,18 @@ public class ShipsFileLoader implements ShipsLoader {
         LicenceSign sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if(!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)){
-            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName());
+            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
         }
         LiveSignTileEntity lste = (LiveSignTileEntity)opTile.get();
         if(!sign.isSign(lste)){
-            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName());
+            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
-        String shipTypeS = TextColours.stripColours(lste.getLine(1));
+        Optional<String> opShipTypeS = lste.getLine(1);
+        if(!opShipTypeS.isPresent()){
+            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
+        }
+        String shipTypeS = TextColours.stripColours(opShipTypeS.get());
         Optional<ShipType> opShipType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(s -> s.getDisplayName().equals(shipTypeS)).findAny();
         if(!opShipType.isPresent()){
             throw new IOException("Unknown ShipType");
@@ -89,7 +96,12 @@ public class ShipsFileLoader implements ShipsLoader {
         }
         AbstractShipsVessel ship = (AbstractShipsVessel)vessel;
 
-        //SET DEFAULTS
+        file.parseInt(new ConfigurationNode(SPEED_ALTITUDE)).ifPresent(s -> ship.setAltitudeSpeed(s));
+        file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(s -> ship.setMaxSpeed(s));
+        file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
+            PositionableShipsStructure pss = ship.getStructure();
+            structureList.stream().forEach(v -> pss.addPosition(v));
+        });
 
         ship.deserializeExtra(file);
         return ship;
@@ -106,11 +118,17 @@ public class ShipsFileLoader implements ShipsLoader {
             }
             for(File file : files){
                 try {
-                    set.add(new ShipsFileLoader(file).load());
+                    Vessel vessel = new ShipsFileLoader(file).load();
+                    if(vessel == null){
+                        continue;
+                    }
+                    set.add(vessel);
                 } catch (IOException e) {
-                    return;
+                    e.printStackTrace();
+                    continue;
                 }
             }
+            System.out.println("Loaded all");
         });
         return set;
     }

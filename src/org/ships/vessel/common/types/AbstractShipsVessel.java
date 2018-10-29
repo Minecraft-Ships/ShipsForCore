@@ -41,7 +41,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     public AbstractShipsVessel(SignTileEntity ste, BlockPosition position){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equals(TextColours.stripColours(ste.getLine(1)))).findFirst().get().getId().replaceAll(":", ".") + "/" + TextColours.stripColours(ste.getLine(2)) + ".temp");
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equals(TextColours.stripColours(ste.getLine(1).get()))).findFirst().get().getId().replaceAll(":", ".") + "/" + TextColours.stripColours(ste.getLine(2).get()) + ".temp");
         this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.YAML), ShipsPlugin.getPlugin().getBlockList());
     }
 
@@ -67,8 +67,15 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public PositionableShipsStructure getStructure() {
-        System.out.println("PositionableStructure: " + this.positionableShipsStructure);
         return this.positionableShipsStructure;
+    }
+
+    @Override
+    public void setStructure(PositionableShipsStructure pss){
+        if(!pss.getPosition().equals(this.getStructure().getPosition())){
+            return;
+        }
+        this.positionableShipsStructure = pss;
     }
 
     @Override

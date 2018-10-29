@@ -6,6 +6,8 @@ import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.block.BlockType;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
@@ -67,6 +69,11 @@ public class OPShipType implements ShipType {
     @Override
     public Vessel createNewVessel(SignTileEntity ste, BlockPosition position) {
         return new OPShip(ste, position);
+    }
+
+    @Override
+    public BlockType[] getIgnoredTypes() {
+        return new BlockType[]{BlockTypes.AIR};
     }
 
     @Override

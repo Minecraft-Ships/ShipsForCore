@@ -20,8 +20,16 @@ import java.util.Optional;
 public class LicenceSign implements ShipsSign {
 
     public Optional<Vessel> getShip(SignTileEntity entity){
-        String typeS = TextColours.stripColours(entity.getLine(1));
-        String nameS = TextColours.stripColours(entity.getLine(2));
+        Optional<String> opLine1 = entity.getLine(1);
+        if(!opLine1.isPresent()){
+            return Optional.empty();
+        }
+        Optional<String> opLine2 = entity.getLine(2);
+        if(!opLine2.isPresent()){
+            return Optional.empty();
+        }
+        String typeS = TextColours.stripColours(opLine1.get());
+        String nameS = TextColours.stripColours(opLine2.get());
         if(typeS == null){
             return Optional.empty();
         }
@@ -37,14 +45,18 @@ public class LicenceSign implements ShipsSign {
 
     @Override
     public boolean isSign(SignTileEntity entity) {
-        return entity.getLine(0).equals(TextColours.YELLOW + "[Ships]");
+        Optional<String> opValue = entity.getLine(0);
+        if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
+            return true;
+        }
+        return false;
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException{
         SignTileEntitySnapshot snapshot = sign.getSnapshot();
         String[] lines = snapshot.getLines();
-        Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equalsIgnoreCase(sign.getLine(1))).findFirst();
+        Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equalsIgnoreCase(lines[1])).findFirst();
         if(!opType.isPresent()){
             throw new IOException("Unknown Ship Type: Ship Types: " + CorePlugin.toString(", ", s -> s.getDisplayName(), ShipsPlugin.getPlugin().getAll(ShipType.class)));
         }

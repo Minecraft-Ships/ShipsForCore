@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class Ships5BlockFinder implements BasicBlockFinder {
 
-    private int blockLimit = -1;
+    private int blockLimit = 3000;
     private int blockCount = 0;
     private PositionableShipsStructure shipsStructure;
     private ShipsVessel vessel;
@@ -22,14 +22,17 @@ public class Ships5BlockFinder implements BasicBlockFinder {
 
     private void getNextBlock(BlockPosition position, Direction... directions){
         if(this.blockLimit != -1 && this.blockCount >= this.blockLimit){
+            System.out.println("BlockLimit Reached: Limit: " + this.blockLimit + " - " + this.blockCount);
             return;
         }
         this.blockCount++;
         for(Direction direction : directions){
             BlockPosition block = position.getRelative(direction);
-            if(list.getBlockInstruction(block.getBlockType()).getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
-                shipsStructure.addPosition(block);
-                getNextBlock(block, directions);
+            BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
+            if(bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
+                if (shipsStructure.addPosition(block)){
+                    getNextBlock(block, directions);
+                }
             }
         }
     }
@@ -38,8 +41,10 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
         this.blockCount = 0;
         this.shipsStructure = new AbstractPosititionableShipsStructure(position);
-        Direction[] directions = FourFacingDirection.getFourFacingDirections();
+        this.list = ShipsPlugin.getPlugin().getBlockList();
+        Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
         getNextBlock(position, directions);
+        System.out.println("BlockCount: " + this.blockCount + ": ShipsStructure: " + this.shipsStructure.getRelativePositions().size());
         return this.shipsStructure;
     }
 

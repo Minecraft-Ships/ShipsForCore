@@ -13,11 +13,16 @@ import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class AltitudeSign implements ShipsSign {
     @Override
     public boolean isSign(SignTileEntity entity) {
-        return entity.getLine(0).equals(TextColours.YELLOW + "[Altitude]");
+        Optional<String> opValue = entity.getLine(0);
+        if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -42,7 +47,7 @@ public class AltitudeSign implements ShipsSign {
             return false;
         }
         SignTileEntity ste = (SignTileEntity) tes;
-        String line3 = TextColours.stripColours(ste.getLine(2));
+        String line3 = TextColours.stripColours(ste.getLine(2).get());
         line3 = line3.replace("{", "");
         line3 = line3.replace("}", "");
         int altitude = Integer.parseInt(line3);

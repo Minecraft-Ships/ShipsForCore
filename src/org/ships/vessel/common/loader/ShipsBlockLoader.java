@@ -2,8 +2,10 @@ package org.ships.vessel.common.loader;
 
 import org.core.world.position.BlockPosition;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Optional;
 
 public class ShipsBlockLoader implements ShipsLoader {
@@ -16,7 +18,12 @@ public class ShipsBlockLoader implements ShipsLoader {
 
     @Override
     public Vessel load() throws IOException {
-        Optional<Vessel> opVessel = ShipsFileLoader.loadAll().stream().filter(v -> v.getStructure().getPositions().stream().anyMatch(p -> p.equals(this.position))).findAny();
+        Optional<Vessel> opVessel = ShipsFileLoader.loadAll().stream().filter(v -> {
+            PositionableShipsStructure pss = v.getStructure();
+            Collection<BlockPosition> collection = pss.getPositions();
+
+            return collection.stream().anyMatch(p -> p.equals(this.position));
+        }).findAny();
         if(opVessel.isPresent()){
             return opVessel.get();
         }

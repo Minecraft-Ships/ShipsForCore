@@ -3,6 +3,7 @@ package org.ships.vessel.sign;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.block.details.AttachableDetails;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.plugin.ShipsPlugin;
@@ -11,12 +12,17 @@ import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class MoveSign implements ShipsSign {
 
     @Override
     public boolean isSign(SignTileEntity entity) {
-        return entity.getLine(0).equals(TextColours.YELLOW + "[Move]");
+        Optional<String> opValue = entity.getLine(0);
+        if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -39,7 +45,7 @@ public class MoveSign implements ShipsSign {
             if(!(vessel instanceof ShipsVessel)){
                 return false;
             }
-            ((ShipsVessel) vessel).rotateLeftAround(vessel.getPosition(), ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).ifPresent(f -> f.sendMessage(player, null));
+            ((ShipsVessel) vessel).moveTowards(((AttachableDetails)position.getBlockDetails()).getAttachedDirection().getOpposite().getAsVector(), ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).ifPresent(f -> f.sendMessage(player, null));
         } catch (IOException e) {
             return false;
         }
