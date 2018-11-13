@@ -30,16 +30,13 @@ public class CoreEventListener implements EventListener {
         BlockPosition position = event.getInteractPosition();
         Optional<LiveTileEntity> opTE = position.getTileEntity();
         if(!opTE.isPresent()){
-            System.out.println("\t-Failed due to the fact TileEntity is not present: " + position.getClass().getName());
             return;
         }
         if(!(opTE.get() instanceof LiveSignTileEntity)){
-            System.out.println("\t-Failed due to the fact TileEntity is not a sign. It is a " + opTE.get().getClass());
             return;
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> {
-                System.out.println("Sign: " + s);
                 return s.isSign(lste);
         }).forEach(s -> {
             boolean cancel = s.onSecondClick(event.getEntity(), position);

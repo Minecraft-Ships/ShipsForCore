@@ -79,10 +79,6 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     private Optional<MovingBlock> get(BlockPosition position, Function<MovingBlock, BlockPosition> function){
-        return stream().filter(f -> {
-            BlockPosition bp = function.apply(f);
-            System.out.println(bp.getX() + "," + bp.getY() + "," + bp.getZ() + " - " + position.getX() + "," + position.getY() + "," + position.getZ());
-            return function.apply(f).equals(position);
-        }).findFirst();
+        return stream().filter(f -> function.apply(f).equals(position)).findFirst();
     }
 }

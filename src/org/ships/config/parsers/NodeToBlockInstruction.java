@@ -32,9 +32,6 @@ public class NodeToBlockInstruction implements StringMapParser<BlockInstruction>
             String collideTypeS = original.entrySet().stream().filter(e -> e.getKey().equals(collideTypeKey.get())).findAny().get().getValue();
             ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(collideTypeS).ifPresent(v -> bi.setCollideType(v));
         }
-        if(bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
-            System.out.println("Parsed: " + bi.getType().getId() + " - " + bi.getCollideType());
-        }
         return Optional.of(bi);
     }
 

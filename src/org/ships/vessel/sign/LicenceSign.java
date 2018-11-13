@@ -40,7 +40,8 @@ public class LicenceSign implements ShipsSign {
         if(!opType.isPresent()){
             return Optional.empty();
         }
-        return Optional.of(new ShipsIDLoader(opType.get().getId() + ":" + nameS).load());
+        Vessel vessel = new ShipsIDLoader(opType.get().getId() + ":" + nameS).load();
+        return Optional.ofNullable(vessel);
     }
 
     @Override

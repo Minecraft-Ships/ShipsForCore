@@ -44,7 +44,6 @@ public class Ships5BlockFinder implements BasicBlockFinder {
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
         getNextBlock(position, directions);
-        System.out.println("BlockCount: " + this.blockCount + ": ShipsStructure: " + this.shipsStructure.getRelativePositions().size());
         return this.shipsStructure;
     }
 

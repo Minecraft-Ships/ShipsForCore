@@ -9,7 +9,7 @@ public class SetMovingBlock implements MovingBlock {
 
     protected BlockPosition before;
     protected BlockPosition after;
-    protected BlockDetails details;
+    protected BlockDetails detail;
 
     public SetMovingBlock(BlockPosition before, BlockPosition after){
         this(before, after, before.getBlockDetails());
@@ -18,7 +18,7 @@ public class SetMovingBlock implements MovingBlock {
     public SetMovingBlock(BlockPosition before, BlockPosition after, BlockDetails details){
         this.before = before;
         this.after = after;
-        this.details = details;
+        this.detail = details;
     }
 
     @Override
@@ -39,14 +39,14 @@ public class SetMovingBlock implements MovingBlock {
 
     @Override
     public BlockDetails getCurrentBlockData() {
-        return this.details;
+        return this.detail;
     }
 
     @Override
     public BlockPriority getBlockPriority() {
-        if((this.details.getType().equals(BlockTypes.AIR))){
+        if((this.detail.getType().equals(BlockTypes.AIR))){
             return BlockPriority.AIR;
-        }else if(this.details instanceof AttachableDetails){
+        }else if(this.detail instanceof AttachableDetails){
             return BlockPriority.ATTACHED;
         }
         return BlockPriority.NORMAL;
