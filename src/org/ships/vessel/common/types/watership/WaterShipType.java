@@ -1,4 +1,4 @@
-package org.ships.vessel.common.types.opship;
+package org.ships.vessel.common.types.watership;
 
 import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
@@ -16,7 +16,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 
-public class OPShipType implements ShipType {
+public class WaterShipType implements ShipType {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
@@ -24,7 +24,7 @@ public class OPShipType implements ShipType {
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
 
-    public OPShipType(){
+    public WaterShipType(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/" + getId().replaceAll(":", ".") + ".temp");
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
         if(!this.file.getFile().exists()){
@@ -37,7 +37,7 @@ public class OPShipType implements ShipType {
 
     @Override
     public String getDisplayName() {
-        return "OPShip";
+        return "Ship";
     }
 
     @Override
@@ -57,7 +57,7 @@ public class OPShipType implements ShipType {
 
     @Override
     public boolean canAutopilot() {
-        return true;
+        return false;
     }
 
     @Override
@@ -66,22 +66,22 @@ public class OPShipType implements ShipType {
     }
 
     @Override
-    public Vessel createNewVessel(SignTileEntity ste, BlockPosition position) {
-        return new OPShip(ste, position);
+    public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+        return new WaterShip(ste, bPos);
     }
 
     @Override
     public BlockType[] getIgnoredTypes() {
-        return new BlockType[]{BlockTypes.AIR};
+        return new BlockType[]{BlockTypes.AIR, BlockTypes.WATER};
     }
 
     @Override
     public String getId() {
-        return "ships:" + getDisplayName().toLowerCase();
+        return "ships:" + this.getName();
     }
 
     @Override
     public String getName() {
-        return getDisplayName();
+        return "watership";
     }
 }

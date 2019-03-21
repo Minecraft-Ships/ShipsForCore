@@ -1,4 +1,4 @@
-package org.ships.vessel.common.types.opship;
+package org.ships.vessel.common.types.airship;
 
 import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
@@ -16,18 +16,24 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 
-public class OPShipType implements ShipType {
+public class AirshipType implements ShipType {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
+    private final String[] BURNER_BLOCK = {"Block", "Burner"};
+    private final String[] SPECIAL_BLOCK_TYPE = {"Block", "Special", "Type"};
+    private final String[] SPECIAL_BLOCK_PERCENT = {"Block", "Special", "Percent"};
 
-    public OPShipType(){
+    public AirshipType(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/" + getId().replaceAll(":", ".") + ".temp");
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
         if(!this.file.getFile().exists()){
+            this.file.set(new ConfigurationNode(this.BURNER_BLOCK), true);
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 60.0f);
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), BlockTypes.WOOL_WHITE.getId());
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
             this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
             this.file.save();
@@ -37,7 +43,7 @@ public class OPShipType implements ShipType {
 
     @Override
     public String getDisplayName() {
-        return "OPShip";
+        return "Airship";
     }
 
     @Override
@@ -47,12 +53,24 @@ public class OPShipType implements ShipType {
 
     @Override
     public int getDefaultMaxSpeed() {
-        return file.parse(new ConfigurationNode(this.MAX_SPEED), Parser.STRING_TO_INTEGER).get();
+        return this.file.parse(new ConfigurationNode(this.MAX_SPEED), Parser.STRING_TO_INTEGER).get();
     }
 
     @Override
     public int getDefaultAltitudeSpeed() {
-        return file.parse(new ConfigurationNode(this.ALTITUDE_SPEED), Parser.STRING_TO_INTEGER).get();
+        return this.file.parse(new ConfigurationNode(this.ALTITUDE_SPEED), Parser.STRING_TO_INTEGER).get();
+    }
+
+    public float getDefaultSpecialBlockPercent(){
+        return this.file.parseDouble(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT)).get().floatValue();
+    }
+
+    public BlockType getDefaultSpecialBlockType(){
+        return this.file.parse(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.STRING_TO_BLOCK_TYPE).get();
+    }
+
+    public boolean isUsingBurner(){
+        return this.file.parse(new ConfigurationNode(this.BURNER_BLOCK), Parser.STRING_TO_BOOLEAN).get();
     }
 
     @Override
@@ -66,8 +84,8 @@ public class OPShipType implements ShipType {
     }
 
     @Override
-    public Vessel createNewVessel(SignTileEntity ste, BlockPosition position) {
-        return new OPShip(ste, position);
+    public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+        return new Airship(ste, bPos);
     }
 
     @Override

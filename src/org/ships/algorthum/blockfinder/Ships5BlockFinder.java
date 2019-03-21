@@ -22,7 +22,6 @@ public class Ships5BlockFinder implements BasicBlockFinder {
 
     private void getNextBlock(BlockPosition position, Direction... directions){
         if(this.blockLimit != -1 && this.blockCount >= this.blockLimit){
-            System.out.println("BlockLimit Reached: Limit: " + this.blockLimit + " - " + this.blockCount);
             return;
         }
         this.blockCount++;

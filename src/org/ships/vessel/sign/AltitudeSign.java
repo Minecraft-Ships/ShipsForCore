@@ -1,6 +1,8 @@
 package org.ships.vessel.sign;
 
+import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.details.TiledBlockDetails;
@@ -16,9 +18,10 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class AltitudeSign implements ShipsSign {
+
     @Override
     public boolean isSign(SignTileEntity entity) {
-        Optional<String> opValue = entity.getLine(0);
+        Optional<Text> opValue = entity.getLine(0);
         if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
             return true;
         }
@@ -28,16 +31,16 @@ public class AltitudeSign implements ShipsSign {
     @Override
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setLine(0, TextColours.YELLOW + "[Altitude]");
-        stes.setLine(1, "{Increase}");
-        stes.setLine(2, "decrease");
-        stes.setLine(3, "1");
+        stes.setLine(0, CorePlugin.buildText(TextColours.YELLOW + "[Altitude]"));
+        stes.setLine(1, CorePlugin.buildText("{Increase}"));
+        stes.setLine(2, CorePlugin.buildText("decrease"));
+        stes.setLine(3, CorePlugin.buildText("1"));
         return stes;
     }
 
     @Override
-    public String getFirstLine() {
-        return TextColours.YELLOW + "[Altitude]";
+    public Text getFirstLine() {
+        return CorePlugin.buildText(TextColours.YELLOW + "[Altitude]");
     }
 
     @Override
@@ -47,9 +50,8 @@ public class AltitudeSign implements ShipsSign {
             return false;
         }
         SignTileEntity ste = (SignTileEntity) tes;
-        String line3 = TextColours.stripColours(ste.getLine(2).get());
-        line3 = line3.replace("{", "");
-        line3 = line3.replace("}", "");
+        String line1 = ste.getLine(1).get().toPlain();
+        String line3 = ste.getLine(3).get().toPlain();
         int altitude = Integer.parseInt(line3);
         try {
             Vessel vessel = new ShipsBlockLoader(position).load();
@@ -57,9 +59,14 @@ public class AltitudeSign implements ShipsSign {
                 return false;
             }
             ShipsVessel vessel2 = (ShipsVessel)vessel;
-            vessel2.moveTowards(0, altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).ifPresent(f -> f.sendMessage(player, null));
+            if(line1.startsWith("{")) {
+                vessel2.moveTowards(0, altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).ifPresent(f -> f.sendMessage(player, f.getValue().orElse(null)));
+            }else{
+                vessel2.moveTowards(0, -altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).ifPresent(f -> f.sendMessage(player, f.getValue().orElse(null)));
 
+            }
         } catch (IOException e) {
+            player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             return false;
         }
         return false;

@@ -32,9 +32,9 @@ public class Ships6Movement implements BasicMovement {
         public void run() {
             this.toProcess.forEach(m -> {
                 if(this.waterLevel > m.getAfterPosition().getY()){
-                    m.removeUnderWater();
+                    m.removeBeforePositionUnderWater();
                 }else{
-                    m.removeOverAir();
+                    m.removeBeforePositionOverAir();
                 }
             });
             this.toProcess.forEach(m -> m.setMovingTo());
@@ -66,7 +66,7 @@ public class Ships6Movement implements BasicMovement {
             scheduler = CorePlugin.createSchedulerBuilder().setExecutor(new ProcessBlocks(waterLevel, blocks2)).setToRunAfter(scheduler).setDelay(1).setDelayUnit(TimeUnit.SECONDS).build(ShipsPlugin.getPlugin());
         }
         if(scheduler == null){
-            return Optional.of(new AbstractFailedMovement(vessel, MovementResult.UNKNOWN));
+            return Optional.of(new AbstractFailedMovement(vessel, MovementResult.UNKNOWN, null));
         }
         scheduler.run();
 

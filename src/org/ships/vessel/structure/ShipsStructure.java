@@ -14,6 +14,7 @@ import java.util.function.Function;
 public interface ShipsStructure {
 
     Set<Vector3Int> getRelativePositions();
+    Set<Vector3Int> getOriginalRelativePositions();
     boolean addPosition(Vector3Int add);
     boolean removePosition(Vector3Int remove);
 

@@ -20,10 +20,9 @@ public class ShipsConfig implements Config {
     protected final ConfigurationNode ADVANCED_BLOCKFINDER = new ConfigurationNode("Advanced", "BlockFinder", "Default");
 
     public ShipsConfig(){
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.yml");
-        boolean created = file.exists();
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.temp");
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
-        if(!created){
+        if(!this.file.getFile().exists()){
             recreateFile();
         }
     }

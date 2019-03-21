@@ -1,6 +1,8 @@
 package org.ships.vessel.sign;
 
+import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -10,9 +12,10 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class WheelSign implements ShipsSign {
+
     @Override
     public boolean isSign(SignTileEntity entity) {
-        Optional<String> opValue = entity.getLine(0);
+        Optional<Text> opValue = entity.getLine(0);
         if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
             return true;
         }
@@ -22,16 +25,16 @@ public class WheelSign implements ShipsSign {
     @Override
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setLine(0, TextColours.YELLOW + "[Wheel]");
-        stes.setLine(1, TextColours.RED + "\\\\||//");
-        stes.setLine(2, TextColours.RED + "==||==");
-        stes.setLine(3, TextColours.RED + "//||\\\\");
+        stes.setLine(0, CorePlugin.buildText(TextColours.YELLOW + "[Wheel]"));
+        stes.setLine(1, CorePlugin.buildText(TextColours.RED + "\\\\||//"));
+        stes.setLine(2, CorePlugin.buildText(TextColours.RED + "==||=="));
+        stes.setLine(3, CorePlugin.buildText(TextColours.RED + "//||\\\\"));
         return stes;
     }
 
     @Override
-    public String getFirstLine() {
-        return TextColours.YELLOW + "[Wheel]";
+    public Text getFirstLine() {
+        return CorePlugin.buildText(TextColours.YELLOW + "[Wheel]");
     }
 
     @Override

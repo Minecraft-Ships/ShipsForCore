@@ -13,7 +13,9 @@ import java.util.stream.Collectors;
 public interface PositionableShipsStructure extends ShipsStructure, Positionable {
 
     @Override
-    public BlockPosition getPosition();
+    BlockPosition getPosition();
+
+    PositionableShipsStructure setPosition(BlockPosition pos);
 
     default boolean addPosition(BlockPosition position){
         Vector3Int original = getPosition().getPosition();

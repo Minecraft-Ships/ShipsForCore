@@ -6,6 +6,7 @@ import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
+import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.listener.core.CoreEventListener;
@@ -46,8 +47,11 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(new WheelSign());
         this.identifable.add(new MoveSign());
         this.identifable.add(ShipType.OVERPOWERED_SHIP);
+        this.identifable.add(ShipType.AIRSHIP);
+        this.identifable.add(ShipType.WATERSHIP);
 
         CorePlugin.getEventManager().register(this, new CoreEventListener());
+        CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
     }
 
     public ShipsConfig getConfig(){
@@ -55,19 +59,19 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public void getLoadedMessages(){
-        CorePlugin.getConsole().sendMessage(TextColours.RED + "------[Ships Loaded Information][Start]------");
+        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.RED + "------[Ships Loaded Information][Start]------"));
         displayMessage(BasicBlockFinder.class, "BlockFinders", bf -> "");
         displayMessage(BasicMovement.class, "MovementMethods", bm -> "");
         displayMessage(BlockPriority.class, "BlockPriorities", bp -> bp.getPriorityNumber() + "");
         displayMessage(ShipsSign.class, "Signs", sn -> "");
         displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + "\t" + st.getFile().getFile().getPath());
-        CorePlugin.getConsole().sendMessage(TextColours.RED + "------[Ships Loaded Information][End]------");
+        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.RED + "------[Ships Loaded Information][End]------"));
     }
 
     private <I extends Identifable> void displayMessage(Class<I> class1, String name, Function<I, String> function){
         Set<I> values = getAll(class1);
-        CorePlugin.getConsole().sendMessage(TextColours.AQUA + "Found " + name + ": " + values.size());
-        values.stream().forEach(v -> CorePlugin.getConsole().sendMessage(TextColours.YELLOW + "\t- " + v.getId() + "\t" + function.apply(v)));
+        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.AQUA + "Found " + name + ": " + values.size()));
+        values.stream().forEach(v -> CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.YELLOW + "\t- " + v.getId() + "\t" + function.apply(v))));
     }
 
     public DefaultBlockList getBlockList(){
@@ -105,5 +109,10 @@ public abstract class ShipsPlugin implements Plugin {
     @Override
     public String getPluginName() {
         return "Ships";
+    }
+
+    @Override
+    public String getPluginVersion(){
+        return "6.0.0.0";
     }
 }

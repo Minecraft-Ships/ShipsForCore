@@ -1,5 +1,6 @@
 package org.ships.vessel.common.types;
 
+import org.core.CorePlugin;
 import org.core.entity.living.human.player.User;
 import org.core.vector.types.Vector3Int;
 import org.core.world.position.BlockPosition;
@@ -61,13 +62,13 @@ public interface ShipsVessel extends Vessel {
     }
 
     default ShipsVessel setName(String name) throws NoLicencePresent{
-        getSign().setLine(2, name);
+        getSign().setLine(2, CorePlugin.buildText(name));
         return this;
     }
 
     default String getName() {
         try {
-            return getSign().getLine(2).get();
+            return getSign().getLine(2).get().toPlain();
         } catch (NoLicencePresent e) {
             e.printStackTrace();
         }

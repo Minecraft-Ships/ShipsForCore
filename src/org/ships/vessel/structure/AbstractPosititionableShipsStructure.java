@@ -21,7 +21,22 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
     }
 
     @Override
+    public PositionableShipsStructure setPosition(BlockPosition pos) {
+        this.position = pos;
+        return this;
+    }
+
+    @Override
     public Set<Vector3Int> getRelativePositions() {
+        Set<Vector3Int> vectors = new HashSet<>(getOriginalRelativePositions());
+        if (!vectors.stream().anyMatch(v -> v.equals(new Vector3Int(0, 0, 0)))){
+            vectors.add(new Vector3Int(0, 0, 0));
+        }
+        return vectors;
+    }
+
+    @Override
+    public Set<Vector3Int> getOriginalRelativePositions() {
         return this.vectors;
     }
 

@@ -56,7 +56,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> get(Predicate<BlockDetails> predicate){
-        return stream().filter(mb -> predicate.test(mb.getCurrentBlockData())).findFirst();
+        return stream().filter(mb -> predicate.test(mb.getStoredBlockData())).findFirst();
     }
 
     public Optional<MovingBlock> getBefore(Positionable positionable){

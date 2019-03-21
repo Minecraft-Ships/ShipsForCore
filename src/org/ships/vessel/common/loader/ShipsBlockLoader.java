@@ -21,7 +21,6 @@ public class ShipsBlockLoader implements ShipsLoader {
         Optional<Vessel> opVessel = ShipsFileLoader.loadAll().stream().filter(v -> {
             PositionableShipsStructure pss = v.getStructure();
             Collection<BlockPosition> collection = pss.getPositions();
-
             return collection.stream().anyMatch(p -> p.equals(this.position));
         }).findAny();
         if(opVessel.isPresent()){

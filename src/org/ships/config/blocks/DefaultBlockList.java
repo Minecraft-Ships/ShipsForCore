@@ -10,6 +10,7 @@ import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -20,17 +21,17 @@ public class DefaultBlockList implements BlockList {
     protected Set<BlockInstruction> blocks = new HashSet<>();
 
     public DefaultBlockList(){
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList.yml");
-        boolean created = file.exists();
-        this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.YAML);
-        if(!created){
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList.temp");
+        this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        if(!this.file.getFile().exists()){
+            System.out.println("Recreating BlockList");
             recreateFile();
         }
     }
 
     @Override
     public Set<BlockInstruction> getBlockList() {
-        if(blocks.size() == 0){
+        if(blocks.isEmpty()){
             return reloadBlockList();
         }
         return this.blocks;
@@ -39,13 +40,13 @@ public class DefaultBlockList implements BlockList {
     @Override
     public Set<BlockInstruction> reloadBlockList() {
         blocks.clear();
-        CorePlugin.getPlatform().get(BlockType.class).stream().forEach(bt -> {
+        Collection<BlockType> mBlocks = CorePlugin.getPlatform().get(BlockType.class);
+        mBlocks.stream().forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(DefaultBlockList.this, bt);
             if(opBlock.isPresent()) {
                 blocks.add(opBlock.get());
                 return;
             }
-            System.err.println("Failed to read block (" + bt.getId() + ") from BlockList configuration file");
             blocks.add(new BlockInstruction(bt).setCollideType(BlockInstruction.CollideType.DETECT_COLLIDE));
         });
         return this.blocks;
@@ -62,12 +63,16 @@ public class DefaultBlockList implements BlockList {
         Set<BlockType> completedBefore = new HashSet<>();
         addToConfig(BlockTypes.WALL_SIGN, BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.OAK_WOOD, BlockInstruction.CollideType.MATERIAL, completedBefore);
-        CorePlugin.getPlatform().get(BlockType.class).stream().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
+        addToConfig(BlockTypes.FURNACE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.FURNACE_LIT, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        CorePlugin.getPlatform().get(BlockType.class).stream().forEach(bt -> {
+            addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore);
+        });
         file.save();
     }
 
     private void addToConfig(BlockType type, BlockInstruction.CollideType collide, Set<BlockType> current){
-        if(current.contains(type)){
+        if(current.stream().anyMatch(c -> c.equals(type))){
             return;
         }
         String[] idSplit = type.getId().split(":");

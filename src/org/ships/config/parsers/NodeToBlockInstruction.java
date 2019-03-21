@@ -5,9 +5,7 @@ import org.core.configuration.parser.StringMapParser;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.BlockInstruction;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class NodeToBlockInstruction implements StringMapParser<BlockInstruction> {
 
@@ -16,21 +14,17 @@ public class NodeToBlockInstruction implements StringMapParser<BlockInstruction>
 
     @Override
     public Optional<BlockInstruction> parse(Map<String, String> original) {
-        Optional<String> opBlockTypeS = original.keySet().stream().filter(p -> p.endsWith(this.BLOCK_TYPE)).findAny();
-        if(!opBlockTypeS.isPresent()) {
-            return Optional.empty();
-        }
-        String blockTypeS = original.get(opBlockTypeS.get());
-        Optional<BlockType> opType = Parser.STRING_TO_BLOCK_TYPE.parse(blockTypeS);
+        String blockType = original.get(this.BLOCK_TYPE);
+        String collideType = original.get(this.COLLIDE_TYPE);
+
+        Optional<BlockType> opType = Parser.STRING_TO_BLOCK_TYPE.parse(blockType);
         if(!opType.isPresent()){
             return Optional.empty();
         }
         BlockInstruction bi = new BlockInstruction(opType.get());
 
-        Optional<String> collideTypeKey = original.keySet().stream().filter(p -> p.endsWith(this.COLLIDE_TYPE)).findAny();
-        if(collideTypeKey.isPresent()) {
-            String collideTypeS = original.entrySet().stream().filter(e -> e.getKey().equals(collideTypeKey.get())).findAny().get().getValue();
-            ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(collideTypeS).ifPresent(v -> bi.setCollideType(v));
+        if(collideType != null) {
+            ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(collideType).ifPresent(v -> bi.setCollideType(v));
         }
         return Optional.of(bi);
     }
@@ -41,6 +35,11 @@ public class NodeToBlockInstruction implements StringMapParser<BlockInstruction>
         map.put(this.BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE.unparse(value.getType()));
         map.put(this.COLLIDE_TYPE, ShipsParsers.STRING_TO_COLLIDE_TYPE.unparse(value.getCollideType()));
         return map;
+    }
+
+    @Override
+    public List<String> getKeys() {
+        return Arrays.asList(this.BLOCK_TYPE, this.COLLIDE_TYPE);
     }
 }
 

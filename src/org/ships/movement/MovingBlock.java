@@ -3,9 +3,10 @@ package org.ships.movement;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
-import org.core.world.position.block.details.TiledBlockDetails;
-import org.core.world.position.block.entity.TileEntitySnapshot;
-import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
+import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.container.ContainerTileEntity;
+
+import java.util.Optional;
 
 public interface MovingBlock {
 
@@ -15,35 +16,27 @@ public interface MovingBlock {
 
     MovingBlock setAfterPosition(BlockPosition position);
 
-    BlockDetails getCurrentBlockData();
+    BlockDetails getStoredBlockData();
+
+    MovingBlock setStoredBlockData(BlockDetails blockDetails);
 
     BlockPriority getBlockPriority();
 
-    default MovingBlock remove(BlockDetails beforePos) {
-        BlockDetails bd = getCurrentBlockData();
-        if (bd instanceof TiledBlockDetails) {
-            TileEntitySnapshot tes = ((TiledBlockDetails) bd).getTileEntity();
-            if (tes instanceof FurnaceTileEntity) {
-                System.out.println("Checking Stores 1: " + tes.toString());
-                FurnaceTileEntity fte = (FurnaceTileEntity) tes;
-                fte.getInventory().getSlots().stream().forEach(s -> System.out.println("\tSlot: " + s.getPosition().orElse(-1) + " - " + s.getItem().orElse(null)));
-            }
+    default MovingBlock removeBeforePosition(BlockPosition pos) {
+        setStoredBlockData(pos.getBlockDetails());
+        Optional<LiveTileEntity> opLive = pos.getTileEntity();
+        if(!opLive.isPresent()){
+            return this;
         }
-        getBeforePosition().setBlock(beforePos);
-        BlockDetails bd2 = getCurrentBlockData();
-        if (bd2 instanceof TiledBlockDetails) {
-            TileEntitySnapshot tes = ((TiledBlockDetails) bd2).getTileEntity();
-            if (tes instanceof FurnaceTileEntity) {
-                System.out.println("Checking Stores 2: " + tes.toString());
-                FurnaceTileEntity fte = (FurnaceTileEntity) tes;
-                fte.getInventory().getSlots().stream().forEach(s -> System.out.println("\tSlot: " + s.getPosition().orElse(-1) + " - " + s.getItem().orElse(null)));
-            }
+        if(opLive.get() instanceof ContainerTileEntity){
+            ContainerTileEntity cte = (ContainerTileEntity)opLive.get();
+            cte.getInventory().getSlots().stream().forEach(s -> s.setItem(null));
         }
         return this;
     }
 
     default MovingBlock setMovingTo() {
-        getAfterPosition().setBlock(getCurrentBlockData());
+        getAfterPosition().setBlock(getStoredBlockData());
         return this;
     }
 
@@ -67,12 +60,18 @@ public interface MovingBlock {
         return this;
     }
 
-    default MovingBlock removeOverAir() {
-        return remove(BlockTypes.AIR.getDefaultBlockDetails());
+    default MovingBlock removeBeforePositionOverAir() {
+        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.AIR.getDefaultBlockDetails());
+        return this;
     }
 
-    default MovingBlock removeUnderWater() {
-        return remove(BlockTypes.WATER.getDefaultBlockDetails());
+    default MovingBlock removeBeforePositionUnderWater() {
+        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.WATER.getDefaultBlockDetails());
+        return this;
+    }
+
+    default BlockDetails getCurrentBlockData(){
+        return this.getBeforePosition().getBlockDetails();
     }
 
 

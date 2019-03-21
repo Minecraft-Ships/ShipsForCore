@@ -5,7 +5,7 @@ import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
-import org.core.text.TextColours;
+import org.core.text.Text;
 import org.core.world.WorldExtent;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -37,7 +37,7 @@ public class ShipsFileLoader implements ShipsLoader {
     }
 
     public void save(AbstractShipsVessel vessel){
-        ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.YAML);
+        ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.DEFAULT);
         Map<ConfigurationNode, Object> map = new HashMap<>(vessel.serialize(file));
         map.put(new ConfigurationNode(SPEED_MAX), vessel.getMaxSpeed());
         map.put(new ConfigurationNode(SPEED_ALTITUDE), vessel.getAltitudeSpeed());
@@ -52,7 +52,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     @Override
     public Vessel load() throws IOException {
-        ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.YAML);
+        ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.DEFAULT);
         Optional<WorldExtent> opWorld = file.parse(new ConfigurationNode(META_LOCATION_WORLD), Parser.STRING_TO_WORLD);
         if(!opWorld.isPresent()){
             throw new IOException("Unknown World");
@@ -80,11 +80,11 @@ public class ShipsFileLoader implements ShipsLoader {
             throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
-        Optional<String> opShipTypeS = lste.getLine(1);
+        Optional<Text> opShipTypeS = lste.getLine(1);
         if(!opShipTypeS.isPresent()){
             throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
-        String shipTypeS = TextColours.stripColours(opShipTypeS.get());
+        String shipTypeS = opShipTypeS.get().toPlain();
         Optional<ShipType> opShipType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(s -> s.getDisplayName().equals(shipTypeS)).findAny();
         if(!opShipType.isPresent()){
             throw new IOException("Unknown ShipType");
@@ -102,15 +102,40 @@ public class ShipsFileLoader implements ShipsLoader {
             PositionableShipsStructure pss = ship.getStructure();
             structureList.stream().forEach(v -> pss.addPosition(v));
         });
-
+        if(ship.getStructure().getOriginalRelativePositions().isEmpty()){
+            PositionableShipsStructure structure = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(ship.getPosition());
+            ship.setStructure(structure);
+        }
         ship.deserializeExtra(file);
         return ship;
     }
 
+    public static File getVesselDataFolder(){
+        return new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData");
+    }
+
+    public static Set<File> getFilesFromName(String name){
+        Set<File> set = new HashSet<>();
+        ShipsPlugin.getPlugin().getAll(ShipType.class).stream().forEach(st -> {
+            File vesselDataFolder = getVesselDataFolder();
+            File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
+            File[] files = typeFolder.listFiles();
+            if(files == null){
+                return;
+            }
+            for(File file : files){
+                if(file.getName().toLowerCase().startsWith(name.toLowerCase())){
+                    set.add(file);
+                }
+            }
+        });
+        return set;
+    }
+
     public static Set<Vessel> loadAll(){
         Set<Vessel> set = new HashSet<>();
-        File vesselDataFolder = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData");
         ShipsPlugin.getPlugin().getAll(ShipType.class).stream().forEach(st -> {
+            File vesselDataFolder = getVesselDataFolder();
             File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
             File[] files = typeFolder.listFiles();
             if(files == null){
@@ -128,7 +153,6 @@ public class ShipsFileLoader implements ShipsLoader {
                     continue;
                 }
             }
-            System.out.println("Loaded all");
         });
         return set;
     }

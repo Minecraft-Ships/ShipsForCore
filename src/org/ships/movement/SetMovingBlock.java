@@ -38,8 +38,14 @@ public class SetMovingBlock implements MovingBlock {
     }
 
     @Override
-    public BlockDetails getCurrentBlockData() {
+    public BlockDetails getStoredBlockData() {
         return this.detail;
+    }
+
+    @Override
+    public MovingBlock setStoredBlockData(BlockDetails blockDetails) {
+        this.detail = blockDetails;
+        return this;
     }
 
     @Override
