@@ -10,9 +10,9 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.ExpandedBlockList;
+import org.ships.exceptions.MoveException;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
-import org.ships.movement.result.FailedMovement;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.sign.LicenceSign;
@@ -75,35 +75,35 @@ public interface ShipsVessel extends Vessel {
         return null;
     }
 
-    default Optional<FailedMovement> moveTowards(int x, int y, int z, BasicMovement movement){
-        return Movement.ADD_TO_POSITION.move(this, x, y, z, movement);
+    default void moveTowards(int x, int y, int z, BasicMovement movement) throws MoveException {
+        Movement.ADD_TO_POSITION.move(this, x, y, z, movement);
     }
 
-    default Optional<FailedMovement> moveTowards(Vector3Int vector, BasicMovement movement){
-        return Movement.ADD_TO_POSITION.move(this, vector, movement);
+    default void moveTowards(Vector3Int vector, BasicMovement movement) throws MoveException{
+        Movement.ADD_TO_POSITION.move(this, vector, movement);
     }
 
-    default Optional<FailedMovement> moveTo(Position<? extends Number> location, BasicMovement movement){
+    default void moveTo(Position<? extends Number> location, BasicMovement movement) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        return Movement.TELEPORT_TO_POSITION.move(this, position, movement);
+        Movement.TELEPORT_TO_POSITION.move(this, position, movement);
     }
 
-    default Optional<FailedMovement> rotateRightAround(Position<? extends Number> location, BasicMovement movement){
+    default void rotateRightAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        return Movement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, movement);
+        Movement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, movement);
     }
 
-    default Optional<FailedMovement> rotateAnticlockwiseAround(Position<? extends Number> location, BasicMovement movement){
-        return this.rotateRightAround(location, movement);
+    default void rotateAnticlockwiseAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
+        this.rotateRightAround(location, movement);
     }
 
-    default Optional<FailedMovement> rotateLeftAround(Position<? extends Number> location, BasicMovement movement){
+    default void rotateLeftAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        return Movement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement);
+        Movement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement);
     }
 
-    default Optional<FailedMovement> rotateClockwiseAround(Position<? extends Number> location, BasicMovement movement){
-        return this.rotateLeftAround(location, movement);
+    default void rotateClockwiseAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
+        this.rotateLeftAround(location, movement);
     }
 
     default String getId(){

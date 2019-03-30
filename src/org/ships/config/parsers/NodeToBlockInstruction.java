@@ -14,17 +14,21 @@ public class NodeToBlockInstruction implements StringMapParser<BlockInstruction>
 
     @Override
     public Optional<BlockInstruction> parse(Map<String, String> original) {
-        String blockType = original.get(this.BLOCK_TYPE);
-        String collideType = original.get(this.COLLIDE_TYPE);
+        Optional<Map.Entry<String, String>> opBlockType = original.entrySet().stream().filter(e -> e.getKey().equals(NodeToBlockInstruction.this.BLOCK_TYPE)).findAny();
+        Optional<Map.Entry<String, String>> opCollideType = original.entrySet().stream().filter(e -> e.getKey().equals(NodeToBlockInstruction.this.COLLIDE_TYPE)).findAny();
+        if(!opBlockType.isPresent()){
+            return Optional.empty();
+        }
+        String blockType = opBlockType.get().getValue();
+
 
         Optional<BlockType> opType = Parser.STRING_TO_BLOCK_TYPE.parse(blockType);
         if(!opType.isPresent()){
             return Optional.empty();
         }
         BlockInstruction bi = new BlockInstruction(opType.get());
-
-        if(collideType != null) {
-            ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(collideType).ifPresent(v -> bi.setCollideType(v));
+        if(opCollideType.isPresent()) {
+            ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(opCollideType.get().getValue()).ifPresent(v -> bi.setCollideType(v));
         }
         return Optional.of(bi);
     }

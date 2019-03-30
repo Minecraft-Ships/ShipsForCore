@@ -24,7 +24,6 @@ public class DefaultBlockList implements BlockList {
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList.temp");
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
         if(!this.file.getFile().exists()){
-            System.out.println("Recreating BlockList");
             recreateFile();
         }
     }
@@ -40,7 +39,7 @@ public class DefaultBlockList implements BlockList {
     @Override
     public Set<BlockInstruction> reloadBlockList() {
         blocks.clear();
-        Collection<BlockType> mBlocks = CorePlugin.getPlatform().get(BlockType.class);
+        Collection<BlockType> mBlocks = CorePlugin.getPlatform().getBlockTypes();
         mBlocks.stream().forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(DefaultBlockList.this, bt);
             if(opBlock.isPresent()) {
@@ -64,8 +63,9 @@ public class DefaultBlockList implements BlockList {
         addToConfig(BlockTypes.WALL_SIGN, BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.OAK_WOOD, BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.FURNACE, BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.FURNACE_LIT, BlockInstruction.CollideType.MATERIAL, completedBefore);
-        CorePlugin.getPlatform().get(BlockType.class).stream().forEach(bt -> {
+        addToConfig(BlockTypes.OAK_PLANKS, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        //addToConfig(BlockTypes.FURNACE_LIT, BlockInstruction.CollideType.MATERIAL, completedBefore); //1.12.2
+        CorePlugin.getPlatform().getBlockTypes().stream().forEach(bt -> {
             addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore);
         });
         file.save();

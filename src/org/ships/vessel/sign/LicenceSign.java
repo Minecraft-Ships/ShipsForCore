@@ -7,12 +7,14 @@ import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsBlockLoader;
 import org.ships.vessel.common.loader.ShipsIDLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -86,21 +88,44 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
+    public boolean onPrimaryClick(LivePlayer player, BlockPosition position){
+        return onSecondClick(player, position);
+    }
+
+    @Override
     public boolean onSecondClick(LivePlayer player, BlockPosition position) {
         try {
             Vessel s = new ShipsBlockLoader(position).load();
-            player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "----[Ships Info]----"));
-            player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Name: " + TextColours.AQUA + s.getName()));
-            player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Max Altitude: " + TextColours.AQUA + s.getAltitudeSpeed()));
-            player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Max Speed: " + TextColours.AQUA + s.getMaxSpeed()));
-            player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Size: " + TextColours.AQUA + s.getStructure().getRelativePositions().size()));
-            player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Entities: " + TextColours.AQUA + s.getEntities().size()));
-            if(!(s instanceof ShipsVessel)){
-                return false;
+            if(player.isSneaking()) {
+                player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "----[Ships Info]----"));
+                player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Name: " + TextColours.AQUA + s.getName()));
+                player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Max Altitude: " + TextColours.AQUA + s.getAltitudeSpeed()));
+                player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Max Speed: " + TextColours.AQUA + s.getMaxSpeed()));
+                player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Size: " + TextColours.AQUA + s.getStructure().getRelativePositions().size()));
+                player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Entities: " + TextColours.AQUA + s.getEntities().size()));
+                if (!(s instanceof ShipsVessel)) {
+                    return false;
+                }
+                ShipsVessel vessel = (ShipsVessel) s;
+                //player.sendMessage(TextColours.AQUA + "Default Crew" + vessel.getDefaultPermission().getId());
+                player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "id: " + TextColours.AQUA + vessel.getId()));
+            }else{
+                if (!(s instanceof ShipsVessel)) {
+                    return false;
+                }
+                ShipsVessel vessel = (ShipsVessel) s;
+                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(vessel).getConnectedBlocksOvertime(vessel.getPosition(), new OvertimeBlockFinderUpdate() {
+                    @Override
+                    public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                        player.sendMessagePlain("Vessels structure has updated");
+                    }
+
+                    @Override
+                    public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                        return false;
+                    }
+                });
             }
-            ShipsVessel vessel = (ShipsVessel)s;
-            //player.sendMessage(TextColours.AQUA + "Default Crew" + vessel.getDefaultPermission().getId());
-            player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "id: " + TextColours.AQUA + vessel.getId()));
         } catch (IOException e) {
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
         }

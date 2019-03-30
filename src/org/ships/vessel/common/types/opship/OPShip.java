@@ -6,14 +6,12 @@ import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.movement.MovingBlockSet;
-import org.ships.movement.result.FailedMovement;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.types.AbstractShipsVessel;
 import org.ships.vessel.common.types.ShipType;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class OPShip extends AbstractShipsVessel implements AirType {
 
@@ -26,8 +24,8 @@ public class OPShip extends AbstractShipsVessel implements AirType {
     }
 
     @Override
-    public Optional<FailedMovement> meetsRequirement(MovingBlockSet movingBlocks) {
-        return Optional.empty();
+    public void meetsRequirement(MovingBlockSet movingBlocks) {
+
     }
 
     @Override

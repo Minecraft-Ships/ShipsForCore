@@ -36,7 +36,8 @@ public interface MovingBlock {
     }
 
     default MovingBlock setMovingTo() {
-        getAfterPosition().setBlock(getStoredBlockData());
+        BlockDetails details = getStoredBlockData();
+        getAfterPosition().setBlock(details);
         return this;
     }
 

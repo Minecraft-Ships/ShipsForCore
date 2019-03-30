@@ -1,15 +1,14 @@
 package org.ships.movement;
 
 import org.core.entity.Entity;
-import org.core.vector.Vector3;
 import org.core.vector.types.Vector3Int;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockInstruction;
+import org.ships.exceptions.MoveException;
 import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.FailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.AbstractShipsVessel;
@@ -17,10 +16,7 @@ import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class Movement{
 
@@ -29,7 +25,7 @@ public class Movement{
     public static final AddToPosition ADD_TO_POSITION = new AddToPosition();
     public static final TeleportToPosition TELEPORT_TO_POSITION = new TeleportToPosition();
 
-    protected Optional<FailedMovement> move(ShipsVessel vessel, MovingBlockSet blocks, BasicMovement movement) {
+    protected void move(ShipsVessel vessel, MovingBlockSet blocks, BasicMovement movement) throws MoveException {
         Set<Entity> entities = vessel.getEntities();
         Map<Entity, MovingBlock> entityBlock = new HashMap<>();
         entities.stream().forEach(e -> e.setGravity(false));
@@ -37,39 +33,45 @@ public class Movement{
         Optional<MovingBlock> opLicence = blocks.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
         if (!opLicence.isPresent()) {
             entities.stream().forEach(e -> e.setGravity(true));
-            return Optional.of(new AbstractFailedMovement(vessel, MovementResult.NO_LICENCE_FOUND, null));
+            throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.NO_LICENCE_FOUND, null));
         }
         if (vessel instanceof AbstractShipsVessel) {
-            Optional<FailedMovement> opRequirements = ((AbstractShipsVessel) vessel).meetsRequirement(blocks);
-            if (opRequirements.isPresent()) {
-                entities.stream().forEach(e -> e.setGravity(true));
-                return opRequirements;
+            try {
+                ((AbstractShipsVessel) vessel).meetsRequirement(blocks);
+            }catch (MoveException e) {
+                entities.stream().forEach(entity -> entity.setGravity(true));
+                throw e;
             }
         }
-        if (blocks.stream().anyMatch(mb -> {
+        Set<BlockPosition> collided = new HashSet<>();
+        blocks.stream().forEach(mb -> {
             if(blocks.stream().anyMatch(mb1 -> mb.getAfterPosition().equals(mb1.getBeforePosition()))){
-                return false;
+                return;
             }
             for(BlockType type : vessel.getType().getIgnoredTypes()){
                 if(type.equals(mb.getAfterPosition().getBlockType())){
-                    return false;
+                    return;
                 }
             }
             BlockInstruction bi = vessel.getBlockList().getBlockInstruction(mb.getAfterPosition().getBlockType());
             if (!bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE)) {
-                return true;
+                collided.add(mb.getAfterPosition());
+                return;
             }
-            return false;
-        })) {
+            return;
+        });
+        if (!collided.isEmpty()) {
             entities.stream().forEach(e -> e.setGravity(true));
-            return Optional.of(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, blocks));
+            throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, collided));
         }
-        Optional<FailedMovement> opMovement = movement.move(vessel, blocks);
-        if (opMovement.isPresent()) {
-            entities.stream().forEach(e -> e.setGravity(true));
-            return opMovement;
+        try {
+            Result result = movement.move(vessel, blocks, entityBlock);
+            result.run(vessel, blocks, entityBlock);
+        }catch (MoveException e) {
+            entities.stream().forEach(entity -> entity.setGravity(true));
+            throw e;
         }
-        entityBlock.entrySet().stream().forEach(e ->{
+        /*entityBlock.entrySet().stream().forEach(e ->{
             Entity entity = e.getKey();
             Vector3<Double> position = entity.getPosition().getPosition().minus(e.getValue().getBeforePosition().toExactPosition().getPosition());
             Vector3<Double> position2 = e.getValue().getAfterPosition().toExactPosition().getPosition();
@@ -78,8 +80,7 @@ public class Movement{
         });
         entities.stream().forEach(e -> e.setGravity(true));
         vessel.getStructure().setPosition(opLicence.get().getAfterPosition());
-        vessel.save();
-        return Optional.empty();
+        vessel.save();*/
     }
 
     public static class RotateLeftAroundPosition extends Movement {
@@ -88,13 +89,13 @@ public class Movement{
 
         }
 
-        public Optional<FailedMovement> move(ShipsVessel vessel, BlockPosition rotateAround, BasicMovement movement) {
+        public void move(ShipsVessel vessel, BlockPosition rotateAround, BasicMovement movement) throws MoveException {
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().stream().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateLeft(rotateAround);
                 set.add(block);
             });
-            return move(vessel, set, movement);
+            move(vessel, set, movement);
         }
 
     }
@@ -105,13 +106,13 @@ public class Movement{
 
         }
 
-        public Optional<FailedMovement> move(ShipsVessel vessel, BlockPosition rotateAround, BasicMovement movement) {
+        public void move(ShipsVessel vessel, BlockPosition rotateAround, BasicMovement movement) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().stream().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateRight(rotateAround);
                 set.add(block);
             });
-            return move(vessel, set, movement);
+            move(vessel, set, movement);
         }
 
     }
@@ -122,7 +123,7 @@ public class Movement{
 
         }
 
-        public Optional<FailedMovement> move(ShipsVessel vessel, BlockPosition to, BasicMovement movement) {
+        public void move(ShipsVessel vessel, BlockPosition to, BasicMovement movement) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().stream().forEach(f -> {
@@ -130,7 +131,7 @@ public class Movement{
                 BlockPosition vp2 = to.getRelative(f);
                 set.add(new SetMovingBlock(vp, vp2));
             });
-            return move(vessel, set, movement);
+            move(vessel, set, movement);
         }
 
     }
@@ -140,11 +141,11 @@ public class Movement{
         private AddToPosition(){
         }
 
-        public Optional<FailedMovement> move(ShipsVessel vessel, int x, int y, int z, BasicMovement movement){
-            return move(vessel, new Vector3Int(x, y, z), movement);
+        public void move(ShipsVessel vessel, int x, int y, int z, BasicMovement movement) throws MoveException{
+            move(vessel, new Vector3Int(x, y, z), movement);
         }
 
-        public Optional<FailedMovement> move(ShipsVessel vessel, Vector3Int addTo, BasicMovement movement){
+        public void move(ShipsVessel vessel, Vector3Int addTo, BasicMovement movement) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().stream().forEach(f -> {
@@ -152,7 +153,7 @@ public class Movement{
                 BlockPosition vp2 = vp.getRelative(addTo);
                 set.add(new SetMovingBlock(vp, vp2));
             });
-            return move(vessel, set, movement);
+            move(vessel, set, movement);
         }
 
     }

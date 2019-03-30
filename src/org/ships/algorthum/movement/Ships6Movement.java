@@ -1,18 +1,22 @@
 package org.ships.algorthum.movement;
 
 import org.core.CorePlugin;
+import org.core.entity.Entity;
 import org.core.schedule.Scheduler;
+import org.ships.exceptions.MoveException;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.MovingBlockSet;
+import org.ships.movement.Result;
 import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.FailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.WaterType;
+import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +46,7 @@ public class Ships6Movement implements BasicMovement {
     }
 
     @Override
-    public Optional<FailedMovement> move(Vessel vessel, MovingBlockSet set) {
+    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity) throws MoveException {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
@@ -60,17 +64,17 @@ public class Ships6Movement implements BasicMovement {
                 waterLevel = opWaterLevel.get();
             }
         }
-        Scheduler scheduler = null;
+        Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> Result.DEFAULT_RESULT.run((ShipsVessel)vessel, set, entity)).build(ShipsPlugin.getPlugin());
         for(int A = blocksToProcess.size(); A > 0; A--){
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = CorePlugin.createSchedulerBuilder().setExecutor(new ProcessBlocks(waterLevel, blocks2)).setToRunAfter(scheduler).setDelay(1).setDelayUnit(TimeUnit.SECONDS).build(ShipsPlugin.getPlugin());
         }
         if(scheduler == null){
-            return Optional.of(new AbstractFailedMovement(vessel, MovementResult.UNKNOWN, null));
+            throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.UNKNOWN, null));
         }
         scheduler.run();
 
-        return Optional.empty();
+        return new Result();
     }
 
     @Override

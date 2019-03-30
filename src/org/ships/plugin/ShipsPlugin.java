@@ -48,7 +48,7 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(new MoveSign());
         this.identifable.add(ShipType.OVERPOWERED_SHIP);
         this.identifable.add(ShipType.AIRSHIP);
-        this.identifable.add(ShipType.WATERSHIP);
+        //this.identifable.add(ShipType.WATERSHIP);
 
         CorePlugin.getEventManager().register(this, new CoreEventListener());
         CorePlugin.getServer().registerCommands(new LegacyShipsCommand());

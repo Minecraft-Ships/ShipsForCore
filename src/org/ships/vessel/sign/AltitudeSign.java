@@ -2,13 +2,18 @@ package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.details.TiledBlockDetails;
+import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.ships.exceptions.MoveException;
+import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsBlockLoader;
 import org.ships.vessel.common.types.ShipsVessel;
@@ -29,7 +34,7 @@ public class AltitudeSign implements ShipsSign {
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
+    public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
         stes.setLine(0, CorePlugin.buildText(TextColours.YELLOW + "[Altitude]"));
         stes.setLine(1, CorePlugin.buildText("{Increase}"));
@@ -41,6 +46,27 @@ public class AltitudeSign implements ShipsSign {
     @Override
     public Text getFirstLine() {
         return CorePlugin.buildText(TextColours.YELLOW + "[Altitude]");
+    }
+
+    @Override
+    public boolean onPrimaryClick(LivePlayer player, BlockPosition position) {
+        Optional<LiveTileEntity> opTile = position.getTileEntity();
+        if(!opTile.isPresent()){
+            return false;
+        }
+        LiveTileEntity lte = opTile.get();
+        if(!(lte instanceof LiveSignTileEntity)){
+            return false;
+        }
+        LiveSignTileEntity stes = (LiveSignTileEntity) lte;
+        if(stes.getLine(1).get().toPlain().startsWith("{")) {
+            stes.setLine(1, CorePlugin.buildText("Increase"));
+            stes.setLine(2, CorePlugin.buildText("{decrease}"));
+        }else{
+            stes.setLine(1, CorePlugin.buildText("{Increase}"));
+            stes.setLine(2, CorePlugin.buildText("decrease"));
+        }
+        return false;
     }
 
     @Override
@@ -59,11 +85,16 @@ public class AltitudeSign implements ShipsSign {
                 return false;
             }
             ShipsVessel vessel2 = (ShipsVessel)vessel;
-            if(line1.startsWith("{")) {
-                vessel2.moveTowards(0, altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).ifPresent(f -> f.sendMessage(player, f.getValue().orElse(null)));
-            }else{
-                vessel2.moveTowards(0, -altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).ifPresent(f -> f.sendMessage(player, f.getValue().orElse(null)));
+            try {
+                if (line1.startsWith("{")) {
+                    vessel2.moveTowards(0, altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+                } else {
+                    vessel2.moveTowards(0, -altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
 
+                }
+            }catch (MoveException e){
+                FailedMovement<? extends Object> movement = e.getMovement();
+                sendErrorMessage(player, movement, movement.getValue().orElse(null));
             }
         } catch (IOException e) {
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
@@ -80,5 +111,9 @@ public class AltitudeSign implements ShipsSign {
     @Override
     public String getName() {
         return "Altitude Sign";
+    }
+
+    private <T extends Object> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
+        movement.sendMessage(viewer, (T)value);
     }
 }

@@ -9,8 +9,8 @@ import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
+import org.ships.exceptions.MoveException;
 import org.ships.movement.MovingBlockSet;
-import org.ships.movement.result.FailedMovement;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsFileLoader;
@@ -20,7 +20,6 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class AbstractShipsVessel implements ShipsVessel {
 
@@ -44,7 +43,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT), ShipsPlugin.getPlugin().getBlockList());
     }
 
-    public abstract Optional<FailedMovement> meetsRequirement(MovingBlockSet movingBlocks);
+    public abstract void meetsRequirement(MovingBlockSet movingBlocks) throws MoveException;
     public abstract Map<ConfigurationNode, Object> serialize(ConfigurationFile file);
     public abstract AbstractShipsVessel deserializeExtra(ConfigurationFile file);
 

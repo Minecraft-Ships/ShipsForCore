@@ -25,12 +25,12 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
         }
         List<BlockType> list = new ArrayList<>();
         if(args.length == 1){
-            list.addAll(CorePlugin.getPlatform().get(BlockType.class));
+            list.addAll(CorePlugin.getPlatform().getBlockTypes());
         }else{
-            Collection<BlockType> blockTypes = CorePlugin.getPlatform().get(BlockType.class);
+            Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
             for(int A = 1; A < args.length; A++){
                 int B = A;
-                Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().startsWith(args[B]) || b.getId().split(":", 1)[1].startsWith(args[B])).findAny();
+                Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().startsWith(args[B]) || b.getId().split(":", 2)[1].startsWith(args[B])).findAny();
                 if(opType.isPresent()){
                     list.add(opType.get());
                 }
@@ -65,7 +65,18 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
     public List<String> tab(CommandSource source, String... args) {
         List<String> list = new ArrayList<>();
         String compare = args[args.length - 1];
-        CorePlugin.getPlatform().get(BlockType.class).stream().filter(b -> b.getId().startsWith(compare) || b.getId().split(":", 1)[1].startsWith(compare)).forEach(b -> list.add(b.getId()));
+        CorePlugin.getPlatform().getBlockTypes().stream().filter(b -> {
+            if (b.getId().startsWith(compare)){
+                return true;
+            }
+            if (b.getId().split(":", 2)[1].startsWith(compare)){
+                return true;
+            }
+            return false;
+        }).forEach(b -> list.add(b.getId()));
+        if(list.isEmpty()){
+            CorePlugin.getPlatform().getBlockTypes().stream().forEach(b -> list.add(b.getId()));
+        }
         return list;
     }
 }

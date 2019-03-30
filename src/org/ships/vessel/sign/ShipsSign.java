@@ -15,5 +15,6 @@ public interface ShipsSign extends Identifable {
     SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException;
     Text getFirstLine();
 
+    boolean onPrimaryClick(LivePlayer player, BlockPosition position);
     boolean onSecondClick(LivePlayer player, BlockPosition position);
 }

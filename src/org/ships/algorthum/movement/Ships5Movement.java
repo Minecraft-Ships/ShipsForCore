@@ -1,18 +1,20 @@
 package org.ships.algorthum.movement;
 
+import org.core.entity.Entity;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.MovingBlockSet;
-import org.ships.movement.result.FailedMovement;
+import org.ships.movement.Result;
 import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class Ships5Movement implements BasicMovement {
 
     @Override
-    public Optional<FailedMovement> move(Vessel vessel, MovingBlockSet set) {
+    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> map) {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         int waterLevel = -1;
         if(vessel instanceof WaterType){
@@ -30,7 +32,7 @@ public class Ships5Movement implements BasicMovement {
             }
         });
         blocks.forEach(m -> m.setMovingTo());
-        return Optional.empty();
+        return Result.DEFAULT_RESULT;
     }
 
     @Override

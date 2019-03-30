@@ -8,10 +8,10 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.ships.exceptions.MoveException;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.MovingBlockSet;
 import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.FailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.AirType;
@@ -41,7 +41,7 @@ public class Airship extends AbstractShipsVessel implements AirType {
     }
 
     @Override
-    public Optional<FailedMovement> meetsRequirement(MovingBlockSet movingBlocks) {
+    public void meetsRequirement(MovingBlockSet movingBlocks) throws MoveException{
         int specialBlockCount = 0;
         boolean burnerFound = false;
         for(MovingBlock movingBlock : movingBlocks){
@@ -54,13 +54,12 @@ public class Airship extends AbstractShipsVessel implements AirType {
             }
         }
         if(this.useBurner && burnerFound){
-            return Optional.of(new AbstractFailedMovement(this, MovementResult.NO_BURNER_FOUND, false));
+            throw new MoveException(new AbstractFailedMovement(this, MovementResult.NO_BURNER_FOUND, false));
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f)/movingBlocks.size());
         if((this.specialBlockPercent != 0) && specialBlockCount >= this.specialBlockPercent){
-            return Optional.of(new AbstractFailedMovement(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlock, this.specialBlockPercent, specialBlockPercent)));
+            throw new MoveException(new AbstractFailedMovement(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlock, this.specialBlockPercent, specialBlockPercent)));
         }
-        return Optional.empty();
     }
 
     @Override

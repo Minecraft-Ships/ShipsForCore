@@ -73,7 +73,7 @@ public class LegacyShipsCommand implements BaseCommandLauncher {
             String argument = args[0];
             Optional<LegacyArgumentCommand> opCommand = this.arguments.stream().filter(a -> argument.equalsIgnoreCase(a.getName())).findAny();
             if(opCommand.isPresent()){
-                opCommand.get().tab(source, args);
+                return opCommand.get().tab(source, args);
             }
         }
         return list;
