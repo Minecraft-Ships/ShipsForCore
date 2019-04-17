@@ -24,16 +24,44 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
             return false;
         }
         List<BlockType> list = new ArrayList<>();
-        if(args.length == 1){
+        if(args.length == 1) {
             list.addAll(CorePlugin.getPlatform().getBlockTypes());
-        }else{
+        }else if(args[1].equalsIgnoreCase("set")) {
+            /*if(args.length < 4){
+                if(source instanceof CommandViewer){
+                    ((CommandViewer)source).sendMessagePlain("/ships blocklist set <collidetype> <blocks>");
+                }
+                return false;
+            }
+            BlockInstruction.CollideType type = BlockInstruction.CollideType.valueOf(args[2]);
+            if(type == null){
+                if(source instanceof CommandViewer){
+                    ((CommandViewer)source).sendMessagePlain("Unknown collide type of " + args[2]);
+                }
+                return false;
+            }
             Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
-            for(int A = 1; A < args.length; A++){
+            for(int A = 3; A < args.length; A++){
                 int B = A;
                 Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().startsWith(args[B]) || b.getId().split(":", 2)[1].startsWith(args[B])).findAny();
                 if(opType.isPresent()){
                     list.add(opType.get());
                 }
+            }
+            DefaultBlockList blockList = ShipsPlugin.getPlugin().getBlockList();
+            list.stream().forEach(f -> blockList.getBlockList().add(new BlockInstruction(f)));
+            blockList.getFile().*/
+
+        }else if(args[1].equalsIgnoreCase("view")){
+            Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
+            if(args.length > 2) {
+                for (int A = 2; A < args.length; A++) {
+                    int B = A;
+                    Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().startsWith(args[B]) || b.getId().split(":", 2)[1].startsWith(args[B])).findAny();
+                    opType.ifPresent(list::add);
+                }
+            }else{
+                list.addAll(blockTypes);
             }
         }
         Set<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
@@ -64,18 +92,25 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
     @Override
     public List<String> tab(CommandSource source, String... args) {
         List<String> list = new ArrayList<>();
-        String compare = args[args.length - 1];
-        CorePlugin.getPlatform().getBlockTypes().stream().filter(b -> {
-            if (b.getId().startsWith(compare)){
-                return true;
+        if(args.length == 2 && args[1].equalsIgnoreCase("")) {
+            list.add("view");
+            return list;
+        } else if(args.length == 2){
+            if("view".startsWith(args[1].toLowerCase())){
+                list.add("view");
             }
-            if (b.getId().split(":", 2)[1].startsWith(compare)){
-                return true;
+            return list;
+        } else {
+            String compare = args[args.length - 1];
+            CorePlugin.getPlatform().getBlockTypes().stream().filter(b -> {
+                if (b.getId().startsWith(compare)) {
+                    return true;
+                }
+                return b.getId().split(":", 2)[1].startsWith(compare);
+            }).forEach(b -> list.add(b.getId()));
+            if (list.isEmpty()) {
+                CorePlugin.getPlatform().getBlockTypes().forEach(b -> list.add(b.getId()));
             }
-            return false;
-        }).forEach(b -> list.add(b.getId()));
-        if(list.isEmpty()){
-            CorePlugin.getPlatform().getBlockTypes().stream().forEach(b -> list.add(b.getId()));
         }
         return list;
     }

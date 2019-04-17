@@ -15,6 +15,8 @@ import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 public class WaterShipType implements ShipType {
 
@@ -23,6 +25,8 @@ public class WaterShipType implements ShipType {
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
+    private final String[] SPECIAL_BLOCK_TYPE = {"Special", "Block", "Type"};
+    private final String[] SPECIAL_BLOCK_PERCENT = {"Special", "Block", "Percent"};
 
     public WaterShipType(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/" + getId().replaceAll(":", ".") + ".temp");
@@ -30,6 +34,8 @@ public class WaterShipType implements ShipType {
         if(!this.file.getFile().exists()){
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
             this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 25);
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, BlockTypes.BLACK_WOOL.getLike()));
             this.file.save();
         }
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
@@ -55,9 +61,12 @@ public class WaterShipType implements ShipType {
         return file.parse(new ConfigurationNode(this.ALTITUDE_SPEED), Parser.STRING_TO_INTEGER).get();
     }
 
-    @Override
-    public boolean canAutopilot() {
-        return false;
+    public float getDefaultSpecialBlockPercent(){
+        return this.file.parseDouble(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT)).get().floatValue();
+    }
+
+    public Set<BlockType> getDefaultSpecialBlockType(){
+        return new HashSet<>(this.file.parseList(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.STRING_TO_BLOCK_TYPE).get());
     }
 
     @Override

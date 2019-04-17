@@ -15,6 +15,8 @@ import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.AirType;
+import org.ships.vessel.common.assits.UnderWaterType;
 import org.ships.vessel.common.loader.ShipsBlockLoader;
 import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
@@ -27,10 +29,7 @@ public class AltitudeSign implements ShipsSign {
     @Override
     public boolean isSign(SignTileEntity entity) {
         Optional<Text> opValue = entity.getLine(0);
-        if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
-            return true;
-        }
-        return false;
+        return opValue.isPresent() && opValue.get().equals(getFirstLine());
     }
 
     @Override
@@ -81,6 +80,9 @@ public class AltitudeSign implements ShipsSign {
         int altitude = Integer.parseInt(line3);
         try {
             Vessel vessel = new ShipsBlockLoader(position).load();
+            if(!((vessel instanceof AirType) && (vessel instanceof UnderWaterType))){
+                return false;
+            }
             if(!(vessel instanceof ShipsVessel)){
                 return false;
             }
@@ -90,10 +92,9 @@ public class AltitudeSign implements ShipsSign {
                     vessel2.moveTowards(0, altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
                 } else {
                     vessel2.moveTowards(0, -altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
-
                 }
             }catch (MoveException e){
-                FailedMovement<? extends Object> movement = e.getMovement();
+                FailedMovement<?> movement = e.getMovement();
                 sendErrorMessage(player, movement, movement.getValue().orElse(null));
             }
         } catch (IOException e) {
@@ -113,7 +114,7 @@ public class AltitudeSign implements ShipsSign {
         return "Altitude Sign";
     }
 
-    private <T extends Object> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
+    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
         movement.sendMessage(viewer, (T)value);
     }
 }

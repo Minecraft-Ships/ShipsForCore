@@ -30,7 +30,7 @@ public interface MovingBlock {
         }
         if(opLive.get() instanceof ContainerTileEntity){
             ContainerTileEntity cte = (ContainerTileEntity)opLive.get();
-            cte.getInventory().getSlots().stream().forEach(s -> s.setItem(null));
+            cte.getInventory().getSlots().forEach(s -> s.setItem(null));
         }
         return this;
     }
@@ -43,21 +43,21 @@ public interface MovingBlock {
 
     default MovingBlock rotateLeft(BlockPosition position) {
         int shift = position.getX() - position.getZ();
-        int symmetry = position.getX();
-        int x = getAfterPosition().getX() - (getAfterPosition().getX() - symmetry) * 2 - shift;
+        int symmetry = position.getZ();
+        int x = getAfterPosition().getX() - shift;
         int y = getAfterPosition().getY();
-        int z = getAfterPosition().getZ() + shift;
-        setAfterPosition(getBeforePosition().getWorld().getPosition(x, y, z));
+        int z = getAfterPosition().getZ() - (getAfterPosition().getZ() - symmetry) * 2 + shift;
+        setAfterPosition(getBeforePosition().getWorld().getPosition(z, y, x));
         return this;
     }
 
     default MovingBlock rotateRight(BlockPosition position) {
         int shift = position.getX() - position.getZ();
-        int symmetry = position.getZ();
-        int x = getAfterPosition().getX() - shift;
+        int symmetry = position.getX();
+        int x = getAfterPosition().getX() - (getAfterPosition().getX() - symmetry) * 2 - shift;
         int y = getAfterPosition().getY();
-        int z = getAfterPosition().getZ() - (getAfterPosition().getZ() - symmetry) * 2 + shift;
-        setAfterPosition(getBeforePosition().getWorld().getPosition(x, y, z));
+        int z = getAfterPosition().getZ() + shift;
+        setAfterPosition(getBeforePosition().getWorld().getPosition(z, y, x));
         return this;
     }
 

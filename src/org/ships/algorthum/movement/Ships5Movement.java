@@ -1,6 +1,7 @@
 package org.ships.algorthum.movement;
 
 import org.core.entity.Entity;
+import org.ships.movement.Movement;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.MovingBlockSet;
 import org.ships.movement.Result;
@@ -14,7 +15,7 @@ import java.util.Optional;
 public class Ships5Movement implements BasicMovement {
 
     @Override
-    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> map) {
+    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> map, Movement.MidMovement midMovement) {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         int waterLevel = -1;
         if(vessel instanceof WaterType){
@@ -24,14 +25,17 @@ public class Ships5Movement implements BasicMovement {
             }
         }
         final int finalWaterLevel = waterLevel;
-        blocks.stream().forEach(m -> {
+        blocks.forEach(m -> {
             if(finalWaterLevel > m.getAfterPosition().getY()){
                 m.removeBeforePositionUnderWater();
             }else{
                 m.removeBeforePositionOverAir();
             }
         });
-        blocks.forEach(m -> m.setMovingTo());
+        blocks.forEach(m -> {
+            midMovement.move(m);
+            m.setMovingTo();
+        });
         return Result.DEFAULT_RESULT;
     }
 

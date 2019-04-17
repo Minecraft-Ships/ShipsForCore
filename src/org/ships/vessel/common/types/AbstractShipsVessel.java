@@ -28,24 +28,32 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected CrewPermission defaultPermission;
     protected File file;
     protected ExpandedBlockList blockList;
+    protected ShipType type;
     protected int maxSpeed = 10;
     protected int altitudeSpeed = 2;
 
-    public AbstractShipsVessel(LiveSignTileEntity licence){
+    public AbstractShipsVessel(LiveSignTileEntity licence, ShipType type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
         this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + ".temp");
         this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT), ShipsPlugin.getPlugin().getBlockList());
+        this.type = type;
     }
 
-    public AbstractShipsVessel(SignTileEntity ste, BlockPosition position){
+    public AbstractShipsVessel(SignTileEntity ste, BlockPosition position, ShipType type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
         this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + ".temp");
         this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT), ShipsPlugin.getPlugin().getBlockList());
+        this.type = type;
     }
 
     public abstract void meetsRequirement(MovingBlockSet movingBlocks) throws MoveException;
     public abstract Map<ConfigurationNode, Object> serialize(ConfigurationFile file);
     public abstract AbstractShipsVessel deserializeExtra(ConfigurationFile file);
+
+    @Override
+    public ShipType getType(){
+        return type;
+    }
 
     @Override
     public File getFile(){
@@ -96,6 +104,14 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public Vessel setAltitudeSpeed(int speed) {
         this.altitudeSpeed = speed;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if(!(obj instanceof ShipsVessel)){
+            return false;
+        }
+        return ((ShipsVessel) obj).getId().equals(this.getId());
     }
 
     @Override

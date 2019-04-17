@@ -45,17 +45,17 @@ public class ShipsFileLoader implements ShipsLoader {
         map.put(new ConfigurationNode(META_LOCATION_X), vessel.getPosition().getX());
         map.put(new ConfigurationNode(META_LOCATION_Y), vessel.getPosition().getY());
         map.put(new ConfigurationNode(META_LOCATION_Z), vessel.getPosition().getZ());
-        map.entrySet().stream().forEach(e -> file.set(e.getKey(), e.getValue()));
+        map.forEach(file::set);
         file.set(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT, vessel.getStructure().getRelativePositions());
         file.save();
     }
 
     @Override
-    public Vessel load() throws IOException {
+    public AbstractShipsVessel load() throws IOException {
         ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.DEFAULT);
         Optional<WorldExtent> opWorld = file.parse(new ConfigurationNode(META_LOCATION_WORLD), Parser.STRING_TO_WORLD);
         if(!opWorld.isPresent()){
-            throw new IOException("Unknown World");
+            throw new IOException("Unknown World of " + file.parseString(new ConfigurationNode(META_LOCATION_WORLD)).orElse("'No value found'"));
         }
         Optional<Integer> opX = file.parse(new ConfigurationNode(META_LOCATION_X), Parser.STRING_TO_INTEGER);
         if(!opX.isPresent()){
@@ -96,11 +96,11 @@ public class ShipsFileLoader implements ShipsLoader {
         }
         AbstractShipsVessel ship = (AbstractShipsVessel)vessel;
 
-        file.parseInt(new ConfigurationNode(SPEED_ALTITUDE)).ifPresent(s -> ship.setAltitudeSpeed(s));
-        file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(s -> ship.setMaxSpeed(s));
+        file.parseInt(new ConfigurationNode(SPEED_ALTITUDE)).ifPresent(ship::setAltitudeSpeed);
+        file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(ship::setMaxSpeed);
         file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
             PositionableShipsStructure pss = ship.getStructure();
-            structureList.stream().forEach(v -> pss.addPosition(v));
+            structureList.forEach(pss::addPosition);
         });
         if(ship.getStructure().getOriginalRelativePositions().isEmpty()){
             PositionableShipsStructure structure = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(ship.getPosition());
@@ -116,7 +116,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public static Set<File> getFilesFromName(String name){
         Set<File> set = new HashSet<>();
-        ShipsPlugin.getPlugin().getAll(ShipType.class).stream().forEach(st -> {
+        ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {
             File vesselDataFolder = getVesselDataFolder();
             File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
             File[] files = typeFolder.listFiles();
@@ -134,7 +134,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public static Set<Vessel> loadAll(){
         Set<Vessel> set = new HashSet<>();
-        ShipsPlugin.getPlugin().getAll(ShipType.class).stream().forEach(st -> {
+        ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {
             File vesselDataFolder = getVesselDataFolder();
             File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
             File[] files = typeFolder.listFiles();
@@ -150,7 +150,6 @@ public class ShipsFileLoader implements ShipsLoader {
                     set.add(vessel);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    continue;
                 }
             }
         });

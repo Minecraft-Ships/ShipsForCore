@@ -46,9 +46,10 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(new AltitudeSign());
         this.identifable.add(new WheelSign());
         this.identifable.add(new MoveSign());
+        this.identifable.add(new EOTSign());
         this.identifable.add(ShipType.OVERPOWERED_SHIP);
         this.identifable.add(ShipType.AIRSHIP);
-        //this.identifable.add(ShipType.WATERSHIP);
+        this.identifable.add(ShipType.WATERSHIP);
 
         CorePlugin.getEventManager().register(this, new CoreEventListener());
         CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
@@ -71,7 +72,7 @@ public abstract class ShipsPlugin implements Plugin {
     private <I extends Identifable> void displayMessage(Class<I> class1, String name, Function<I, String> function){
         Set<I> values = getAll(class1);
         CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.AQUA + "Found " + name + ": " + values.size()));
-        values.stream().forEach(v -> CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.YELLOW + "\t- " + v.getId() + "\t" + function.apply(v))));
+        values.forEach(v -> CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.YELLOW + "\t- " + v.getId() + "\t" + function.apply(v))));
     }
 
     public DefaultBlockList getBlockList(){
@@ -79,11 +80,11 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public <T extends Identifable> Set<T> getAll(Class<T> class1){
-        return (Set<T>)identifable.stream().filter(i -> class1.isInstance(i)).collect(Collectors.toSet());
+        return (Set<T>)identifable.stream().filter(class1::isInstance).collect(Collectors.toSet());
     }
 
     public <T extends Identifable> Optional<T> get(Class<T> class1){
-        return (Optional<T>)identifable.stream().filter(i -> class1.isInstance(i)).findAny();
+        return (Optional<T>)identifable.stream().filter(class1::isInstance).findAny();
     }
 
     public void register(Identifable... identifables){
@@ -94,16 +95,16 @@ public abstract class ShipsPlugin implements Plugin {
         return plugin;
     }
 
-    public static <T extends Object> String toString(Collection<T> collection, String split, Function<T, String> asString){
-        String ret = null;
+    public static <T> String toString(Collection<T> collection, String split, Function<T, String> asString){
+        StringBuilder ret = null;
         for(T value : collection){
             if(ret == null){
-                ret = asString.apply(value);
+                ret = new StringBuilder(asString.apply(value));
             }else{
-                ret = ret + split + asString.apply(value);
+                ret.append(split).append(asString.apply(value));
             }
         }
-        return ret;
+        return Objects.requireNonNull(ret).toString();
     }
 
     @Override

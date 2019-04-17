@@ -40,7 +40,7 @@ public class DefaultBlockList implements BlockList {
     public Set<BlockInstruction> reloadBlockList() {
         blocks.clear();
         Collection<BlockType> mBlocks = CorePlugin.getPlatform().getBlockTypes();
-        mBlocks.stream().forEach(bt -> {
+        mBlocks.forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(DefaultBlockList.this, bt);
             if(opBlock.isPresent()) {
                 blocks.add(opBlock.get());
@@ -60,14 +60,32 @@ public class DefaultBlockList implements BlockList {
     public void recreateFile() {
         ConfigurationFile file = getFile();
         Set<BlockType> completedBefore = new HashSet<>();
+        BlockTypes.BLACK_WOOL.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_PLANKS.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_BUTTON.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.BLACK_CARPET.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ACACIA_STAIRS.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ACACIA_SLAB.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ACACIA_PRESSURE_PLATE.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ACACIA_TRAPDOOR.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ACACIA_DOOR.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ACACIA_LOG.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.BLACK_BANNER.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.BLACK_STAINED_GLASS.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.BLACK_STAINED_GLASS_PANE.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ACACIA_SAPLING.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.IGNORE, completedBefore));
         addToConfig(BlockTypes.WALL_SIGN, BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.OAK_WOOD, BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.FURNACE, BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.OAK_PLANKS, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.ENDER_CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.TRAPPED_CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.GLASS, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.GLASS_PANE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.FIRE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+
+
         //addToConfig(BlockTypes.FURNACE_LIT, BlockInstruction.CollideType.MATERIAL, completedBefore); //1.12.2
-        CorePlugin.getPlatform().getBlockTypes().stream().forEach(bt -> {
-            addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore);
-        });
+        CorePlugin.getPlatform().getBlockTypes().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
         file.save();
     }
 

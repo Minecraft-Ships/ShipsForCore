@@ -4,6 +4,7 @@ import org.core.CorePlugin;
 import org.core.entity.Entity;
 import org.core.schedule.Scheduler;
 import org.ships.exceptions.MoveException;
+import org.ships.movement.Movement;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.MovingBlockSet;
 import org.ships.movement.Result;
@@ -26,10 +27,12 @@ public class Ships6Movement implements BasicMovement {
 
         private List<MovingBlock> toProcess;
         private int waterLevel;
+        private Movement.MidMovement midMovement;
 
-        public ProcessBlocks(int level, List<MovingBlock> blocks){
+        public ProcessBlocks(int level, List<MovingBlock> blocks, Movement.MidMovement midMovement){
             this.toProcess = blocks;
             this.waterLevel = level;
+            this.midMovement = midMovement;
         }
 
         @Override
@@ -41,12 +44,15 @@ public class Ships6Movement implements BasicMovement {
                     m.removeBeforePositionOverAir();
                 }
             });
-            this.toProcess.forEach(m -> m.setMovingTo());
+            this.toProcess.forEach(m -> {
+                midMovement.move(m);
+                m.setMovingTo();
+            });
         }
     }
 
     @Override
-    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity) throws MoveException {
+    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity, Movement.MidMovement midMovement) throws MoveException {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
@@ -67,7 +73,7 @@ public class Ships6Movement implements BasicMovement {
         Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> Result.DEFAULT_RESULT.run((ShipsVessel)vessel, set, entity)).build(ShipsPlugin.getPlugin());
         for(int A = blocksToProcess.size(); A > 0; A--){
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
-            scheduler = CorePlugin.createSchedulerBuilder().setExecutor(new ProcessBlocks(waterLevel, blocks2)).setToRunAfter(scheduler).setDelay(1).setDelayUnit(TimeUnit.SECONDS).build(ShipsPlugin.getPlugin());
+            scheduler = CorePlugin.createSchedulerBuilder().setExecutor(new ProcessBlocks(waterLevel, blocks2, midMovement)).setToRunAfter(scheduler).setDelay(1).setDelayUnit(TimeUnit.SECONDS).build(ShipsPlugin.getPlugin());
         }
         if(scheduler == null){
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.UNKNOWN, null));

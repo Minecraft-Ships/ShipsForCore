@@ -28,7 +28,7 @@ public interface ShipsVessel extends Vessel {
     Map<User, CrewPermission> getCrew();
     ExpandedBlockList getBlockList();
     File getFile();
-
+    Map<String, String> getExtraInformation();
     CrewPermission getDefaultPermission();
 
     default CrewPermission getPermission(User user){
@@ -66,6 +66,7 @@ public interface ShipsVessel extends Vessel {
         return this;
     }
 
+    @Override
     default String getName() {
         try {
             return getSign().getLine(2).get().toPlain();
@@ -75,35 +76,32 @@ public interface ShipsVessel extends Vessel {
         return null;
     }
 
+    @Override
     default void moveTowards(int x, int y, int z, BasicMovement movement) throws MoveException {
-        Movement.ADD_TO_POSITION.move(this, x, y, z, movement);
+        Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, movement);
     }
 
+    @Override
     default void moveTowards(Vector3Int vector, BasicMovement movement) throws MoveException{
-        Movement.ADD_TO_POSITION.move(this, vector, movement);
+        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, movement);
     }
 
+    @Override
     default void moveTo(Position<? extends Number> location, BasicMovement movement) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.TELEPORT_TO_POSITION.move(this, position, movement);
+        Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, movement);
     }
 
+    @Override
     default void rotateRightAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, movement);
+        Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, movement);
     }
 
-    default void rotateAnticlockwiseAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
-        this.rotateRightAround(location, movement);
-    }
-
+    @Override
     default void rotateLeftAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement);
-    }
-
-    default void rotateClockwiseAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
-        this.rotateLeftAround(location, movement);
+        Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement);
     }
 
     default String getId(){

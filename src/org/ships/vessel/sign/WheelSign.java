@@ -8,8 +8,15 @@ import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.ships.algorthum.movement.BasicMovement;
+import org.ships.exceptions.MoveException;
 import org.ships.movement.result.FailedMovement;
+import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.loader.ShipsBlockLoader;
+import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.types.Vessel;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public class WheelSign implements ShipsSign {
@@ -17,10 +24,7 @@ public class WheelSign implements ShipsSign {
     @Override
     public boolean isSign(SignTileEntity entity) {
         Optional<Text> opValue = entity.getLine(0);
-        if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
-            return true;
-        }
-        return false;
+        return opValue.isPresent() && opValue.get().equals(getFirstLine());
     }
 
     @Override
@@ -40,7 +44,7 @@ public class WheelSign implements ShipsSign {
 
     @Override
     public boolean onPrimaryClick(LivePlayer player, BlockPosition position){
-        /*if(player.isSneaking()){
+        if(player.isSneaking()){
             return false;
         }
         try{
@@ -51,19 +55,21 @@ public class WheelSign implements ShipsSign {
             }
             BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
             try{
-                ((ShipsVessel) vessel).rotateLeftAround(vessel.getPosition(), movement);
+                vessel.rotateLeftAround(vessel.getPosition(), movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }
         }catch (IOException e){
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             return false;
-        }*/
+        }
         return false;
     }
 
     @Override
     public boolean onSecondClick(LivePlayer player, BlockPosition position) {
+        //rotate X and Z on ships structure after
+
         /*if(player.isSneaking()){
             return false;
         }
@@ -96,7 +102,7 @@ public class WheelSign implements ShipsSign {
         return "Wheel Sign";
     }
 
-    private <T extends Object> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
+    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
         movement.sendMessage(viewer, (T)value);
     }
 }

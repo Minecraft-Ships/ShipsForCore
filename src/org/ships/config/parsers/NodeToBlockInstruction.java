@@ -21,15 +21,17 @@ public class NodeToBlockInstruction implements StringMapParser<BlockInstruction>
         }
         String blockType = opBlockType.get().getValue();
 
+        //something wrong with OPBlockType, value of null
+        if(blockType == null){
+            return Optional.empty();
+        }
 
         Optional<BlockType> opType = Parser.STRING_TO_BLOCK_TYPE.parse(blockType);
         if(!opType.isPresent()){
             return Optional.empty();
         }
         BlockInstruction bi = new BlockInstruction(opType.get());
-        if(opCollideType.isPresent()) {
-            ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(opCollideType.get().getValue()).ifPresent(v -> bi.setCollideType(v));
-        }
+        opCollideType.ifPresent(stringStringEntry -> ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(stringStringEntry.getValue()).ifPresent(bi::setCollideType));
         return Optional.of(bi);
     }
 

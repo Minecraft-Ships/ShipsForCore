@@ -1,8 +1,10 @@
 package org.ships.movement.result;
 
 import org.core.CorePlugin;
+import org.core.configuration.parser.Parser;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.BlockPosition;
+import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.types.Vessel;
 
@@ -10,17 +12,31 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public interface MovementResult<E extends Object> {
+public interface MovementResult<E> {
 
     NoSpeedSet NO_SPEED_SET = new NoSpeedSet();
     NoBurnerFound NO_BURNER_FOUND = new NoBurnerFound();
     CollideDetected COLLIDE_DETECTED = new CollideDetected();
     NoLicenceFound NO_LICENCE_FOUND = new NoLicenceFound();
     NotEnoughPercent NOT_ENOUGH_PERCENT = new NotEnoughPercent();
+    NotEnoughFuel NOT_ENOUGH_FUEL = new NotEnoughFuel();
     Unknown UNKNOWN = new Unknown();
 
     void sendMessage(Vessel vessel, CommandViewer viewer, E value);
     boolean isARequiredValue(Vessel vessel, CommandViewer viewer, E value);
+
+    class NotEnoughFuel implements MovementResult<RequiredFuelMovementData> {
+
+        @Override
+        public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredFuelMovementData value) {
+            viewer.sendMessagePlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " + CorePlugin.toString(", ", t -> t, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) + " in a single furnace");
+        }
+
+        @Override
+        public boolean isARequiredValue(Vessel vessel, CommandViewer viewer, RequiredFuelMovementData value) {
+            return false;
+        }
+    }
 
     class NotEnoughPercent implements MovementResult<RequiredPercentMovementData> {
 
@@ -81,7 +97,7 @@ public interface MovementResult<E extends Object> {
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockPosition> collection) {
             Set<String> blocks = new HashSet<>();
             if(collection != null) {
-                collection.stream().forEach(s -> {
+                collection.forEach(s -> {
                     String value = s.getBlockType().getName();
                     if (blocks.contains(value)) {
                         return;
@@ -94,6 +110,9 @@ public interface MovementResult<E extends Object> {
                 value = "Unknown position";
             }
             viewer.sendMessagePlain("Found the following blocks in the way: " + value);
+            if (collection != null) {
+                collection.forEach(v -> viewer.sendMessagePlain(v.getX() + ", " + v.getY() + ", " + v.getZ()));
+            }
         }
 
         @Override
@@ -111,10 +130,7 @@ public interface MovementResult<E extends Object> {
 
         @Override
         public boolean isARequiredValue(Vessel vessel, CommandViewer player, Integer value) {
-            if(value != 0){
-                return true;
-            }
-            return false;
+            return value != 0;
         }
     }
 

@@ -18,6 +18,9 @@ public class ShipsConfig implements Config {
 
     protected final ConfigurationNode ADVANCED_MOVEMENT = new ConfigurationNode("Advanced", "Movement", "Default");
     protected final ConfigurationNode ADVANCED_BLOCKFINDER = new ConfigurationNode("Advanced", "BlockFinder", "Default");
+    protected final ConfigurationNode EOT_DELAY = new ConfigurationNode("Auto", "EOT", "Delay");
+    protected final ConfigurationNode EOT_SPEED = new ConfigurationNode("Auto", "EOT", "Speed");
+
 
     public ShipsConfig(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.temp");
@@ -25,6 +28,14 @@ public class ShipsConfig implements Config {
         if(!this.file.getFile().exists()){
             recreateFile();
         }
+    }
+
+    public int getEOTDelay(){
+        return this.file.parseInt(this.EOT_DELAY).orElse(5);
+    }
+
+    public int getEOTSpeed(){
+        return this.file.parseInt(this.EOT_SPEED).orElse(2);
     }
 
     public BasicBlockFinder getDefaultFinder(){
@@ -45,6 +56,8 @@ public class ShipsConfig implements Config {
         ConfigurationFile file = getFile();
         //file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
         file.set(ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER, BasicBlockFinder.SHIPS_FIVE);
+        file.set(EOT_SPEED, 2);
+        file.set(EOT_DELAY, 5);
         file.save();
     }
 }

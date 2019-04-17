@@ -13,7 +13,7 @@ import org.ships.vessel.common.types.watership.WaterShipType;
 
 public interface ShipType extends Identifable {
 
-    OPShipType OVERPOWERED_SHIP = new OPShipType();
+    OPShipType OVERPOWERED_SHIP = new OPShipType.Default();
     AirshipType AIRSHIP = new AirshipType();
     WaterShipType WATERSHIP = new WaterShipType();
 
@@ -21,7 +21,6 @@ public interface ShipType extends Identifable {
     ExpandedBlockList getDefaultBlockList();
     int getDefaultMaxSpeed();
     int getDefaultAltitudeSpeed();
-    boolean canAutopilot();
     ConfigurationFile getFile();
     Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos);
     BlockType[] getIgnoredTypes();

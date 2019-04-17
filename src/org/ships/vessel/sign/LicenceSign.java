@@ -42,17 +42,19 @@ public class LicenceSign implements ShipsSign {
         if(!opType.isPresent()){
             return Optional.empty();
         }
-        Vessel vessel = new ShipsIDLoader(opType.get().getId() + ":" + nameS).load();
+        Vessel vessel;
+        try {
+            vessel = new ShipsIDLoader(opType.get().getId() + ":" + nameS).load();
+        } catch (IOException e) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(vessel);
     }
 
     @Override
     public boolean isSign(SignTileEntity entity) {
         Optional<Text> opValue = entity.getLine(0);
-        if(opValue.isPresent() && opValue.get().equals(getFirstLine())){
-            return true;
-        }
-        return false;
+        return opValue.isPresent() && opValue.get().equals(getFirstLine());
     }
 
     @Override
@@ -61,7 +63,7 @@ public class LicenceSign implements ShipsSign {
         Text[] lines = snapshot.getLines();
         Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> lines[1].equalsPlain(t.getDisplayName(), true)).findFirst();
         if(!opType.isPresent()){
-            throw new IOException("Unknown Ship Type: Ship Types: " + CorePlugin.toString(", ", s -> s.getDisplayName(), ShipsPlugin.getPlugin().getAll(ShipType.class)));
+            throw new IOException("Unknown Ship Type: Ship Types: " + CorePlugin.toString(", ", ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class)));
         }
 
         String name = lines[2].toPlain();
@@ -107,8 +109,9 @@ public class LicenceSign implements ShipsSign {
                     return false;
                 }
                 ShipsVessel vessel = (ShipsVessel) s;
+                vessel.getExtraInformation().forEach((key, value) -> player.sendMessage(CorePlugin.buildText(TextColours.GREEN + key + ": " + TextColours.AQUA + value)));
                 //player.sendMessage(TextColours.AQUA + "Default Crew" + vessel.getDefaultPermission().getId());
-                player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "id: " + TextColours.AQUA + vessel.getId()));
+                player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "id: " + TextColours.AQUA + vessel.getId()));
             }else{
                 if (!(s instanceof ShipsVessel)) {
                     return false;

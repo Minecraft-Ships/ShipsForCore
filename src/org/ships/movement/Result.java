@@ -16,22 +16,24 @@ public class Result extends ArrayList<Result.Run> {
     public static final Result DEFAULT_RESULT = new Result(
             Run.COMMON_TELEPORT_ENTITIES,
             Run.COMMON_RESET_GRAVITY,
-            Run.COMMON_SET_POSITION_OF_LICANCE_SIGN,
+            Run.COMMON_SET_POSITION_OF_LICENCE_SIGN,
             Run.COMMON_SAVE);
 
     public interface Run {
 
-        Run COMMON_TELEPORT_ENTITIES = (v, b, m) -> m.entrySet().forEach(e -> {
-            Entity entity = e.getKey();
-            Vector3<Double> position = entity.getPosition().getPosition().minus(e.getValue().getBeforePosition().toExactPosition().getPosition());
-            Vector3<Double> position2 = e.getValue().getAfterPosition().toExactPosition().getPosition();
+        Run COMMON_TELEPORT_ENTITIES = (v, b, m) -> m.forEach((entity, value) -> {
+            double pitch = entity.getPitch();
+            double roll = entity.getRoll();
+            double yaw = entity.getYaw();
+            Vector3<Double> position = entity.getPosition().getPosition().minus(value.getBeforePosition().toExactPosition().getPosition());
+            Vector3<Double> position2 = value.getAfterPosition().toExactPosition().getPosition();
             position = position2.add(position);
-            entity.setPosition(position);
+            entity.setPosition(position).setPitch(pitch).setRoll(roll).setYaw(yaw);
         });
 
         Run COMMON_RESET_GRAVITY = (v, b, m) -> m.keySet().forEach(e -> e.setGravity(true));
 
-        Run COMMON_SET_POSITION_OF_LICANCE_SIGN = (v, b, m) -> b.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get()).ifPresent(mb -> v.getStructure().setPosition(mb.getAfterPosition()));
+        Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, b, m) -> b.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get()).ifPresent(mb -> v.getStructure().setPosition(mb.getAfterPosition()));
 
         Run COMMON_SAVE = (v, b, m) -> v.save();
 
