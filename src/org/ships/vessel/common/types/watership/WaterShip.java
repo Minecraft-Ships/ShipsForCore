@@ -24,7 +24,7 @@ import java.util.*;
 public class WaterShip extends AbstractShipsVessel implements WaterType {
 
     protected float specialBlockPercent = 25;
-    protected Set<BlockType> specialBlocks = BlockTypes.WHITE_WOOL.getLike();
+    protected Set<BlockType> specialBlocks = BlockTypes.WHITE_WOOL.get().getLike();
 
     protected ConfigurationNode configSpecialBlockPercent = new ConfigurationNode("Block", "Special", "Percent");
     protected ConfigurationNode configSpecialBlockType = new ConfigurationNode("Block", "Special", "Type");

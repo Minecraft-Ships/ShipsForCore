@@ -23,7 +23,7 @@ public interface UnderWaterType extends WaterType {
             }
             for (Direction direction : directions) {
                 BlockType type = position.getRelative(direction).getBlockType();
-                if (type.isLike(BlockTypes.WATER)) {
+                if (type.isLike(BlockTypes.WATER.get())) {
                     values.add(position.getY());
                     continue;
                 }

@@ -68,9 +68,7 @@ public class WheelSign implements ShipsSign {
 
     @Override
     public boolean onSecondClick(LivePlayer player, BlockPosition position) {
-        //rotate X and Z on ships structure after
-
-        /*if(player.isSneaking()){
+        if(player.isSneaking()){
             return false;
         }
         try{
@@ -81,14 +79,14 @@ public class WheelSign implements ShipsSign {
             }
             BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
             try{
-                ((ShipsVessel) vessel).rotateRightAround(vessel.getPosition(), movement);
+                vessel.rotateRightAround(vessel.getPosition(), movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }
         }catch (IOException e){
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             return false;
-        }*/
+        }
         return false;
     }
 

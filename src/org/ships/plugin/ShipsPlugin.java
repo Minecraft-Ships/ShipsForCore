@@ -39,6 +39,7 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(BasicMovement.SHIPS_FIVE);
         this.identifable.add(BasicMovement.SHIPS_SIX);
         this.identifable.add(BasicBlockFinder.SHIPS_FIVE);
+        this.identifable.add(BasicBlockFinder.SHIPS_SIX);
         this.identifable.add(BlockPriority.AIR);
         this.identifable.add(BlockPriority.ATTACHED);
         this.identifable.add(BlockPriority.NORMAL);

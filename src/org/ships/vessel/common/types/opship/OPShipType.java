@@ -91,7 +91,7 @@ public class OPShipType <V extends OPShip> implements CloneableShipType<V> {
 
     @Override
     public BlockType[] getIgnoredTypes() {
-        return new BlockType[]{BlockTypes.AIR};
+        return new BlockType[]{BlockTypes.AIR.get()};
     }
 
     @Override

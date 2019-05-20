@@ -34,7 +34,7 @@ public class Airship extends AbstractShipsVessel implements AirType {
 
     protected boolean useBurner = true;
     protected float specialBlockPercent = 60;
-    protected Set<BlockType> specialBlocks = BlockTypes.WHITE_WOOL.getLike();
+    protected Set<BlockType> specialBlocks = BlockTypes.WHITE_WOOL.get().getLike();
     protected int fuelConsumption = 1;
     protected boolean takeFromTopSlot = false;
     protected Set<ItemType> fuelTypes = new HashSet<>(Arrays.asList(ItemTypes.COAL, ItemTypes.CHARCOAL));

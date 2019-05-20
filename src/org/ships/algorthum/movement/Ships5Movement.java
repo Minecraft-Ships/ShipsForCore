@@ -15,7 +15,7 @@ import java.util.Optional;
 public class Ships5Movement implements BasicMovement {
 
     @Override
-    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> map, Movement.MidMovement midMovement) {
+    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> map, Movement.MidMovement midMovement, Movement.PostMovement... movements) {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         int waterLevel = -1;
         if(vessel instanceof WaterType){
@@ -36,6 +36,10 @@ public class Ships5Movement implements BasicMovement {
             midMovement.move(m);
             m.setMovingTo();
         });
+        System.out.println("Ships 5: " + movements.length);
+        for(Movement.PostMovement movement : movements){
+            movement.postMove(vessel);
+        }
         return Result.DEFAULT_RESULT;
     }
 

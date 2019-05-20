@@ -1,17 +1,20 @@
 package org.ships.listener.core;
 
+import org.core.CorePlugin;
 import org.core.event.EventListener;
 import org.core.event.HEvent;
 import org.core.event.events.block.BlockChangeEvent;
 import org.core.event.events.block.tileentity.SignChangeEvent;
 import org.core.event.events.entity.EntityInteractEvent;
 import org.core.text.Text;
+import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.details.TiledBlockDetails;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.ShipsVessel;
@@ -72,6 +75,11 @@ public class CoreEventListener implements EventListener {
         if(register){
             Text typeText = stes.getLine(1).get();
             ShipType type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> typeText.equalsPlain(t.getDisplayName(), true)).findAny().get();
+            String permission = Permissions.getMakePermission(type);
+            if(!event.getEntity().hasPermission(permission)){
+                event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission: " + permission));
+                return;
+            }
             Vessel vessel = type.createNewVessel(stes, event.getPosition());
             PositionableShipsStructure pss = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(event.getPosition());
             vessel.setStructure(pss);
@@ -106,7 +114,6 @@ public class CoreEventListener implements EventListener {
         ShipsVessel sVessel = (ShipsVessel) vessel;
         if(!sVessel.getPermission(event.getEntity()).canRemove()){
             event.setCancelled(true);
-            //INCORRECT PERMISSIONS
             return;
         }
     }

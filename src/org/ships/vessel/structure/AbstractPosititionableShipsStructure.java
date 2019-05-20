@@ -55,4 +55,11 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
         }
         return this.vectors.remove(remove);
     }
+
+    @Override
+    public ShipsStructure clear() {
+        this.vectors.clear();
+        return this;
+    }
+
 }

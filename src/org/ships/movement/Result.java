@@ -5,6 +5,7 @@ import org.core.vector.Vector3;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,21 +18,29 @@ public class Result extends ArrayList<Result.Run> {
             Run.COMMON_TELEPORT_ENTITIES,
             Run.COMMON_RESET_GRAVITY,
             Run.COMMON_SET_POSITION_OF_LICENCE_SIGN,
+            Run.COMMON_SET_NEW_POSITIONS,
             Run.COMMON_SAVE);
 
     public interface Run {
 
         Run COMMON_TELEPORT_ENTITIES = (v, b, m) -> m.forEach((entity, value) -> {
             double pitch = entity.getPitch();
-            double roll = entity.getRoll();
             double yaw = entity.getYaw();
+            double roll = entity.getRoll();
             Vector3<Double> position = entity.getPosition().getPosition().minus(value.getBeforePosition().toExactPosition().getPosition());
             Vector3<Double> position2 = value.getAfterPosition().toExactPosition().getPosition();
             position = position2.add(position);
-            entity.setPosition(position).setPitch(pitch).setRoll(roll).setYaw(yaw);
+            entity.setPosition(position);
+            entity.setYaw(yaw).setRoll(roll).setPitch(pitch);
         });
 
         Run COMMON_RESET_GRAVITY = (v, b, m) -> m.keySet().forEach(e -> e.setGravity(true));
+
+        Run COMMON_SET_NEW_POSITIONS = (v, b, m) -> {
+            PositionableShipsStructure pss = v.getStructure();
+            pss.clear();
+            b.forEach((mb) -> pss.addPosition(mb.getAfterPosition()));
+        };
 
         Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, b, m) -> b.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get()).ifPresent(mb -> v.getStructure().setPosition(mb.getAfterPosition()));
 

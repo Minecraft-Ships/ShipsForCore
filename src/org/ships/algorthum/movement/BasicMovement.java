@@ -16,5 +16,5 @@ public interface BasicMovement extends Algorthum {
     Ships5Movement SHIPS_FIVE = new Ships5Movement();
     Ships6Movement SHIPS_SIX = new Ships6Movement();
 
-    Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity, Movement.MidMovement midMovement) throws MoveException;
+    Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity, Movement.MidMovement midMovement, Movement.PostMovement... postMovements) throws MoveException;
 }

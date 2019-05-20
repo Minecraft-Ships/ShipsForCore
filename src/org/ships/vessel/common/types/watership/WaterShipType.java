@@ -35,7 +35,7 @@ public class WaterShipType implements ShipType {
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
             this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
             this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 25);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, BlockTypes.BLACK_WOOL.getLike()));
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, BlockTypes.BLACK_WOOL.get().getLike()));
             this.file.save();
         }
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
@@ -81,7 +81,7 @@ public class WaterShipType implements ShipType {
 
     @Override
     public BlockType[] getIgnoredTypes() {
-        return new BlockType[]{BlockTypes.AIR, BlockTypes.WATER};
+        return new BlockType[]{BlockTypes.AIR.get(), BlockTypes.WATER.get()};
     }
 
     @Override

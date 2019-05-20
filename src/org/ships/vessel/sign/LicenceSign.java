@@ -5,12 +5,15 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsBlockLoader;
 import org.ships.vessel.common.loader.ShipsIDLoader;
+import org.ships.vessel.common.types.AbstractShipsVessel;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
@@ -98,7 +101,7 @@ public class LicenceSign implements ShipsSign {
     public boolean onSecondClick(LivePlayer player, BlockPosition position) {
         try {
             Vessel s = new ShipsBlockLoader(position).load();
-            if(player.isSneaking()) {
+            if (!player.isSneaking()) {
                 player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "----[Ships Info]----"));
                 player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Name: " + TextColours.AQUA + s.getName()));
                 player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Max Altitude: " + TextColours.AQUA + s.getAltitudeSpeed()));
@@ -112,24 +115,44 @@ public class LicenceSign implements ShipsSign {
                 vessel.getExtraInformation().forEach((key, value) -> player.sendMessage(CorePlugin.buildText(TextColours.GREEN + key + ": " + TextColours.AQUA + value)));
                 //player.sendMessage(TextColours.AQUA + "Default Crew" + vessel.getDefaultPermission().getId());
                 player.sendMessage(CorePlugin.buildText(TextColours.GREEN + "id: " + TextColours.AQUA + vessel.getId()));
-            }else{
+            } else {
                 if (!(s instanceof ShipsVessel)) {
                     return false;
                 }
                 ShipsVessel vessel = (ShipsVessel) s;
+                int size = vessel.getStructure().getPositions().size();
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(vessel).getConnectedBlocksOvertime(vessel.getPosition(), new OvertimeBlockFinderUpdate() {
                     @Override
                     public void onShipsStructureUpdated(PositionableShipsStructure structure) {
-                        player.sendMessagePlain("Vessels structure has updated");
+                        vessel.setStructure(structure);
+                        vessel.save();
+                        player.sendMessagePlain("Vessels structure has updated by " + (structure.getPositions().size() - size));
                     }
 
                     @Override
                     public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                        return false;
+                        return true;
                     }
                 });
             }
         } catch (IOException e) {
+            Optional<LiveTileEntity> opTile = position.getTileEntity();
+            if(opTile.isPresent()){
+                if(opTile.get() instanceof LiveSignTileEntity){
+                    LiveSignTileEntity lste = (LiveSignTileEntity)opTile.get();
+                    String type = lste.getLine(1).get().toPlain();
+                    String name = lste.getLine(2).get().toPlain();
+                    try{
+                        AbstractShipsVessel vessel = new ShipsIDLoader(type + ":" + name).load();
+                        vessel.getStructure().setPosition(position);
+                        vessel.save();
+                        player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "Resynced " + name + " with file. Please try again"));
+                    }catch(IOException e1){
+                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getMessage()));
+                    }
+                    return false;
+                }
+            }
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
         }
         return false;

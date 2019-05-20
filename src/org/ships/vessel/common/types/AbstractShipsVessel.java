@@ -78,9 +78,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public void setStructure(PositionableShipsStructure pss){
-        if(!pss.getPosition().equals(this.getStructure().getPosition())){
-            return;
-        }
         this.positionableShipsStructure = pss;
     }
 

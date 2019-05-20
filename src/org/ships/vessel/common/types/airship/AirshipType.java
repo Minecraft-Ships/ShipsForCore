@@ -42,7 +42,7 @@ public class AirshipType implements ShipType {
         if(!this.file.getFile().exists()){
             this.file.set(new ConfigurationNode(this.BURNER_BLOCK), true);
             this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 60.0f);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, BlockTypes.WHITE_WOOL.getLike()));
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, BlockTypes.WHITE_WOOL.get().getLike()));
             this.file.set(new ConfigurationNode(this.FUEL_CONSUMPTION), 1);
             this.file.set(new ConfigurationNode(this.FUEL_SLOT), "Bottom");
             this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Arrays.asList(ItemTypes.COAL.getId(), ItemTypes.CHARCOAL.getId())));
@@ -110,7 +110,7 @@ public class AirshipType implements ShipType {
 
     @Override
     public BlockType[] getIgnoredTypes() {
-        return new BlockType[]{BlockTypes.AIR};
+        return new BlockType[]{BlockTypes.AIR.get()};
     }
 
     @Override

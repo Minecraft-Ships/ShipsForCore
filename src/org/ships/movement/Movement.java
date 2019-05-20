@@ -17,6 +17,7 @@ import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.AbstractShipsVessel;
 import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -35,7 +36,13 @@ public class Movement {
 
     }
 
-    protected void move(ShipsVessel vessel, MovingBlockSet blocks, BasicMovement movement, MidMovement mid) throws MoveException {
+    public interface PostMovement {
+
+        void postMove(Vessel vessel);
+
+    }
+
+    protected void move(ShipsVessel vessel, MovingBlockSet blocks, BasicMovement movement, MidMovement mid, PostMovement... postMovement) throws MoveException {
         Set<Entity> entities = vessel.getEntities();
         Map<Entity, MovingBlock> entityBlock = new HashMap<>();
         entities.forEach(e -> e.setGravity(false));
@@ -73,7 +80,7 @@ public class Movement {
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, collided));
         }
         try {
-            Result result = movement.move(vessel, blocks, entityBlock, mid);
+            Result result = movement.move(vessel, blocks, entityBlock, mid, postMovement);
             result.run(vessel, blocks, entityBlock);
         }catch (MoveException e) {
             entities.forEach(entity -> entity.setGravity(true));
@@ -135,6 +142,7 @@ public class Movement {
                     directionNotSupported.printStackTrace();
                 }
             });
+
         }
 
     }

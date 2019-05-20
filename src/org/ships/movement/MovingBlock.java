@@ -62,12 +62,12 @@ public interface MovingBlock {
     }
 
     default MovingBlock removeBeforePositionOverAir() {
-        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.AIR.getDefaultBlockDetails());
+        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.AIR.get().getDefaultBlockDetails());
         return this;
     }
 
     default MovingBlock removeBeforePositionUnderWater() {
-        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.WATER.getDefaultBlockDetails());
+        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.WATER.get().getDefaultBlockDetails());
         return this;
     }
 

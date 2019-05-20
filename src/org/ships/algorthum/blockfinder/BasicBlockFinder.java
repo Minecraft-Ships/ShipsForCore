@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface BasicBlockFinder extends Algorthum {
 
     Ships5BlockFinder SHIPS_FIVE = new Ships5BlockFinder();
+    Ships6BlockFinder SHIPS_SIX = new Ships6BlockFinder();
 
     PositionableShipsStructure getConnectedBlocks(BlockPosition position);
     void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch);

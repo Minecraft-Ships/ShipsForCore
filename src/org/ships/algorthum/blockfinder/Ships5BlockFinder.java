@@ -20,7 +20,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     private ShipsVessel vessel;
     private BlockList list;
 
-    private void getNextBlock(BlockPosition position, Direction... directions){
+    private void getNextBlock(OvertimeBlockFinderUpdate event, BlockPosition position, Direction... directions){
         if(this.blockLimit != -1 && this.blockCount >= this.blockLimit){
             return;
         }
@@ -29,21 +29,30 @@ public class Ships5BlockFinder implements BasicBlockFinder {
             BlockPosition block = position.getRelative(direction);
             BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
             if(bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
+                if(event != null){
+                    if (!event.onBlockFind(this.shipsStructure, block)){
+                        getNextBlock(event, block, directions);
+                    }
+                }
                 if (shipsStructure.addPosition(block)){
-                    getNextBlock(block, directions);
+                    getNextBlock(event, block, directions);
                 }
             }
         }
     }
 
-    @Override
-    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
+    private PositionableShipsStructure getConnectedBlocks(BlockPosition position, OvertimeBlockFinderUpdate update){
         this.blockCount = 0;
         this.shipsStructure = new AbstractPosititionableShipsStructure(position);
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-        getNextBlock(position, directions);
+        getNextBlock(update, position, directions);
         return this.shipsStructure;
+    }
+
+    @Override
+    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
+        return getConnectedBlocks(position, null);
     }
 
     @Override

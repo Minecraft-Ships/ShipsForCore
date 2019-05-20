@@ -52,7 +52,7 @@ public class Ships6Movement implements BasicMovement {
     }
 
     @Override
-    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity, Movement.MidMovement midMovement) throws MoveException {
+    public Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity, Movement.MidMovement midMovement, Movement.PostMovement... movements) throws MoveException {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
@@ -70,7 +70,12 @@ public class Ships6Movement implements BasicMovement {
                 waterLevel = opWaterLevel.get();
             }
         }
-        Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> Result.DEFAULT_RESULT.run((ShipsVessel)vessel, set, entity)).build(ShipsPlugin.getPlugin());
+        Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> {
+            for(Movement.PostMovement movement : movements){
+                movement.postMove(vessel);
+            }
+            Result.DEFAULT_RESULT.run((ShipsVessel)vessel, set, entity);
+        }).build(ShipsPlugin.getPlugin());
         for(int A = blocksToProcess.size(); A > 0; A--){
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = CorePlugin.createSchedulerBuilder().setExecutor(new ProcessBlocks(waterLevel, blocks2, midMovement)).setToRunAfter(scheduler).setDelay(1).setDelayUnit(TimeUnit.SECONDS).build(ShipsPlugin.getPlugin());
