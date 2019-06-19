@@ -47,7 +47,7 @@ public class LicenceSign implements ShipsSign {
         }
         Vessel vessel;
         try {
-            vessel = new ShipsIDLoader(opType.get().getId() + ":" + nameS).load();
+            vessel = new ShipsIDLoader(opType.get().getName().toLowerCase() + ":" + nameS.toLowerCase()).load();
         } catch (IOException e) {
             return Optional.empty();
         }

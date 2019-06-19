@@ -9,6 +9,7 @@ import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.debug.DebugFile;
 import org.ships.listener.core.CoreEventListener;
 import org.ships.movement.BlockPriority;
 import org.ships.vessel.common.types.ShipType;
@@ -25,12 +26,14 @@ public abstract class ShipsPlugin implements Plugin {
     private Set<Identifable> identifable = new HashSet<>();
     private DefaultBlockList blockList;
     private ShipsConfig config;
+    private DebugFile debugFile;
 
     public ShipsPlugin(){
         plugin = this;
         init();
         this.config = new ShipsConfig();
         this.blockList = new DefaultBlockList();
+        this.debugFile = new DebugFile();
     }
 
     public abstract File getShipsConigFolder();
@@ -41,6 +44,7 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(BasicBlockFinder.SHIPS_FIVE);
         this.identifable.add(BasicBlockFinder.SHIPS_SIX);
         this.identifable.add(BlockPriority.AIR);
+        this.identifable.add(BlockPriority.DIRECTIONAL);
         this.identifable.add(BlockPriority.ATTACHED);
         this.identifable.add(BlockPriority.NORMAL);
         this.identifable.add(new LicenceSign());
@@ -74,6 +78,10 @@ public abstract class ShipsPlugin implements Plugin {
         Set<I> values = getAll(class1);
         CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.AQUA + "Found " + name + ": " + values.size()));
         values.forEach(v -> CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.YELLOW + "\t- " + v.getId() + "\t" + function.apply(v))));
+    }
+
+    public DebugFile getDebugFile(){
+        return this.debugFile;
     }
 
     public DefaultBlockList getBlockList(){

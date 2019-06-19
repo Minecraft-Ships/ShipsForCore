@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 public class LegacyAutoPilotCommand implements LegacyArgumentCommand {
     @Override
     public String getName() {
-        return "AutoPilot";
+        return "autopilot";
     }
 
     @Override

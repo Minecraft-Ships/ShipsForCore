@@ -7,7 +7,7 @@ import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.vector.types.Vector3Int;
 import org.core.world.position.BlockPosition;
-import org.core.world.position.block.details.AttachableDetails;
+import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -109,10 +109,15 @@ public class MoveSign implements ShipsSign {
                 return false;
             }
 
-            Vector3Int direction = ((AttachableDetails)position.getBlockDetails()).getAttachedDirection().getOpposite().getAsVector().multiply(speed);
+            Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
+            if(!opDirectional.isPresent()){
+                player.sendMessage(CorePlugin.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
+                return false;
+            }
+            Vector3Int direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
             BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
             try{
-                ((ShipsVessel) vessel).moveTowards(direction, movement);
+                vessel.moveTowards(direction, movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }

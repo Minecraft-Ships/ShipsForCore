@@ -6,6 +6,7 @@ import org.core.configuration.ConfigurationNode;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.block.grouptype.BlockGroup;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
 
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class DefaultBlockList implements BlockList {
 
@@ -52,6 +54,23 @@ public class DefaultBlockList implements BlockList {
     }
 
     @Override
+    public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
+        BlockInstruction bi = this.blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny().get();
+        bi.setCollideType(blockInstruction.getCollideType());
+        return this;
+    }
+
+    @Override
+    public BlockList saveChanges() {
+        this.blocks.stream().forEach(b -> {
+            String[] idSplit = b.getType().getId().split(":");
+            file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]), ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, b);
+        });
+        file.save();
+        return this;
+    }
+
+    @Override
     public ConfigurationFile getFile() {
         return this.file;
     }
@@ -73,8 +92,11 @@ public class DefaultBlockList implements BlockList {
         BlockTypes.BLACK_BANNER.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
         BlockTypes.BLACK_STAINED_GLASS.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
         BlockTypes.BLACK_STAINED_GLASS_PANE.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_SIGN.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_WALL_SIGN.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
         BlockTypes.ACACIA_SAPLING.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.IGNORE, completedBefore));
-        addToConfig(BlockTypes.WALL_SIGN.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
+
+
         addToConfig(BlockTypes.FURNACE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.CHEST.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.ENDER_CHEST.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
@@ -82,11 +104,15 @@ public class DefaultBlockList implements BlockList {
         addToConfig(BlockTypes.GLASS.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.GLASS_PANE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.FIRE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-
+        addToConfig(BlockTypes.NETHERRACK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
 
         //addToConfig(BlockTypes.FURNACE_LIT, BlockInstruction.CollideType.MATERIAL, completedBefore); //1.12.2
         CorePlugin.getPlatform().getBlockTypes().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
         file.save();
+    }
+
+    private void addToConfig(BlockGroup group, BlockInstruction.CollideType collideType, Set<BlockType> current){
+        Stream.of(group.getGrouped()).forEach(bt -> addToConfig(bt, collideType, current));
     }
 
     private void addToConfig(BlockType type, BlockInstruction.CollideType collide, Set<BlockType> current){

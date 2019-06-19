@@ -8,7 +8,7 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.details.BlockDetails;
-import org.core.world.position.block.details.RotateDetails;
+import org.core.world.position.block.details.data.DirectionalData;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.exceptions.MoveException;
@@ -102,13 +102,14 @@ public class Movement {
             });
             move(vessel, set, movement, (mb) -> {
                 BlockDetails blockDetails = mb.getStoredBlockData();
-                if(!(blockDetails instanceof RotateDetails)){
+                Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
+                if(!(opDirectional.isPresent())){
                     return;
                 }
-                RotateDetails rotateDetails = (RotateDetails) blockDetails;
-                Direction direction = rotateDetails.getFacingDirection().getRightAngleLeft();
+                DirectionalData directionalData = opDirectional.get();
+                Direction direction = directionalData.getDirection().getRightAngleLeft();
                 try {
-                    rotateDetails.setFacingDirection(direction);
+                    directionalData.setDirection(direction);
                 } catch (DirectionNotSupported directionNotSupported) {
                     directionNotSupported.printStackTrace();
                 }
@@ -131,13 +132,14 @@ public class Movement {
             });
             move(vessel, set, movement, (mb) -> {
                 BlockDetails blockDetails = mb.getStoredBlockData();
-                if(!(blockDetails instanceof RotateDetails)){
+                Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
+                if(!(opDirectional.isPresent())){
                     return;
                 }
-                RotateDetails rotateDetails = (RotateDetails) blockDetails;
-                Direction direction = rotateDetails.getFacingDirection().getRightAngleRight();
+                DirectionalData directionalData = opDirectional.get();
+                Direction direction = directionalData.getDirection().getRightAngleRight();
                 try {
-                    rotateDetails.setFacingDirection(direction);
+                    directionalData.setDirection(direction);
                 } catch (DirectionNotSupported directionNotSupported) {
                     directionNotSupported.printStackTrace();
                 }

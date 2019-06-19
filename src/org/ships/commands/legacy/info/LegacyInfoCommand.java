@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class LegacyInfoCommand implements LegacyArgumentCommand {
     @Override
     public String getName() {
-        return "Info";
+        return "info";
     }
 
     @Override

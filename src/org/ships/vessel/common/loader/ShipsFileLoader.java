@@ -10,6 +10,7 @@ import org.core.world.WorldExtent;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.AbstractShipsVessel;
 import org.ships.vessel.common.types.ShipType;
@@ -18,8 +19,8 @@ import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class ShipsFileLoader implements ShipsLoader {
 
@@ -51,48 +52,48 @@ public class ShipsFileLoader implements ShipsLoader {
     }
 
     @Override
-    public AbstractShipsVessel load() throws IOException {
+    public AbstractShipsVessel load() throws LoadVesselException {
         ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.DEFAULT);
         Optional<WorldExtent> opWorld = file.parse(new ConfigurationNode(META_LOCATION_WORLD), Parser.STRING_TO_WORLD);
         if(!opWorld.isPresent()){
-            throw new IOException("Unknown World of " + file.parseString(new ConfigurationNode(META_LOCATION_WORLD)).orElse("'No value found'"));
+            throw new LoadVesselException(this.file, "Unknown World of " + file.parseString(new ConfigurationNode(META_LOCATION_WORLD)).orElse("'No value found'"));
         }
         Optional<Integer> opX = file.parse(new ConfigurationNode(META_LOCATION_X), Parser.STRING_TO_INTEGER);
         if(!opX.isPresent()){
-            throw new IOException("Unknown X value");
+            throw new LoadVesselException(this.file, "Unknown X value");
         }
         Optional<Integer> opY = file.parse(new ConfigurationNode(META_LOCATION_Y), Parser.STRING_TO_INTEGER);
         if(!opY.isPresent()){
-            throw new IOException("Unknown Y value");
+            throw new LoadVesselException(this.file, "Unknown Y value");
         }
         Optional<Integer> opZ = file.parse(new ConfigurationNode(META_LOCATION_Z), Parser.STRING_TO_INTEGER);
         if(!opZ.isPresent()){
-            throw new IOException("Unknown Z value");
+            throw new LoadVesselException(this.file, "Unknown Z value");
         }
         BlockPosition position = opWorld.get().getPosition(opX.get(), opY.get(), opZ.get());
         LicenceSign sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if(!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)){
-            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
+            throw new LoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
         }
         LiveSignTileEntity lste = (LiveSignTileEntity)opTile.get();
         if(!sign.isSign(lste)){
-            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
+            throw new LoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
         Optional<Text> opShipTypeS = lste.getLine(1);
         if(!opShipTypeS.isPresent()){
-            throw new IOException("LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
+            throw new LoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
         String shipTypeS = opShipTypeS.get().toPlain();
         Optional<ShipType> opShipType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(s -> s.getDisplayName().equals(shipTypeS)).findAny();
         if(!opShipType.isPresent()){
-            throw new IOException("Unknown ShipType");
+            throw new LoadVesselException(this.file, "Unknown ShipType");
         }
         ShipType type = opShipType.get();
         Vessel vessel = type.createNewVessel(lste);
         if(!(vessel instanceof AbstractShipsVessel)){
-            throw new IOException("ShipType requires to be AbstractShipsVessel");
+            throw new LoadVesselException(this.file, "ShipType requires to be AbstractShipsVessel");
         }
         AbstractShipsVessel ship = (AbstractShipsVessel)vessel;
 
@@ -132,8 +133,8 @@ public class ShipsFileLoader implements ShipsLoader {
         return set;
     }
 
-    public static Set<Vessel> loadAll(){
-        Set<Vessel> set = new HashSet<>();
+    public static Set<AbstractShipsVessel> loadAll(Consumer<LoadVesselException> function){
+        Set<AbstractShipsVessel> set = new HashSet<>();
         ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {
             File vesselDataFolder = getVesselDataFolder();
             File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
@@ -143,13 +144,13 @@ public class ShipsFileLoader implements ShipsLoader {
             }
             for(File file : files){
                 try {
-                    Vessel vessel = new ShipsFileLoader(file).load();
+                    AbstractShipsVessel vessel = new ShipsFileLoader(file).load();
                     if(vessel == null){
                         continue;
                     }
                     set.add(vessel);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (LoadVesselException e) {
+                    function.accept(e);
                 }
             }
         });

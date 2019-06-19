@@ -2,7 +2,7 @@ package org.ships.movement.autopilot.scheduler;
 
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.world.position.BlockPosition;
-import org.core.world.position.block.details.blocks.sign.GeneralSign;
+import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.result.FailedMovement;
@@ -50,9 +50,12 @@ public class EOTExecutor implements Runnable {
     @Override
     public void run() {
         getSign().ifPresent(b -> {
-            GeneralSign sign = (GeneralSign) b.getBlockDetails();
+            Optional<DirectionalData> directionalData = b.getBlockDetails().getDirectionalData();
+            if(!directionalData.isPresent()){
+                return;
+            }
             try {
-                getVessel().moveTowards(sign.getFacingDirection().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+                getVessel().moveTowards(directionalData.get().getDirection().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
             } catch (MoveException e) {
                 sendError(e.getMovement());
             }

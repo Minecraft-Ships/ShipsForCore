@@ -23,7 +23,7 @@ public interface MovingBlock {
     BlockPriority getBlockPriority();
 
     default MovingBlock removeBeforePosition(BlockPosition pos) {
-        setStoredBlockData(pos.getBlockDetails());
+        //setStoredBlockData(pos.getBlockDetails());
         Optional<LiveTileEntity> opLive = pos.getTileEntity();
         if(!opLive.isPresent()){
             return this;

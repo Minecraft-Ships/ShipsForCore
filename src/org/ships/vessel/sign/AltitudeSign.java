@@ -6,9 +6,7 @@ import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
-import org.core.world.position.block.details.TiledBlockDetails;
 import org.core.world.position.block.entity.LiveTileEntity;
-import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
@@ -49,12 +47,15 @@ public class AltitudeSign implements ShipsSign {
 
     @Override
     public boolean onPrimaryClick(LivePlayer player, BlockPosition position) {
+        ShipsPlugin.getPlugin().getDebugFile().addMessage("--[Start of AltitudeSign:onPrimaryClick(LivePlayer, BlockPosition)]--");
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if(!opTile.isPresent()){
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned false due to Position not being a Tile Entity", "--[End of AltitudeSign:onPrimaryClick(LivePlayer, BlockPosition)]--");
             return false;
         }
         LiveTileEntity lte = opTile.get();
         if(!(lte instanceof LiveSignTileEntity)){
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned false due to Position not being a Live Sign Tile Entity", "--[End of AltitudeSign:onPrimaryClick(LivePlayer, BlockPosition)]--");
             return false;
         }
         LiveSignTileEntity stes = (LiveSignTileEntity) lte;
@@ -65,25 +66,34 @@ public class AltitudeSign implements ShipsSign {
             stes.setLine(1, CorePlugin.buildText("{Increase}"));
             stes.setLine(2, CorePlugin.buildText("decrease"));
         }
+        ShipsPlugin.getPlugin().getDebugFile().addMessage("--[End of AltitudeSign:onPrimaryClick(LivePlayer, BlockPosition)]--");
         return false;
     }
 
     @Override
     public boolean onSecondClick(LivePlayer player, BlockPosition position) {
-        TileEntitySnapshot tes = ((TiledBlockDetails) position.getBlockDetails()).getTileEntity();
-        if(!(tes instanceof SignTileEntity)){
+        ShipsPlugin.getPlugin().getDebugFile().addMessage("--[Start of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
+        Optional<LiveTileEntity> opTileEntity = position.getTileEntity();
+        if(!opTileEntity.isPresent()){
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to BlockPosition not being a LiveTileEntity", "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
             return false;
         }
-        SignTileEntity ste = (SignTileEntity) tes;
+        if(!(opTileEntity.get() instanceof LiveSignTileEntity)){
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to BlockPosition not being a LiveSignTileEntity", "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
+            return false;
+        }
+        SignTileEntity ste = (SignTileEntity) opTileEntity.get();
         String line1 = ste.getLine(1).get().toPlain();
         String line3 = ste.getLine(3).get().toPlain();
         int altitude = Integer.parseInt(line3);
         try {
             Vessel vessel = new ShipsBlockLoader(position).load();
-            if(!((vessel instanceof AirType) && (vessel instanceof UnderWaterType))){
+            if(!((vessel instanceof AirType) || (vessel instanceof UnderWaterType))){
+                ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to Ship not being either a UnderWaterType or AirType", "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
                 return false;
             }
             if(!(vessel instanceof ShipsVessel)){
+                ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to Ship not being a ShipsVessel", "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
                 return false;
             }
             ShipsVessel vessel2 = (ShipsVessel)vessel;
@@ -96,11 +106,15 @@ public class AltitudeSign implements ShipsSign {
             }catch (MoveException e){
                 FailedMovement<?> movement = e.getMovement();
                 sendErrorMessage(player, movement, movement.getValue().orElse(null));
+                ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to " + movement.getResult().getClass().getSimpleName(), "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
+
             }
         } catch (IOException e) {
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to " + e.getMessage(), "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             return false;
         }
+        ShipsPlugin.getPlugin().getDebugFile().addMessage("--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
         return false;
     }
 

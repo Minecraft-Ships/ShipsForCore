@@ -12,6 +12,8 @@ public interface BlockList extends Config {
 
     Set<BlockInstruction> getBlockList();
     Set<BlockInstruction> reloadBlockList();
+    BlockList replaceBlockInstruction(BlockInstruction blockInstruction);
+    BlockList saveChanges();
 
     default BlockInstruction getBlockInstruction(BlockType type){
         return getBlockList().stream().filter(b -> b.getType().equals(type)).findFirst().get();

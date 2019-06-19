@@ -1,11 +1,16 @@
 package org.ships.permissions.vessel;
 
-import org.core.utils.Identifable;
+public interface CrewPermission {
 
-public interface CrewPermission extends Identifable {
+    CrewPermission CAPTAIN = new AbstractCrewPermission("Captain").setCanMove(true).setCommand(true).setRemove(true);
 
-    boolean canInteract();
     boolean canMove();
     boolean canCommand();
     boolean canRemove();
+
+    CrewPermission setCanMove(boolean check);
+    CrewPermission setCommand(boolean check);
+    CrewPermission setRemove(boolean check);
+
+    String getName();
 }

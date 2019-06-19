@@ -13,7 +13,10 @@ import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
-import org.core.world.position.block.details.blocks.furnace.GeneralFurnace;
+import org.core.world.position.block.details.data.keyed.KeyedData;
+import org.core.world.position.block.entity.TileEntity;
+import org.core.world.position.block.entity.TileEntitySnapshot;
+import org.core.world.position.block.entity.container.furnace.FurnaceTileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.MoveException;
@@ -62,15 +65,17 @@ public class Airship extends AbstractShipsVessel implements AirType {
         for(MovingBlock movingBlock : movingBlocks){
             BlockPosition blockPosition = movingBlock.getBeforePosition();
             BlockDetails details = movingBlock.getStoredBlockData();
-            if(blockPosition.getBlockType().equals(BlockTypes.FIRE)){
+            if(blockPosition.getBlockType().equals(BlockTypes.FIRE.get())){
                 burnerFound = true;
             }
             if(this.specialBlocks.stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
                 specialBlockCount++;
             }
-            if(details instanceof GeneralFurnace){
-                GeneralFurnace furnaceDetails = (GeneralFurnace) details;
-                furnaceInventories.add(furnaceDetails.getTileEntity().getInventory());
+            Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
+            if(opTiled.isPresent()){
+                if(opTiled.get() instanceof FurnaceTileEntitySnapshot){
+                    furnaceInventories.add(((FurnaceTileEntitySnapshot) opTiled.get()).getInventory());
+                }
             }
         }
         if(this.useBurner && !burnerFound){

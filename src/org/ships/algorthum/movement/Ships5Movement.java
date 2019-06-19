@@ -32,11 +32,11 @@ public class Ships5Movement implements BasicMovement {
                 m.removeBeforePositionOverAir();
             }
         });
-        blocks.forEach(m -> {
+        for(int A = blocks.size(); A > 0; A--) {
+            MovingBlock m = blocks.get(A-1);
             midMovement.move(m);
             m.setMovingTo();
-        });
-        System.out.println("Ships 5: " + movements.length);
+        }
         for(Movement.PostMovement movement : movements){
             movement.postMove(vessel);
         }

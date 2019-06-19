@@ -4,7 +4,9 @@ import org.core.command.BaseCommandLauncher;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
 import org.ships.commands.legacy.autopilot.LegacyAutoPilotCommand;
+import org.ships.commands.legacy.blockinfo.LegacyBlockInfoCommand;
 import org.ships.commands.legacy.blocklist.LegacyBlockListCommand;
+import org.ships.commands.legacy.cleanup.LegacyCleanupCommand;
 import org.ships.commands.legacy.help.LegacyHelpCommand;
 import org.ships.commands.legacy.info.LegacyInfoCommand;
 import org.ships.commands.legacy.ship.LegacyShipCommand;
@@ -17,7 +19,7 @@ import java.util.Optional;
 
 public class LegacyShipsCommand implements BaseCommandLauncher {
 
-    private final List<LegacyArgumentCommand> arguments = Arrays.asList(new LegacyShipCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyAutoPilotCommand());
+    private final List<LegacyArgumentCommand> arguments = Arrays.asList(new LegacyShipCommand(), new LegacyCleanupCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand(), new LegacyAutoPilotCommand());
 
     public List<LegacyArgumentCommand> getArguments(){
         return this.arguments;

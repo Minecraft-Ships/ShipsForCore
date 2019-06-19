@@ -1,10 +1,9 @@
 package org.ships.vessel.common.loader;
 
+import org.ships.exceptions.load.LoadVesselException;
 import org.ships.vessel.common.types.Vessel;
-
-import java.io.IOException;
 
 public interface ShipsLoader {
 
-    Vessel load() throws IOException;
+    Vessel load() throws LoadVesselException;
 }

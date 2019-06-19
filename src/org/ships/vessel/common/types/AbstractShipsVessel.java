@@ -11,6 +11,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.MovingBlockSet;
+import org.ships.permissions.vessel.AbstractCrewPermission;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsFileLoader;
@@ -25,7 +26,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     protected PositionableShipsStructure positionableShipsStructure;
     protected Map<User, CrewPermission> crewsPermission = new HashMap<>();
-    protected CrewPermission defaultPermission;
+    protected CrewPermission defaultPermission = new AbstractCrewPermission("Crew Member").setCanMove(true).setCommand(true).setRemove(true);
     protected File file;
     protected ExpandedBlockList blockList;
     protected ShipType type;
@@ -35,14 +36,18 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public AbstractShipsVessel(LiveSignTileEntity licence, ShipType type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
         this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + ".temp");
-        this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT), ShipsPlugin.getPlugin().getBlockList());
+        ConfigurationFile configuration = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        this.blockList = new ExpandedBlockList(configuration, ShipsPlugin.getPlugin().getBlockList());
+        this.file = configuration.getFile();
         this.type = type;
     }
 
     public AbstractShipsVessel(SignTileEntity ste, BlockPosition position, ShipType type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
         this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + ".temp");
-        this.blockList = new ExpandedBlockList(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT), ShipsPlugin.getPlugin().getBlockList());
+        ConfigurationFile configuration = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        this.blockList = new ExpandedBlockList(configuration, ShipsPlugin.getPlugin().getBlockList());
+        this.file = configuration.getFile();
         this.type = type;
     }
 

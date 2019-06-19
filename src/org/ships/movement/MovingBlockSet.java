@@ -4,7 +4,8 @@ import org.core.world.position.BlockPosition;
 import org.core.world.position.ExactPosition;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.details.BlockDetails;
-import org.core.world.position.block.details.TiledBlockDetails;
+import org.core.world.position.block.details.data.keyed.KeyedData;
+import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.vessel.sign.ShipsSign;
@@ -42,11 +43,11 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
 
     public Optional<MovingBlock> get(ShipsSign sign){
         return get(bd -> {
-            if(!(bd instanceof TiledBlockDetails)){
+            Optional<TileEntitySnapshot<? extends TileEntity>> opTiledEntity = bd.get(KeyedData.TILED_ENTITY);
+            if(!(opTiledEntity.isPresent())){
                 return false;
             }
-            TiledBlockDetails tbd = (TiledBlockDetails)bd;
-            TileEntitySnapshot snapshot = tbd.getTileEntity();
+            TileEntitySnapshot<? extends TileEntity> snapshot = opTiledEntity.get();
             if(!(snapshot instanceof SignTileEntity)){
                 return false;
             }

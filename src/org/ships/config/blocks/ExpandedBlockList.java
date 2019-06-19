@@ -59,6 +59,22 @@ public class ExpandedBlockList implements BlockList{
     }
 
     @Override
+    public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
+        Optional<BlockInstruction> opBi = blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny();
+        if(opBi.isPresent()){
+            opBi.get().setCollideType(blockInstruction.getCollideType());
+        }else{
+            this.expandedOn.replaceBlockInstruction(blockInstruction);
+        }
+        return this;
+    }
+
+    @Override
+    public BlockList saveChanges() {
+        return this;
+    }
+
+    @Override
     public ConfigurationFile getFile() {
         return this.file;
     }

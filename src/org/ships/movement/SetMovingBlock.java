@@ -2,8 +2,8 @@ package org.ships.movement;
 
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.details.AttachableDetails;
 import org.core.world.position.block.details.BlockDetails;
+import org.core.world.position.block.details.data.keyed.KeyedData;
 
 public class SetMovingBlock implements MovingBlock {
 
@@ -50,10 +50,12 @@ public class SetMovingBlock implements MovingBlock {
 
     @Override
     public BlockPriority getBlockPriority() {
-        if((this.detail.getType().equals(BlockTypes.AIR))){
+        if((this.detail.getType().equals(BlockTypes.AIR))) {
             return BlockPriority.AIR;
-        }else if(this.detail instanceof AttachableDetails){
+        }else if(this.detail.get(KeyedData.ATTACHABLE).isPresent()){
             return BlockPriority.ATTACHED;
+        }else if(this.detail.getDirectionalData().isPresent()){
+            return BlockPriority.DIRECTIONAL;
         }
         return BlockPriority.NORMAL;
     }
