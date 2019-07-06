@@ -5,8 +5,9 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
+import org.ships.config.blocks.BlockListable;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -16,9 +17,9 @@ import java.util.Optional;
 
 public class Ships6BlockFinder implements BasicBlockFinder {
 
-    protected int limit;
+    protected int limit = 3000;
     private BlockList list;
-    private ShipsVessel vessel;
+    private Vessel vessel;
 
     @Override
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
@@ -39,7 +40,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                 count++;
                 for (Direction face : directions) {
                     BlockPosition block = proc.getRelative(face);
-                    if (ret.stream().anyMatch(b -> b.equals(block))) {
+                    if (!ret.stream().anyMatch(b -> b.equals(block))) {
                         BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
                         if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
                             ret.add(block);
@@ -73,17 +74,17 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public Optional<ShipsVessel> getConnectedVessel() {
-        return Optional.of(this.vessel);
+    public Optional<Vessel> getConnectedVessel() {
+        return Optional.ofNullable(this.vessel);
     }
 
     @Override
-    public BasicBlockFinder setConnectedVessel(ShipsVessel vessel) {
+    public BasicBlockFinder setConnectedVessel(Vessel vessel) {
         this.vessel = vessel;
-        if(this.vessel == null){
-            this.list = ShipsPlugin.getPlugin().getBlockList();
+        if(this.vessel != null && (this.vessel instanceof BlockListable)) {
+            this.list = ((BlockListable)this.vessel).getBlockList();
         }else{
-            this.list = this.vessel.getBlockList();
+            this.list = ShipsPlugin.getPlugin().getBlockList();
         }
         return this;
     }

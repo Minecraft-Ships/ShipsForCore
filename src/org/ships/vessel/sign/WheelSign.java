@@ -6,18 +6,20 @@ import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.exceptions.MoveException;
+import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsBlockLoader;
-import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.loader.shipsvessel.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class WheelSign implements ShipsSign {
 
@@ -48,17 +50,17 @@ public class WheelSign implements ShipsSign {
             return false;
         }
         try{
-            Vessel vessel = new ShipsBlockLoader(position).load();
-            if(!(vessel instanceof ShipsVessel)){
-                System.err.println("Vessel is not ShipsVessel");
-                return false;
-            }
+            Vessel vessel = new ShipsUpdateBlockLoader(position).load();
             BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
             try{
                 vessel.rotateLeftAround(vessel.getPosition(), movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }
+        }catch (UnableToFindLicenceSign e1){
+            player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
+            e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+            CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
         }catch (IOException e){
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             return false;
@@ -72,17 +74,16 @@ public class WheelSign implements ShipsSign {
             return false;
         }
         try{
-            Vessel vessel = new ShipsBlockLoader(position).load();
-            if(!(vessel instanceof ShipsVessel)){
-                System.err.println("Vessel is not ShipsVessel");
-                return false;
-            }
+            Vessel vessel = new ShipsUpdateBlockLoader(position).load();
             BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
             try{
                 vessel.rotateRightAround(vessel.getPosition(), movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }
+        }catch (UnableToFindLicenceSign e1){
+            e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+            CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
         }catch (IOException e){
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             return false;

@@ -1,16 +1,17 @@
-package org.ships.vessel.common.types.opship;
+package org.ships.vessel.common.types.typical.opship;
 
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.ships.exceptions.MoveException;
 import org.ships.movement.MovingBlockSet;
 import org.ships.movement.autopilot.FlightPath;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.FlightPathType;
-import org.ships.vessel.common.types.AbstractShipsVessel;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,11 +27,6 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
 
     public OPShip(SignTileEntity ste, BlockPosition position, ShipType origin){
         super(ste, position, origin);
-    }
-
-    @Override
-    public void meetsRequirement(MovingBlockSet movingBlocks) {
-
     }
 
     @Override
@@ -57,5 +53,15 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
     public FlightPathType setFlightPath(FlightPath path) {
         this.flightPath = path;
         return this;
+    }
+
+    @Override
+    public void meetsRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
+
+    }
+
+    @Override
+    public void processRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
+
     }
 }

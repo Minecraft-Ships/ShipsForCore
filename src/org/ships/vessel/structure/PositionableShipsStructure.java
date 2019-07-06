@@ -16,12 +16,14 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     BlockPosition getPosition();
 
     PositionableShipsStructure setPosition(BlockPosition pos);
+    PositionableShipsStructure addAir();
 
     default boolean addPosition(BlockPosition position){
         Vector3Int original = getPosition().getPosition();
         Vector3Int next = position.getPosition();
         return addPosition(new Vector3Int((next.getX() - original.getX()), (next.getY() - original.getY()), (next.getZ() - original.getZ())));
     }
+
     default boolean removePosition(BlockPosition position){
         Vector3Int original = getPosition().getPosition();
         Vector3Int next = position.getPosition();

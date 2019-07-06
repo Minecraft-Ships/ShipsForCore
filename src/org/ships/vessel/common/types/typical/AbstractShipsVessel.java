@@ -1,32 +1,32 @@
-package org.ships.vessel.common.types;
+package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
 import org.core.configuration.type.ConfigurationLoaderTypes;
-import org.core.entity.living.human.player.User;
+import org.core.utils.Identifable;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
-import org.ships.exceptions.MoveException;
-import org.ships.movement.MovingBlockSet;
-import org.ships.permissions.vessel.AbstractCrewPermission;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsFileLoader;
+import org.ships.vessel.common.flag.MovingFlag;
+import org.ships.vessel.common.flag.VesselFlag;
+import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
+import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AbstractShipsVessel implements ShipsVessel {
 
     protected PositionableShipsStructure positionableShipsStructure;
-    protected Map<User, CrewPermission> crewsPermission = new HashMap<>();
-    protected CrewPermission defaultPermission = new AbstractCrewPermission("Crew Member").setCanMove(true).setCommand(true).setRemove(true);
+    protected Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
+    protected Set<VesselFlag<?>> flags = new HashSet<>(Arrays.asList(new MovingFlag()));
+    protected CrewPermission defaultPermission = CrewPermission.DEFAULT;
     protected File file;
     protected ExpandedBlockList blockList;
     protected ShipType type;
@@ -51,9 +51,40 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this.type = type;
     }
 
-    public abstract void meetsRequirement(MovingBlockSet movingBlocks) throws MoveException;
-    public abstract Map<ConfigurationNode, Object> serialize(ConfigurationFile file);
-    public abstract AbstractShipsVessel deserializeExtra(ConfigurationFile file);
+    @Override
+    public Collection<VesselFlag<?>> getFlags(){
+        return Collections.unmodifiableCollection(this.flags);
+    }
+
+    @Override
+    public <T extends VesselFlag> Optional<T> get(Class<T> clazz){
+        return (Optional<T>) getFlags().stream().filter(v -> clazz.isInstance(v)).findAny();
+    }
+
+    @Override
+    public <T> Vessel set(Class<? extends VesselFlag<T>> clazz, T value){
+        Optional<VesselFlag<?>> opFlag = getFlags().stream().filter(f -> clazz.isInstance(f)).findFirst();
+        if(!opFlag.isPresent()){
+            Optional<? extends VesselFlag<T>> opNewFlag = ShipsPlugin.getPlugin().get(clazz);
+            if(!opNewFlag.isPresent()){
+                System.err.println("Class of " + clazz.getName() + " is not registered in ShipsPlugin. Failing to set for " + getId());
+                return this;
+            }
+            VesselFlag<T> flag = opNewFlag.get();
+            flag.setValue(value);
+            this.flags.add(flag);
+            return this;
+        }
+        ((VesselFlag<T>)opFlag.get()).setValue(value);
+        return this;
+    }
+
+    @Override
+    public Vessel set(VesselFlag<?> flag){
+        this.flags.stream().filter(f -> f.getId().equals(flag.getId())).forEach(f -> this.flags.remove(f));
+        this.flags.add(flag);
+        return this;
+    }
 
     @Override
     public ShipType getType(){
@@ -110,14 +141,14 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public boolean equals(Object obj){
-        if(!(obj instanceof ShipsVessel)){
+        if(!(obj instanceof Identifable)){
             return false;
         }
-        return ((ShipsVessel) obj).getId().equals(this.getId());
+        return ((Identifable) obj).getId().equals(this.getId());
     }
 
     @Override
-    public Map<User, CrewPermission> getCrew() {
+    public Map<UUID, CrewPermission> getCrew() {
         return this.crewsPermission;
     }
 

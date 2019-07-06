@@ -1,7 +1,7 @@
-package org.ships.vessel.common.types;
+package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
-import org.core.entity.living.human.player.User;
+import org.core.utils.Identifable;
 import org.core.vector.types.Vector3Int;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.ExactPosition;
@@ -9,42 +9,29 @@ import org.core.world.position.Position;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.algorthum.movement.BasicMovement;
-import org.ships.config.blocks.ExpandedBlockList;
+import org.ships.config.blocks.BlockListable;
 import org.ships.exceptions.MoveException;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
-import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.CrewStoredVessel;
+import org.ships.vessel.common.assits.FileBasedVessel;
+import org.ships.vessel.common.assits.SignBasedVessel;
+import org.ships.vessel.common.assits.WritableNameVessel;
+import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.sign.LicenceSign;
 
-import java.io.File;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-public interface ShipsVessel extends Vessel {
+public interface ShipsVessel extends SignBasedVessel, org.ships.vessel.common.assits.VesselRequirement, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
 
-    Map<User, CrewPermission> getCrew();
-    ExpandedBlockList getBlockList();
-    File getFile();
     Map<String, String> getExtraInformation();
-    CrewPermission getDefaultPermission();
+    Collection<VesselFlag<?>> getFlags();
 
-    default CrewPermission getPermission(User user){
-        CrewPermission permission = getCrew().get(user);
-        if(permission == null){
-            permission = getDefaultPermission();
-        }
-        return permission;
-    }
-
-    default Set<User> getCrew(CrewPermission permission){
-        Map<User, CrewPermission> permissionMap = getCrew();
-        return permissionMap.keySet().stream().filter(u -> permissionMap.get(u).equals(permission)).collect(Collectors.toSet());
-    }
-
-    default LiveSignTileEntity getSign() throws NoLicencePresent{
+    @Override
+    default LiveSignTileEntity getSign() throws NoLicencePresent {
         Optional<LiveTileEntity> opTile = this.getPosition().getTileEntity();
         if(!opTile.isPresent()){
             throw new NoLicencePresent(this);
@@ -61,6 +48,7 @@ public interface ShipsVessel extends Vessel {
         return sign;
     }
 
+    @Override
     default ShipsVessel setName(String name) throws NoLicencePresent{
         getSign().setLine(2, CorePlugin.buildText(name));
         return this;
@@ -104,7 +92,8 @@ public interface ShipsVessel extends Vessel {
         Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement);
     }
 
+    @Override
     default String getId(){
-        return getType().getId() + ":" + getName();
+        return getType().getId() + ":" + getName().toLowerCase();
     }
 }

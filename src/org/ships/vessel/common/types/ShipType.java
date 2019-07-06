@@ -7,15 +7,17 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
-import org.ships.vessel.common.types.airship.AirshipType;
-import org.ships.vessel.common.types.opship.OPShipType;
-import org.ships.vessel.common.types.watership.WaterShipType;
+import org.ships.vessel.common.types.typical.airship.AirshipType;
+import org.ships.vessel.common.types.typical.opship.OPShipType;
+import org.ships.vessel.common.types.typical.submarine.SubmarineType;
+import org.ships.vessel.common.types.typical.watership.WaterShipType;
 
 public interface ShipType extends Identifable {
 
     OPShipType OVERPOWERED_SHIP = new OPShipType.Default();
     AirshipType AIRSHIP = new AirshipType();
     WaterShipType WATERSHIP = new WaterShipType();
+    SubmarineType SUBMARINE = new SubmarineType();
 
     String getDisplayName();
     ExpandedBlockList getDefaultBlockList();

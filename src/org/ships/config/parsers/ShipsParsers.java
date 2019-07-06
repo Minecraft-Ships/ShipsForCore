@@ -3,6 +3,7 @@ package org.ships.config.parsers;
 import org.ships.config.parsers.identify.StringToBlockFinder;
 import org.ships.config.parsers.identify.StringToMovement;
 import org.ships.config.parsers.identify.StringToShipTypeParser;
+import org.ships.config.parsers.identify.StringToVesselFlag;
 
 public interface ShipsParsers {
 
@@ -11,4 +12,5 @@ public interface ShipsParsers {
     StringToShipTypeParser STRING_TO_SHIP_TYPE = new StringToShipTypeParser();
     StringToBlockFinder STRING_TO_BLOCK_FINDER = new StringToBlockFinder();
     StringToMovement STRING_TO_MOVEMENT = new StringToMovement();
+    StringToVesselFlag STRING_TO_VESSEL_FLAG = new StringToVesselFlag();
 }

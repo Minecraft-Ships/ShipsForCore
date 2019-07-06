@@ -5,8 +5,9 @@ import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.ships.commands.legacy.LegacyArgumentCommand;
-import org.ships.vessel.common.loader.ShipsFileLoader;
-import org.ships.vessel.common.types.AbstractShipsVessel;
+import org.ships.exceptions.load.FileLoadVesselException;
+import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
+import org.ships.vessel.common.types.typical.ShipsVessel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +30,15 @@ public class LegacyCleanupCommand implements LegacyArgumentCommand {
         }
         if(args[1].equalsIgnoreCase("check")){
             viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + "--[Failed loading]--"));
-            Set<AbstractShipsVessel> ships = ShipsFileLoader.loadAll(e -> viewer.sendMessagePlain("  - " + (e.getFile().isPresent() ? e.getFile().get().getName() : e.getReason())));
+            Set<ShipsVessel> ships = ShipsFileLoader.loadAll(e -> {
+                if(e instanceof FileLoadVesselException){
+                    viewer.sendMessagePlain(" - " + ((FileLoadVesselException) e).getFile().getName() + ": " + e.getReason());
+                    return;
+                }
+                viewer.sendMessagePlain("  - " + e.getReason());
+            });
             viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + "--[Duplicated position]--"));
-            ships.stream()
-                    .forEach(s -> ships.stream()
+            ships.forEach(s -> ships.stream()
                             .filter(s1 -> !s1.equals(s))
                             .filter(s1 -> s.getStructure().getPositions().stream()
                                     .anyMatch(p -> s1.getStructure().getPositions().stream()

@@ -12,7 +12,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsBlockLoader;
+import org.ships.vessel.common.loader.shipsvessel.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
@@ -67,12 +67,12 @@ public class EOTSign implements ShipsSign {
         LiveSignTileEntity stes = (LiveSignTileEntity) lte;
         Vessel vessel;
         try {
-            vessel = new ShipsBlockLoader(position).load();
+            vessel = new ShipsUpdateBlockLoader(position).load();
         } catch (IOException e) {
             player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find connected ship"));
             return false;
         }
-        Vessel vesselFinal = vessel;
+        final Vessel vesselFinal = vessel;
         if(stes.getLine(1).get().toPlain().startsWith("{")) {
             stes.setLine(1, CorePlugin.buildText("Ahead"));
             stes.setLine(2, CorePlugin.buildText("{Stop}"));

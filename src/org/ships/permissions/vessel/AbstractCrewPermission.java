@@ -6,9 +6,11 @@ public class AbstractCrewPermission implements CrewPermission{
     protected boolean remove;
     protected boolean command;
     protected String name;
+    protected String id;
 
-    public AbstractCrewPermission(String name){
+    public AbstractCrewPermission(String id, String name){
         this.name = name;
+        this.id = id;
     }
 
     @Override
@@ -45,7 +47,21 @@ public class AbstractCrewPermission implements CrewPermission{
     }
 
     @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if(!(obj instanceof CrewPermission)){
+            return false;
+        }
+        CrewPermission permission = (CrewPermission)obj;
+        return permission.getId().equals(this.getId());
     }
 }

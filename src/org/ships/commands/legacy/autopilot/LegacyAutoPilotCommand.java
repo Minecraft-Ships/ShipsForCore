@@ -11,9 +11,9 @@ import org.ships.movement.autopilot.BasicFlightPath;
 import org.ships.movement.autopilot.scheduler.FlightPathExecutor;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FlightPathType;
-import org.ships.vessel.common.loader.ShipsIDLoader;
+import org.ships.vessel.common.loader.shipsvessel.ShipsIDLoader;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.types.typical.ShipsVessel;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,7 +108,6 @@ public class LegacyAutoPilotCommand implements LegacyArgumentCommand {
     @Override
     public List<String> tab(CommandSource source, String... args) {
         List<String> list = new ArrayList<>();
-        System.out.println(CorePlugin.toString(" ", t -> t, args));
         if (args.length == 2 && args[1].equalsIgnoreCase("")){
             list.add("deploy");
             list.add("cancel");
@@ -125,7 +124,6 @@ public class LegacyAutoPilotCommand implements LegacyArgumentCommand {
                 File[] files = folder.listFiles();
                 if(files != null){
                     for(File file : files){
-                        System.out.println("\t" + file.getAbsolutePath() + " | " + file.getName());
                         String[] nameSplit = file.getName().split(Pattern.quote("."));
                         nameSplit[nameSplit.length - 1] = "";
                         String name = v.getName().toLowerCase() + ":" + CorePlugin.toString(".", t -> t, nameSplit);

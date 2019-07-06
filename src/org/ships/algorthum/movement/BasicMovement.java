@@ -1,6 +1,6 @@
 package org.ships.algorthum.movement;
 
-import org.core.entity.Entity;
+import org.core.entity.LiveEntity;
 import org.ships.algorthum.Algorthum;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.Movement;
@@ -16,5 +16,5 @@ public interface BasicMovement extends Algorthum {
     Ships5Movement SHIPS_FIVE = new Ships5Movement();
     Ships6Movement SHIPS_SIX = new Ships6Movement();
 
-    Result move(Vessel vessel, MovingBlockSet set, Map<Entity, MovingBlock> entity, Movement.MidMovement midMovement, Movement.PostMovement... postMovements) throws MoveException;
+    Result move(Vessel vessel, MovingBlockSet set, Map<LiveEntity, MovingBlock> entity, Movement.MidMovement midMovement, Movement.PostMovement... postMovements) throws MoveException;
 }

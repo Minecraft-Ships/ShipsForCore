@@ -1,4 +1,4 @@
-package org.ships.vessel.common.types.opship;
+package org.ships.vessel.common.types.typical.opship;
 
 import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;

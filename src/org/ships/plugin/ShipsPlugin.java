@@ -2,21 +2,30 @@ package org.ships.plugin;
 
 import org.core.CorePlugin;
 import org.core.platform.Plugin;
+import org.core.schedule.Scheduler;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
+import org.ships.config.configuration.LegacyShipsConfig;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.debug.DebugFile;
 import org.ships.listener.core.CoreEventListener;
 import org.ships.movement.BlockPriority;
+import org.ships.movement.autopilot.scheduler.FallExecutor;
+import org.ships.permissions.vessel.CrewPermission;
+import org.ships.plugin.patches.AutoRunPatches;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.sign.*;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,14 +33,17 @@ public abstract class ShipsPlugin implements Plugin {
 
     private static ShipsPlugin plugin;
     private Set<Identifable> identifable = new HashSet<>();
+    private Set<CrewPermission> defaultPermissions = new HashSet<>(Arrays.asList(CrewPermission.CAPTAIN));
     private DefaultBlockList blockList;
     private ShipsConfig config;
     private DebugFile debugFile;
+    private Scheduler fallScheduler;
 
     public ShipsPlugin(){
         plugin = this;
         init();
-        this.config = new ShipsConfig();
+        LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
+        this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
     }
@@ -55,9 +67,13 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(ShipType.OVERPOWERED_SHIP);
         this.identifable.add(ShipType.AIRSHIP);
         this.identifable.add(ShipType.WATERSHIP);
+        this.identifable.add(ShipType.SUBMARINE);
 
         CorePlugin.getEventManager().register(this, new CoreEventListener());
         CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
+        this.fallScheduler = FallExecutor.createScheduler();
+        this.fallScheduler.run();
+        CorePlugin.createSchedulerBuilder().setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
     }
 
     public ShipsConfig getConfig(){
@@ -88,6 +104,10 @@ public abstract class ShipsPlugin implements Plugin {
         return this.blockList;
     }
 
+    public Set<CrewPermission> getDefaultPermissions(){
+        return this.defaultPermissions;
+    }
+
     public <T extends Identifable> Set<T> getAll(Class<T> class1){
         return (Set<T>)identifable.stream().filter(class1::isInstance).collect(Collectors.toSet());
     }
@@ -100,20 +120,12 @@ public abstract class ShipsPlugin implements Plugin {
         identifable.addAll(Arrays.asList(identifables));
     }
 
-    public static ShipsPlugin getPlugin(){
-        return plugin;
+    public void register(CrewPermission... permissions){
+        this.defaultPermissions.addAll(Arrays.asList(permissions));
     }
 
-    public static <T> String toString(Collection<T> collection, String split, Function<T, String> asString){
-        StringBuilder ret = null;
-        for(T value : collection){
-            if(ret == null){
-                ret = new StringBuilder(asString.apply(value));
-            }else{
-                ret.append(split).append(asString.apply(value));
-            }
-        }
-        return Objects.requireNonNull(ret).toString();
+    public static ShipsPlugin getPlugin(){
+        return plugin;
     }
 
     @Override

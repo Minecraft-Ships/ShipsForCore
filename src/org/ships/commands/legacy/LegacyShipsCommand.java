@@ -1,12 +1,13 @@
 package org.ships.commands.legacy;
 
-import org.core.command.BaseCommandLauncher;
+import org.core.command.CommandLauncher;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
 import org.ships.commands.legacy.autopilot.LegacyAutoPilotCommand;
 import org.ships.commands.legacy.blockinfo.LegacyBlockInfoCommand;
 import org.ships.commands.legacy.blocklist.LegacyBlockListCommand;
 import org.ships.commands.legacy.cleanup.LegacyCleanupCommand;
+import org.ships.commands.legacy.config.LegacyConfigCommand;
 import org.ships.commands.legacy.help.LegacyHelpCommand;
 import org.ships.commands.legacy.info.LegacyInfoCommand;
 import org.ships.commands.legacy.ship.LegacyShipCommand;
@@ -17,9 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class LegacyShipsCommand implements BaseCommandLauncher {
+public class LegacyShipsCommand implements CommandLauncher {
 
-    private final List<LegacyArgumentCommand> arguments = Arrays.asList(new LegacyShipCommand(), new LegacyCleanupCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand(), new LegacyAutoPilotCommand());
+    private final List<LegacyArgumentCommand> arguments = Arrays.asList(new LegacyConfigCommand(), new LegacyShipCommand(), new LegacyCleanupCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand(), new LegacyAutoPilotCommand());
 
     public List<LegacyArgumentCommand> getArguments(){
         return this.arguments;
@@ -36,8 +37,8 @@ public class LegacyShipsCommand implements BaseCommandLauncher {
     }
 
     @Override
-    public String getPermission() {
-        return "ships.cmd.ships";
+    public Optional<String> getPermission() {
+        return Optional.of("ships.cmd.ships");
     }
 
     @Override

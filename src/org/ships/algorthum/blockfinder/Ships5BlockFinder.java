@@ -5,8 +5,9 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
+import org.ships.config.blocks.BlockListable;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -17,7 +18,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     private int blockLimit = 3000;
     private int blockCount = 0;
     private PositionableShipsStructure shipsStructure;
-    private ShipsVessel vessel;
+    private Vessel vessel;
     private BlockList list;
 
     private void getNextBlock(OvertimeBlockFinderUpdate event, BlockPosition position, Direction... directions){
@@ -72,17 +73,17 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public Optional<ShipsVessel> getConnectedVessel() {
+    public Optional<Vessel> getConnectedVessel() {
         return Optional.ofNullable(this.vessel);
     }
 
     @Override
-    public BasicBlockFinder setConnectedVessel(ShipsVessel vessel) {
+    public BasicBlockFinder setConnectedVessel(Vessel vessel) {
         this.vessel = vessel;
-        if(this.vessel == null){
-            this.list = ShipsPlugin.getPlugin().getBlockList();
+        if(this.vessel != null && this.vessel instanceof BlockListable){
+            this.list = ((BlockListable)this.vessel).getBlockList();
         }else{
-            this.list = this.vessel.getBlockList();
+            this.list = ShipsPlugin.getPlugin().getBlockList();
         }
         return this;
     }

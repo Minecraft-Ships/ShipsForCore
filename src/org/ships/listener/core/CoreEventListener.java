@@ -5,25 +5,28 @@ import org.core.event.EventListener;
 import org.core.event.HEvent;
 import org.core.event.events.block.BlockChangeEvent;
 import org.core.event.events.block.tileentity.SignChangeEvent;
+import org.core.event.events.connection.ClientConnectionEvent;
 import org.core.event.events.entity.EntityInteractEvent;
 import org.core.text.Text;
 import org.core.text.TextColours;
+import org.core.world.direction.Direction;
+import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
-import org.core.world.position.block.details.data.keyed.KeyedData;
+import org.core.world.position.block.details.data.keyed.AttachableKeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
-import org.core.world.position.block.entity.TileEntity;
-import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.permissions.Permissions;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsBlockLoader;
-import org.ships.vessel.common.loader.ShipsIDLoader;
+import org.ships.vessel.common.assits.CrewStoredVessel;
+import org.ships.vessel.common.loader.shipsvessel.ShipsBlockLoader;
+import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
+import org.ships.vessel.common.loader.shipsvessel.ShipsIDLoader;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.ShipsVessel;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.sign.ShipsSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -31,33 +34,41 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class CoreEventListener implements EventListener {
 
     @HEvent
+    public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event){
+        boolean check = ShipsFileLoader.loadAll(e -> {})
+                .stream()
+                .anyMatch(v -> v.getEntities().stream().anyMatch(e -> e.equals(event.getEntity())));
+        if(!check){
+            return;
+        }
+        event.getEntity().setGravity(true);
+    }
+
+    @HEvent
     public void onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer event){
-        ShipsPlugin.getPlugin().getDebugFile().addMessage("--[Start of CoreEventListener:onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer)]--");
         BlockPosition position = event.getInteractPosition();
         Optional<LiveTileEntity> opTE = position.getTileEntity();
         if(!opTE.isPresent()){
-            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to the block not being a LiveTileEntity", "--[end of CoreEventListener:onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer)]--");
             return;
         }
         if(!(opTE.get() instanceof LiveSignTileEntity)){
-            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to the block not being a LiveSignTileEntity", "--[End of CoreEventListener:onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer)]--");
             return;
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
-            ShipsPlugin.getPlugin().getDebugFile().addMessage("Sign found as " + s.getId());
             boolean cancel = event.getClickAction() == EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position) : s.onSecondClick(event.getEntity(), position);
             if(cancel){
-                ShipsPlugin.getPlugin().getDebugFile().addMessage("EntityInteractEvent cancelled due to ShipsSign click failing");
                 event.setCancelled(true);
             }
         });
-        ShipsPlugin.getPlugin().getDebugFile().addMessage("--[End of CoreEventListener:onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer)]--");
     }
 
     @HEvent
@@ -90,13 +101,12 @@ public class CoreEventListener implements EventListener {
             Text typeText = stes.getLine(1).get();
             ShipType type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> typeText.equalsPlain(t.getDisplayName(), true)).findAny().get();
             String permission = Permissions.getMakePermission(type);
-            if(!event.getEntity().hasPermission(permission)){
+            if(!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))){
                 event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission: " + permission));
                 event.setCancelled(true);
                 return;
             }
             try {
-                System.out.println("ID: " + type.getName().toLowerCase() + ":" + stes.getLine(2).get().toPlain().toLowerCase());
                 new ShipsIDLoader(type.getName().toLowerCase() + ":" + stes.getLine(2).get().toPlain().toLowerCase()).load();
                 event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Name has already been taken"));
                 event.setCancelled(true);
@@ -104,55 +114,101 @@ public class CoreEventListener implements EventListener {
             } catch (LoadVesselException e) {
             }
             try {
-                new ShipsBlockLoader(event.getPosition()).load();
-                event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Can not create a new ship ontop of another ship"));
+                for(Direction direction : FourFacingDirection.getFourFacingDirections()) {
+                    new ShipsBlockLoader(event.getPosition().getRelative(direction)).load();
+                    event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Can not create a new ship ontop of another ship"));
+                }
             } catch (LoadVesselException e) {
             }
             PositionableShipsStructure pss = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(event.getPosition());
             Vessel vessel = type.createNewVessel(stes, event.getPosition());
             vessel.setStructure(pss);
-            vessel.save();
-            if(vessel instanceof ShipsVessel){
-                ((ShipsVessel)vessel).getCrew().put(event.getEntity(), CrewPermission.CAPTAIN);
+            if(vessel instanceof CrewStoredVessel){
+                ((CrewStoredVessel)vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
             }
-            //register ship
+            vessel.save();
         }
         event.setTo(stes);
     }
 
     @HEvent
+    public void onBlockExplode(BlockChangeEvent.Break.ByExplosion event){
+        BlockPosition position = event.getPosition();
+        List<Direction> directions = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
+        directions.add(FourFacingDirection.NONE);
+        for(Direction direction : directions) {
+            if (!(position.getRelative(direction).getTileEntity().isPresent())) {
+                continue;
+            }
+            LiveTileEntity lte = position.getRelative(direction).getTileEntity().get();
+            if (!(lte instanceof LiveSignTileEntity)) {
+                continue;
+            }
+            LiveSignTileEntity sign = (LiveSignTileEntity) lte;
+            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+            if (!licenceSign.isSign(sign)) {
+                continue;
+            }
+            if(!direction.equals(FourFacingDirection.NONE)){
+                Optional<Direction> opAttachable = position.getRelative(direction).getBlockDetails().get(AttachableKeyedData.class);
+                if(!opAttachable.isPresent()){
+                    continue;
+                }
+                if(!opAttachable.get().getOpposite().equals(direction)){
+                    continue;
+                }
+            }
+            event.setCancelled(true);
+            return;
+        }
+    }
+
+    @HEvent
     public void onBlockBreak(BlockChangeEvent.Break.ByPlayer event){
-        if(!(event.getBeforeState().get(KeyedData.TILED_ENTITY).isPresent())){
+        List<Direction> list = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
+        list.add(FourFacingDirection.NONE);
+        BlockPosition position = event.getPosition();
+        for(Direction direction : list) {
+            BlockPosition pos = position.getRelative(direction);
+            if (!(pos.getTileEntity().isPresent())) {
+                continue;
+            }
+            LiveTileEntity lte = pos.getTileEntity().get();
+            if(!(lte instanceof LiveSignTileEntity)){
+                continue;
+            }
+            LiveSignTileEntity lste = (LiveSignTileEntity)lte;
+            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+            if (!licenceSign.isSign(lste)) {
+                continue;
+            }
+            if(!direction.equals(FourFacingDirection.NONE)){
+                Optional<Direction> opAttachable = position.getRelative(direction).getBlockDetails().get(AttachableKeyedData.class);
+                if(!opAttachable.isPresent()){
+                    continue;
+                }
+                if(!opAttachable.get().getOpposite().equals(direction)){
+                    continue;
+                }
+            }
+            Optional<ShipsVessel> opVessel = licenceSign.getShip(lste);
+            if (!opVessel.isPresent()) {
+                continue;
+            }
+            ShipsVessel vessel = opVessel.get();
+            if (!(vessel.getPermission(event.getEntity().getUniqueId()).canRemove() || (event.getEntity().hasPermission(Permissions.ABSTRACT_SHIP_MOVE_OTHER)))) {
+                event.setCancelled(true);
+                return;
+            }
+            File file = vessel.getFile();
+            try {
+                Files.delete(file.toPath());
+            } catch (IOException e) {
+                event.setCancelled(true);
+                e.printStackTrace();
+            }
+            event.getEntity().sendMessage(CorePlugin.buildText(TextColours.AQUA + vessel.getName() + " removed successfully"));
             return;
-        }
-        TileEntitySnapshot<? extends TileEntity> tes = event.getBeforeState().get(KeyedData.TILED_ENTITY).get();
-        if(!(tes instanceof SignTileEntitySnapshot)){
-            return;
-        }
-        SignTileEntitySnapshot sign = (SignTileEntitySnapshot) tes;
-        LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
-        if(!licenceSign.isSign(sign)){
-            return;
-        }
-        Optional<Vessel> opVessel = licenceSign.getShip(sign);
-        if(!opVessel.isPresent()){
-            return;
-        }
-        Vessel vessel = opVessel.get();
-        if(!(vessel instanceof ShipsVessel)){
-            return;
-        }
-        ShipsVessel sVessel = (ShipsVessel) vessel;
-        if(!sVessel.getPermission(event.getEntity()).canRemove()){
-            event.setCancelled(true);
-            return;
-        }
-        File file = sVessel.getFile();
-        try {
-            Files.delete(file.toPath());
-        } catch (IOException e) {
-            event.setCancelled(true);
-            e.printStackTrace();
         }
     }
 }

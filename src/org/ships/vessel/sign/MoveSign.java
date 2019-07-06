@@ -7,6 +7,7 @@ import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.vector.types.Vector3Int;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -14,14 +15,17 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.exceptions.MoveException;
+import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.result.FailedMovement;
+import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsBlockLoader;
-import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.assits.CrewStoredVessel;
+import org.ships.vessel.common.loader.shipsvessel.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class MoveSign implements ShipsSign {
 
@@ -69,12 +73,7 @@ public class MoveSign implements ShipsSign {
             speed++;
         }
         try {
-            Vessel vessel = new ShipsBlockLoader(position).load();
-            if (!(vessel instanceof ShipsVessel)) {
-                System.err.println("Vessel is not ShipsVessel");
-                return false;
-            }
-            ShipsVessel ship = (ShipsVessel)vessel;
+            Vessel ship = new ShipsUpdateBlockLoader(position).load();
             if(speed > ship.getMaxSpeed() || speed < -ship.getMaxSpeed()){
                 return false;
             }
@@ -103,16 +102,19 @@ public class MoveSign implements ShipsSign {
         }
         int speed = Integer.parseInt(name);
         try {
-            Vessel vessel = new ShipsBlockLoader(position).load();
-            if(!(vessel instanceof ShipsVessel)){
-                System.err.println("Vessel is not ShipsVessel");
-                return false;
-            }
+            Vessel vessel = new ShipsUpdateBlockLoader(position).load();
 
             Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
             if(!opDirectional.isPresent()){
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
                 return false;
+            }
+            if(vessel instanceof CrewStoredVessel){
+                CrewStoredVessel stored = (CrewStoredVessel) vessel;
+                if (!(stored.getPermission(player.getUniqueId()).canMove() || player.hasPermission(Permissions.getMovePermission(stored.getType())) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))){
+                    player.sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission"));
+                    return false;
+                }
             }
             Vector3Int direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
             BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
@@ -121,6 +123,10 @@ public class MoveSign implements ShipsSign {
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }
+        }catch (UnableToFindLicenceSign e1){
+            player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
+            e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+            CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
         } catch (IOException e) {
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             return false;
@@ -138,7 +144,7 @@ public class MoveSign implements ShipsSign {
         return "Move sign";
     }
 
-    private <T extends Object> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
+    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
         movement.sendMessage(viewer, (T)value);
     }
 }

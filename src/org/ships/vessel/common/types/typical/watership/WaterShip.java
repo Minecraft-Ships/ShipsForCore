@@ -1,4 +1,4 @@
-package org.ships.vessel.common.types.watership;
+package org.ships.vessel.common.types.typical.watership;
 
 import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
@@ -15,13 +15,16 @@ import org.ships.movement.MovingBlockSet;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredPercentMovementData;
+import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.WaterType;
-import org.ships.vessel.common.types.AbstractShipsVessel;
+import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.typical.AbstractShipsVessel;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
 
-public class WaterShip extends AbstractShipsVessel implements WaterType {
+public class WaterShip extends AbstractShipsVessel implements WaterType, Fallable {
 
     protected float specialBlockPercent = 25;
     protected Set<BlockType> specialBlocks = BlockTypes.WHITE_WOOL.get().getLike();
@@ -31,14 +34,20 @@ public class WaterShip extends AbstractShipsVessel implements WaterType {
 
     public WaterShip(LiveSignTileEntity licence) {
         super(licence, ShipType.WATERSHIP);
+        this.flags.add(new AltitudeLockFlag(true));
     }
 
     public WaterShip(SignTileEntity ste, BlockPosition position){
         super(ste, position, ShipType.WATERSHIP);
+        this.flags.add(new AltitudeLockFlag(true));
     }
 
+
     @Override
-    public void meetsRequirement(MovingBlockSet movingBlocks) throws MoveException{
+    public void meetsRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
+        if(!strict){
+            return;
+        }
         int specialBlockCount = 0;
         for(MovingBlock movingBlock : movingBlocks){
             BlockPosition blockPosition = movingBlock.getBeforePosition();
@@ -46,10 +55,15 @@ public class WaterShip extends AbstractShipsVessel implements WaterType {
                 specialBlockCount++;
             }
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f)/movingBlocks.size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f)/(movingBlocks.stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count()));
         if((this.specialBlockPercent != 0) && specialBlockPercent <= this.specialBlockPercent){
             throw new MoveException(new AbstractFailedMovement(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlocks.iterator().next(), this.specialBlockPercent, specialBlockPercent)));
         }
+    }
+
+    @Override
+    public void processRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
+
     }
 
     @Override
@@ -74,5 +88,26 @@ public class WaterShip extends AbstractShipsVessel implements WaterType {
         map.put("Special Block", CorePlugin.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.specialBlocks));
         map.put("Required Percent", this.specialBlockPercent + "");
         return map;
+    }
+
+    @Override
+    public boolean shouldFall() {
+        int specialBlockCount = 0;
+        for(BlockPosition blockPosition : this.getStructure().getPositions()){
+            if(this.specialBlocks.stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
+                specialBlockCount++;
+            }
+        }
+        float specialBlockPercent = ((specialBlockCount * 100.0f)/this.getStructure().getPositions().size());
+        if((this.specialBlockPercent != 0) && specialBlockPercent <= this.specialBlockPercent){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void setStructure(PositionableShipsStructure structure){
+        structure.addAir();
+        super.setStructure(structure);
     }
 }

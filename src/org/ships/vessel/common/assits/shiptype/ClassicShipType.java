@@ -3,9 +3,10 @@ package org.ships.vessel.common.assits.shiptype;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
-public interface ClassicShipType {
+public interface ClassicShipType extends ShipType {
 
     Vessel createClassicVessel(SignTileEntity ste, BlockPosition blockPosition);
 

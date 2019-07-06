@@ -1,9 +1,9 @@
 package org.ships.movement;
 
-import org.core.entity.Entity;
+import org.core.entity.LiveEntity;
 import org.core.vector.Vector3;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.types.ShipsVessel;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -46,7 +46,7 @@ public class Result extends ArrayList<Result.Run> {
 
         Run COMMON_SAVE = (v, b, m) -> v.save();
 
-        void run(ShipsVessel vessel, MovingBlockSet blocks, Map<Entity, MovingBlock> map);
+        void run(Vessel vessel, MovingBlockSet blocks, Map<LiveEntity, MovingBlock> map);
 
     }
 
@@ -62,7 +62,7 @@ public class Result extends ArrayList<Result.Run> {
         super(collection);
     }
 
-    public void run(ShipsVessel vessel, MovingBlockSet blocks, Map<Entity, MovingBlock> map){
+    public void run(Vessel vessel, MovingBlockSet blocks, Map<LiveEntity, MovingBlock> map){
         this.forEach(e -> e.run(vessel, blocks, map));
     }
 }
