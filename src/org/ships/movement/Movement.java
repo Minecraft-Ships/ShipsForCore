@@ -1,5 +1,6 @@
 package org.ships.movement;
 
+import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
@@ -13,6 +14,7 @@ import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
+import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
@@ -45,15 +47,20 @@ public class Movement {
     }
 
     protected void move(Vessel vessel, boolean strict, MovingBlockSet blocks, BasicMovement movement, MidMovement mid, PostMovement... postMovement) throws MoveException {
-        vessel.set(MovingFlag.class, true);
+        vessel.set(MovingFlag.class, blocks);
         Set<LiveEntity> entities = vessel.getEntities();
         Map<LiveEntity, MovingBlock> entityBlock = new HashMap<>();
-        entities.forEach(e -> e.setGravity(false));
         entities.forEach(e -> entityBlock.put(e, blocks.getBefore(e.getPosition().toBlockPosition().getRelative(FourFacingDirection.DOWN)).get()));
+
+        VesselMoveEvent.Pre preEvent = new VesselMoveEvent.Pre(vessel, movement, blocks, entityBlock, strict);
+        if (CorePlugin.getPlatform().callEvent(preEvent).isCancelled()){
+            return;
+        }
+
         Optional<MovingBlock> opLicence = blocks.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
         if (!opLicence.isPresent()) {
             entities.forEach(e -> e.setGravity(true));
-            vessel.set(MovingFlag.class, false);
+            vessel.set(MovingFlag.class, null);
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.NO_LICENCE_FOUND, null));
         }
         if (vessel instanceof VesselRequirement) {
@@ -61,7 +68,7 @@ public class Movement {
                 ((VesselRequirement) vessel).meetsRequirements(strict, blocks);
             }catch (Throwable e) {
                 entities.forEach(entity -> entity.setGravity(true));
-                vessel.set(MovingFlag.class, false);
+                vessel.set(MovingFlag.class, null);
                 throw e;
             }
         }
@@ -83,15 +90,29 @@ public class Movement {
         });
         if (!collided.isEmpty()) {
             entities.forEach(e -> e.setGravity(true));
-            vessel.set(MovingFlag.class, false);
-            throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, collided));
+            vessel.set(MovingFlag.class, null);
+
+            VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, movement, blocks, entityBlock, strict, collided);
+            CorePlugin.getPlatform().callEvent(collideEvent);
+
+            throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, collideEvent.getCollisions()));
         }
         try {
+            entities.forEach(e -> e.setGravity(false));
+            VesselMoveEvent.Main eventMain = new VesselMoveEvent.Main(vessel, movement, blocks, entityBlock, strict);
+            if (CorePlugin.getPlatform().callEvent(eventMain).isCancelled()){
+                return;
+            }
+
             Result result = movement.move(vessel, blocks, entityBlock, mid, postMovement);
+
+            VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, movement, blocks, entityBlock, strict, result);
+            CorePlugin.getPlatform().callEvent(eventPost);
+
             result.run(vessel, blocks, entityBlock);
         }catch (Throwable e) {
             entities.forEach(entity -> entity.setGravity(true));
-            vessel.set(MovingFlag.class, false);
+            vessel.set(MovingFlag.class, null);
             throw e;
         }
     }

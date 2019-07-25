@@ -38,6 +38,8 @@ public class FlightPathExecutor implements Runnable {
                 this.vessel.setFlightPath(this.vessel.getFlightPath().get().createUpdatedPath(this.vessel.getPosition().getPosition(), this.vessel.getFlightPath().get().getEndingPosition()));
             } catch (MoveException e) {
                 e.printStackTrace();
+            }catch (Throwable e2){
+                vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         });
     }

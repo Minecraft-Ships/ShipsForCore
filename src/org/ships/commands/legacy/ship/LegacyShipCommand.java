@@ -6,13 +6,16 @@ import org.core.entity.living.human.player.User;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
+import org.core.utils.Identifable;
 import org.core.world.position.block.BlockTypes;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.flag.VesselFlag;
-import org.ships.vessel.common.loader.shipsvessel.ShipsIDLoader;
+import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 
 import java.io.File;
@@ -39,7 +42,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             return true;
         }
         try {
-            ShipsVessel vessel = new ShipsIDLoader(args[1]).load();
+            Vessel vessel = new ShipsIDFinder(args[1]).load();
             if(args[2].equalsIgnoreCase("track")){
                 if(!(source instanceof LivePlayer)){
                     if(source instanceof CommandViewer){
@@ -65,14 +68,16 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                     return false;
                 }else if(args.length >= 5){
                     String type = args[3];
-                    Set<User> crew = vessel.getUserCrew(args[4]);
-                    if(type.equalsIgnoreCase("view")){
-                        if(!(source instanceof CommandViewer)){
-                            return false;
+                    if(vessel instanceof CrewStoredVessel) {
+                        Set<User> crew = ((CrewStoredVessel)vessel).getUserCrew(args[4]);
+                        if (type.equalsIgnoreCase("view")) {
+                            if (!(source instanceof CommandViewer)) {
+                                return false;
+                            }
+                            CommandViewer viewer = (CommandViewer) source;
+                            viewer.sendMessagePlain("|----[" + args[4] + "]----|");
+                            crew.forEach(u -> viewer.sendMessagePlain(" |- " + u.getName()));
                         }
-                        CommandViewer viewer = (CommandViewer)source;
-                        viewer.sendMessagePlain("|----[" + args[4] + "]----|");
-                        crew.forEach(u -> viewer.sendMessagePlain(" |- " + u.getName()));
                     }
                 }
             }else if(args[2].equalsIgnoreCase("info")){
@@ -81,12 +86,18 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                 }
                 CommandViewer viewer = (CommandViewer) source;
                 viewer.sendMessagePlain("Name: " + vessel.getName());
-                viewer.sendMessagePlain("ID: " + vessel.getId());
+                if(vessel instanceof Identifable) {
+                    viewer.sendMessagePlain("ID: " + ((Identifable)vessel).getId());
+                }
                 viewer.sendMessagePlain("Max Speed: " + vessel.getMaxSpeed());
                 viewer.sendMessagePlain("Altitude Speed: " + vessel.getAltitudeSpeed());
                 viewer.sendMessagePlain("Size: " + vessel.getStructure().getPositions().size());
-                viewer.sendMessagePlain("Default Permission" + vessel.getDefaultPermission().getId());
-                vessel.getExtraInformation().entrySet().forEach(e -> viewer.sendMessagePlain(e.getKey() + ": " + e.getValue()));
+                if(vessel instanceof CrewStoredVessel) {
+                    viewer.sendMessagePlain("Default Permission: " + ((CrewStoredVessel) vessel).getDefaultPermission().getId());
+                }
+                if(vessel instanceof ShipsVessel) {
+                    ((ShipsVessel) vessel).getExtraInformation().forEach((key, value) -> viewer.sendMessagePlain(key + ": " + value));
+                }
                 viewer.sendMessagePlain("Entities: ");
                 viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", e -> {
                     if(e instanceof LivePlayer){
@@ -95,13 +106,15 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                     }
                     return e.getType().getName();
                 }, vessel.getEntities()));
-                viewer.sendMessagePlain("Flags:");
-                viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", f -> {
-                    if(f instanceof VesselFlag.Serializable){
-                        return ((VesselFlag.Serializable<?>) f).serialize();
-                    }
-                    return "";
-                }, vessel.getFlags()));
+                if(vessel instanceof ShipsVessel) {
+                    viewer.sendMessagePlain("Flags:");
+                    viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", f -> {
+                        if (f instanceof VesselFlag.Serializable) {
+                            return ((VesselFlag.Serializable<?>) f).serialize();
+                        }
+                        return "";
+                    }, ((ShipsVessel)vessel).getFlags()));
+                }
             }
         } catch (IOException e) {
             if(source instanceof CommandViewer){
@@ -167,27 +180,31 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             }
         }else if(args.length == 5 && args[2].equalsIgnoreCase("crew") && args[3].equalsIgnoreCase("")){
             try {
-                ShipsVessel vessel = new ShipsIDLoader(args[1]).load();
-                vessel.getCrew().values().stream().forEach(p -> {
-                    if(list.contains(p.getId())){
-                        return;
-                    }
-                    list.add(p.getId());
-                });
+                Vessel vessel = new ShipsIDFinder(args[1]).load();
+                if(vessel instanceof CrewStoredVessel) {
+                    ((CrewStoredVessel)vessel).getCrew().values().forEach(p -> {
+                        if (list.contains(p.getId())) {
+                            return;
+                        }
+                        list.add(p.getId());
+                    });
+                }
             } catch (LoadVesselException e) {
                 return list;
             }
         }else if(args.length == 5 && args[2].equalsIgnoreCase("crew")){
             try {
-                ShipsVessel vessel = new ShipsIDLoader(args[1]).load();
-                vessel.getCrew().values().stream().forEach(p -> {
-                    if(p.getId().toLowerCase().startsWith(args[4].toLowerCase())) {
-                        if (list.contains(p.getId())) {
-                            return;
+                Vessel vessel = new ShipsIDFinder(args[1]).load();
+                if(vessel instanceof CrewStoredVessel) {
+                    ((CrewStoredVessel)vessel).getCrew().values().forEach(p -> {
+                        if (p.getId().toLowerCase().startsWith(args[4].toLowerCase())) {
+                            if (list.contains(p.getId())) {
+                                return;
+                            }
+                            list.add(p.getId());
                         }
-                        list.add(p.getId());
-                    }
-                });
+                    });
+                }
             } catch (LoadVesselException e) {
                 return list;
             }

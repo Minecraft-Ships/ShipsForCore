@@ -7,7 +7,6 @@ import org.core.configuration.parser.Parser;
 import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemStack;
 import org.core.inventory.item.ItemType;
-import org.core.inventory.item.ItemTypes;
 import org.core.inventory.parts.Slot;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
@@ -36,12 +35,12 @@ import java.util.stream.Collectors;
 
 public class Airship extends AbstractShipsVessel implements AirType, Fallable {
 
-    protected boolean useBurner = true;
-    protected float specialBlockPercent = 60;
-    protected Set<BlockType> specialBlocks = BlockTypes.WHITE_WOOL.get().getLike();
-    protected int fuelConsumption = 1;
-    protected boolean takeFromTopSlot = false;
-    protected Set<ItemType> fuelTypes = new HashSet<>(Arrays.asList(ItemTypes.COAL, ItemTypes.CHARCOAL));
+    protected boolean useBurner = ShipType.AIRSHIP.isUsingBurner();
+    protected float specialBlockPercent = ShipType.AIRSHIP.getDefaultSpecialBlockPercent();
+    protected Set<BlockType> specialBlocks = ShipType.AIRSHIP.getDefaultSpecialBlockType();
+    protected int fuelConsumption = ShipType.AIRSHIP.getDefaultFuelConsumption();
+    protected boolean takeFromTopSlot = ShipType.AIRSHIP.isUsingTopSlot();
+    protected Set<ItemType> fuelTypes = ShipType.AIRSHIP.getDefaultFuelTypes();
 
     protected ConfigurationNode configBurnerBlock = new ConfigurationNode("Block", "Burner");
     protected ConfigurationNode configSpecialBlockPercent = new ConfigurationNode("Block", "Special", "Percent");

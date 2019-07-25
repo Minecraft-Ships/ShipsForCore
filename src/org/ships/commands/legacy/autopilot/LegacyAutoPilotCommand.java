@@ -11,9 +11,9 @@ import org.ships.movement.autopilot.BasicFlightPath;
 import org.ships.movement.autopilot.scheduler.FlightPathExecutor;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FlightPathType;
-import org.ships.vessel.common.loader.shipsvessel.ShipsIDLoader;
+import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.typical.ShipsVessel;
+import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,9 +53,9 @@ public class LegacyAutoPilotCommand implements LegacyArgumentCommand {
                 }
                 return false;
             }
-            ShipsVessel vessel;
+            Vessel vessel;
             try {
-                vessel = new ShipsIDLoader(args[2]).load();
+                vessel = new ShipsIDFinder(args[2]).load();
             } catch (IOException e) {
                 if (source instanceof CommandViewer) {
                     ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
@@ -84,9 +84,9 @@ public class LegacyAutoPilotCommand implements LegacyArgumentCommand {
                 }
                 return false;
             }
-            ShipsVessel vessel;
+            Vessel vessel;
             try {
-                vessel = new ShipsIDLoader(args[2]).load();
+                vessel = new ShipsIDFinder(args[2]).load();
             } catch (IOException e) {
                 if (source instanceof CommandViewer) {
                     ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));

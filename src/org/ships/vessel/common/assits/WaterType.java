@@ -23,9 +23,11 @@ public interface WaterType extends Vessel {
         for (BlockPosition position : pss.getPositions()){
             for(Direction direction : directions){
                 BlockType type = position.getRelative(direction).getBlockType();
-                if(type.isLike(BlockTypes.WATER.get())){
-                    height = position.getY();
-                    continue;
+                if(type.equals(BlockTypes.WATER.get())){
+                    if(height < position.getY()) {
+                        height = position.getY();
+                        continue;
+                    }
                 }
             }
         }

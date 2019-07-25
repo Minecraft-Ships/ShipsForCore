@@ -1,11 +1,12 @@
 package org.ships.vessel.common.types.typical.submarine;
 
+import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
+import org.core.configuration.parser.Parser;
 import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemStack;
 import org.core.inventory.item.ItemType;
-import org.core.inventory.item.ItemTypes;
 import org.core.inventory.parts.Slot;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
@@ -35,11 +36,18 @@ import java.util.stream.Collectors;
 
 public class Submarine extends AbstractShipsVessel implements UnderWaterType {
 
-    protected float specialBlockPercent = 75;
-    protected Set<BlockType> specialBlocks = new HashSet<>(Collections.singletonList(BlockTypes.IRON_BLOCK.get()));
-    protected int fuelConsumption = 1;
-    protected boolean takeFromTopSlot = false;
-    protected Set<ItemType> fuelTypes = new HashSet<>(Collections.singletonList(ItemTypes.COAL_BLOCK));
+    protected float specialBlockPercent = ShipType.SUBMARINE.getDefaultSpecialBlockPercent();
+    protected Set<BlockType> specialBlocks = ShipType.SUBMARINE.getDefaultSpecialBlockType();
+    protected int fuelConsumption = ShipType.SUBMARINE.getDefaultFuelConsumption();
+    protected boolean takeFromTopSlot = ShipType.SUBMARINE.isUsingTopSlot();
+    protected Set<ItemType> fuelTypes = ShipType.SUBMARINE.getDefaultFuelTypes();
+
+    protected ConfigurationNode configBurnerBlock = new ConfigurationNode("Block", "Burner");
+    protected ConfigurationNode configSpecialBlockPercent = new ConfigurationNode("Block", "Special", "Percent");
+    protected ConfigurationNode configSpecialBlockType = new ConfigurationNode("Block", "Special", "Type");
+    protected ConfigurationNode configFuelConsumption = new ConfigurationNode("Block", "Fuel", "Consumption");
+    protected ConfigurationNode configFuelSlot = new ConfigurationNode("Block", "Fuel", "Slot");
+    protected ConfigurationNode configFuelTypes = new ConfigurationNode("Block", "Fuel", "Types");
 
     public Submarine(LiveSignTileEntity licence) {
         super(licence, ShipType.SUBMARINE);
@@ -71,17 +79,40 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType {
 
     @Override
     public Map<String, String> getExtraInformation() {
-        return new HashMap<>();
+        Map<String, String> map = new HashMap<>();
+        map.put("Fuel", CorePlugin.toString(", ", Parser.STRING_TO_ITEM_TYPE::unparse, this.fuelTypes));
+        map.put("Fuel Consumption", this.fuelConsumption + "");
+        map.put("Fuel Slot", (this.takeFromTopSlot ? "True" : "False"));
+        map.put("Special Block", CorePlugin.toString("", Parser.STRING_TO_BLOCK_TYPE::unparse, this.specialBlocks));
+        map.put("Required Percent", this.specialBlockPercent + "");
+        return map;
     }
 
     @Override
     public Map<ConfigurationNode, Object> serialize(ConfigurationFile file) {
-        return new HashMap<>();
+        Map<ConfigurationNode, Object> map = new HashMap<>();
+        map.put(this.configSpecialBlockType, Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, this.specialBlocks));
+        map.put(this.configSpecialBlockPercent, this.specialBlockPercent);
+        map.put(this.configFuelConsumption, this.fuelConsumption);
+        map.put(this.configFuelSlot, this.takeFromTopSlot ? "Top" : "Bottom");
+        map.put(this.configFuelTypes, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, this.fuelTypes));
+        return map;
     }
 
     @Override
     public AbstractShipsVessel deserializeExtra(ConfigurationFile file) {
-        return this;
+        this.specialBlockPercent = file.parseDouble(this.configSpecialBlockPercent).get().floatValue();
+        this.fuelConsumption = file.parseInt(this.configFuelConsumption).get();
+        Optional<List<ItemType>> opItemTypes = file.parseList(this.configFuelTypes, Parser.STRING_TO_ITEM_TYPE);
+        this.fuelTypes = opItemTypes.<Set<ItemType>>map(HashSet::new).orElseGet(HashSet::new);
+        Optional<List<BlockType>> opSpecialBlocks = file.parseList(this.configSpecialBlockType, Parser.STRING_TO_BLOCK_TYPE);
+        this.specialBlocks = opSpecialBlocks.<Set<BlockType>>map(HashSet::new).orElseGet(HashSet::new);
+        String slotType = file.parseString(this.configFuelSlot).get().toLowerCase();
+        switch(slotType){
+            case "top": this.takeFromTopSlot = true; break;
+            case "bottom": this.takeFromTopSlot = false; break;
+            default: System.err.println("Failed to read " + this.configFuelSlot.toString() + ". Only 'Top' and 'Bottom' are allowed as values. Using default"); break;
+        }return this;
     }
 
     @Override

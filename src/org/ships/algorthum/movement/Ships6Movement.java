@@ -76,7 +76,7 @@ public class Ships6Movement implements BasicMovement {
                 movement.postMove(vessel);
             }
             Result.DEFAULT_RESULT.run(vessel, set, entity);
-            vessel.set(MovingFlag.class, false);
+            vessel.set(MovingFlag.class, null);
         }).build(ShipsPlugin.getPlugin());
         for(int A = 0; A < blocksToProcess.size(); A++){
             System.out.println("A: " + (A));

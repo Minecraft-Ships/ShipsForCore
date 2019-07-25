@@ -1,12 +1,14 @@
-package org.ships.listener.core;
+package org.ships.event.listener;
 
 import org.core.CorePlugin;
+import org.core.entity.scene.droppeditem.DroppedItem;
 import org.core.event.EventListener;
 import org.core.event.HEvent;
 import org.core.event.events.block.BlockChangeEvent;
 import org.core.event.events.block.tileentity.SignChangeEvent;
 import org.core.event.events.connection.ClientConnectionEvent;
 import org.core.event.events.entity.EntityInteractEvent;
+import org.core.event.events.entity.EntitySpawnEvent;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.direction.Direction;
@@ -17,16 +19,17 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.exceptions.load.LoadVesselException;
+import org.ships.movement.MovingBlockSet;
 import org.ships.permissions.Permissions;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
-import org.ships.vessel.common.loader.shipsvessel.ShipsBlockLoader;
-import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
-import org.ships.vessel.common.loader.shipsvessel.ShipsIDLoader;
+import org.ships.vessel.common.assits.FileBasedVessel;
+import org.ships.vessel.common.flag.MovingFlag;
+import org.ships.vessel.common.loader.ShipsBlockFinder;
+import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.sign.ShipsSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -42,8 +45,31 @@ import java.util.Optional;
 public class CoreEventListener implements EventListener {
 
     @HEvent
+    public void onEntitySpawnEvent(EntitySpawnEvent event){
+        if(!(event.getEntity() instanceof DroppedItem)){
+            return;
+        }
+        boolean bool = ShipsPlugin.getPlugin().getVessels().stream().filter(e -> {
+            Optional<MovingBlockSet> opValue = e.getValue(MovingFlag.class);
+            if(!opValue.isPresent()){
+                return false;
+            }
+            return !opValue.get().isEmpty();
+        }).anyMatch(v -> {
+            Optional<MovingBlockSet> opSet = v.getValue(MovingFlag.class);
+            if(!opSet.isPresent()){
+                return false;
+            }
+            return opSet.get().stream().anyMatch(mb -> mb.getAfterPosition().equals(event.getPosition().toBlockPosition()));
+        });
+        if(bool) {
+            event.setCancelled(true);
+        }
+    }
+
+    @HEvent
     public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event){
-        boolean check = ShipsFileLoader.loadAll(e -> {})
+        boolean check = ShipsPlugin.getPlugin().getVessels()
                 .stream()
                 .anyMatch(v -> v.getEntities().stream().anyMatch(e -> e.equals(event.getEntity())));
         if(!check){
@@ -107,7 +133,7 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             try {
-                new ShipsIDLoader(type.getName().toLowerCase() + ":" + stes.getLine(2).get().toPlain().toLowerCase()).load();
+                new ShipsIDFinder(type.getName().toLowerCase() + ":" + stes.getLine(2).get().toPlain().toLowerCase()).load();
                 event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Name has already been taken"));
                 event.setCancelled(true);
                 return;
@@ -115,7 +141,7 @@ public class CoreEventListener implements EventListener {
             }
             try {
                 for(Direction direction : FourFacingDirection.getFourFacingDirections()) {
-                    new ShipsBlockLoader(event.getPosition().getRelative(direction)).load();
+                    new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
                     event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Can not create a new ship ontop of another ship"));
                 }
             } catch (LoadVesselException e) {
@@ -127,6 +153,7 @@ public class CoreEventListener implements EventListener {
                 ((CrewStoredVessel)vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
             }
             vessel.save();
+            ShipsPlugin.getPlugin().registerVessel(vessel);
         }
         event.setTo(stes);
     }
@@ -191,22 +218,27 @@ public class CoreEventListener implements EventListener {
                     continue;
                 }
             }
-            Optional<ShipsVessel> opVessel = licenceSign.getShip(lste);
+            Optional<Vessel> opVessel = licenceSign.getShip(lste);
             if (!opVessel.isPresent()) {
                 continue;
             }
-            ShipsVessel vessel = opVessel.get();
-            if (!(vessel.getPermission(event.getEntity().getUniqueId()).canRemove() || (event.getEntity().hasPermission(Permissions.ABSTRACT_SHIP_MOVE_OTHER)))) {
-                event.setCancelled(true);
-                return;
+            Vessel vessel = opVessel.get();
+            if(vessel instanceof CrewStoredVessel) {
+                if (!(((CrewStoredVessel)vessel).getPermission(event.getEntity().getUniqueId()).canRemove() || (event.getEntity().hasPermission(Permissions.ABSTRACT_SHIP_MOVE_OTHER)))) {
+                    event.setCancelled(true);
+                    return;
+                }
             }
-            File file = vessel.getFile();
-            try {
-                Files.delete(file.toPath());
-            } catch (IOException e) {
-                event.setCancelled(true);
-                e.printStackTrace();
+            if(vessel instanceof FileBasedVessel) {
+                File file = ((FileBasedVessel)vessel).getFile();
+                try {
+                    Files.delete(file.toPath());
+                } catch (IOException e) {
+                    event.setCancelled(true);
+                    e.printStackTrace();
+                }
             }
+            ShipsPlugin.getPlugin().unregisterVessel(vessel);
             event.getEntity().sendMessage(CorePlugin.buildText(TextColours.AQUA + vessel.getName() + " removed successfully"));
             return;
         }

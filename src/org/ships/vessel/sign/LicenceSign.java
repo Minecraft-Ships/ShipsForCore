@@ -4,6 +4,7 @@ import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.text.Text;
 import org.core.text.TextColours;
+import org.core.utils.Identifable;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -14,10 +15,10 @@ import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.shipsvessel.ShipsIDLoader;
-import org.ships.vessel.common.loader.shipsvessel.ShipsLicenceSignLoader;
+import org.ships.vessel.common.loader.ShipsIDFinder;
+import org.ships.vessel.common.loader.ShipsLicenceSignFinder;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.typical.ShipsVessel;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.IOException;
@@ -26,9 +27,9 @@ import java.util.concurrent.TimeUnit;
 
 public class LicenceSign implements ShipsSign {
 
-    public Optional<ShipsVessel> getShip(SignTileEntity entity){
+    public Optional<Vessel> getShip(SignTileEntity entity){
         try {
-            return Optional.of(new ShipsLicenceSignLoader(entity).load());
+            return Optional.of(new ShipsLicenceSignFinder(entity).load());
         } catch (LoadVesselException e) {
             return Optional.empty();
         }
@@ -37,7 +38,7 @@ public class LicenceSign implements ShipsSign {
     @Override
     public boolean isSign(SignTileEntity entity) {
         Optional<Text> opValue = entity.getLine(0);
-        return opValue.isPresent() && opValue.get().equals(getFirstLine());
+        return opValue.isPresent() && opValue.get().equalsPlain(getFirstLine().toPlain(), false);
     }
 
     @Override
@@ -75,9 +76,11 @@ public class LicenceSign implements ShipsSign {
     @Override
     public boolean onPrimaryClick(LivePlayer player, BlockPosition position){
         try {
-            ShipsVessel s = new ShipsLicenceSignLoader(position).load();
+            Vessel s = new ShipsLicenceSignFinder(position).load();
             if (!player.isSneaking()) {
-                player.sudo("ships", "ship", s.getId().substring(6), "info");
+                if(s instanceof Identifable) {
+                    player.sudo("ships", "ship", ((Identifable)s).getId().substring(6), "info");
+                }
             } else {
                 int size = s.getStructure().getPositions().size();
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(s).getConnectedBlocksOvertime(s.getPosition(), new OvertimeBlockFinderUpdate() {
@@ -105,7 +108,7 @@ public class LicenceSign implements ShipsSign {
                     String type = lste.getLine(1).get().toPlain();
                     String name = lste.getLine(2).get().toPlain();
                     try{
-                        ShipsVessel vessel = new ShipsIDLoader(type + ":" + name).load();
+                        Vessel vessel = new ShipsIDFinder(type + ":" + name).load();
                         vessel.getStructure().setPosition(position);
                         vessel.save();
                         player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "Resynced " + name + " with file. Please try again"));
@@ -123,7 +126,7 @@ public class LicenceSign implements ShipsSign {
     @Override
     public boolean onSecondClick(LivePlayer player, BlockPosition position) {
         if(player.isSneaking()){
-            return onSecondClick(player, position);
+            return onPrimaryClick(player, position);
         }
         return false;
     }

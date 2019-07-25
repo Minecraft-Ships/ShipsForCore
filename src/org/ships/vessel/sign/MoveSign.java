@@ -20,7 +20,7 @@ import org.ships.movement.result.FailedMovement;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
-import org.ships.vessel.common.loader.shipsvessel.ShipsUpdateBlockLoader;
+import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
@@ -122,6 +122,8 @@ public class MoveSign implements ShipsSign {
                 vessel.moveTowards(direction, movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
+            }catch (Throwable e2){
+                vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         }catch (UnableToFindLicenceSign e1){
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));

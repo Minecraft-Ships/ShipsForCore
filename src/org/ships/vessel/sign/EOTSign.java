@@ -12,7 +12,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.shipsvessel.ShipsUpdateBlockLoader;
+import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.ships.vessel.common.loader.shipsvessel;
+package org.ships.vessel.common.loader;
 
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -6,9 +6,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsLoader;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -38,9 +36,9 @@ public class ShipsUpdateBlockLoader implements ShipsLoader {
             throw new UnableToFindLicenceSign(blocks, "Failed to find licence sign");
         }
         BlockPosition block = opBlock.get();
-        ShipsVessel vessel = new ShipsLicenceSignLoader((LiveSignTileEntity) opBlock.get().getTileEntity().get()).load();
+        Vessel vessel = new ShipsLicenceSignFinder((LiveSignTileEntity) opBlock.get().getTileEntity().get()).load();
         AbstractPosititionableShipsStructure apss = new AbstractPosititionableShipsStructure(block);
-        blocks.getPositions().stream().forEach(b -> apss.addPosition(b));
+        blocks.getPositions().forEach(b -> apss.addPosition(b));
         vessel.setStructure(apss);
         return vessel;
     }

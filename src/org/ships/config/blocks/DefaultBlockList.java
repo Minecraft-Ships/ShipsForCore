@@ -29,6 +29,7 @@ public class DefaultBlockList implements BlockList {
             recreateFile();
             reloadBlockList();
         }
+        this.file.reload();
     }
 
     @Override
@@ -41,6 +42,7 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public Set<BlockInstruction> reloadBlockList() {
+        this.file.reload();
         blocks.clear();
         Collection<BlockType> mBlocks = CorePlugin.getPlatform().getBlockTypes();
         mBlocks.forEach(bt -> {

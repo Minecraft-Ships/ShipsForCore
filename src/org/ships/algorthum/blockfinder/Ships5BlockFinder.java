@@ -6,6 +6,7 @@ import org.core.world.position.BlockPosition;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 public class Ships5BlockFinder implements BasicBlockFinder {
 
-    private int blockLimit = 3000;
+    private int blockLimit;
     private int blockCount = 0;
     private PositionableShipsStructure shipsStructure;
     private Vessel vessel;
@@ -49,6 +50,14 @@ public class Ships5BlockFinder implements BasicBlockFinder {
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
         getNextBlock(update, position, directions);
         return this.shipsStructure;
+    }
+
+    @Override
+    public Ships5BlockFinder init() {
+        ShipsPlugin plugin = ShipsPlugin.getPlugin();
+        ShipsConfig config = plugin.getConfig();
+        this.blockLimit = config.getDefaultTrackSize();
+        return this;
     }
 
     @Override

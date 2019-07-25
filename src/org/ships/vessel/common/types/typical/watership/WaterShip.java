@@ -26,8 +26,8 @@ import java.util.*;
 
 public class WaterShip extends AbstractShipsVessel implements WaterType, Fallable {
 
-    protected float specialBlockPercent = 25;
-    protected Set<BlockType> specialBlocks = BlockTypes.WHITE_WOOL.get().getLike();
+    protected float specialBlockPercent = ShipType.WATERSHIP.getDefaultSpecialBlockPercent();
+    protected Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();
 
     protected ConfigurationNode configSpecialBlockPercent = new ConfigurationNode("Block", "Special", "Percent");
     protected ConfigurationNode configSpecialBlockType = new ConfigurationNode("Block", "Special", "Type");

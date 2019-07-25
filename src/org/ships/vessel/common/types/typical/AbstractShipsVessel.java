@@ -8,6 +8,7 @@ import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
+import org.ships.event.vessel.VesselStructureUpdate;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.MovingFlag;
@@ -114,6 +115,9 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public void setStructure(PositionableShipsStructure pss){
+        if (CorePlugin.getPlatform().callEvent(new VesselStructureUpdate(pss, this)).isCancelled()){
+            return;
+        }
         this.positionableShipsStructure = pss;
     }
 

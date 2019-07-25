@@ -18,6 +18,9 @@ public class ExpandedBlockList implements BlockList{
 
     public ExpandedBlockList(ConfigurationFile file, BlockList expandedOn){
         this.file = file;
+        if(expandedOn == null){
+            expandedOn.reloadBlockList();
+        }
         this.expandedOn = expandedOn;
     }
 
@@ -28,6 +31,7 @@ public class ExpandedBlockList implements BlockList{
     @Override
     public Set<BlockInstruction> getBlockList() {
         if(blocks.size() == 0){
+            this.file.reload();
             reloadBlockList();
         }
         Set<BlockInstruction> set = new HashSet<>(this.expandedOn.getBlockList());
@@ -47,7 +51,10 @@ public class ExpandedBlockList implements BlockList{
                 this.blocks.add(opBlock.get());
                 bins.add(opBlock.get());
             }else{
-                opBlock = this.expandedOn.getBlockList().stream().filter(bi -> bi.getType().equals(bt)).findAny();
+                Set<BlockInstruction> blocklist = this.expandedOn.getBlockList();
+                opBlock = blocklist.stream().filter(bi -> {
+                    return bi.getType().equals(bt);
+                }).findAny();
                 if(opBlock.isPresent()){
                     bins.add(opBlock.get());
                 }else{

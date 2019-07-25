@@ -19,15 +19,19 @@ public class Ships5Movement implements BasicMovement {
     public Result move(Vessel vessel, MovingBlockSet set, Map<LiveEntity, MovingBlock> map, Movement.MidMovement midMovement, Movement.PostMovement... movements) {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         int waterLevel = -1;
+        System.out.println("Vessel: " + vessel.getClass().getName());
         if(vessel instanceof WaterType){
+            System.out.println("Is water type");
             Optional<Integer> opWaterLevel = ((WaterType)vessel).getWaterLevel();
+            System.out.println("WaterLevel: " + opWaterLevel.isPresent());
             if(opWaterLevel.isPresent()){
                 waterLevel = opWaterLevel.get();
             }
         }
         final int finalWaterLevel = waterLevel;
+        System.out.println("FinalWaterLevel: " + finalWaterLevel);
         blocks.forEach(m -> {
-            if(finalWaterLevel > m.getAfterPosition().getY()){
+            if(finalWaterLevel >= m.getAfterPosition().getY()){
                 m.removeBeforePositionUnderWater();
             }else{
                 m.removeBeforePositionOverAir();
@@ -41,7 +45,7 @@ public class Ships5Movement implements BasicMovement {
         for(Movement.PostMovement movement : movements){
             movement.postMove(vessel);
         }
-        vessel.set(MovingFlag.class, false);
+        vessel.set(MovingFlag.class, null);
         return Result.DEFAULT_RESULT;
     }
 

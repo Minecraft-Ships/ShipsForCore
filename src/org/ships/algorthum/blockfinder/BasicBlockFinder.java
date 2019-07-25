@@ -12,6 +12,7 @@ public interface BasicBlockFinder extends Algorthum {
     Ships5BlockFinder SHIPS_FIVE = new Ships5BlockFinder();
     Ships6BlockFinder SHIPS_SIX = new Ships6BlockFinder();
 
+    BasicBlockFinder init();
     PositionableShipsStructure getConnectedBlocks(BlockPosition position);
     void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch);
     int getBlockLimit();

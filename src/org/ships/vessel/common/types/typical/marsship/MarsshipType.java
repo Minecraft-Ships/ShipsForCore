@@ -1,12 +1,10 @@
-package org.ships.vessel.common.types.typical.submarine;
+package org.ships.vessel.common.types.typical.marsship;
 
 import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
-import org.core.inventory.item.ItemType;
-import org.core.inventory.item.ItemTypes;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
@@ -17,35 +15,28 @@ import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SubmarineType implements ShipType {
+public class MarsshipType implements ShipType {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
-    private final String[] SPECIAL_BLOCK_TYPE = {"Block", "Special", "Type"};
-    private final String[] SPECIAL_BLOCK_PERCENT = {"Block", "Special", "Percent"};
-    private final String[] FUEL_CONSUMPTION = {"Block", "Fuel", "Consumption"};
-    private final String[] FUEL_SLOT = {"Block", "Fuel", "Slot"};
-    private final String[] FUEL_TYPES = {"Block", "Fuel", "Types"};
+    private final String[] SPECIAL_BLOCK_TYPE = {"Special", "Block", "Type"};
+    private final String[] SPECIAL_BLOCK_PERCENT = {"Special", "Block", "Percent"};
 
-    public SubmarineType(){
+    public MarsshipType(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/" + getId().replaceAll(":", ".") + ".temp");
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
-        if((!this.file.getFile().exists()) || (!this.file.parseDouble(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT)).isPresent())){
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 75.0f);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Arrays.asList(BlockTypes.IRON_BLOCK.get())));
-            this.file.set(new ConfigurationNode(this.FUEL_CONSUMPTION), 1);
-            this.file.set(new ConfigurationNode(this.FUEL_SLOT), "Bottom");
-            this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Arrays.asList(ItemTypes.COAL_BLOCK.getId())));
+        if(!this.file.getFile().exists()){
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
             this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 15);
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Arrays.asList(BlockTypes.DAYLIGHT_DETECTOR.get())));
             this.file.save();
         }
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
@@ -59,22 +50,9 @@ public class SubmarineType implements ShipType {
         return new HashSet<>(this.file.parseList(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.STRING_TO_BLOCK_TYPE).get());
     }
 
-    public int getDefaultFuelConsumption(){
-        return this.file.parseInt(new ConfigurationNode(this.FUEL_CONSUMPTION)).get();
-    }
-
-    public boolean isUsingTopSlot(){
-        String slot = this.file.parseString(new ConfigurationNode(this.FUEL_SLOT)).get();
-        return "top".equals(slot.toLowerCase());
-    }
-
-    public Set<ItemType> getDefaultFuelTypes(){
-        return new HashSet<>(this.file.parseList(new ConfigurationNode(this.FUEL_TYPES), Parser.STRING_TO_ITEM_TYPE).get());
-    }
-
     @Override
     public String getDisplayName() {
-        return "Submarine";
+        return "Marsship";
     }
 
     @Override
@@ -99,7 +77,7 @@ public class SubmarineType implements ShipType {
 
     @Override
     public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
-        return new Submarine(ste, bPos);
+        return new Marsship(ste, bPos);
     }
 
     @Override
@@ -109,7 +87,7 @@ public class SubmarineType implements ShipType {
 
     @Override
     public String getId() {
-        return "ships:submarine";
+        return "ships:marsship";
     }
 
     @Override

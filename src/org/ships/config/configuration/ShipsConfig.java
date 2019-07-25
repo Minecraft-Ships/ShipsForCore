@@ -3,6 +3,7 @@ package org.ships.config.configuration;
 import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
+import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
@@ -37,6 +38,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         if(!this.file.getFile().exists()){
             recreateFile();
         }
+        this.file.reload();
     }
 
     public int getEOTDelay(){
@@ -48,12 +50,16 @@ public class ShipsConfig implements Config.CommandConfigurable {
     }
 
     public BasicBlockFinder getDefaultFinder(){
-        return this.file.parse(this.ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER).orElse(BasicBlockFinder.SHIPS_FIVE);
+        return this.file.parse(this.ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER).orElse(BasicBlockFinder.SHIPS_FIVE).init();
     }
 
     public BasicMovement getDefaultMovement(){
         return this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).orElse(BasicMovement.SHIPS_FIVE);
         //return BasicMovement.SHIPS_SIX;
+    }
+
+    public int getDefaultTrackSize(){
+        return this.file.parseInt(this.ADVANCED_TRACK_LIMIT).orElse(4000);
     }
 
     @Override
@@ -66,6 +72,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         ConfigurationFile file = getFile();
         //file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
         file.set(ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER, BasicBlockFinder.SHIPS_FIVE);
+        file.set(ADVANCED_TRACK_LIMIT, 4000);
         file.set(EOT_SPEED, 2);
         file.set(EOT_DELAY, 5);
         file.save();
@@ -74,7 +81,8 @@ public class ShipsConfig implements Config.CommandConfigurable {
     @Override
     public Set<DedicatedNode<?>> getNodes() {
         return new HashSet<>(Arrays.asList(
-                new DedicatedNode<>("Advanced.Block.Finder", ShipsParsers.STRING_TO_BLOCK_FINDER, ADVANCED_BLOCKFINDER.getPath())
+                new DedicatedNode<>("Advanced.Block.Finder", ShipsParsers.STRING_TO_BLOCK_FINDER, ADVANCED_BLOCKFINDER.getPath()),
+                new DedicatedNode<>(true, "Advanced.Block.Track", Parser.STRING_TO_INTEGER, ADVANCED_TRACK_LIMIT.getPath())
         ));
     }
 }

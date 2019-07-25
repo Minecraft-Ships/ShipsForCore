@@ -1,32 +1,25 @@
-package org.ships.vessel.common.loader.shipsvessel;
+package org.ships.vessel.common.loader;
 
-import org.core.CorePlugin;
-import org.core.text.TextColours;
 import org.core.world.position.BlockPosition;
-import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.exceptions.load.LoadVesselException;
-import org.ships.vessel.common.loader.ShipsLoader;
-import org.ships.vessel.common.types.typical.ShipsVessel;
+import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Collection;
 import java.util.Optional;
 
-public class ShipsBlockLoader implements ShipsLoader {
+public class ShipsBlockFinder implements ShipsLoader {
 
     protected BlockPosition position;
 
-    public ShipsBlockLoader(BlockPosition position){
+    public ShipsBlockFinder(BlockPosition position){
         this.position = position;
     }
 
     @Override
-    public ShipsVessel load() throws LoadVesselException {
-        Optional<ShipsVessel> opVessel = ShipsFileLoader.loadAll(e -> {
-            if(e instanceof FileLoadVesselException){
-                CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.RED + ((FileLoadVesselException) e).getFile().getPath() + " could not be loaded due to: \n" + e.getReason()));
-            }
-        }).stream().filter(v -> {
+    public Vessel load() throws LoadVesselException {
+        Optional<Vessel> opVessel = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> {
             PositionableShipsStructure pss = v.getStructure();
             Collection<BlockPosition> collection = pss.getPositions();
             return collection.stream().anyMatch(p -> p.equals(this.position));

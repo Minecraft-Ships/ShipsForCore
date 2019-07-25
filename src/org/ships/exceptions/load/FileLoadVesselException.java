@@ -7,7 +7,7 @@ public class FileLoadVesselException extends LoadVesselException {
     private File file;
 
     public FileLoadVesselException(File file, String reason) {
-        super(reason);
+        super(reason + ": " + file.getPath());
         this.file = file;
     }
 

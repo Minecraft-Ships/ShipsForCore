@@ -14,7 +14,7 @@ import org.ships.exceptions.MoveException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.shipsvessel.ShipsUpdateBlockLoader;
+import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
@@ -56,6 +56,8 @@ public class WheelSign implements ShipsSign {
                 vessel.rotateLeftAround(vessel.getPosition(), movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
+            }catch (Throwable e2){
+                vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         }catch (UnableToFindLicenceSign e1){
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
@@ -80,6 +82,8 @@ public class WheelSign implements ShipsSign {
                 vessel.rotateRightAround(vessel.getPosition(), movement);
             }catch (MoveException e){
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
+            }catch (Throwable e2){
+                vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         }catch (UnableToFindLicenceSign e1){
             e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));

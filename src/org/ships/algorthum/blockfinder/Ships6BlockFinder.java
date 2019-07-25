@@ -6,6 +6,7 @@ import org.core.world.position.BlockPosition;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
@@ -17,9 +18,17 @@ import java.util.Optional;
 
 public class Ships6BlockFinder implements BasicBlockFinder {
 
-    protected int limit = 3000;
+    protected int limit;
     private BlockList list;
     private Vessel vessel;
+
+    @Override
+    public Ships6BlockFinder init() {
+        ShipsPlugin plugin = ShipsPlugin.getPlugin();
+        ShipsConfig config = plugin.getConfig();
+        this.limit = config.getDefaultTrackSize();
+        return this;
+    }
 
     @Override
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
@@ -32,7 +41,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         process.add(position);
         while (count != this.limit) {
             if (process.isEmpty()) {
-                ret.stream().forEach(bp -> pss.addPosition(bp));
+                ret.forEach(bp -> pss.addPosition(bp));
                 return pss;
             }
             for (int A = 0; A < process.size(); A++) {

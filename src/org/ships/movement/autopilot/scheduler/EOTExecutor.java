@@ -58,6 +58,8 @@ public class EOTExecutor implements Runnable {
                 getVessel().moveTowards(directionalData.get().getDirection().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
             } catch (MoveException e) {
                 sendError(e.getMovement());
+            }catch (Throwable e2){
+                vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         });
     }

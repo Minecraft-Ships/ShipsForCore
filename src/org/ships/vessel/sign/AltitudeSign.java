@@ -16,7 +16,7 @@ import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
-import org.ships.vessel.common.loader.shipsvessel.ShipsUpdateBlockLoader;
+import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
@@ -97,7 +97,8 @@ public class AltitudeSign implements ShipsSign {
                 FailedMovement<?> movement = e.getMovement();
                 sendErrorMessage(player, movement, movement.getValue().orElse(null));
                 ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to " + movement.getResult().getClass().getSimpleName(), "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
-
+            }catch (Throwable e2){
+                vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         }catch (UnableToFindLicenceSign e1){
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));

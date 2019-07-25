@@ -144,24 +144,6 @@ public class ShipsFileLoader implements ShipsLoader {
         return new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData");
     }
 
-    public static Set<File> getFilesFromName(String name){
-        Set<File> set = new HashSet<>();
-        ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {
-            File vesselDataFolder = getVesselDataFolder();
-            File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
-            File[] files = typeFolder.listFiles();
-            if(files == null){
-                return;
-            }
-            for(File file : files){
-                if(file.getName().toLowerCase().startsWith(name.toLowerCase())){
-                    set.add(file);
-                }
-            }
-        });
-        return set;
-    }
-
     public static Set<ShipsVessel> loadAll(Consumer<LoadVesselException> function){
         Set<ShipsVessel> set = new HashSet<>();
         ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {

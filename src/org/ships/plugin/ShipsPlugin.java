@@ -12,12 +12,15 @@ import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.debug.DebugFile;
-import org.ships.listener.core.CoreEventListener;
+import org.ships.event.listener.CoreEventListener;
 import org.ships.movement.BlockPriority;
 import org.ships.movement.autopilot.scheduler.FallExecutor;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.patches.AutoRunPatches;
+import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.*;
 
 import java.io.File;
@@ -38,6 +41,7 @@ public abstract class ShipsPlugin implements Plugin {
     private ShipsConfig config;
     private DebugFile debugFile;
     private Scheduler fallScheduler;
+    private Set<Vessel> vessels = new HashSet<>();
 
     public ShipsPlugin(){
         plugin = this;
@@ -46,9 +50,19 @@ public abstract class ShipsPlugin implements Plugin {
         this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
+        CorePlugin.getEventManager().register(this, new CoreEventListener());
+        CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
+        this.fallScheduler = FallExecutor.createScheduler();
+        this.fallScheduler.run();
+        CorePlugin.createSchedulerBuilder().setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
+        init2();
     }
 
     public abstract File getShipsConigFolder();
+
+    public void loadVessels(){
+        this.vessels.addAll(ShipsFileLoader.loadAll(Throwable::printStackTrace));
+    }
 
     private void init(){
         this.identifable.add(BasicMovement.SHIPS_FIVE);
@@ -64,16 +78,16 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(new WheelSign());
         this.identifable.add(new MoveSign());
         this.identifable.add(new EOTSign());
+    }
+
+    private void init2(){
         this.identifable.add(ShipType.OVERPOWERED_SHIP);
         this.identifable.add(ShipType.AIRSHIP);
         this.identifable.add(ShipType.WATERSHIP);
         this.identifable.add(ShipType.SUBMARINE);
+        this.identifable.add(ShipType.MARSSHIP);
+        loadVessels();
 
-        CorePlugin.getEventManager().register(this, new CoreEventListener());
-        CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
-        this.fallScheduler = FallExecutor.createScheduler();
-        this.fallScheduler.run();
-        CorePlugin.createSchedulerBuilder().setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
     }
 
     public ShipsConfig getConfig(){
@@ -87,6 +101,7 @@ public abstract class ShipsPlugin implements Plugin {
         displayMessage(BlockPriority.class, "BlockPriorities", bp -> bp.getPriorityNumber() + "");
         displayMessage(ShipsSign.class, "Signs", sn -> "");
         displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + "\t" + st.getFile().getFile().getPath());
+        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.AQUA + "Vessels: " + TextColours.YELLOW + this.vessels.size()));
         CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.RED + "------[Ships Loaded Information][End]------"));
     }
 
@@ -108,12 +123,27 @@ public abstract class ShipsPlugin implements Plugin {
         return this.defaultPermissions;
     }
 
+    public Set<Vessel> getVessels(){
+        return this.vessels;
+    }
+
     public <T extends Identifable> Set<T> getAll(Class<T> class1){
+        if(ShipsVessel.class.isAssignableFrom(class1)){
+            return (Set<T>)(Set<? extends Vessel>)this.vessels.stream().filter(v -> v instanceof ShipsVessel).collect(Collectors.toSet());
+        }
         return (Set<T>)identifable.stream().filter(class1::isInstance).collect(Collectors.toSet());
     }
 
     public <T extends Identifable> Optional<T> get(Class<T> class1){
         return (Optional<T>)identifable.stream().filter(class1::isInstance).findAny();
+    }
+
+    public void registerVessel(Vessel... vessels){
+        this.vessels.addAll(Arrays.asList(vessels));
+    }
+
+    public void unregisterVessel(Vessel... vessels){
+        this.vessels.removeAll(Arrays.asList(vessels));
     }
 
     public void register(Identifable... identifables){

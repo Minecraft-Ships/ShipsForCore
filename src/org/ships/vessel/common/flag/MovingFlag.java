@@ -1,35 +1,46 @@
 package org.ships.vessel.common.flag;
 
 import org.core.configuration.parser.Parser;
+import org.ships.movement.MovingBlockSet;
 
 import java.util.Optional;
 
-public class MovingFlag implements VesselFlag<Boolean> {
+public class MovingFlag implements VesselFlag<MovingBlockSet> {
 
-    protected boolean check;
+    protected MovingBlockSet set;
 
     public MovingFlag(){
-        this(false);
+        this(null);
     }
 
-    public MovingFlag(boolean check){
-        this.check = check;
+    public MovingFlag(MovingBlockSet set){
+        this.set = set;
     }
 
 
     @Override
-    public Optional<Boolean> getValue() {
-        return Optional.of(this.check);
+    public Optional<MovingBlockSet> getValue() {
+        return Optional.ofNullable(this.set);
     }
 
     @Override
-    public void setValue(Boolean value) {
-        this.check = value;
+    public void setValue(MovingBlockSet value) {
+        this.set = value;
     }
 
     @Override
-    public Parser<?, Boolean> getParser() {
-        return Parser.STRING_TO_BOOLEAN;
+    public Parser<?, MovingBlockSet> getParser() {
+        return new Parser<Object, MovingBlockSet>() {
+            @Override
+            public Optional<MovingBlockSet> parse(Object original) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Object unparse(MovingBlockSet value) {
+                return value.size();
+            }
+        };
     }
 
     @Override
