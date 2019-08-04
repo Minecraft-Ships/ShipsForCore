@@ -1,6 +1,8 @@
 package org.ships.movement.autopilot.scheduler;
 
+import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.world.boss.ServerBossBar;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -54,12 +56,14 @@ public class EOTExecutor implements Runnable {
             if(!directionalData.isPresent()){
                 return;
             }
+            ServerBossBar bar = CorePlugin.createBossBar();
+            vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
             try {
-                getVessel().moveTowards(directionalData.get().getDirection().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+                this.vessel.moveTowards(directionalData.get().getDirection().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);
             } catch (MoveException e) {
                 sendError(e.getMovement());
             }catch (Throwable e2){
-                vessel.getEntities().forEach(e -> e.setGravity(true));
+                this.vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         });
     }

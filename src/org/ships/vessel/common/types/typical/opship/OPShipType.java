@@ -5,24 +5,26 @@ import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.platform.Plugin;
+import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.shiptype.CloneableShipType;
+import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
-import java.util.regex.Pattern;
 
-public class OPShipType <V extends OPShip> implements CloneableShipType<V> {
+public class OPShipType implements ShipType {
 
-    public static class Default extends OPShipType<OPShip>{
+    public static class Default extends OPShipType {
 
         public Default(){
             super(new File(ShipsPlugin.getPlugin().getShipsConigFolder(),
                             "/Configuration/ShipType/ships.opship.temp"),
-                    "OPShip", OPShip.class);
+                    "OPShip");
             if(!this.file.getFile().exists()){
                 this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
                 this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
@@ -34,25 +36,27 @@ public class OPShipType <V extends OPShip> implements CloneableShipType<V> {
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
     protected String display;
-    protected Class<V> vesselClass;
 
     protected final String[] MAX_SPEED = {"Speed", "Max"};
     protected final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
 
-    public OPShipType(File file, String display, Class<V> vesselClass){
-        this(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.YAML), display, vesselClass);
+    public OPShipType(File file, String display){
+        this(CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.YAML), display);
     }
 
-    public OPShipType(ConfigurationFile file, String display, Class<V> vesselClass){
+    public OPShipType(ConfigurationFile file, String display){
         this.file = file;
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
-        this.display = display;
-        this.vesselClass = vesselClass;
-    }
+        this.display = display; }
 
     @Override
     public String getDisplayName() {
         return this.display;
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        return ShipsPlugin.getPlugin();
     }
 
     @Override
@@ -76,32 +80,13 @@ public class OPShipType <V extends OPShip> implements CloneableShipType<V> {
     }
 
     @Override
-    public <T extends Vessel> CloneableShipType<T> clone(File root, String display, Class<T> vesselClass) {
-        if(vesselClass.isAssignableFrom(OPShip.class)){
-            Class<? extends OPShip> vesselClass2 = (Class<? extends OPShip>) vesselClass;
-            return (CloneableShipType<T>) new OPShipType<>(root, display, vesselClass2);
-        }
-        return null;
-    }
-
-    @Override
-    public Class<V> getVesselClass() {
-        return this.vesselClass;
+    public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+        return new OPShip(ste, bPos, this);
     }
 
     @Override
     public BlockType[] getIgnoredTypes() {
         return new BlockType[]{BlockTypes.AIR.get()};
-    }
-
-    @Override
-    public String getId() {
-        String id = this.file.getFile().getName();
-        String[] split = id.split(Pattern.quote("."));
-        split[split.length - 1] = "";
-        id = CorePlugin.toString(".", t -> t, split);
-        id = id.substring(0, id.length() - 1);
-        return id.replace(".", ":");
     }
 
     @Override

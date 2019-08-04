@@ -3,6 +3,7 @@ package org.ships.vessel.common.types.typical;
 import org.core.CorePlugin;
 import org.core.utils.Identifable;
 import org.core.vector.types.Vector3Int;
+import org.core.world.boss.ServerBossBar;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.ExactPosition;
 import org.core.world.position.Position;
@@ -65,35 +66,35 @@ public interface ShipsVessel extends SignBasedVessel, org.ships.vessel.common.as
     }
 
     @Override
-    default void moveTowards(int x, int y, int z, BasicMovement movement) throws MoveException {
-        Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, movement);
+    default void moveTowards(int x, int y, int z, BasicMovement movement, ServerBossBar bar) throws MoveException {
+        Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, movement, bar);
     }
 
     @Override
-    default void moveTowards(Vector3Int vector, BasicMovement movement) throws MoveException{
-        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, movement);
+    default void moveTowards(Vector3Int vector, BasicMovement movement, ServerBossBar bar) throws MoveException{
+        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, movement, bar);
     }
 
     @Override
-    default void moveTo(Position<? extends Number> location, BasicMovement movement) throws MoveException{
+    default void moveTo(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, movement);
+        Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, movement, bar);
     }
 
     @Override
-    default void rotateRightAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
+    default void rotateRightAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, movement);
+        Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, movement, bar);
     }
 
     @Override
-    default void rotateLeftAround(Position<? extends Number> location, BasicMovement movement) throws MoveException{
+    default void rotateLeftAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement);
+        Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement, bar);
     }
 
     @Override
     default String getId(){
-        return getType().getId() + ":" + getName().toLowerCase();
+        return getType().getId() + "." + getName().toLowerCase();
     }
 }

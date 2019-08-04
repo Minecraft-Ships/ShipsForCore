@@ -44,7 +44,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }
         String name = ste.getLine(2).get().toPlain().toLowerCase();
-        String id = opType.get().getName().toLowerCase() + ":" + name;
+        String id = opType.get().getName().toLowerCase() + "." + name;
         return new ShipsIDFinder(id).load();
     }
 }

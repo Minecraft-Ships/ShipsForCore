@@ -74,7 +74,20 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
         if(args.length == 1 || (args.length == 2 && args[1].equalsIgnoreCase(""))){
             return Arrays.asList("set", "view");
         }
+        if(args.length == 2){
+            List<String> ret = new ArrayList<>();
+            if("set".startsWith(args[1].toLowerCase())){
+                ret.add("set");
+            }
+            if("view".startsWith(args[1].toLowerCase())){
+                ret.add("view");
+            }
+            return ret;
+        }
         if(args.length == 2 || args.length == 3 && args[2].equalsIgnoreCase("")){
+            return Arrays.asList("config");
+        }
+        if(args.length == 3){
             return Arrays.asList("config");
         }
         if(args.length == 3 || args.length == 4 && args[3].equalsIgnoreCase("")){
@@ -87,7 +100,17 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             config.getNodes().stream().forEach(dn -> list.add(dn.getSimpleName()));
             return list;
         }
-        if(args.length == 4 || (args.length == 5 && args[4].equalsIgnoreCase(""))){
+        if(args.length == 4){
+            Config.CommandConfigurable config;
+            switch(args[2].toLowerCase()){
+                case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
+                default: return new ArrayList<>();
+            }
+            List<String> list = new ArrayList<>();
+            config.getNodes().stream().filter(dn -> dn.getSimpleName().toLowerCase().startsWith(args[3].toLowerCase())).forEach(dn -> list.add(dn.getSimpleName()));
+            return list;
+        }
+        if((args.length == 4 || (args.length == 5 && args[4].equalsIgnoreCase(""))) && args[1].toLowerCase().equals("set")){
             Config.CommandConfigurable config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
@@ -101,6 +124,22 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             StringParser parser = opNode.get().getParser();
             if(parser instanceof StringParser.Suggestible){
                 return ((StringParser.Suggestible) parser).getStringSuggestions();
+            }
+        }
+        if(args.length == 5 && args[1].toLowerCase().equals("set")){
+            Config.CommandConfigurable config;
+            switch(args[2].toLowerCase()){
+                case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
+                default:
+                    return new ArrayList<>();
+            }
+            Optional<DedicatedNode<?>> opNode = config.get(args[3]);
+            if(!opNode.isPresent()){
+                return new ArrayList<>();
+            }
+            StringParser parser = opNode.get().getParser();
+            if(parser instanceof StringParser.Suggestible){
+                return ((StringParser.Suggestible) parser).getStringSuggestions(args[4]);
             }
         }
         return new ArrayList<>();

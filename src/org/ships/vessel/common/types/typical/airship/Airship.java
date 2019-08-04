@@ -49,12 +49,12 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable {
     protected ConfigurationNode configFuelSlot = new ConfigurationNode("Block", "Fuel", "Slot");
     protected ConfigurationNode configFuelTypes = new ConfigurationNode("Block", "Fuel", "Types");
 
-    public Airship(LiveSignTileEntity licence) {
-        super(licence, ShipType.AIRSHIP);
+    public Airship(AirshipType type, LiveSignTileEntity licence) {
+        super(licence, type);
     }
 
-    public Airship(SignTileEntity ste, BlockPosition position){
-        super(ste, position, ShipType.AIRSHIP);
+    public Airship(AirshipType type, SignTileEntity ste, BlockPosition position){
+        super(ste, position, type);
     }
 
     public float getSpecialBlockPercent(){

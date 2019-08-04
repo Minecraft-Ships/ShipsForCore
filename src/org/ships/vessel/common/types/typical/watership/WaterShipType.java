@@ -5,6 +5,7 @@ import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.platform.Plugin;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
@@ -47,6 +48,11 @@ public class WaterShipType implements ShipType {
     }
 
     @Override
+    public Plugin getPlugin() {
+        return ShipsPlugin.getPlugin();
+    }
+
+    @Override
     public ExpandedBlockList getDefaultBlockList() {
         return this.blockList;
     }
@@ -82,11 +88,6 @@ public class WaterShipType implements ShipType {
     @Override
     public BlockType[] getIgnoredTypes() {
         return new BlockType[]{BlockTypes.AIR.get(), BlockTypes.WATER.get()};
-    }
-
-    @Override
-    public String getId() {
-        return "ships:" + this.getName();
     }
 
     @Override

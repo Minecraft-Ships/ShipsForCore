@@ -1,32 +1,23 @@
 package org.ships.vessel.common.assits.shiptype;
 
-import org.core.world.position.BlockPosition;
-import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.CorePlugin;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
+import java.util.regex.Pattern;
 
-public interface CloneableShipType<V extends Vessel> extends ShipType {
+public interface CloneableShipType extends ShipType {
 
-    <T extends Vessel> CloneableShipType<T> clone(File root, String display, Class<T> vesselClass);
-    Class<V> getVesselClass();
+    CloneableShipType cloneWithName(File file, String name);
 
-    default CloneableShipType<V> clone(File root, String display){
-        return clone(root, display, getVesselClass());
-    }
+    CloneableShipType getOriginType();
 
-    @Override
-    default V createNewVessel(SignTileEntity ste, BlockPosition position){
-        try {
-            return getVesselClass()
-                    .getConstructor(SignTileEntity.class, BlockPosition.class, ShipType.class)
-                    .newInstance(ste, position, this);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+    default CloneableShipType cloneWithName(File file){
+        if(!file.getName().contains(".")){
+            return cloneWithName(file, file.getName().replaceAll(" ", "_"));
         }
-        return null;
+        String[] nameArray = file.getName().split(Pattern.quote("."));
+        String[] array = CorePlugin.strip(String.class, 0, nameArray.length - 1, nameArray);
+        return cloneWithName(file, CorePlugin.toString("_", array).replaceAll(" ", "_"));
     }
-
 }

@@ -35,8 +35,16 @@ public class ShipsConfig implements Config.CommandConfigurable {
     public ShipsConfig(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.temp");
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        boolean modified = false;
         if(!this.file.getFile().exists()){
             recreateFile();
+        }
+        if(!this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).isPresent()){
+            modified = true;
+            this.file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
+        }
+        if(modified){
+            this.file.save();
         }
         this.file.reload();
     }
@@ -55,7 +63,6 @@ public class ShipsConfig implements Config.CommandConfigurable {
 
     public BasicMovement getDefaultMovement(){
         return this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).orElse(BasicMovement.SHIPS_FIVE);
-        //return BasicMovement.SHIPS_SIX;
     }
 
     public int getDefaultTrackSize(){
@@ -70,7 +77,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     @Override
     public void recreateFile() {
         ConfigurationFile file = getFile();
-        //file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
+        file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
         file.set(ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER, BasicBlockFinder.SHIPS_FIVE);
         file.set(ADVANCED_TRACK_LIMIT, 4000);
         file.set(EOT_SPEED, 2);
@@ -81,6 +88,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     @Override
     public Set<DedicatedNode<?>> getNodes() {
         return new HashSet<>(Arrays.asList(
+                new DedicatedNode<>("Advanced.Block.Movement", ShipsParsers.STRING_TO_MOVEMENT, ADVANCED_MOVEMENT.getPath()),
                 new DedicatedNode<>("Advanced.Block.Finder", ShipsParsers.STRING_TO_BLOCK_FINDER, ADVANCED_BLOCKFINDER.getPath()),
                 new DedicatedNode<>(true, "Advanced.Block.Track", Parser.STRING_TO_INTEGER, ADVANCED_TRACK_LIMIT.getPath())
         ));

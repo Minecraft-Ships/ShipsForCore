@@ -1,6 +1,7 @@
 package org.ships.vessel.common.types;
 
 import org.core.configuration.ConfigurationFile;
+import org.core.platform.Plugin;
 import org.core.utils.Identifable;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
@@ -22,6 +23,7 @@ public interface ShipType extends Identifable {
     SubmarineType SUBMARINE = new SubmarineType();
 
     String getDisplayName();
+    Plugin getPlugin();
     ExpandedBlockList getDefaultBlockList();
     int getDefaultMaxSpeed();
     int getDefaultAltitudeSpeed();
@@ -31,6 +33,11 @@ public interface ShipType extends Identifable {
 
     default Vessel createNewVessel(LiveSignTileEntity position){
         return createNewVessel(position, position.getPosition());
+    }
+
+    @Override
+    default String getId(){
+        return getPlugin().getPluginId() + ":" + getName().toLowerCase();
     }
 
 }

@@ -7,6 +7,7 @@ import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
+import org.core.platform.Plugin;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
@@ -14,6 +15,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.ClassicShipType;
+import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
@@ -23,10 +25,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AirshipType implements ShipType, ClassicShipType {
+public class AirshipType implements ShipType, ClassicShipType, CloneableShipType {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
+    protected String name;
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
@@ -43,7 +46,11 @@ public class AirshipType implements ShipType, ClassicShipType {
     private final String[] LEGACY_OWNER = {"ShipsData", "Player", "Name"};
 
     public AirshipType(){
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/" + getId().replaceAll(":", ".") + ".temp");
+        this("Airship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Airship.temp"));
+    }
+
+    public AirshipType(String name, File file){
+        this.name = name;
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
         if(!this.file.getFile().exists()){
             this.file.set(new ConfigurationNode(this.BURNER_BLOCK), true);
@@ -61,7 +68,12 @@ public class AirshipType implements ShipType, ClassicShipType {
 
     @Override
     public String getDisplayName() {
-        return "Airship";
+        return this.name;
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        return ShipsPlugin.getPlugin();
     }
 
     @Override
@@ -111,17 +123,12 @@ public class AirshipType implements ShipType, ClassicShipType {
 
     @Override
     public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
-        return new Airship(ste, bPos);
+        return new Airship(this, ste, bPos);
     }
 
     @Override
     public BlockType[] getIgnoredTypes() {
         return new BlockType[]{BlockTypes.AIR.get()};
-    }
-
-    @Override
-    public String getId() {
-        return "ships:" + getDisplayName().toLowerCase();
     }
 
     @Override
@@ -135,5 +142,15 @@ public class AirshipType implements ShipType, ClassicShipType {
         ConfigurationFile config = CorePlugin.createConfigurationFile(classicFile, ConfigurationLoaderTypes.YAML);
 
         return null;
+    }
+
+    @Override
+    public AirshipType cloneWithName(File file, String name) {
+        return new AirshipType(name, file);
+    }
+
+    @Override
+    public CloneableShipType getOriginType() {
+        return ShipType.AIRSHIP;
     }
 }

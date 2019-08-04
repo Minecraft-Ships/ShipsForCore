@@ -1,6 +1,7 @@
 package org.ships.algorthum.movement;
 
 import org.core.entity.LiveEntity;
+import org.core.world.boss.ServerBossBar;
 import org.ships.movement.Movement;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.MovingBlockSet;
@@ -16,7 +17,7 @@ import java.util.Optional;
 public class Ships5Movement implements BasicMovement {
 
     @Override
-    public Result move(Vessel vessel, MovingBlockSet set, Map<LiveEntity, MovingBlock> map, Movement.MidMovement midMovement, Movement.PostMovement... movements) {
+    public Result move(Vessel vessel, MovingBlockSet set, Map<LiveEntity, MovingBlock> map, ServerBossBar bar, Movement.MidMovement midMovement, Movement.PostMovement... movements) {
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         int waterLevel = -1;
         System.out.println("Vessel: " + vessel.getClass().getName());

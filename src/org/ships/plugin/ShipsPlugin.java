@@ -17,6 +17,7 @@ import org.ships.movement.BlockPriority;
 import org.ships.movement.autopilot.scheduler.FallExecutor;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.patches.AutoRunPatches;
+import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
@@ -60,6 +61,21 @@ public abstract class ShipsPlugin implements Plugin {
 
     public abstract File getShipsConigFolder();
 
+    public void loadCustomShipType(){
+        File folder = new File(getShipsConigFolder(), "Configuration/ShipType/Custom");
+        for(CloneableShipType type : getAll(CloneableShipType.class)){
+            File folderType = new File(folder, type.getId() + "/");
+            File[] files = folderType.listFiles();
+            if(files == null){
+                folderType.mkdirs();
+                continue;
+            }
+            for(File file : files){
+                this.identifable.add(type.cloneWithName(file));
+            }
+        }
+    }
+
     public void loadVessels(){
         this.vessels.addAll(ShipsFileLoader.loadAll(Throwable::printStackTrace));
     }
@@ -86,8 +102,6 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(ShipType.WATERSHIP);
         this.identifable.add(ShipType.SUBMARINE);
         this.identifable.add(ShipType.MARSSHIP);
-        loadVessels();
-
     }
 
     public ShipsConfig getConfig(){
@@ -147,7 +161,11 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public void register(Identifable... identifables){
-        identifable.addAll(Arrays.asList(identifables));
+        this.identifable.addAll(Arrays.asList(identifables));
+    }
+
+    public void unregister(Identifable... identifables){
+        this.identifable.removeAll(Arrays.asList(identifables));
     }
 
     public void register(CrewPermission... permissions){
@@ -161,6 +179,11 @@ public abstract class ShipsPlugin implements Plugin {
     @Override
     public String getPluginName() {
         return "Ships";
+    }
+
+    @Override
+    public String getPluginId(){
+        return "ships";
     }
 
     @Override

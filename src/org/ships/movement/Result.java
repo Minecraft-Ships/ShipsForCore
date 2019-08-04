@@ -2,6 +2,7 @@ package org.ships.movement;
 
 import org.core.entity.LiveEntity;
 import org.core.vector.Vector3;
+import org.core.world.boss.ServerBossBar;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
@@ -19,11 +20,19 @@ public class Result extends ArrayList<Result.Run> {
             Run.COMMON_RESET_GRAVITY,
             Run.COMMON_SET_POSITION_OF_LICENCE_SIGN,
             Run.COMMON_SET_NEW_POSITIONS,
-            Run.COMMON_SAVE);
+            Run.COMMON_SAVE,
+            Run.REMOVE_BAR);
 
     public interface Run {
 
-        Run COMMON_TELEPORT_ENTITIES = (v, b, m) -> m.forEach((entity, value) -> {
+        Run REMOVE_BAR = (v, b, bar, m) -> {
+            if(bar == null){
+                return;
+            }
+            bar.deregisterPlayers();
+        };
+
+        Run COMMON_TELEPORT_ENTITIES = (v, b, bar, m) -> m.forEach((entity, value) -> {
             double pitch = entity.getPitch();
             double yaw = entity.getYaw();
             double roll = entity.getRoll();
@@ -34,19 +43,19 @@ public class Result extends ArrayList<Result.Run> {
             entity.setYaw(yaw).setRoll(roll).setPitch(pitch);
         });
 
-        Run COMMON_RESET_GRAVITY = (v, b, m) -> m.keySet().forEach(e -> e.setGravity(true));
+        Run COMMON_RESET_GRAVITY = (v, b, bar, m) -> m.keySet().forEach(e -> e.setGravity(true));
 
-        Run COMMON_SET_NEW_POSITIONS = (v, b, m) -> {
+        Run COMMON_SET_NEW_POSITIONS = (v, b, bar, m) -> {
             PositionableShipsStructure pss = v.getStructure();
             pss.clear();
             b.forEach((mb) -> pss.addPosition(mb.getAfterPosition()));
         };
 
-        Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, b, m) -> b.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get()).ifPresent(mb -> v.getStructure().setPosition(mb.getAfterPosition()));
+        Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, b, bar, m) -> b.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get()).ifPresent(mb -> v.getStructure().setPosition(mb.getAfterPosition()));
 
-        Run COMMON_SAVE = (v, b, m) -> v.save();
+        Run COMMON_SAVE = (v, b, bar, m) -> v.save();
 
-        void run(Vessel vessel, MovingBlockSet blocks, Map<LiveEntity, MovingBlock> map);
+        void run(Vessel vessel, MovingBlockSet blocks, ServerBossBar bar, Map<LiveEntity, MovingBlock> map);
 
     }
 
@@ -62,7 +71,7 @@ public class Result extends ArrayList<Result.Run> {
         super(collection);
     }
 
-    public void run(Vessel vessel, MovingBlockSet blocks, Map<LiveEntity, MovingBlock> map){
-        this.forEach(e -> e.run(vessel, blocks, map));
+    public void run(Vessel vessel, MovingBlockSet blocks, ServerBossBar bar, Map<LiveEntity, MovingBlock> map){
+        this.forEach(e -> e.run(vessel, blocks, bar, map));
     }
 }

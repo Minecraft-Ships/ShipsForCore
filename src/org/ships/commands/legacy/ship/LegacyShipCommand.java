@@ -14,17 +14,14 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.ShipsIDFinder;
-import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 public class LegacyShipCommand implements LegacyArgumentCommand {
 
@@ -129,35 +126,9 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
     public List<String> tab(CommandSource source, String... args) {
         List<String> list = new ArrayList<>();
         if(args.length == 2 && args[1].equals("")) {
-            ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(v -> {
-                File folder = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/ships." + v.getName().toLowerCase());
-                File[] files = folder.listFiles();
-                if(files != null){
-                    for(File file : files){
-                        String[] nameSplit = file.getName().split(Pattern.quote("."));
-                        nameSplit[nameSplit.length - 1] = "";
-                        String name = v.getName().toLowerCase() + ":" + CorePlugin.toString(".", t -> t, nameSplit);
-                        name = name.substring(0, name.length() - 1).toLowerCase();
-                        list.add(name);
-                    }
-                }
-            });
+            ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v instanceof Identifable).forEach(v -> list.add(((Identifable) v).getId()));
         }else if(args.length == 2){
-            ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(v -> {
-                File folder = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/ships." + v.getName());
-                File[] files = folder.listFiles();
-                if(files != null){
-                    for(File file : files){
-                        if(file.getName().toLowerCase().startsWith(args[1].toLowerCase())) {
-                            String[] nameSplit = file.getName().split(Pattern.quote("."));
-                            nameSplit[nameSplit.length - 1] = "";
-                            String name = v.getName().toLowerCase() + ":" + CorePlugin.toString(".", t -> t, nameSplit);
-                            name = name.substring(0, name.length() - 1).toLowerCase();
-                            list.add(name);
-                        }
-                    }
-                }
-            });
+            ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v instanceof Identifable).filter(v -> ((Identifable) v).getId().startsWith(args[1])).forEach(v -> list.add(((Identifable) v).getId()));
         }else if (args.length == 3 && args[2].equalsIgnoreCase("")){
             list.add("track");
             list.add("crew");

@@ -11,6 +11,7 @@ import org.core.event.events.entity.EntityInteractEvent;
 import org.core.event.events.entity.EntitySpawnEvent;
 import org.core.text.Text;
 import org.core.text.TextColours;
+import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
@@ -18,6 +19,7 @@ import org.core.world.position.block.details.data.keyed.AttachableKeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.movement.MovingBlockSet;
 import org.ships.permissions.Permissions;
@@ -133,7 +135,7 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             try {
-                new ShipsIDFinder(type.getName().toLowerCase() + ":" + stes.getLine(2).get().toPlain().toLowerCase()).load();
+                new ShipsIDFinder(type.getName().toLowerCase() + "." + stes.getLine(2).get().toPlain().toLowerCase()).load();
                 event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Name has already been taken"));
                 event.setCancelled(true);
                 return;
@@ -146,14 +148,28 @@ public class CoreEventListener implements EventListener {
                 }
             } catch (LoadVesselException e) {
             }
-            PositionableShipsStructure pss = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(event.getPosition());
-            Vessel vessel = type.createNewVessel(stes, event.getPosition());
-            vessel.setStructure(pss);
-            if(vessel instanceof CrewStoredVessel){
-                ((CrewStoredVessel)vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
-            }
-            vessel.save();
-            ShipsPlugin.getPlugin().registerVessel(vessel);
+            ServerBossBar bar = CorePlugin.createBossBar().setValue(100).setMessage(CorePlugin.buildText("0 Blocks Detected")).register(event.getEntity());
+            ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
+                @Override
+                public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                    bar.setMessage(CorePlugin.buildText("Complete"));
+                    Vessel vessel = type.createNewVessel(stes, event.getPosition());
+                    vessel.setStructure(structure);
+                    if(vessel instanceof CrewStoredVessel){
+                        ((CrewStoredVessel)vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
+                    }
+                    vessel.save();
+                    ShipsPlugin.getPlugin().registerVessel(vessel);
+                    bar.deregisterPlayers();
+                }
+
+                @Override
+                public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                    bar.setMessage(CorePlugin.buildText((currentStructure.getPositions().size() + 1) + " Blocks Detected"));
+                    return true;
+                }
+            });
+
         }
         event.setTo(stes);
     }

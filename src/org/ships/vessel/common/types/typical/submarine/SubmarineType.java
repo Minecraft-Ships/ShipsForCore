@@ -7,6 +7,7 @@ import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
+import org.core.platform.Plugin;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
@@ -78,6 +79,11 @@ public class SubmarineType implements ShipType {
     }
 
     @Override
+    public Plugin getPlugin() {
+        return ShipsPlugin.getPlugin();
+    }
+
+    @Override
     public ExpandedBlockList getDefaultBlockList() {
         return this.blockList;
     }
@@ -105,11 +111,6 @@ public class SubmarineType implements ShipType {
     @Override
     public BlockType[] getIgnoredTypes() {
         return new BlockType[]{BlockTypes.AIR.get(), BlockTypes.WATER.get()};
-    }
-
-    @Override
-    public String getId() {
-        return "ships:submarine";
     }
 
     @Override
