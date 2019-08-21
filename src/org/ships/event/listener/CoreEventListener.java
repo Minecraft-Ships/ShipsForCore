@@ -62,7 +62,7 @@ public class CoreEventListener implements EventListener {
             if(!opSet.isPresent()){
                 return false;
             }
-            return opSet.get().stream().anyMatch(mb -> mb.getAfterPosition().equals(event.getPosition().toBlockPosition()));
+            return opSet.get().stream().anyMatch(mb -> mb.getBeforePosition().equals(event.getPosition().toBlockPosition()) || mb.getAfterPosition().equals(event.getPosition().toBlockPosition()));
         });
         if(bool) {
             event.setCancelled(true);
@@ -148,11 +148,17 @@ public class CoreEventListener implements EventListener {
                 }
             } catch (LoadVesselException e) {
             }
-            ServerBossBar bar = CorePlugin.createBossBar().setValue(100).setMessage(CorePlugin.buildText("0 Blocks Detected")).register(event.getEntity());
+            ServerBossBar bar = null;
+            if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
+                bar = CorePlugin.createBossBar().setValue(100).setMessage(CorePlugin.buildText("0 Blocks Detected")).register(event.getEntity());
+            }
+            final ServerBossBar finalBar = bar;
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                 @Override
                 public void onShipsStructureUpdated(PositionableShipsStructure structure) {
-                    bar.setMessage(CorePlugin.buildText("Complete"));
+                    if(finalBar != null) {
+                        finalBar.setMessage(CorePlugin.buildText("Complete"));
+                    }
                     Vessel vessel = type.createNewVessel(stes, event.getPosition());
                     vessel.setStructure(structure);
                     if(vessel instanceof CrewStoredVessel){
@@ -160,12 +166,16 @@ public class CoreEventListener implements EventListener {
                     }
                     vessel.save();
                     ShipsPlugin.getPlugin().registerVessel(vessel);
-                    bar.deregisterPlayers();
+                    if (finalBar != null) {
+                        finalBar.deregisterPlayers();
+                    }
                 }
 
                 @Override
                 public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                    bar.setMessage(CorePlugin.buildText((currentStructure.getPositions().size() + 1) + " Blocks Detected"));
+                    if(finalBar != null) {
+                        finalBar.setMessage(CorePlugin.buildText((currentStructure.getPositions().size() + 1) + " Blocks Detected"));
+                    }
                     return true;
                 }
             });

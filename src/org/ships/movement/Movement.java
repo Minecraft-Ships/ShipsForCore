@@ -98,6 +98,9 @@ public class Movement {
         });
         if (!collided.isEmpty()) {
             vessel.set(MovingFlag.class, null);
+            if(bar != null){
+                bar.deregisterPlayers();
+            }
 
             VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, movement, blocks, entityBlock, strict, collided);
             CorePlugin.getPlatform().callEvent(collideEvent);

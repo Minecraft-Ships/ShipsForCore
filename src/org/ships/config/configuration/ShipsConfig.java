@@ -31,6 +31,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     protected final ConfigurationNode FALL_SPEED = new ConfigurationNode("Auto", "Falling", "Speed");
     protected final ConfigurationNode LICENCE_SIGN_TEXT_1ST = new ConfigurationNode("Sign", "Licence", "First");
     protected final ConfigurationNode LICENCE_SIGN_TEXT_4TH = new ConfigurationNode("Sign", "Licence", "Fourth");
+    protected final ConfigurationNode VISIBLE_BOSS_BAR = new ConfigurationNode("Bar", "Visible");
 
     public ShipsConfig(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.temp");
@@ -42,6 +43,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
         if(!this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).isPresent()){
             modified = true;
             this.file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
+        }
+        if(!this.file.parseBoolean(this.VISIBLE_BOSS_BAR).isPresent()){
+            modified = true;
+            this.file.set(this.VISIBLE_BOSS_BAR, false);
         }
         if(modified){
             this.file.save();
@@ -65,6 +70,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
         return this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).orElse(BasicMovement.SHIPS_FIVE);
     }
 
+    public boolean isBossBarVisible(){
+        return this.file.parseBoolean(this.VISIBLE_BOSS_BAR).orElse(false);
+    }
+
     public int getDefaultTrackSize(){
         return this.file.parseInt(this.ADVANCED_TRACK_LIMIT).orElse(4000);
     }
@@ -82,12 +91,14 @@ public class ShipsConfig implements Config.CommandConfigurable {
         file.set(ADVANCED_TRACK_LIMIT, 4000);
         file.set(EOT_SPEED, 2);
         file.set(EOT_DELAY, 5);
+        file.set(VISIBLE_BOSS_BAR, false);
         file.save();
     }
 
     @Override
     public Set<DedicatedNode<?>> getNodes() {
         return new HashSet<>(Arrays.asList(
+                new DedicatedNode<>(true, "boss.bar.visible", Parser.STRING_TO_BOOLEAN, VISIBLE_BOSS_BAR.getPath()),
                 new DedicatedNode<>("Advanced.Block.Movement", ShipsParsers.STRING_TO_MOVEMENT, ADVANCED_MOVEMENT.getPath()),
                 new DedicatedNode<>("Advanced.Block.Finder", ShipsParsers.STRING_TO_BLOCK_FINDER, ADVANCED_BLOCKFINDER.getPath()),
                 new DedicatedNode<>(true, "Advanced.Block.Track", Parser.STRING_TO_INTEGER, ADVANCED_TRACK_LIMIT.getPath())

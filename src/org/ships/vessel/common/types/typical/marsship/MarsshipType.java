@@ -20,10 +20,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MarsshipType implements ShipType {
+public class MarsshipType implements ShipType{
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
+    protected String name;
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
@@ -31,7 +32,11 @@ public class MarsshipType implements ShipType {
     private final String[] SPECIAL_BLOCK_PERCENT = {"Special", "Block", "Percent"};
 
     public MarsshipType(){
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/" + getId().replaceAll(":", ".") + ".temp");
+        this("Marsship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Marsship.temp"));
+    }
+
+    public MarsshipType(String name, File file){
+        this.name = name;
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
         if(!this.file.getFile().exists()){
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
@@ -53,7 +58,7 @@ public class MarsshipType implements ShipType {
 
     @Override
     public String getDisplayName() {
-        return "Marsship";
+        return this.name;
     }
 
     @Override
@@ -94,5 +99,13 @@ public class MarsshipType implements ShipType {
     @Override
     public String getName() {
         return getDisplayName();
+    }
+
+    public ShipType cloneWithName(File file, String name) {
+        return new MarsshipType(name, file);
+    }
+
+    public ShipType getOriginType() {
+        return ShipType.MARSSHIP;
     }
 }

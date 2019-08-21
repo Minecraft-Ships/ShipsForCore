@@ -120,14 +120,20 @@ public class MoveSign implements ShipsSign {
             name = "1";
         }
         int speed = Integer.parseInt(name);
-        ServerBossBar bar = CorePlugin.createBossBar();
-        bar.register(player);
-        bar.setMessage(CorePlugin.buildText("Finding structure: 0"));
+        ServerBossBar bar = null;
+        if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
+            bar = CorePlugin.createBossBar();
+            bar.register(player);
+            bar.setMessage(CorePlugin.buildText("Finding structure: 0"));
+        }
+        final ServerBossBar finalBar = bar;
         new ShipsOvertimeUpdateBlockLoader(position) {
             @Override
             protected void onStructureUpdate(Vessel vessel) {
-                bar.deregister(player);
-                vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
+                if(finalBar != null) {
+                    finalBar.deregister(player);
+                    vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> finalBar.register((LivePlayer) e));
+                }
                 Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
                 if (!opDirectional.isPresent()) {
                     player.sendMessage(CorePlugin.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
@@ -143,7 +149,7 @@ public class MoveSign implements ShipsSign {
                 Vector3Int direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
                 BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
                 try {
-                    vessel.moveTowards(direction, movement, bar);
+                    vessel.moveTowards(direction, movement, finalBar);
                 } catch (MoveException e) {
                     sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
                 } catch (Throwable e2) {
@@ -153,13 +159,17 @@ public class MoveSign implements ShipsSign {
 
             @Override
             protected boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                bar.setMessage(CorePlugin.buildText("Finding structure: " + (currentStructure.getPositions().size() + 1)));
+                if(finalBar != null) {
+                    finalBar.setMessage(CorePlugin.buildText("Finding structure: " + (currentStructure.getPositions().size() + 1)));
+                }
                 return true;
             }
 
             @Override
             protected void onExceptionThrown(LoadVesselException e) {
-                bar.deregisterPlayers();
+                if(finalBar != null) {
+                    finalBar.deregisterPlayers();
+                }
                 if (e instanceof UnableToFindLicenceSign) {
                     UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                     player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));

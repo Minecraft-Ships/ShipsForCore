@@ -51,41 +51,47 @@ public class WheelSign implements ShipsSign {
         if(player.isSneaking()){
             return false;
         }
-        ServerBossBar bar = CorePlugin.createBossBar();
-        bar.setMessage(CorePlugin.buildText("Finding structure: 0")).register(player);
-            new ShipsOvertimeUpdateBlockLoader(position) {
-                @Override
-                protected void onStructureUpdate(Vessel vessel) {
-                    bar.deregister(player);
-                    vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
-                    BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
-                    try{
-                        vessel.rotateLeftAround(vessel.getPosition(), movement, bar);
-                    }catch (MoveException e){
-                        sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
-                    }catch (Throwable e2){
-                        vessel.getEntities().forEach(e -> e.setGravity(true));
-                    }
+        ServerBossBar bar = null;
+        if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
+            bar = CorePlugin.createBossBar();
+            bar.setMessage(CorePlugin.buildText("Finding structure: 0")).register(player);
+        }
+        final ServerBossBar finalBar = bar;
+        new ShipsOvertimeUpdateBlockLoader(position) {
+            @Override
+            protected void onStructureUpdate(Vessel vessel) {
+                if(finalBar != null) {
+                    finalBar.deregister(player);
+                    vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> finalBar.register((LivePlayer) e));
                 }
-
-                @Override
-                protected boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                    return true;
+                BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
+                try{
+                    vessel.rotateLeftAround(vessel.getPosition(), movement, finalBar);
+                }catch (MoveException e){
+                    sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
+                }catch (Throwable e2){
+                    vessel.getEntities().forEach(e -> e.setGravity(true));
                 }
-
-                @Override
-                protected void onExceptionThrown(LoadVesselException e) {
-                    bar.deregisterPlayers();
-                    if(e instanceof UnableToFindLicenceSign){
-                        UnableToFindLicenceSign e1 = (UnableToFindLicenceSign)e;
-                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
-                        e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
-                        CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
-                    }else{
-                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getReason()));
-                    }
+            }
+            @Override
+            protected boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                return true;
+            }
+            @Override
+            protected void onExceptionThrown(LoadVesselException e) {
+                if(finalBar != null) {
+                    finalBar.deregisterPlayers();
                 }
-            }.loadOvertime();
+                if(e instanceof UnableToFindLicenceSign){
+                    UnableToFindLicenceSign e1 = (UnableToFindLicenceSign)e;
+                    player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
+                    e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+                    CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                }else{
+                    player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getReason()));
+                }
+            }
+        }.loadOvertime();
         return false;
     }
 

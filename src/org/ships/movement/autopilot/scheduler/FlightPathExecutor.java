@@ -35,9 +35,12 @@ public class FlightPathExecutor implements Runnable {
                 this.vessel.setFlightPath(null);
                 return;
             }
-            System.out.println(opVector.get().toString());
-            ServerBossBar bar = CorePlugin.createBossBar();
-            vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
+            ServerBossBar bar = null;
+            if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
+                bar = CorePlugin.createBossBar();
+                final ServerBossBar finalBar = bar;
+                vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> finalBar.register((LivePlayer) e));
+            }
             try {
                 this.vessel.moveTo(this.vessel.getPosition().getWorld().getPosition(opVector.get()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);
                 this.vessel.setFlightPath(this.vessel.getFlightPath().get().createUpdatedPath(this.vessel.getPosition().getPosition(), this.vessel.getFlightPath().get().getEndingPosition()));
