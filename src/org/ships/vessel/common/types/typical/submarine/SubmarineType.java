@@ -110,7 +110,7 @@ public class SubmarineType implements ShipType {
 
     @Override
     public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
-        return new Submarine(ste, bPos);
+        return new Submarine(this, ste, bPos);
     }
 
     @Override

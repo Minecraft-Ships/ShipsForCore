@@ -12,6 +12,7 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
@@ -20,7 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MarsshipType implements ShipType{
+public class MarsshipType implements ShipType, CloneableShipType {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
@@ -88,7 +89,7 @@ public class MarsshipType implements ShipType{
 
     @Override
     public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
-        return new Marsship(ste, bPos);
+        return new Marsship(this, ste, bPos);
     }
 
     @Override
@@ -101,11 +102,11 @@ public class MarsshipType implements ShipType{
         return getDisplayName();
     }
 
-    public ShipType cloneWithName(File file, String name) {
+    public CloneableShipType cloneWithName(File file, String name) {
         return new MarsshipType(name, file);
     }
 
-    public ShipType getOriginType() {
+    public CloneableShipType getOriginType() {
         return ShipType.MARSSHIP;
     }
 }

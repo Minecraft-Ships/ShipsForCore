@@ -31,12 +31,12 @@ public class Marsship extends AbstractShipsVessel implements AirType {
     protected ConfigurationNode configSpecialBlockType = new ConfigurationNode("Block", "Special", "Type");
 
 
-    public Marsship(LiveSignTileEntity licence) {
-        super(licence, ShipType.MARSSHIP);
+    public Marsship(MarsshipType type, LiveSignTileEntity licence) {
+        super(licence, type);
     }
 
-    public Marsship(SignTileEntity ste, BlockPosition position) {
-        super(ste, position, ShipType.MARSSHIP);
+    public Marsship(MarsshipType type, SignTileEntity ste, BlockPosition position) {
+        super(ste, position, type);
     }
 
     public float getSpecialBlockPercent(){

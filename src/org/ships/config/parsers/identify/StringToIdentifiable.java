@@ -29,7 +29,7 @@ public class StringToIdentifiable<T extends Identifable> implements StringParser
 
     @Override
     public List<T> getSuggestions(String peek) {
-        return ShipsPlugin.getPlugin().getAll(this.class1).stream().filter(i -> i.getId().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
+        return getSuggestions().stream().filter(i -> i.getId().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
     }
 
     @Override

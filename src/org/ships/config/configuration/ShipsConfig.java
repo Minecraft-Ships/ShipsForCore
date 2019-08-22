@@ -33,6 +33,9 @@ public class ShipsConfig implements Config.CommandConfigurable {
     protected final ConfigurationNode LICENCE_SIGN_TEXT_4TH = new ConfigurationNode("Sign", "Licence", "Fourth");
     protected final ConfigurationNode VISIBLE_BOSS_BAR = new ConfigurationNode("Bar", "Visible");
 
+    @Deprecated
+    public final ConfigurationNode ALPHA_COMMAND_USE_LEGACY = new ConfigurationNode("AlphaOnly", "Command", "UseLegacy");
+
     public ShipsConfig(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.temp");
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
@@ -47,6 +50,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
         if(!this.file.parseBoolean(this.VISIBLE_BOSS_BAR).isPresent()){
             modified = true;
             this.file.set(this.VISIBLE_BOSS_BAR, false);
+        }
+        if(!this.file.parseBoolean(this.ALPHA_COMMAND_USE_LEGACY).isPresent()){
+            modified = true;
+            this.file.set(this.ALPHA_COMMAND_USE_LEGACY, true);
         }
         if(modified){
             this.file.save();
@@ -92,6 +99,8 @@ public class ShipsConfig implements Config.CommandConfigurable {
         file.set(EOT_SPEED, 2);
         file.set(EOT_DELAY, 5);
         file.set(VISIBLE_BOSS_BAR, false);
+
+        file.set(ALPHA_COMMAND_USE_LEGACY, true);
         file.save();
     }
 

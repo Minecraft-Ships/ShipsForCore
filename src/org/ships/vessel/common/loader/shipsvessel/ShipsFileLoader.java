@@ -13,6 +13,7 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.exceptions.load.LoadVesselException;
+import org.ships.exceptions.load.WrappedFileLoadVesselException;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -136,7 +137,11 @@ public class ShipsFileLoader implements ShipsLoader {
             PositionableShipsStructure structure = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(ship.getPosition());
             ship.setStructure(structure);
         }
-        ship.deserializeExtra(file);
+        try {
+            ship.deserializeExtra(file);
+        }catch (Throwable e){
+            throw new WrappedFileLoadVesselException(this.file, e);
+        }
         return ship;
     }
 

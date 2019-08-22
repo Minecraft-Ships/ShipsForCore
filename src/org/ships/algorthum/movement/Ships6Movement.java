@@ -12,7 +12,6 @@ import org.ships.movement.Result;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
 
@@ -128,11 +127,9 @@ public class Ships6Movement implements BasicMovement {
         }
         blocksToProcess.add(currentlyAdding);
         int waterLevel = -1;
-        if(vessel instanceof WaterType){
-            Optional<Integer> opWaterLevel = ((WaterType)vessel).getWaterLevel();
-            if(opWaterLevel.isPresent()){
-                waterLevel = opWaterLevel.get();
-            }
+        Optional<Integer> opWaterLevel = vessel.getWaterLevel();
+        if(opWaterLevel.isPresent()){
+            waterLevel = opWaterLevel.get();
         }
         final int total = blocks.size();
         Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> {

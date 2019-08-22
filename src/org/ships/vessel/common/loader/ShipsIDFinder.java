@@ -20,7 +20,6 @@ public class ShipsIDFinder implements ShipsLoader {
         Optional<Vessel> opVessel = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v instanceof Identifable).filter(v -> {
             try {
                 String id = ((Identifable) v).getId();
-                System.out.println(id + " | " + this.id);
                 if (id.equals(this.id)) {
                     return true;
                 }

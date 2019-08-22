@@ -10,6 +10,7 @@ public interface Permissions {
     String SHIP_REMOVE_OTHER = "ships.remove.other";
     String CMD_INFO  = "ships.cmd.info";
     String CMD_BLOCK_INFO = "ships.cmd.blockinfo";
+    String CMD_SHIPTYPE_CREATE = "ships.cmd.shiptype.create";
 
     static String getMakePermission(ShipType type){
         return ABSTRACT_SHIP_MAKE + "." + type.getId().replace(":", ".").toLowerCase();

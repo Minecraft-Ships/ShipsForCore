@@ -1,12 +1,14 @@
 package org.ships.plugin;
 
 import org.core.CorePlugin;
+import org.core.command.argument.ArgumentCommandLauncher;
 import org.core.platform.Plugin;
 import org.core.schedule.Scheduler;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
+import org.ships.commands.argument.ShipsArgumentCommandLauncher;
 import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
@@ -52,7 +54,12 @@ public abstract class ShipsPlugin implements Plugin {
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
         CorePlugin.getEventManager().register(this, new CoreEventListener());
-        CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
+        if(this.config.getFile().parseBoolean(this.config.ALPHA_COMMAND_USE_LEGACY).orElse(true)) {
+            CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
+        }else{
+            ShipsArgumentCommandLauncher commandLauncher = new ShipsArgumentCommandLauncher();
+            CorePlugin.getServer().registerCommands(commandLauncher);
+        }
         this.fallScheduler = FallExecutor.createScheduler();
         this.fallScheduler.run();
         CorePlugin.createSchedulerBuilder().setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
@@ -64,7 +71,7 @@ public abstract class ShipsPlugin implements Plugin {
     public void loadCustomShipType(){
         File folder = new File(getShipsConigFolder(), "Configuration/ShipType/Custom");
         for(CloneableShipType type : getAll(CloneableShipType.class)){
-            File folderType = new File(folder, type.getId() + "/");
+            File folderType = new File(folder, type.getId().replace(":", ".") + "/");
             File[] files = folderType.listFiles();
             if(files == null){
                 folderType.mkdirs();

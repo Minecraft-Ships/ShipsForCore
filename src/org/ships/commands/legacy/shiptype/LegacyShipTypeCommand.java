@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class LegacyShipTypeCommand implements LegacyArgumentCommand {
+
     @Override
     public String getName() {
         return "shiptype";
@@ -25,6 +26,9 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
 
     @Override
     public boolean run(CommandSource source, String... args) {
+        if(args.length == 0){
+            return false;
+        }
         if(args[1].equalsIgnoreCase("create")){
             Optional<CloneableShipType> opType = ShipsPlugin.getPlugin().getAll(CloneableShipType.class).stream().filter(t -> t.getId().equalsIgnoreCase(args[2])).findAny();
             if(!opType.isPresent()){
@@ -34,7 +38,7 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
                 return true;
             }
             for(int A = 3; A < args.length; A++) {
-                File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/ShipType/Custom/" + opType.get().getOriginType().getId() + "/" + args[A] + ".temp");
+                File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/ShipType/Custom/" + opType.get().getOriginType().getId().replace(":", ".") + "/" + args[A] + ".temp");
                 file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT).getFile();
                 if(file.exists()){
                     if(source instanceof CommandViewer){

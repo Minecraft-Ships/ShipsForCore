@@ -49,12 +49,12 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType {
     protected ConfigurationNode configFuelSlot = new ConfigurationNode("Block", "Fuel", "Slot");
     protected ConfigurationNode configFuelTypes = new ConfigurationNode("Block", "Fuel", "Types");
 
-    public Submarine(LiveSignTileEntity licence) {
-        super(licence, ShipType.SUBMARINE);
+    public Submarine(SubmarineType type, LiveSignTileEntity licence) {
+        super(licence, type);
     }
 
-    public Submarine(SignTileEntity ste, BlockPosition position) {
-        super(ste, position, ShipType.SUBMARINE);
+    public Submarine(SubmarineType type, SignTileEntity ste, BlockPosition position) {
+        super(ste, position, type);
     }
 
     public float getSpecialBlockPercent(){
@@ -120,6 +120,10 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType {
         if(!strict){
             return;
         }
+        Optional<Integer> opWaterLevel = getWaterLevel(movingBlocks, m -> m.getAfterPosition());
+        if(!opWaterLevel.isPresent()){
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Arrays.asList(BlockTypes.WATER.get())));
+        }
         int specialBlocks = 0;
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
         for(MovingBlock block : movingBlocks){
@@ -161,6 +165,10 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType {
     public void processRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
         if(!strict){
             return;
+        }
+        Optional<Integer> opWaterLevel = getWaterLevel(movingBlocks, m -> m.getAfterPosition());
+        if(!opWaterLevel.isPresent()){
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Arrays.asList(BlockTypes.WATER.get())));
         }
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
         for(MovingBlock movingBlock : movingBlocks){

@@ -23,7 +23,7 @@ public class ShipsInfoCommand extends ChildArgumentCommandLauncher {
     public static final String ARGUMENT_ID = "Argument";
 
     public ShipsInfoCommand(){
-        super(new RemainingArguments<>(new StringArgument(ARGUMENT_ID)));
+        super(new RemainingArguments<>(new StringArgument.Suggestible(ARGUMENT_ID, "shipstype")));
     }
 
     @Override

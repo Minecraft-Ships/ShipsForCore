@@ -3,18 +3,24 @@ package org.ships.vessel.common.types;
 import org.core.entity.LiveEntity;
 import org.core.vector.types.Vector3Int;
 import org.core.world.boss.ServerBossBar;
+import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.ExactPosition;
 import org.core.world.position.Position;
 import org.core.world.position.Positionable;
+import org.core.world.position.block.BlockType;
+import org.core.world.position.block.BlockTypes;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.exceptions.MoveException;
+import org.ships.movement.MovingBlock;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public interface Vessel extends Positionable {
@@ -74,6 +80,52 @@ public interface Vessel extends Positionable {
 
     default void rotateClockwiseAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
         this.rotateLeftAround(location, movement, bar);
+    }
+
+    default boolean isInWater(){
+        return !getWaterLevel().isPresent();
+    }
+
+    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, BlockPosition> function){
+        int height = -1;
+        Direction[] directions = FourFacingDirection.getFourFacingDirections();
+        for (MovingBlock mBlock : collection){
+            BlockPosition position = function.apply(mBlock);
+            for(Direction direction : directions){
+                BlockType type = position.getRelative(direction).getBlockType();
+                if(type.equals(BlockTypes.WATER.get())){
+                    if(height < position.getY()) {
+                        height = position.getY();
+                        continue;
+                    }
+                }
+            }
+        }
+        if(height == -1){
+            return Optional.empty();
+        }
+        return Optional.of(height);
+    }
+
+    default Optional<Integer> getWaterLevel(){
+        PositionableShipsStructure pss = getStructure();
+        Direction[] directions = FourFacingDirection.getFourFacingDirections();
+        int height = -1;
+        for (BlockPosition position : pss.getPositions()){
+            for(Direction direction : directions){
+                BlockType type = position.getRelative(direction).getBlockType();
+                if(type.equals(BlockTypes.WATER.get())){
+                    if(height < position.getY()) {
+                        height = position.getY();
+                        continue;
+                    }
+                }
+            }
+        }
+        if(height == -1){
+            return Optional.empty();
+        }
+        return Optional.of(height);
     }
 
 }

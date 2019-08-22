@@ -4,6 +4,7 @@ import org.core.CorePlugin;
 import org.core.configuration.parser.Parser;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.block.BlockType;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.types.Vessel;
@@ -15,6 +16,7 @@ import java.util.Set;
 public interface MovementResult<E> {
 
     NoSpeedSet NO_SPEED_SET = new NoSpeedSet();
+    NoMovingToFound NO_MOVING_TO_FOUND = new NoMovingToFound();
     NoBurnerFound NO_BURNER_FOUND = new NoBurnerFound();
     CollideDetected COLLIDE_DETECTED = new CollideDetected();
     NoLicenceFound NO_LICENCE_FOUND = new NoLicenceFound();
@@ -23,18 +25,20 @@ public interface MovementResult<E> {
     Unknown UNKNOWN = new Unknown();
 
     void sendMessage(Vessel vessel, CommandViewer viewer, E value);
-    boolean isARequiredValue(Vessel vessel, CommandViewer viewer, E value);
+
+    class NoMovingToFound implements MovementResult<Collection<BlockType>>{
+
+        @Override
+        public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockType> value) {
+            viewer.sendMessagePlain("You must be moving into one of the following blocks: " + CorePlugin.toString(", ", b -> b.getId(), value));
+        }
+    }
 
     class NotEnoughFuel implements MovementResult<RequiredFuelMovementData> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredFuelMovementData value) {
             viewer.sendMessagePlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " + CorePlugin.toString(", ", t -> t, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) + " in a single furnace");
-        }
-
-        @Override
-        public boolean isARequiredValue(Vessel vessel, CommandViewer viewer, RequiredFuelMovementData value) {
-            return false;
         }
     }
 
@@ -44,11 +48,6 @@ public interface MovementResult<E> {
         public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredPercentMovementData value) {
             viewer.sendMessagePlain("Your ship has " + value.getHas() + "% of " + value.getBlockType().getName() + ". You need " + value.getRequired() + "% or more.");
         }
-
-        @Override
-        public boolean isARequiredValue(Vessel vessel, CommandViewer viewer, RequiredPercentMovementData value) {
-            return false;
-        }
     }
 
     class NoBurnerFound implements MovementResult<Boolean> {
@@ -56,11 +55,6 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
             viewer.sendMessagePlain("Failed to find burner on ship");
-        }
-
-        @Override
-        public boolean isARequiredValue(Vessel vessel, CommandViewer viewer, Boolean value) {
-            return false;
         }
     }
 
@@ -71,11 +65,6 @@ public interface MovementResult<E> {
             player.sendMessagePlain("A Unknown Error Occurred");
 
         }
-
-        @Override
-        public boolean isARequiredValue(Vessel vessel, CommandViewer player, Boolean value) {
-            return false;
-        }
     }
 
     class NoLicenceFound implements MovementResult<Boolean> {
@@ -83,11 +72,6 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
             viewer.sendMessagePlain("Failed to find licence sign for ship");
-        }
-
-        @Override
-        public boolean isARequiredValue(Vessel vessel, CommandViewer viewer, Boolean value) {
-            return false;
         }
     }
 
@@ -114,11 +98,6 @@ public interface MovementResult<E> {
                 collection.forEach(v -> viewer.sendMessagePlain(v.getX() + ", " + v.getY() + ", " + v.getZ()));
             }
         }
-
-        @Override
-        public boolean isARequiredValue(Vessel vessel, CommandViewer viewer, Collection<BlockPosition> value) {
-            return false;
-        }
     }
 
     class NoSpeedSet implements MovementResult<Integer> {
@@ -126,11 +105,6 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer player, Integer value) {
             player.sendMessagePlain("No speed speed");
-        }
-
-        @Override
-        public boolean isARequiredValue(Vessel vessel, CommandViewer player, Integer value) {
-            return value != 0;
         }
     }
 

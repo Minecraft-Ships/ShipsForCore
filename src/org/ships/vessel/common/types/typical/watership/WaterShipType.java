@@ -88,7 +88,7 @@ public class WaterShipType implements ShipType {
 
     @Override
     public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
-        return new WaterShip(ste, bPos);
+        return new WaterShip(this, ste, bPos);
     }
 
     @Override

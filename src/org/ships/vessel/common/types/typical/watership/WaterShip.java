@@ -32,13 +32,13 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     protected ConfigurationNode configSpecialBlockPercent = new ConfigurationNode("Block", "Special", "Percent");
     protected ConfigurationNode configSpecialBlockType = new ConfigurationNode("Block", "Special", "Type");
 
-    public WaterShip(LiveSignTileEntity licence) {
-        super(licence, ShipType.WATERSHIP);
+    public WaterShip(WaterShipType type, LiveSignTileEntity licence) {
+        super(licence, type);
         this.flags.add(new AltitudeLockFlag(true));
     }
 
-    public WaterShip(SignTileEntity ste, BlockPosition position){
-        super(ste, position, ShipType.WATERSHIP);
+    public WaterShip(WaterShipType type, SignTileEntity ste, BlockPosition position){
+        super(ste, position, type);
         this.flags.add(new AltitudeLockFlag(true));
     }
 
