@@ -1,6 +1,7 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.CorePlugin;
+import org.core.schedule.Scheduler;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
@@ -14,45 +15,105 @@ import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class Ships6BlockFinder implements BasicBlockFinder {
 
     private class Overtime {
 
-        private Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
-        private PositionableShipsStructure pss;
-        private List<BlockPosition> ret = new ArrayList<>();
-        private List<BlockPosition> target = new ArrayList<>();
-        private List<BlockPosition> process = new ArrayList<>();
-        private OvertimeBlockFinderUpdate update;
-        private Runnable runnable = () -> {
-            for (int A = 0; A < this.process.size(); A++) {
-                BlockPosition proc = this.process.get(A);
-                for (Direction face : this.directions) {
-                    BlockPosition block = proc.getRelative(face);
-                    if (!ret.stream().anyMatch(b -> b.equals(block))) {
+        private class OvertimeSection {
+
+            private Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
+            private List<BlockPosition> ret = new ArrayList<>();
+            private List<BlockPosition> process = new ArrayList<>();
+            private List<BlockPosition> ignore = new ArrayList<>();
+            private Runnable runnable = () -> {
+                for (int A = 0; A < this.process.size(); A++) {
+                    BlockPosition proc = this.process.get(A);
+                    for (Direction face : this.directions) {
+                        BlockPosition block = proc.getRelative(face);
+                        if(ignore.stream().anyMatch(b -> b.equals(block))){
+                            continue;
+                        }
+                        if (ret.stream().anyMatch(b -> b.equals(block))) {
+                            continue;
+                        }
                         BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
                         if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
-                            if (this.update.onBlockFind(this.pss, block)){
-                                this.pss.addPosition(block);
-                                this.ret.add(block);
-                                this.target.add(block);
-                            }
+                            this.ret.add(block);
                         }
                     }
                 }
+            };
+
+            public OvertimeSection(Collection<BlockPosition> collection, Collection<BlockPosition> ignore){
+                this.process.addAll(collection);
+                this.ignore.addAll(ignore);
             }
-            this.process.clear();
-            this.process.addAll(this.target);
-            this.target.clear();
-            if ((this.ret.size() <= Ships6BlockFinder.this.limit) && (!this.process.isEmpty())) {
-                CorePlugin.createSchedulerBuilder().setDelay(1).setDelayUnit(TimeUnit.MILLISECONDS).setExecutor(this.runnable).build(ShipsPlugin.getPlugin()).run();
-            }else{
-                this.update.onShipsStructureUpdated(this.pss);
+
+        }
+
+        private PositionableShipsStructure pss;
+        private List<BlockPosition> process = new ArrayList<>();
+        private List<BlockPosition> ret = new ArrayList<>();
+        private List<BlockPosition> total = new ArrayList<>();
+        private OvertimeBlockFinderUpdate update;
+        private Runnable runnable = () -> {
+            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+            List<List<BlockPosition>> collections = new ArrayList<>();
+            List<BlockPosition> current = new ArrayList<>();
+            for(int A = 0; A < this.process.size(); A++){
+                current.add(this.process.get(A));
+                if(current.size() >= config.getDefaultFinderStackLimit()){
+                    collections.add(current);
+                    current = new ArrayList<>();
+                }
             }
+            collections.add(current);
+
+            Scheduler scheduler = CorePlugin
+                    .createSchedulerBuilder()
+                    .setDelay(config.getDefaultFinderStackDelay())
+                    .setDelayUnit(config.getDefaultFinderStackDelayUnit())
+                    .setExecutor(() -> {
+                        if ((this.total.size() <= Ships6BlockFinder.this.limit) && (!this.ret.isEmpty())) {
+                            this.process = this.ret;
+                            this.ret = new ArrayList<>();
+
+                            CorePlugin.createSchedulerBuilder().
+                                    setDelay(config.getDefaultFinderStackDelay()).
+                                    setDelayUnit(config.getDefaultFinderStackDelayUnit()).
+                                    setExecutor(this.runnable).
+                                    build(ShipsPlugin.getPlugin()).run();
+                        }else{
+                            this.update.onShipsStructureUpdated(this.pss);
+                        }
+                    })
+                    .build(ShipsPlugin.getPlugin());
+
+            for(List<BlockPosition> list : collections){
+                scheduler = CorePlugin.createSchedulerBuilder()
+                        .setDelay(config.getDefaultFinderStackDelay())
+                        .setDelayUnit(config.getDefaultFinderStackDelayUnit())
+                        .setExecutor(() -> {
+                            OvertimeSection section = new OvertimeSection(list, this.total);
+                            section.runnable.run();
+                            section.ret.stream().forEach(p -> {
+                                if (this.update.onBlockFind(this.pss, p)){
+                                    this.pss.addPosition(p);
+                                    this.ret.add(p);
+                                    this.total.add(p);
+                                }
+                            });
+                        })
+                        .setToRunAfter(scheduler)
+                        .build(ShipsPlugin.getPlugin());
+            }
+            scheduler.run();
         };
 
         public Overtime(BlockPosition position, OvertimeBlockFinderUpdate update){
@@ -114,8 +175,14 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(position, runAfterFullSearch);
-        CorePlugin.createSchedulerBuilder().setDelay(1).setDelayUnit(TimeUnit.MILLISECONDS).setExecutor(overtime.runnable).build(ShipsPlugin.getPlugin()).run();
+        CorePlugin.createSchedulerBuilder().
+                setDelay(config.getDefaultFinderStackDelay()).
+                setDelayUnit(config.getDefaultFinderStackDelayUnit()).
+                setExecutor(overtime.runnable).
+                build(ShipsPlugin.getPlugin()).
+                run();
 
     }
 

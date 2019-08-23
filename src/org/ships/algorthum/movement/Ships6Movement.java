@@ -4,6 +4,7 @@ import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.world.boss.ServerBossBar;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.Movement;
 import org.ships.movement.MovingBlock;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class Ships6Movement implements BasicMovement {
 
@@ -49,7 +49,7 @@ public class Ships6Movement implements BasicMovement {
                     }
                 }
                 MovingBlock m = this.toProcess.get(A);
-                if(this.waterLevel >= m.getAfterPosition().getY()){
+                if(this.waterLevel >= m.getBeforePosition().getY()){
                     m.removeBeforePositionUnderWater();
                 }else{
                     m.removeBeforePositionOverAir();
@@ -96,34 +96,22 @@ public class Ships6Movement implements BasicMovement {
         if(bar != null){
             bar.setValue(0);
         }
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
-        List<List<MovingBlock>> blocksToRemove = new ArrayList<>();
+        //List<List<MovingBlock>> blocksToRemove = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
-        List<MovingBlock> currentlyRemoving = new ArrayList<>();
+        //List<MovingBlock> currentlyRemoving = new ArrayList<>();
         for(int A = 0; A < blocks.size(); A++){
             if(bar != null){
                 bar.setValue(A, blocks.size() * 3);
             }
             MovingBlock block = blocks.get(A);
-            if(currentlyAdding.size() >= 100){
+            if(currentlyAdding.size() >= config.getDefaultMovementStackLimit()){
                 blocksToProcess.add(currentlyAdding);
                 currentlyAdding = new ArrayList<>();
             }
             currentlyAdding.add(block);
-            for(MovingBlock block2 : blocks){
-                if(block.equals(block2)){
-                    continue;
-                }
-                if (block.getAfterPosition().equals(block2.getBeforePosition())){
-                    continue;
-                }
-                if(currentlyRemoving.size() >= 100){
-                    blocksToRemove.add(currentlyRemoving);
-                    currentlyRemoving = new ArrayList<>();
-                }
-                currentlyRemoving.add(block2);
-            }
         }
         blocksToProcess.add(currentlyAdding);
         int waterLevel = -1;
@@ -133,6 +121,9 @@ public class Ships6Movement implements BasicMovement {
         }
         final int total = blocks.size();
         Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> {
+            if(bar != null){
+                bar.setMessage(CorePlugin.buildText("Processing: Post movement"));
+            }
             for(Movement.PostMovement movement : movements){
                 movement.postMove(vessel);
             }
@@ -145,18 +136,18 @@ public class Ships6Movement implements BasicMovement {
                     .createSchedulerBuilder()
                     .setExecutor(new SetBlocks(A, total, bar, midMovement, blocks2))
                     .setToRunAfter(scheduler)
-                    .setDelay(1)
-                    .setDelayUnit(TimeUnit.MILLISECONDS)
+                    .setDelay(config.getDefaultMovementStackDelay())
+                    .setDelayUnit(config.getDefaultMovementStackDelayUnit())
                     .build(ShipsPlugin.getPlugin());
         }
-        for(int A = 0; A < blocksToRemove.size(); A++){
-            List<MovingBlock> blocks2 = blocksToRemove.get(A);
+        for(int A = 0; A < blocksToProcess.size(); A++){
+            List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = CorePlugin
                     .createSchedulerBuilder()
                     .setExecutor(new RemoveBlocks(waterLevel, A, total, bar, blocks2))
                     .setToRunAfter(scheduler)
-                    .setDelay(1)
-                    .setDelayUnit(TimeUnit.MILLISECONDS)
+                    .setDelay(config.getDefaultMovementStackDelay())
+                    .setDelayUnit(config.getDefaultMovementStackDelayUnit())
                     .build(ShipsPlugin.getPlugin());
         }
         if(scheduler == null){

@@ -115,6 +115,12 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
         return this;
     }
 
+    @Override
+    public ShipsStructure setRaw(Collection<Vector3Int> collection) {
+        this.vectors = new HashSet<>(collection);
+        return this;
+    }
+
     private static Optional<BlockPosition> getNextInLine(BlockPosition pos, Direction direction, Collection<BlockPosition> collections) throws DirectionNotSupported {
         Vector3Int original = pos.getPosition();
         List<Direction> directions = new ArrayList<>(Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));

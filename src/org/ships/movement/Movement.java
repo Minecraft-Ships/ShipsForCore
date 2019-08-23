@@ -48,6 +48,9 @@ public class Movement {
     }
 
     protected void move(Vessel vessel, boolean strict, MovingBlockSet blocks, BasicMovement movement, ServerBossBar bar, MidMovement mid, PostMovement... postMovement) throws MoveException {
+        if(vessel.isLoading()){
+            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_STILL_LOADING, null));
+        }
         vessel.set(MovingFlag.class, blocks);
         Set<LiveEntity> entities = vessel.getEntities();
         Map<LiveEntity, MovingBlock> entityBlock = new HashMap<>();

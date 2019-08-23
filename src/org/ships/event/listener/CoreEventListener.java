@@ -20,6 +20,7 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.movement.MovingBlockSet;
 import org.ships.permissions.Permissions;
@@ -148,9 +149,11 @@ public class CoreEventListener implements EventListener {
                 }
             } catch (LoadVesselException e) {
             }
+            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+            int trackSize = config.getDefaultTrackSize();
             ServerBossBar bar = null;
             if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-                bar = CorePlugin.createBossBar().setValue(100).setMessage(CorePlugin.buildText("0 Blocks Detected")).register(event.getEntity());
+                bar = CorePlugin.createBossBar().setMessage(CorePlugin.buildText("0 / " + trackSize)).register(event.getEntity());
             }
             final ServerBossBar finalBar = bar;
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
@@ -164,6 +167,7 @@ public class CoreEventListener implements EventListener {
                     if(vessel instanceof CrewStoredVessel){
                         ((CrewStoredVessel)vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
                     }
+                    vessel.setLoading(false);
                     vessel.save();
                     ShipsPlugin.getPlugin().registerVessel(vessel);
                     if (finalBar != null) {
@@ -174,7 +178,9 @@ public class CoreEventListener implements EventListener {
                 @Override
                 public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
                     if(finalBar != null) {
-                        finalBar.setMessage(CorePlugin.buildText((currentStructure.getPositions().size() + 1) + " Blocks Detected"));
+                        int blockAmount = (currentStructure.getPositions().size() + 1);
+                        finalBar.setMessage(CorePlugin.buildText(blockAmount + " / " + trackSize));
+                        finalBar.setValue(blockAmount, trackSize);
                     }
                     return true;
                 }

@@ -18,6 +18,7 @@ public interface ShipsStructure {
     boolean addPosition(Vector3Int add);
     boolean removePosition(Vector3Int remove);
     ShipsStructure clear();
+    ShipsStructure setRaw(Collection<Vector3Int> collection);
 
     default int getXSize(){
         return getSpecificSize(v -> v.getX());

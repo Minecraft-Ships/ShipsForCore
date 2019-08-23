@@ -46,6 +46,9 @@ public interface Vessel extends Positionable {
     void rotateRightAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException;
     void rotateLeftAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException;
 
+    void setLoading(boolean check);
+    boolean isLoading();
+
     void save();
 
     @Override

@@ -10,6 +10,7 @@ import org.core.world.WorldExtent;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.exceptions.load.LoadVesselException;
@@ -125,18 +126,32 @@ public class ShipsFileLoader implements ShipsLoader {
 
         file.parseInt(new ConfigurationNode(SPEED_ALTITUDE)).ifPresent(ship::setAltitudeSpeed);
         file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(ship::setMaxSpeed);
-        file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
-            PositionableShipsStructure pss = ship.getStructure();
-            structureList.forEach(pss::addPosition);
-        });
+        new Thread(() -> file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
+            if(structureList.isEmpty()){
+                CorePlugin.createSchedulerBuilder().setExecutor(() -> ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
+                    @Override
+                    public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                        ship.setStructure(structure);
+                        ship.setLoading(false);
+                        CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+                    }
+
+                    @Override
+                    public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                        return true;
+                    }
+                })).setDelay(1).setDelayUnit(null).build(ShipsPlugin.getPlugin());
+            }else {
+                PositionableShipsStructure pss = ship.getStructure();
+                pss.setRaw(structureList);
+                ship.setLoading(false);
+                CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+            }
+        })).start();
         ShipsPlugin.getPlugin().getDefaultPermissions().forEach(p -> file.parseList(new ConfigurationNode("Meta", "Permission", p.getId()), Parser.STRING_TO_UNIQUIE_ID).ifPresent(list -> {
             list.forEach(u -> ship.getCrew().put(u, p));
         }));
         file.parseList(new ConfigurationNode(META_FLAGS), ShipsParsers.STRING_TO_VESSEL_FLAG).ifPresent(flags -> flags.forEach(f -> ship.set(f)));
-        if(ship.getStructure().getOriginalRelativePositions().isEmpty()){
-            PositionableShipsStructure structure = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocks(ship.getPosition());
-            ship.setStructure(structure);
-        }
         try {
             ship.deserializeExtra(file);
         }catch (Throwable e){

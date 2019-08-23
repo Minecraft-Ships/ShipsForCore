@@ -5,6 +5,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
+import org.core.world.boss.ServerBossBar;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -12,6 +13,7 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
@@ -83,16 +85,31 @@ public class LicenceSign implements ShipsSign {
                 }
             } else {
                 int size = s.getStructure().getPositions().size();
+                ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+                ServerBossBar bar = null;
+                int totalCount = config.getDefaultTrackSize();
+                if(config.isBossBarVisible()){
+                    bar = CorePlugin.createBossBar().register(player).setMessage(CorePlugin.buildText("0 / " + totalCount));
+                }
+                final ServerBossBar finalBar = bar;
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(s).getConnectedBlocksOvertime(s.getPosition(), new OvertimeBlockFinderUpdate() {
                     @Override
                     public void onShipsStructureUpdated(PositionableShipsStructure structure) {
                         s.setStructure(structure);
                         s.save();
                         player.sendMessagePlain("Vessels structure has updated by " + (structure.getPositions().size() - size));
+                        if(finalBar != null){
+                            finalBar.deregisterPlayers();
+                        }
                     }
 
                     @Override
                     public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                        if(finalBar != null){
+                            int blockCount = currentStructure.getPositions().size() + 1;
+                            finalBar.setMessage(CorePlugin.buildText(blockCount + " / " + totalCount));
+                            finalBar.setValue(blockCount, totalCount);
+                        }
                         return true;
                     }
                 });

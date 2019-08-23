@@ -33,6 +33,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected ShipType type;
     protected int maxSpeed = 10;
     protected int altitudeSpeed = 2;
+    protected boolean isLoading = true;
 
     public AbstractShipsVessel(LiveSignTileEntity licence, ShipType type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
@@ -50,6 +51,16 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this.blockList = new ExpandedBlockList(configuration, ShipsPlugin.getPlugin().getBlockList());
         this.file = configuration.getFile();
         this.type = type;
+    }
+
+    @Override
+    public boolean isLoading(){
+        return this.isLoading;
+    }
+
+    @Override
+    public void setLoading(boolean check){
+        this.isLoading = check;
     }
 
     @Override
