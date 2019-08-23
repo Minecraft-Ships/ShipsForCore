@@ -108,7 +108,11 @@ public class LicenceSign implements ShipsSign {
                         if(finalBar != null){
                             int blockCount = currentStructure.getPositions().size() + 1;
                             finalBar.setMessage(CorePlugin.buildText(blockCount + " / " + totalCount));
-                            finalBar.setValue(blockCount, totalCount);
+                            try {
+                                finalBar.setValue(blockCount, totalCount);
+                            }catch (IllegalArgumentException e){
+
+                            }
                         }
                         return true;
                     }

@@ -97,7 +97,11 @@ public class AltitudeSign implements ShipsSign {
                     int foundBlocks = currentStructure.getPositions().size() + 1;
                     if (finalBar != null) {
                         finalBar.setMessage(CorePlugin.buildText(foundBlocks + " / " + blockLimit));
-                        finalBar.setValue(foundBlocks, blockLimit);
+                        try {
+                            finalBar.setValue(foundBlocks, blockLimit);
+                        }catch (IllegalArgumentException e){
+
+                        }
                     }
                     return true;
                 }

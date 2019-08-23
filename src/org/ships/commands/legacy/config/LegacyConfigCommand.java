@@ -147,6 +147,9 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
 
     private <T> String readNode(Config.CommandConfigurable config, DedicatedNode<T> node){
         Optional<T> opValue = node.getValue(config.getFile());
+        if(opValue == null){
+            return node.getParser().unparse(null);
+        }
         if(!opValue.isPresent()){
             return "<no value>";
         }
@@ -160,6 +163,11 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
         }
         DedicatedNode<T> dedicated = (DedicatedNode<T>) opDedicated.get();
         Optional<T> opResult = dedicated.getParser().parse(value);
+        if(opResult == null){
+            dedicated.setValue(config.getFile(), null);
+            config.getFile().save();
+            return true;
+        }
         if(opResult.isPresent()){
             dedicated.setValue(config.getFile(), opResult.get());
             config.getFile().save();

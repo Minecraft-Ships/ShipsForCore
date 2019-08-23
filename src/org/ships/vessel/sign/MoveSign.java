@@ -153,7 +153,11 @@ public class MoveSign implements ShipsSign {
                     int foundBlocks = currentStructure.getPositions().size() + 1;
                     if (finalBar != null) {
                         finalBar.setMessage(CorePlugin.buildText(foundBlocks + " / " + trackLimit));
-                        finalBar.setValue(foundBlocks, trackLimit);
+                        try {
+                            finalBar.setValue(foundBlocks, trackLimit);
+                        }catch (IllegalArgumentException e){
+
+                        }
                     }
                     return true;
                 }
