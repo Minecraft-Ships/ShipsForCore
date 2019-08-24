@@ -126,6 +126,33 @@ public class ShipsFileLoader implements ShipsLoader {
 
         file.parseInt(new ConfigurationNode(SPEED_ALTITUDE)).ifPresent(ship::setAltitudeSpeed);
         file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(ship::setMaxSpeed);
+
+        CorePlugin.createSchedulerBuilder().setDelayUnit(null).setDelay(1).setExecutor(() -> {
+            file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
+                if(structureList.isEmpty()){
+                    ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
+                        @Override
+                        public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                            ship.setStructure(structure);
+                            ship.setLoading(false);
+                            CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+                        }
+
+                        @Override
+                        public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                            return true;
+                        }
+                    });
+                }else{
+                    PositionableShipsStructure pss = ship.getStructure();
+                    pss.setRaw(structureList);
+                    ship.setLoading(false);
+                    CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+                }
+            });
+        }).build(ShipsPlugin.getPlugin());
+
+
         new Thread(() -> file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
             if(structureList.isEmpty()){
                 CorePlugin.createSchedulerBuilder().setExecutor(() -> ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
