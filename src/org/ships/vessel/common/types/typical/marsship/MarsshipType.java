@@ -14,14 +14,13 @@ import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MarsshipType implements ShipType, CloneableShipType {
+public class MarsshipType implements CloneableShipType<Marsship> {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
@@ -88,7 +87,7 @@ public class MarsshipType implements ShipType, CloneableShipType {
     }
 
     @Override
-    public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Marsship createNewVessel(SignTileEntity ste, BlockPosition bPos) {
         return new Marsship(this, ste, bPos);
     }
 

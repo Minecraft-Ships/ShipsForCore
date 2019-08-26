@@ -12,6 +12,7 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
@@ -20,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class WaterShipType implements ShipType {
+public class WaterShipType implements CloneableShipType {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
@@ -105,11 +106,11 @@ public class WaterShipType implements ShipType {
         return name;
     }
 
-    public ShipType cloneWithName(File file, String name) {
+    public CloneableShipType cloneWithName(File file, String name) {
         return new WaterShipType(name, file);
     }
 
-    public ShipType getOriginType() {
+    public CloneableShipType getOriginType() {
         return ShipType.WATERSHIP;
     }
 }

@@ -8,6 +8,7 @@ import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.result.FailedMovement;
+import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.EOTSign;
@@ -61,6 +62,9 @@ public class EOTExecutor implements Runnable {
             try {
                 this.vessel.moveTowards(directionalData.get().getDirection().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);
             } catch (MoveException e) {
+                if(e.getMovement() instanceof MovementResult.VesselMovingAlready){
+                    return;
+                }
                 sendError(e.getMovement());
             }catch (Throwable e2){
                 this.vessel.getEntities().forEach(e -> e.setGravity(true));

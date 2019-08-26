@@ -6,7 +6,6 @@ import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
 import org.core.world.position.Position;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
@@ -71,8 +70,8 @@ public interface Vessel extends Positionable {
         return entities.stream()
                 .filter(e -> pss.getRelativePositions().stream().anyMatch(v -> {
                     BlockPosition shipPosition = position.getRelative(v);
-                    ExactPosition entityPosition = e.getPosition();
-                    BlockPosition targetPos = entityPosition.toBlockPosition().getRelative(FourFacingDirection.DOWN);
+                    BlockPosition targetPos = e.getAttachedTo();
+
                    return targetPos.equals(shipPosition);
                 })).collect(Collectors.toSet());
     }

@@ -61,12 +61,27 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable {
         return this.specialBlockPercent;
     }
 
+    public Airship setSpecialBlockPercent(float percent){
+        this.specialBlockPercent = percent;
+        return this;
+    }
+
     public int getFuelConsumption(){
         return this.fuelConsumption;
     }
 
+    public Airship setFuelConsumption(int fuel){
+        this.fuelConsumption = fuel;
+        return this;
+    }
+
     public boolean shouldTakeFromTopSlot(){
         return this.takeFromTopSlot;
+    }
+
+    public Airship setShouldTakeFromTopSlot(boolean check){
+        this.takeFromTopSlot = check;
+        return this;
     }
 
     public Set<BlockType> getSpecialBlocks(){
@@ -244,9 +259,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable {
                 Slot slot = this.takeFromTopSlot ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.fuelTypes.stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
             }).collect(Collectors.toList());
-            if(acceptedSlots.isEmpty()){
-                return false;
-            }
+            return !acceptedSlots.isEmpty();
         }
         return true;
     }

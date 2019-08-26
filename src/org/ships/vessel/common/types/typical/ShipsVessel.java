@@ -15,10 +15,7 @@ import org.ships.exceptions.MoveException;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.CrewStoredVessel;
-import org.ships.vessel.common.assits.FileBasedVessel;
-import org.ships.vessel.common.assits.SignBasedVessel;
-import org.ships.vessel.common.assits.WritableNameVessel;
+import org.ships.vessel.common.assits.*;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.sign.LicenceSign;
 
@@ -26,7 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-public interface ShipsVessel extends SignBasedVessel, org.ships.vessel.common.assits.VesselRequirement, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
+public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, org.ships.vessel.common.assits.VesselRequirement, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
 
     Map<String, String> getExtraInformation();
     Collection<VesselFlag<?>> getFlags();

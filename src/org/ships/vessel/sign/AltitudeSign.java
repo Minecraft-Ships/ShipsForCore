@@ -159,7 +159,12 @@ public class AltitudeSign implements ShipsSign {
                 return;
             }
         }
-        vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
+        vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
+            if(bar == null){
+                return;
+            }
+            bar.register((LivePlayer) e);
+        });
         try {
             if (line1.startsWith("{")) {
                 vessel.moveTowards(0, altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);

@@ -14,7 +14,7 @@ import org.ships.vessel.common.types.typical.opship.OPShipType;
 import org.ships.vessel.common.types.typical.submarine.SubmarineType;
 import org.ships.vessel.common.types.typical.watership.WaterShipType;
 
-public interface ShipType extends Identifable {
+public interface ShipType<T extends Vessel> extends Identifable {
 
     OPShipType OVERPOWERED_SHIP = new OPShipType.Default();
     MarsshipType MARSSHIP = new MarsshipType();
@@ -28,10 +28,10 @@ public interface ShipType extends Identifable {
     int getDefaultMaxSpeed();
     int getDefaultAltitudeSpeed();
     ConfigurationFile getFile();
-    Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos);
+    T createNewVessel(SignTileEntity ste, BlockPosition bPos);
     BlockType[] getIgnoredTypes();
 
-    default Vessel createNewVessel(LiveSignTileEntity position){
+    default T createNewVessel(LiveSignTileEntity position){
         return createNewVessel(position, position.getPosition());
     }
 

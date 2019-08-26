@@ -16,6 +16,7 @@ import java.util.Set;
 public interface MovementResult<E> {
 
     NoSpeedSet NO_SPEED_SET = new NoSpeedSet();
+    VesselMovingAlready VESSEL_MOVING_ALREADY = new VesselMovingAlready();
     VesselStillLoading VESSEL_STILL_LOADING = new VesselStillLoading();
     NoMovingToFound NO_MOVING_TO_FOUND = new NoMovingToFound();
     NoBurnerFound NO_BURNER_FOUND = new NoBurnerFound();
@@ -26,6 +27,16 @@ public interface MovementResult<E> {
     Unknown UNKNOWN = new Unknown();
 
     void sendMessage(Vessel vessel, CommandViewer viewer, E value);
+
+    class VesselMovingAlready implements MovementResult<Boolean> {
+
+
+
+        @Override
+        public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
+            viewer.sendMessagePlain("Your vessel is already moving. Please wait for it to finish");
+        }
+    }
 
     class VesselStillLoading implements MovementResult<Boolean> {
 

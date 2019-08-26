@@ -14,16 +14,17 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SubmarineType implements ShipType {
+public class SubmarineType implements CloneableShipType {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
@@ -46,10 +47,10 @@ public class SubmarineType implements ShipType {
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
         if((!this.file.getFile().exists()) || (!this.file.parseDouble(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT)).isPresent())){
             this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 75.0f);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Arrays.asList(BlockTypes.IRON_BLOCK.get())));
+            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Collections.singletonList(BlockTypes.IRON_BLOCK.get())));
             this.file.set(new ConfigurationNode(this.FUEL_CONSUMPTION), 1);
             this.file.set(new ConfigurationNode(this.FUEL_SLOT), "Bottom");
-            this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Arrays.asList(ItemTypes.COAL_BLOCK.getId())));
+            this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Collections.singletonList(ItemTypes.COAL_BLOCK.getId())));
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
             this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
             this.file.save();
@@ -123,11 +124,11 @@ public class SubmarineType implements ShipType {
         return getDisplayName();
     }
 
-    public ShipType cloneWithName(File file, String name) {
+    public CloneableShipType cloneWithName(File file, String name) {
         return new SubmarineType(name, file);
     }
 
-    public ShipType getOriginType() {
+    public CloneableShipType getOriginType() {
         return ShipType.SUBMARINE;
     }
 }

@@ -49,7 +49,17 @@ public class Movement {
 
     protected void move(Vessel vessel, boolean strict, MovingBlockSet blocks, BasicMovement movement, ServerBossBar bar, MidMovement mid, PostMovement... postMovement) throws MoveException {
         if(vessel.isLoading()){
+            if(bar != null){
+                bar.deregisterPlayers();
+            }
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_STILL_LOADING, null));
+        }
+        Optional<MovingBlockSet> opMoving = vessel.getValue(MovingFlag.class);
+        if(opMoving.isPresent()){
+            if(bar != null){
+                bar.deregisterPlayers();
+            }
+            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_MOVING_ALREADY, true));
         }
         vessel.set(MovingFlag.class, blocks);
         Set<LiveEntity> entities = vessel.getEntities();

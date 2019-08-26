@@ -5,6 +5,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.vector.types.Vector3Int;
 import org.core.world.boss.ServerBossBar;
 import org.ships.exceptions.MoveException;
+import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FlightPathType;
 
@@ -45,6 +46,9 @@ public class FlightPathExecutor implements Runnable {
                 this.vessel.moveTo(this.vessel.getPosition().getWorld().getPosition(opVector.get()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);
                 this.vessel.setFlightPath(this.vessel.getFlightPath().get().createUpdatedPath(this.vessel.getPosition().getPosition(), this.vessel.getFlightPath().get().getEndingPosition()));
             } catch (MoveException e) {
+                if(e.getMovement() instanceof MovementResult.VesselMovingAlready){
+                    return;
+                }
                 e.printStackTrace();
             }catch (Throwable e2){
                 vessel.getEntities().forEach(e -> e.setGravity(true));

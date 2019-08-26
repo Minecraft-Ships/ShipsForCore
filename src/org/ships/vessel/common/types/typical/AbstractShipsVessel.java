@@ -5,6 +5,7 @@ import org.core.configuration.ConfigurationFile;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.utils.Identifable;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.ExactPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
@@ -26,8 +27,9 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     protected PositionableShipsStructure positionableShipsStructure;
     protected Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
-    protected Set<VesselFlag<?>> flags = new HashSet<>(Arrays.asList(new MovingFlag()));
+    protected Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
     protected CrewPermission defaultPermission = CrewPermission.DEFAULT;
+    protected ExactPosition teleportPosition;
     protected File file;
     protected ExpandedBlockList blockList;
     protected ShipType type;
@@ -70,12 +72,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public <T extends VesselFlag> Optional<T> get(Class<T> clazz){
-        return (Optional<T>) getFlags().stream().filter(v -> clazz.isInstance(v)).findAny();
+        return (Optional<T>) getFlags().stream().filter(clazz::isInstance).findAny();
     }
 
     @Override
     public <T> Vessel set(Class<? extends VesselFlag<T>> clazz, T value){
-        Optional<VesselFlag<?>> opFlag = getFlags().stream().filter(f -> clazz.isInstance(f)).findFirst();
+        Optional<VesselFlag<?>> opFlag = getFlags().stream().filter(clazz::isInstance).findFirst();
         if(!opFlag.isPresent()){
             Optional<? extends VesselFlag<T>> opNewFlag = ShipsPlugin.getPlugin().get(clazz);
             if(!opNewFlag.isPresent()){
@@ -117,6 +119,17 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     @Override
     public ExpandedBlockList getBlockList() {
         return this.blockList;
+    }
+
+    @Override
+    public ExactPosition getTeleportPosition(){
+        return this.teleportPosition;
+    }
+
+    @Override
+    public AbstractShipsVessel setTeleportPosition(ExactPosition position){
+        this.teleportPosition = position;
+        return this;
     }
 
     @Override

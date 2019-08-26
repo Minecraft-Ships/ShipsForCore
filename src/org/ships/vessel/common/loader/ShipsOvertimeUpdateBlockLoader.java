@@ -3,6 +3,7 @@ package org.ships.vessel.common.loader;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
@@ -59,6 +60,13 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
     }
 
     public void loadOvertime() {
-        ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(this.original, new OvertimeRunnable());
+        BasicBlockFinder finder = ShipsPlugin.getPlugin().getConfig().getDefaultFinder();
+        /*try {
+            Vessel vessel = new ShipsBlockFinder(this.original).load();
+            finder.setConnectedVessel(vessel);
+        } catch (LoadVesselException e) {
+
+        }*/
+        finder.getConnectedBlocksOvertime(this.original, new OvertimeRunnable());
     }
 }

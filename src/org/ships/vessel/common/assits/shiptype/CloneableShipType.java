@@ -2,11 +2,12 @@ package org.ships.vessel.common.assits.shiptype;
 
 import org.core.CorePlugin;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 import java.util.regex.Pattern;
 
-public interface CloneableShipType extends ShipType {
+public interface CloneableShipType<T extends Vessel> extends ShipType<T> {
 
     CloneableShipType cloneWithName(File file, String name);
 

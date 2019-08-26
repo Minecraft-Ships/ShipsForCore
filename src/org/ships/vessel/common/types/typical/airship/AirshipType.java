@@ -14,10 +14,8 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.shiptype.ClassicShipType;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AirshipType implements ShipType, ClassicShipType, CloneableShipType {
+public class AirshipType implements CloneableShipType<Airship> {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
@@ -39,11 +37,6 @@ public class AirshipType implements ShipType, ClassicShipType, CloneableShipType
     private final String[] FUEL_CONSUMPTION = {"Block", "Fuel", "Consumption"};
     private final String[] FUEL_SLOT = {"Block", "Fuel", "Slot"};
     private final String[] FUEL_TYPES = {"Block", "Fuel", "Types"};
-
-    private final String[] LEGACY_FUEL_CONSUMPTION = {"ShipsData", "Config", "Fuel", "Consumption"};
-    private final String[] LEGACY_SPECIAL_BLOCK_PERCENT = {"ShipsData", "Config", "Block", "Percent"};
-    private final String[] LEGACY_MAX_SPEED = {"ShipsData", "Config", "Spped", "Boost"};
-    private final String[] LEGACY_OWNER = {"ShipsData", "Player", "Name"};
 
     public AirshipType(){
         this("Airship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Airship.temp"));
@@ -122,7 +115,7 @@ public class AirshipType implements ShipType, ClassicShipType, CloneableShipType
     }
 
     @Override
-    public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Airship createNewVessel(SignTileEntity ste, BlockPosition bPos) {
         return new Airship(this, ste, bPos);
     }
 
@@ -134,14 +127,6 @@ public class AirshipType implements ShipType, ClassicShipType, CloneableShipType
     @Override
     public String getName() {
         return getDisplayName();
-    }
-
-    @Override
-    public Vessel createClassicVessel(SignTileEntity ste, BlockPosition blockPosition) {
-        File classicFile = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ste.getLine(2).get().toPlain() + ".yml");
-        ConfigurationFile config = CorePlugin.createConfigurationFile(classicFile, ConfigurationLoaderTypes.YAML);
-
-        return null;
     }
 
     @Override
