@@ -5,7 +5,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 public interface OvertimeBlockFinderUpdate {
 
-    public void onShipsStructureUpdated(PositionableShipsStructure structure);
-    public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block);
+    void onShipsStructureUpdated(PositionableShipsStructure structure);
+    boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block);
 
 }

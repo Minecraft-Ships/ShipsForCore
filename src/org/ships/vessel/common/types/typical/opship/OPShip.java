@@ -5,8 +5,6 @@ import org.core.configuration.ConfigurationNode;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.ships.exceptions.MoveException;
-import org.ships.movement.MovingBlockSet;
 import org.ships.movement.autopilot.FlightPath;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.FlightPathType;
@@ -17,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Deprecated
 public class OPShip extends AbstractShipsVessel implements AirType, FlightPathType {
 
     protected FlightPath flightPath;
@@ -53,15 +52,5 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
     public FlightPathType setFlightPath(FlightPath path) {
         this.flightPath = path;
         return this;
-    }
-
-    @Override
-    public void meetsRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
-
-    }
-
-    @Override
-    public void processRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
-
     }
 }

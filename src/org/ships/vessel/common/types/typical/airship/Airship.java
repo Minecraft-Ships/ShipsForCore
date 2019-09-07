@@ -19,8 +19,8 @@ import org.core.world.position.block.entity.container.furnace.FurnaceTileEntityS
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.MoveException;
+import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
-import org.ships.movement.MovingBlockSet;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredFuelMovementData;
@@ -33,7 +33,7 @@ import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Airship extends AbstractShipsVessel implements AirType, Fallable {
+public class Airship extends AbstractShipsVessel implements AirType, Fallable, org.ships.vessel.common.assits.VesselRequirement {
 
     protected boolean useBurner = ShipType.AIRSHIP.isUsingBurner();
     protected float specialBlockPercent = ShipType.AIRSHIP.getDefaultSpecialBlockPercent();
@@ -93,14 +93,14 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable {
     }
 
     @Override
-    public void meetsRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException{
-        if(!strict){
+    public void meetsRequirements(MovementContext context) throws MoveException{
+        if(!context.isStrictMovement()){
             return;
         }
         int specialBlockCount = 0;
         boolean burnerFound = false;
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for(MovingBlock movingBlock : movingBlocks){
+        for(MovingBlock movingBlock : context.getMovingStructure()){
             BlockPosition blockPosition = movingBlock.getBeforePosition();
             BlockDetails details = movingBlock.getStoredBlockData();
             if(blockPosition.getBlockType().equals(BlockTypes.FIRE.get())){
@@ -119,7 +119,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable {
         if(this.useBurner && !burnerFound){
             throw new MoveException(new AbstractFailedMovement(this, MovementResult.NO_BURNER_FOUND, false));
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f)/movingBlocks.size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f)/context.getMovingStructure().size());
         if((this.specialBlockPercent != 0) && specialBlockPercent <= this.specialBlockPercent){
             throw new MoveException(new AbstractFailedMovement(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlocks.iterator().next(), this.specialBlockPercent, specialBlockPercent)));
         }
@@ -141,12 +141,12 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable {
     }
 
     @Override
-    public void processRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
-        if(!strict){
+    public void processRequirements(MovementContext context) throws MoveException {
+        if(!context.isStrictMovement()){
             return;
         }
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for(MovingBlock movingBlock : movingBlocks){
+        for(MovingBlock movingBlock : context.getMovingStructure()){
             BlockDetails details = movingBlock.getStoredBlockData();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
             if(opTiled.isPresent()){

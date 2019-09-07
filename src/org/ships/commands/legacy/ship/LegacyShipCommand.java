@@ -1,26 +1,30 @@
 package org.ships.commands.legacy.ship;
 
 import org.core.CorePlugin;
+import org.core.configuration.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
+import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.exceptions.load.LoadVesselException;
+import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
+import org.ships.vessel.sign.EOTSign;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class LegacyShipCommand implements LegacyArgumentCommand {
@@ -40,14 +44,14 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
         }
         try {
             Vessel vessel = new ShipsIDFinder(args[1]).load();
-            if(args[2].equalsIgnoreCase("track")){
-                if(!(source instanceof LivePlayer)){
-                    if(source instanceof CommandViewer){
+            if(args[2].equalsIgnoreCase("track")) {
+                if (!(source instanceof LivePlayer)) {
+                    if (source instanceof CommandViewer) {
                         ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "Player only command"));
                     }
                     return true;
                 }
-                vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.get().getDefaultBlockDetails(), (LivePlayer)source));
+                vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.get().getDefaultBlockDetails(), (LivePlayer) source));
                 CorePlugin.createSchedulerBuilder()
                         .setDelay(10)
                         .setDelayUnit(TimeUnit.SECONDS)
@@ -57,6 +61,58 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                                 .forEach(bp -> bp.resetBlock((LivePlayer) source)))
                         .build(ShipsPlugin.getPlugin())
                         .run();
+            }else if(args[2].equalsIgnoreCase("EOT")){
+                if(args.length >= 5) {
+                    if(args[3].equalsIgnoreCase("enable")){
+                        Optional<Boolean> opCheck = Parser.STRING_TO_BOOLEAN.parse(args[4]);
+                        if(!opCheck.isPresent()){
+                            if(source instanceof CommandViewer){
+                                ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " eot enable <true/false>");
+                            }
+                            return false;
+                        }
+                        EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
+                        if(!opCheck.get()){
+                            sign.getScheduler(vessel).stream().forEach(s -> {
+                                EOTExecutor exe = (EOTExecutor) s.getExecutor();
+                                exe.getSign().ifPresent(b -> {
+                                    Optional<LiveTileEntity> opTileEntity = b.getTileEntity();
+                                    if(!opTileEntity.isPresent()){
+                                        return;
+                                    }
+                                    if (!(opTileEntity.get() instanceof LiveSignTileEntity)){
+                                        return;
+                                    }
+                                    LiveSignTileEntity lste = (LiveSignTileEntity)opTileEntity.get();
+                                    lste.setLine(1, CorePlugin.buildText("Ahead"));
+                                    lste.setLine(2, CorePlugin.buildText("{Stop}"));
+                                });
+                                s.cancel();
+                            });
+                        }
+                        Collection<BlockPosition> eotSigns = vessel.getStructure().getAll(sign);
+                        if(eotSigns.size() == 1 && opCheck.get()){
+                            if(!(source instanceof LivePlayer)){
+                                if(source instanceof CommandViewer){
+                                    ((CommandViewer) source).sendMessagePlain("Can only enable eot as a player");
+                                }
+                                return false;
+                            }
+                            LivePlayer player = (LivePlayer)source;
+                            LiveSignTileEntity lste = (LiveSignTileEntity) eotSigns.stream().findAny().get().getTileEntity().get();
+                            sign.onSecondClick(player, lste.getPosition());
+                        }else if(opCheck.get()){
+                            if(source instanceof CommandViewer){
+                                ((CommandViewer) source).sendMessagePlain("Found more then one EOT sign, unable to enable.");
+                            }
+                            return false;
+                        }
+                    }
+                }else{
+                    if(source instanceof CommandViewer){
+                        ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " eot enable <true/false>");
+                    }
+                }
             }else if(args[2].equalsIgnoreCase("crew")){
                 if(args.length == 3){
                     if(source instanceof CommandViewer){

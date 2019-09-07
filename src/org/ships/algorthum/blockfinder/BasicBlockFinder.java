@@ -2,6 +2,7 @@ package org.ships.algorthum.blockfinder;
 
 import org.core.world.position.BlockPosition;
 import org.ships.algorthum.Algorthum;
+import org.ships.algorthum.blockfinder.typeFinder.BasicTypeBlockFinder;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -19,5 +20,6 @@ public interface BasicBlockFinder extends Algorthum {
     BasicBlockFinder setBlockLimit(int limit);
     Optional<Vessel> getConnectedVessel();
     BasicBlockFinder setConnectedVessel(Vessel vessel);
+    BasicTypeBlockFinder getTypeFinder();
 
 }

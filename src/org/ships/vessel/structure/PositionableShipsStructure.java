@@ -5,6 +5,8 @@ import org.core.world.position.BlockPosition;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.TileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +38,10 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
 
     default Collection<BlockPosition> getAll(Class<? extends TileEntity> class1){
         return Collections.unmodifiableCollection(getPositions(this::getPosition).stream().filter(p -> p.getTileEntity().isPresent()).filter(p -> class1.isInstance(p.getTileEntity().get())).collect(Collectors.toSet()));
+    }
+
+    default Collection<BlockPosition> getAll(ShipsSign sign){
+        return Collections.unmodifiableCollection(getPositions().stream().filter(b -> b.getTileEntity().isPresent()).filter(b -> b.getTileEntity().get() instanceof LiveSignTileEntity).filter(b -> sign.isSign((LiveSignTileEntity)b.getTileEntity().get())).collect(Collectors.toSet()));
     }
 
     default Collection<BlockPosition> getPositions(){

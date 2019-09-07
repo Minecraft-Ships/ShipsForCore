@@ -1,6 +1,7 @@
 package org.ships.commands.legacy;
 
 import org.core.command.CommandLauncher;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
 import org.ships.commands.legacy.autopilot.LegacyAutoPilotCommand;
@@ -37,8 +38,11 @@ public class LegacyShipsCommand implements CommandLauncher {
     }
 
     @Override
-    public Optional<String> getPermission() {
-        return Optional.of("ships.cmd.ships");
+    public boolean hasPermission(CommandSource source) {
+        if(source instanceof LivePlayer){
+            return ((LivePlayer) source).hasPermission("ships.cmd.ships");
+        }
+        return true;
     }
 
     @Override

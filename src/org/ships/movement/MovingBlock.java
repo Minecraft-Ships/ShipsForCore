@@ -3,8 +3,10 @@ package org.ships.movement;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
+import org.core.world.position.block.details.data.keyed.WaterLoggedKeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.container.ContainerTileEntity;
+import org.core.world.position.flags.physics.ApplyPhysicsFlags;
 
 import java.util.Optional;
 
@@ -62,12 +64,24 @@ public interface MovingBlock {
     }
 
     default MovingBlock removeBeforePositionOverAir() {
-        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.AIR.get().getDefaultBlockDetails());
+        BlockPosition position = removeBeforePosition(this.getBeforePosition()).getBeforePosition();
+        Optional<Boolean> waterLogged = position.getBlockDetails().get(WaterLoggedKeyedData.class);
+        if(waterLogged.isPresent() && waterLogged.get()){
+            position.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+        }else{
+            position.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails());
+        }
         return this;
     }
 
     default MovingBlock removeBeforePositionUnderWater() {
-        removeBeforePosition(this.getBeforePosition()).getBeforePosition().setBlock(BlockTypes.WATER.get().getDefaultBlockDetails());
+        BlockPosition position = removeBeforePosition(this.getBeforePosition()).getBeforePosition();
+        Optional<Boolean> waterLogged = position.getBlockDetails().get(WaterLoggedKeyedData.class);
+        if(waterLogged.isPresent() && waterLogged.get()) {
+            position.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+        }else{
+            position.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails());
+        }
         return this;
     }
 

@@ -1,60 +1,57 @@
-package org.ships.algorthum.blockfinder;
+package org.ships.algorthum.blockfinder.typeFinder;
 
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
-import org.ships.algorthum.blockfinder.typeFinder.BasicTypeBlockFinder;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
-import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
-public class Ships5BlockFinder implements BasicBlockFinder {
+public class Ships5BlockTypeFinder implements BasicTypeBlockFinder {
 
     private int blockLimit;
     private int blockCount = 0;
-    private PositionableShipsStructure shipsStructure;
     private Vessel vessel;
     private BlockList list;
+    private Predicate<BlockPosition> predicate;
 
-    private void getNextBlock(OvertimeBlockFinderUpdate event, BlockPosition position, Direction... directions){
+    private Optional<BlockPosition> getNextBlock(BlockPosition position, Direction... directions){
         if(this.blockLimit != -1 && this.blockCount >= this.blockLimit){
-            return;
+            return Optional.empty();
         }
         this.blockCount++;
         for(Direction direction : directions){
             BlockPosition block = position.getRelative(direction);
             BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
             if(bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
-                if(event != null){
-                    if (!event.onBlockFind(this.shipsStructure, block)){
-                        getNextBlock(event, block, directions);
+                if (!predicate.test(block)){
+                    Optional<BlockPosition> opBlock = getNextBlock(block, directions);
+                    if(opBlock.isPresent()){
+                        return opBlock;
                     }
+                    continue;
                 }
-                if (shipsStructure.addPosition(block)){
-                    getNextBlock(event, block, directions);
-                }
+                return Optional.of(block);
             }
         }
+        return Optional.empty();
     }
 
-    private PositionableShipsStructure getConnectedBlocks(BlockPosition position, OvertimeBlockFinderUpdate update){
+    private Optional<BlockPosition> getBlock(BlockPosition position){
         this.blockCount = 0;
-        this.shipsStructure = new AbstractPosititionableShipsStructure(position);
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-        getNextBlock(update, position, directions);
-        return this.shipsStructure;
+        return getNextBlock(position, directions);
     }
 
     @Override
-    public Ships5BlockFinder init() {
+    public Ships5BlockTypeFinder init() {
         ShipsPlugin plugin = ShipsPlugin.getPlugin();
         ShipsConfig config = plugin.getConfig();
         this.blockLimit = config.getDefaultTrackSize();
@@ -62,13 +59,19 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
-        return getConnectedBlocks(position, null);
+    public Optional<BlockPosition> findBlock(BlockPosition position, Predicate<BlockPosition> predicate) {
+        this.predicate = predicate;
+        return getBlock(position);
     }
 
     @Override
-    public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
-        runAfterFullSearch.onShipsStructureUpdated(getConnectedBlocks(position));
+    public void findBlock(BlockPosition position, Predicate<BlockPosition> predicate, OvertimeBlockTypeFinderUpdate runAfterSearch) {
+        Optional<BlockPosition> opPosition = findBlock(position, predicate);
+        if(opPosition.isPresent()){
+            runAfterSearch.onBlockFound(opPosition.get());
+        }else{
+            runAfterSearch.onFailedToFind();
+        }
     }
 
     @Override
@@ -77,7 +80,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public BasicBlockFinder setBlockLimit(int limit) {
+    public BasicTypeBlockFinder setBlockLimit(int limit) {
         this.blockLimit = limit;
         return this;
     }
@@ -88,7 +91,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public BasicBlockFinder setConnectedVessel(Vessel vessel) {
+    public BasicTypeBlockFinder setConnectedVessel(Vessel vessel) {
         this.vessel = vessel;
         if(this.vessel != null && this.vessel instanceof BlockListable){
             this.list = ((BlockListable)this.vessel).getBlockList();
@@ -96,11 +99,6 @@ public class Ships5BlockFinder implements BasicBlockFinder {
             this.list = ShipsPlugin.getPlugin().getBlockList();
         }
         return this;
-    }
-
-    @Override
-    public BasicTypeBlockFinder getTypeFinder() {
-        return BasicTypeBlockFinder.SHIPS_FIVE;
     }
 
     @Override

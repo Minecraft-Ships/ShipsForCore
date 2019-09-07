@@ -1,17 +1,16 @@
 package org.ships.movement;
 
 import org.core.CorePlugin;
+import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
-import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.DirectionalData;
-import org.ships.algorthum.movement.BasicMovement;
+import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
@@ -26,7 +25,10 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 public class Movement {
 
@@ -47,55 +49,53 @@ public class Movement {
 
     }
 
-    protected void move(Vessel vessel, boolean strict, MovingBlockSet blocks, BasicMovement movement, ServerBossBar bar, MidMovement mid, PostMovement... postMovement) throws MoveException {
+    protected void move(Vessel vessel, MovementContext context) throws MoveException {
         if(vessel.isLoading()){
-            if(bar != null){
-                bar.deregisterPlayers();
-            }
+            context.getBar().ifPresent(b -> b.deregisterPlayers());
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_STILL_LOADING, null));
         }
-        Optional<MovingBlockSet> opMoving = vessel.getValue(MovingFlag.class);
+        Optional<MovementContext> opMoving = vessel.getValue(MovingFlag.class);
         if(opMoving.isPresent()){
-            if(bar != null){
-                bar.deregisterPlayers();
-            }
+            context.getBar().ifPresent(b -> b.deregisterPlayers());
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_MOVING_ALREADY, true));
         }
-        vessel.set(MovingFlag.class, blocks);
+        vessel.set(MovingFlag.class, context);
+        System.out.println("MidMovement size: " + context.getMidMovementProcess().length);
         Set<LiveEntity> entities = vessel.getEntities();
-        Map<LiveEntity, MovingBlock> entityBlock = new HashMap<>();
-        entities.forEach(e -> entityBlock.put(e, blocks.getBefore(e.getPosition().toBlockPosition().getRelative(FourFacingDirection.DOWN)).get()));
-
-        if(bar != null){
+        entities.forEach(e -> {
+            EntitySnapshot<? extends LiveEntity> snapshot = e.createSnapshot();
+            MovingBlock mBlock = context.getMovingStructure().getBefore(e.getAttachedTo().get()).get();
+            context.getEntities().put(snapshot, mBlock);
+        });
+        context.getBar().ifPresent(bar -> {
             bar.setValue(100);
             bar.setMessage(CorePlugin.buildText("Processing: Pre"));
-        }
+        });
 
-        VesselMoveEvent.Pre preEvent = new VesselMoveEvent.Pre(vessel, movement, blocks, entityBlock, strict);
+        VesselMoveEvent.Pre preEvent = new VesselMoveEvent.Pre(vessel, context);
         if (CorePlugin.getPlatform().callEvent(preEvent).isCancelled()){
             return;
         }
 
-        if(bar != null){
-            bar.setMessage(CorePlugin.buildText("Checking requirements:"));
-        }
+        context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Checking requirements:")));
 
-        Optional<MovingBlock> opLicence = blocks.get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
+        Optional<MovingBlock> opLicence = context.getMovingStructure().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
         if (!opLicence.isPresent()) {
             vessel.set(MovingFlag.class, null);
+            context.getBar().ifPresent(b -> b.deregisterPlayers());
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.NO_LICENCE_FOUND, null));
         }
         if (vessel instanceof VesselRequirement) {
             try {
-                ((VesselRequirement) vessel).meetsRequirements(strict, blocks);
+                ((VesselRequirement) vessel).meetsRequirements(context);
             }catch (Throwable e) {
                 vessel.set(MovingFlag.class, null);
                 throw e;
             }
         }
         Set<BlockPosition> collided = new HashSet<>();
-        blocks.forEach(mb -> {
-            if(blocks.stream().anyMatch(mb1 -> mb.getAfterPosition().equals(mb1.getBeforePosition()))){
+        context.getMovingStructure().forEach(mb -> {
+            if(context.getMovingStructure().stream().anyMatch(mb1 -> mb.getAfterPosition().equals(mb1.getBeforePosition()))){
                 return;
             }
             for(BlockType type : vessel.getType().getIgnoredTypes()){
@@ -111,37 +111,29 @@ public class Movement {
         });
         if (!collided.isEmpty()) {
             vessel.set(MovingFlag.class, null);
-            if(bar != null){
-                bar.deregisterPlayers();
-            }
+            context.getBar().ifPresent(b -> b.deregisterPlayers());
 
-            VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, movement, blocks, entityBlock, strict, collided);
+            VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, context, collided);
             CorePlugin.getPlatform().callEvent(collideEvent);
 
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, collideEvent.getCollisions()));
         }
         try {
-            VesselMoveEvent.Main eventMain = new VesselMoveEvent.Main(vessel, movement, blocks, entityBlock, strict);
+            VesselMoveEvent.Main eventMain = new VesselMoveEvent.Main(vessel, context);
             if (CorePlugin.getPlatform().callEvent(eventMain).isCancelled()){
                 return;
             }
             entities.forEach(e -> e.setGravity(false));
-            if(bar != null){
-                bar.setMessage(CorePlugin.buildText("Processing: Moving"));
-            }
-            Result result = movement.move(vessel, blocks, entityBlock, bar, mid, postMovement);
-            if(bar != null){
-                bar.setMessage(CorePlugin.buildText("Processing: Post movement"));
-            }
-            VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, movement, blocks, entityBlock, strict, result);
+            context.getBar().ifPresent(b -> b.setMessage(CorePlugin.buildText("Processing: Moving")));
+            Result result = context.getMovement().move(vessel, context);
+            context.getBar().ifPresent(b -> b.setMessage(CorePlugin.buildText("Processing: Post Moving")));
+            VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, result);
             CorePlugin.getPlatform().callEvent(eventPost);
 
-            result.run(vessel, blocks, bar, entityBlock);
+            result.run(vessel, context);
         }catch (Throwable e) {
             entities.forEach(entity -> entity.setGravity(true));
-            if(bar != null){
-                bar.deregisterPlayers();
-            }
+            context.getBar().ifPresent(b -> b.deregisterPlayers());
             vessel.set(MovingFlag.class, null);
             throw e;
         }
@@ -153,16 +145,24 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, BlockPosition rotateAround, BasicMovement movement, ServerBossBar bar) throws MoveException {
+        public void move(Vessel vessel, BlockPosition rotateAround, MovementContext context) throws MoveException {
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateLeft(rotateAround);
                 set.add(block);
             });
-            move(vessel, true, set, movement, bar, (mb) -> {
+            context.setMovingStructure(set);
+            context.setStrictMovement(true);
+            context.setMidMovementProcess(mb -> {
                 BlockDetails blockDetails = mb.getStoredBlockData();
                 Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
                 if(!(opDirectional.isPresent())){
+                    Optional<Collection<Direction>> opData = blockDetails.get(KeyedData.MULTI_DIRECTIONAL);
+                    Collection<Direction> collection = new HashSet<>();
+                    if(opData.isPresent()) {
+                        opData.get().stream().forEach(d -> collection.add(d.getRightAngleRight()));
+                        blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
+                    }
                     return;
                 }
                 DirectionalData directionalData = opDirectional.get();
@@ -173,6 +173,7 @@ public class Movement {
                     directionNotSupported.printStackTrace();
                 }
             });
+            move(vessel, context);
         }
 
     }
@@ -183,26 +184,37 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, BlockPosition rotateAround, BasicMovement movement, ServerBossBar bar) throws MoveException{
+        public void move(Vessel vessel, BlockPosition rotateAround, MovementContext context) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateRight(rotateAround);
                 set.add(block);
             });
-            move(vessel, true, set, movement, bar, (mb) -> {
+            context.setMovingStructure(set);
+            context.setStrictMovement(true);
+            context.setMidMovementProcess(mb -> {
                 BlockDetails blockDetails = mb.getStoredBlockData();
                 Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
                 if(!(opDirectional.isPresent())){
+                    Optional<Collection<Direction>> opData = blockDetails.get(KeyedData.MULTI_DIRECTIONAL);
+                    Collection<Direction> collection = new HashSet<>();
+                    if(opData.isPresent()) {
+                        opData.get().stream().forEach(d -> collection.add(d.getRightAngleRight()));
+                        blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
+                    }
                     return;
                 }
                 DirectionalData directionalData = opDirectional.get();
                 Direction direction = directionalData.getDirection().getRightAngleRight();
+                System.out.println("Original Direction: " + direction.getName());
                 try {
                     directionalData.setDirection(direction);
+                    System.out.println("After direction: " + directionalData.getDirection().getName());
                 } catch (DirectionNotSupported directionNotSupported) {
                     directionNotSupported.printStackTrace();
                 }
             });
+            move(vessel, context);
 
         }
 
@@ -214,7 +226,7 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, BlockPosition to, BasicMovement movement, ServerBossBar bar) throws MoveException{
+        public void move(Vessel vessel, BlockPosition to, MovementContext context) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().forEach(f -> {
@@ -222,9 +234,9 @@ public class Movement {
                 BlockPosition vp2 = to.getRelative(f);
                 set.add(new SetMovingBlock(vp, vp2));
             });
-            move(vessel, true, set, movement, bar, (mb) -> {
-
-            });
+            context.setMovingStructure(set);
+            context.setStrictMovement(true);
+            move(vessel, context);
         }
 
     }
@@ -234,11 +246,11 @@ public class Movement {
         private AddToPosition(){
         }
 
-        public void move(Vessel vessel, int x, int y, int z, BasicMovement movement, ServerBossBar bar) throws MoveException{
-            move(vessel, new Vector3Int(x, y, z), movement, bar);
+        public void move(Vessel vessel, int x, int y, int z, MovementContext context) throws MoveException{
+            move(vessel, new Vector3Int(x, y, z), context);
         }
 
-        public void move(Vessel vessel, Vector3Int addTo, BasicMovement movement, ServerBossBar bar) throws MoveException{
+        public void move(Vessel vessel, Vector3Int addTo, MovementContext context) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().forEach(f -> {
@@ -246,9 +258,11 @@ public class Movement {
                 BlockPosition vp2 = vp.getRelative(addTo);
                 set.add(new SetMovingBlock(vp, vp2));
             });
-            move(vessel, ((addTo.getX() == 0 && addTo.getY() < 0 && addTo.getZ() == 0) ? false : true), set, movement, bar, (mb) -> {
-
-            });
+            context.setMovingStructure(set);
+            if((addTo.getX() == 0 && addTo.getY() < 0 && addTo.getZ() == 0)){
+                context.setStrictMovement(true);
+            }
+            move(vessel, context);
         }
 
     }

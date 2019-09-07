@@ -3,12 +3,11 @@ package org.ships.commands.argument;
 import org.core.command.CommandLauncher;
 import org.core.command.argument.ArgumentCommandLauncher;
 import org.core.platform.Plugin;
+import org.core.source.command.CommandSource;
 import org.ships.commands.argument.blockinfo.ShipsBlockInfoCommand;
 import org.ships.commands.argument.info.ShipsInfoCommand;
 import org.ships.commands.argument.shiptype.ShipsShipTypeCommand;
 import org.ships.plugin.ShipsPlugin;
-
-import java.util.Optional;
 
 public class ShipsArgumentCommandLauncher extends ArgumentCommandLauncher implements CommandLauncher {
 
@@ -27,8 +26,8 @@ public class ShipsArgumentCommandLauncher extends ArgumentCommandLauncher implem
     }
 
     @Override
-    public Optional<String> getPermission() {
-        return Optional.empty();
+    public boolean hasPermission(CommandSource source) {
+        return this.commands.stream().anyMatch(c -> c.hasPermission(source));
     }
 
     @Override

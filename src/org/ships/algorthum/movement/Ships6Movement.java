@@ -1,15 +1,10 @@
 package org.ships.algorthum.movement;
 
 import org.core.CorePlugin;
-import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
-import org.core.world.boss.ServerBossBar;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
-import org.ships.movement.Movement;
-import org.ships.movement.MovingBlock;
-import org.ships.movement.MovingBlockSet;
-import org.ships.movement.Result;
+import org.ships.movement.*;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
@@ -18,36 +13,35 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Ships6Movement implements BasicMovement {
 
     private static class RemoveBlocks implements Runnable {
 
         private List<MovingBlock> toProcess;
-        private int totalBlocks;
         private int waterLevel;
         private int attempt;
-        private ServerBossBar bar;
+        private MovementContext context;
 
-        public RemoveBlocks(int level, int attempt, int totalBlocks, ServerBossBar bar, List<MovingBlock> blocks){
+        public RemoveBlocks(int level, int attempt, MovementContext context, List<MovingBlock> blocks){
             this.toProcess = blocks;
             this.waterLevel = level;
-            this.bar = bar;
             this.attempt = attempt;
-            this.totalBlocks = totalBlocks;
+            this.context = context;
         }
 
         @Override
         public void run() {
             for(int A = 0; A < this.toProcess.size(); A++){
-                if(bar != null){
+                final int B = A;
+                context.getBar().ifPresent(bar -> {
                     try {
-                        bar.setValue((attempt-1) + A, totalBlocks);
+                        bar.setValue((attempt-1) + B, context.getMovingStructure().size());
                     }catch (IllegalArgumentException e){
                     }
-                }
+                });
                 MovingBlock m = this.toProcess.get(A);
                 if(this.waterLevel >= m.getBeforePosition().getY()){
                     m.removeBeforePositionUnderWater();
@@ -61,16 +55,14 @@ public class Ships6Movement implements BasicMovement {
     private static class SetBlocks implements Runnable {
 
         private List<MovingBlock> toProcess;
-        private Movement.MidMovement midMovement;
         private int attempt;
-        private ServerBossBar bar;
+        private MovementContext context;
         private int totalBlocks;
 
 
-        public SetBlocks(int attempt, int totalBlocks, ServerBossBar bar, Movement.MidMovement midMovement, List<MovingBlock> blocks){
+        public SetBlocks(int attempt, int totalBlocks, MovementContext context, List<MovingBlock> blocks){
             this.toProcess = blocks;
-            this.midMovement = midMovement;
-            this.bar = bar;
+            this.context = context;
             this.attempt = attempt;
             this.totalBlocks = totalBlocks;
         }
@@ -79,33 +71,31 @@ public class Ships6Movement implements BasicMovement {
         public void run() {
             for(int A = 0; A < this.toProcess.size(); A++){
                 MovingBlock m = this.toProcess.get(A);
-                if(bar != null){
+                final int B = A;
+                context.getBar().ifPresent(bar -> {
                     try{
-                        bar.setValue(attempt*A, (totalBlocks*2)+1);
+                        bar.setValue(attempt*B, (totalBlocks*2)+1);
                     }catch (IllegalArgumentException e){
                     }
-                }
-                midMovement.move(m);
+                });
+                Stream.of(context.getMidMovementProcess()).forEach(mid -> mid.move(m));
                 m.setMovingTo();
             }
         }
     }
 
     @Override
-    public Result move(Vessel vessel, MovingBlockSet set, Map<LiveEntity, MovingBlock> entity, ServerBossBar bar, Movement.MidMovement midMovement, Movement.PostMovement... movements) throws MoveException {
-        if(bar != null){
-            bar.setValue(0);
-        }
+    public Result move(Vessel vessel, MovementContext context) throws MoveException {
+        context.getBar().ifPresent(b -> b.setValue(0));
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        List<MovingBlock> blocks = set.order(MovingBlockSet.ORDER_ON_PRIORITY);
+        List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
         //List<List<MovingBlock>> blocksToRemove = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
         //List<MovingBlock> currentlyRemoving = new ArrayList<>();
         for(int A = 0; A < blocks.size(); A++){
-            if(bar != null){
-                bar.setValue(A, blocks.size() * 3);
-            }
+            final int B = A;
+            context.getBar().ifPresent(bar -> bar.setValue(B, blocks.size() * 3));
             MovingBlock block = blocks.get(A);
             if(currentlyAdding.size() >= config.getDefaultMovementStackLimit()){
                 blocksToProcess.add(currentlyAdding);
@@ -121,20 +111,18 @@ public class Ships6Movement implements BasicMovement {
         }
         final int total = blocks.size();
         Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> {
-            if(bar != null){
-                bar.setMessage(CorePlugin.buildText("Processing: Post movement"));
-            }
-            for(Movement.PostMovement movement : movements){
+            context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Processing: Post movement")));
+            for(Movement.PostMovement movement : context.getPostMovementProcess()){
                 movement.postMove(vessel);
             }
-            Result.DEFAULT_RESULT.run(vessel, set, bar, entity);
+            Result.DEFAULT_RESULT.run(vessel, context);
             vessel.set(MovingFlag.class, null);
         }).build(ShipsPlugin.getPlugin());
         for(int A = 0; A < blocksToProcess.size(); A++){
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = CorePlugin
                     .createSchedulerBuilder()
-                    .setExecutor(new SetBlocks(A, total, bar, midMovement, blocks2))
+                    .setExecutor(new SetBlocks(A, total, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())
                     .setDelayUnit(config.getDefaultMovementStackDelayUnit())
@@ -144,7 +132,7 @@ public class Ships6Movement implements BasicMovement {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = CorePlugin
                     .createSchedulerBuilder()
-                    .setExecutor(new RemoveBlocks(waterLevel, A, total, bar, blocks2))
+                    .setExecutor(new RemoveBlocks(waterLevel, A, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())
                     .setDelayUnit(config.getDefaultMovementStackDelayUnit())

@@ -55,34 +55,25 @@ public class BasicFlightSinglePath implements FlightSinglePath {
         if(isUsingY()){
             getLinedPath(Vector3Int::getY).forEach(i -> {
                 Vector3Int vector = new Vector3Int(this.firstPosition.getX(), i, this.firstPosition.getZ());
-                System.out.print("Vector: " + vector + " | " + this.firstPosition);
                 if(vector.equals(this.firstPosition)){
-                    System.out.println(" Ignored");
                     return;
                 }
-                System.out.println(" Added");
                 list.add(vector);
             });
         }else if(isUsingX()) {
             getLinedPath(Vector3Int::getX).forEach(i -> {
                 Vector3Int vector = new Vector3Int(i, this.firstPosition.getY(), this.firstPosition.getZ());
-                System.out.print("Vector: " + vector + " | " + this.firstPosition);
                 if(vector.equals(this.firstPosition)){
-                    System.out.println(" Ignored");
                     return;
                 }
-                System.out.println(" Added");
                 list.add(vector);
             });
         }else if(isUsingZ()){
             getLinedPath(Vector3Int::getZ).forEach(i -> {
                 Vector3Int vector = new Vector3Int(this.firstPosition.getX(), this.firstPosition.getY(), i);
-                System.out.print("Vector: " + vector + " | " + this.firstPosition);
                 if(vector.equals(this.firstPosition)){
-                    System.out.println(" Ignored");
                     return;
                 }
-                System.out.println(" Added");
                 list.add(vector);
             });
         }

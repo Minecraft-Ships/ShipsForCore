@@ -16,6 +16,7 @@ import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
+import org.ships.movement.MovementContext;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
@@ -159,20 +160,22 @@ public class AltitudeSign implements ShipsSign {
                 return;
             }
         }
+        MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
         vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
             if(bar == null){
                 return;
             }
             bar.register((LivePlayer) e);
+            context.setBar(bar);
         });
         try {
             if (line1.startsWith("{")) {
-                vessel.moveTowards(0, altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);
+                vessel.moveTowards(0, altitude, 0, context);
             } else {
-                vessel.moveTowards(0, -altitude, 0, ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);
+                vessel.moveTowards(0, -altitude, 0, context);
             }
         }catch (MoveException e){
-            bar.deregisterPlayers();
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             FailedMovement<?> movement = e.getMovement();
             sendErrorMessage(player, movement, movement.getValue().orElse(null));
             ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to " + movement.getResult().getClass().getSimpleName(), "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");

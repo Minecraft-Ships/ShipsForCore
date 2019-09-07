@@ -1,6 +1,6 @@
 package org.ships.plugin.patches;
 
-import org.ships.movement.MovingBlockSet;
+import org.ships.movement.MovementContext;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.MovingFlag;
 
@@ -11,11 +11,11 @@ public interface AutoRunPatches {
     Runnable NO_GRAVITY_FIX = (() -> ShipsPlugin.getPlugin().getVessels()
             .stream()
             .filter(v -> {
-                Optional<MovingBlockSet> opSet = v.getValue(MovingFlag.class);
+                Optional<MovementContext> opSet = v.getValue(MovingFlag.class);
                 if(!opSet.isPresent()){
                     return false;
                 }
-                return opSet.get().isEmpty();
+                return opSet.get().getMovingStructure().isEmpty();
             })
             .forEach(v -> v.getEntities().stream().forEach(e -> e.setGravity(true))));
 }

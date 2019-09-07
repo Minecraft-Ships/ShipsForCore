@@ -41,6 +41,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     protected final ConfigurationNode LICENCE_SIGN_TEXT_4TH = new ConfigurationNode("Sign", "Licence", "Fourth");
     protected final ConfigurationNode VISIBLE_BOSS_BAR = new ConfigurationNode("Bar", "Visible");
     protected final ConfigurationNode STRUCTURE_UPDATE_AUTO = new ConfigurationNode("Structure", "Update", "Auto");
+    protected final ConfigurationNode STRUCTURE_UPDATE_CLICK = new ConfigurationNode("Structure", "Update", "Click");
 
     @Deprecated
     public final ConfigurationNode ALPHA_COMMAND_USE_LEGACY = new ConfigurationNode("AlphaOnly", "Command", "UseLegacy");
@@ -74,6 +75,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
             this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 50);
             this.file.set(this.STRUCTURE_UPDATE_AUTO, true);
         }
+        if(!this.file.parseBoolean(this.STRUCTURE_UPDATE_CLICK).isPresent()){
+            modified = true;
+            this.file.set(this.STRUCTURE_UPDATE_CLICK, false);
+        }
         if(modified){
             this.file.save();
         }
@@ -106,6 +111,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
             return null;
         }
         return opTimeUnit.orElse(TimeUnit.SECONDS);
+    }
+
+    public boolean isStructureClickUpdating(){
+        return this.file.parseBoolean(this.STRUCTURE_UPDATE_CLICK).orElse(false);
     }
 
     public boolean isStructureAutoUpdating(){
@@ -161,6 +170,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
         this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 50);
         this.file.set(this.STRUCTURE_UPDATE_AUTO, true);
+        this.file.set(this.STRUCTURE_UPDATE_CLICK, false);
 
         file.set(ALPHA_COMMAND_USE_LEGACY, true);
         file.save();

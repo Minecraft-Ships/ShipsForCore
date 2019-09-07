@@ -3,10 +3,9 @@ package org.ships.commands.argument.blockinfo;
 import org.core.CorePlugin;
 import org.core.command.ChildArgumentCommandLauncher;
 import org.core.command.argument.CommandContext;
-import org.core.command.argument.arguments.RemainingArguments;
 import org.core.command.argument.arguments.block.BlockTypeArgument;
-import org.core.command.argument.arguments.generic.SuggestibleParserArgument;
-import org.core.configuration.parser.Parser;
+import org.core.entity.living.human.player.LivePlayer;
+import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.BlockType;
@@ -16,7 +15,6 @@ import org.ships.movement.BlockPriority;
 import org.ships.movement.SetMovingBlock;
 import org.ships.permissions.Permissions;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -70,7 +68,10 @@ public class ShipsBlockInfoCommand extends ChildArgumentCommandLauncher {
     }
 
     @Override
-    public Optional<String> getPermission() {
-        return Optional.of(Permissions.CMD_BLOCK_INFO);
+    public boolean hasPermission(CommandSource source) {
+        if(source instanceof LivePlayer){
+            return ((LivePlayer) source).hasPermission(Permissions.CMD_BLOCK_INFO);
+        }
+        return true;
     }
 }

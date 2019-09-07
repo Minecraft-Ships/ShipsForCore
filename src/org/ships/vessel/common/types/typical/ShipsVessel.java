@@ -3,17 +3,16 @@ package org.ships.vessel.common.types.typical;
 import org.core.CorePlugin;
 import org.core.utils.Identifable;
 import org.core.vector.types.Vector3Int;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.ExactPosition;
 import org.core.world.position.Position;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
-import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockListable;
 import org.ships.exceptions.MoveException;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
+import org.ships.movement.MovementContext;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.*;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -23,7 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, org.ships.vessel.common.assits.VesselRequirement, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
+public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
 
     Map<String, String> getExtraInformation();
     Collection<VesselFlag<?>> getFlags();
@@ -63,31 +62,31 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, org.ship
     }
 
     @Override
-    default void moveTowards(int x, int y, int z, BasicMovement movement, ServerBossBar bar) throws MoveException {
-        Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, movement, bar);
+    default void moveTowards(int x, int y, int z, MovementContext context) throws MoveException {
+        Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, context);
     }
 
     @Override
-    default void moveTowards(Vector3Int vector, BasicMovement movement, ServerBossBar bar) throws MoveException{
-        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, movement, bar);
+    default void moveTowards(Vector3Int vector, MovementContext context) throws MoveException{
+        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context);
     }
 
     @Override
-    default void moveTo(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
+    default void moveTo(Position<? extends Number> location, MovementContext context) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, movement, bar);
+        Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context);
     }
 
     @Override
-    default void rotateRightAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
+    default void rotateRightAround(Position<? extends Number> location, MovementContext context) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, movement, bar);
+        Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context);
     }
 
     @Override
-    default void rotateLeftAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
+    default void rotateLeftAround(Position<? extends Number> location, MovementContext context) throws MoveException{
         BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
-        Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, movement, bar);
+        Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context);
     }
 
     @Override

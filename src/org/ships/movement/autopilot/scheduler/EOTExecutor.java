@@ -7,9 +7,11 @@ import org.core.world.position.BlockPosition;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.MoveException;
+import org.ships.movement.MovementContext;
 import org.ships.movement.result.FailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.EOTSign;
 
@@ -20,10 +22,16 @@ public class EOTExecutor implements Runnable {
 
     protected Vessel vessel;
     protected LivePlayer player;
+    protected boolean disableOnNoPilot;
 
     public EOTExecutor(LivePlayer player, Vessel vessel){
         this.vessel = vessel;
         this.player = player;
+    }
+
+    public EOTExecutor setDisableOnNoPilot(boolean check){
+        this.disableOnNoPilot = check;
+        return this;
     }
 
     public EOTExecutor setPlayer(LivePlayer player){
@@ -44,6 +52,10 @@ public class EOTExecutor implements Runnable {
         return this.player;
     }
 
+    public boolean willDisableIfNoPilot(){
+        return this.disableOnNoPilot;
+    }
+
     public Optional<BlockPosition> getSign(){
         Collection<BlockPosition> blocks = getVessel().getStructure().getAll(SignTileEntity.class);
         EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
@@ -57,10 +69,20 @@ public class EOTExecutor implements Runnable {
             if(!directionalData.isPresent()){
                 return;
             }
-            ServerBossBar bar = CorePlugin.createBossBar();
-            vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
+            if(this.disableOnNoPilot && vessel instanceof CrewStoredVessel){
+                boolean check = vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).anyMatch(e -> ((CrewStoredVessel)vessel).getPermission(((LivePlayer) e).getUniqueId()).canMove());
+                if(!check){
+                    return;
+                }
+            }
+            MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+            if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()){
+                ServerBossBar bar2 = CorePlugin.createBossBar();
+                vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar2.register((LivePlayer) e));
+                context.setBar(bar2);
+            }
             try {
-                this.vessel.moveTowards(directionalData.get().getDirection().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), ShipsPlugin.getPlugin().getConfig().getDefaultMovement(), bar);
+                this.vessel.moveTowards(directionalData.get().getDirection().getOpposite().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), context);
             } catch (MoveException e) {
                 if(e.getMovement() instanceof MovementResult.VesselMovingAlready){
                     return;

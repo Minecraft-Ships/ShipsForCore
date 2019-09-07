@@ -1,16 +1,14 @@
 package org.ships.event.vessel.move;
 
-import org.core.entity.LiveEntity;
 import org.core.event.events.Cancellable;
 import org.core.world.position.BlockPosition;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.event.vessel.VesselEvent;
-import org.ships.movement.MovingBlock;
+import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlockSet;
 import org.ships.movement.Result;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Map;
 import java.util.Set;
 
 public class VesselMoveEvent implements VesselEvent {
@@ -19,8 +17,8 @@ public class VesselMoveEvent implements VesselEvent {
 
         private boolean cancelled;
 
-        public Pre(Vessel vessel, BasicMovement movement, MovingBlockSet movingStructure, Map<LiveEntity, MovingBlock> entities, boolean strict) {
-            super(vessel, movement, movingStructure, entities, strict);
+        public Pre(Vessel vessel, MovementContext context) {
+            super(vessel, context);
         }
 
         @Override
@@ -38,8 +36,8 @@ public class VesselMoveEvent implements VesselEvent {
 
         private Set<BlockPosition> collisions;
 
-        public CollideDetected(Vessel vessel, BasicMovement movement, MovingBlockSet movingStructure, Map<LiveEntity, MovingBlock> entities, boolean strict, Set<BlockPosition> collision) {
-            super(vessel, movement, movingStructure, entities, strict);
+        public CollideDetected(Vessel vessel, MovementContext context, Set<BlockPosition> collision) {
+            super(vessel, context);
             this.collisions = collision;
         }
 
@@ -52,8 +50,8 @@ public class VesselMoveEvent implements VesselEvent {
 
         private boolean cancelled;
 
-        public Main(Vessel vessel, BasicMovement movement, MovingBlockSet movingStructure, Map<LiveEntity, MovingBlock> entities, boolean strict) {
-            super(vessel, movement, movingStructure, entities, strict);
+        public Main(Vessel vessel, MovementContext context) {
+            super(vessel, context);
         }
 
         @Override
@@ -71,8 +69,8 @@ public class VesselMoveEvent implements VesselEvent {
 
         private Result result;
 
-        public Post(Vessel vessel, BasicMovement movement, MovingBlockSet movingStructure, Map<LiveEntity, MovingBlock> entities, boolean strict, Result result){
-            super(vessel, movement, movingStructure, entities, strict);
+        public Post(Vessel vessel, MovementContext context, Result result){
+            super(vessel, context);
             this.result = result;
         }
 
@@ -83,37 +81,30 @@ public class VesselMoveEvent implements VesselEvent {
     }
 
     private Vessel vessel;
-    private MovingBlockSet movingStructure;
-    private Map<LiveEntity, MovingBlock> entities;
-    private boolean isStricted;
-    private BasicMovement movement;
+    private MovementContext context;
 
-    public VesselMoveEvent(Vessel vessel, BasicMovement movement, MovingBlockSet movingStructure, Map<LiveEntity, MovingBlock> entities, boolean strict){
+    public VesselMoveEvent(Vessel vessel, MovementContext context){
         this.vessel = vessel;
-        this.movingStructure = movingStructure;
-        this.entities = entities;
-        this.isStricted = strict;
-        this.movement = movement;
+        this.context = context;
     }
 
-    public Map<LiveEntity, MovingBlock> getEntitiesBlocks(){
-        return this.entities;
+    public MovementContext getContext(){
+        return this.context;
     }
 
-    public Set<LiveEntity> getEntities(){
-        return this.entities.keySet();
-    }
-
+    @Deprecated
     public BasicMovement getMovement(){
-        return this.movement;
+        return this.context.getMovement();
     }
 
+    @Deprecated
     public boolean isStrictedMovement(){
-        return this.isStricted;
+        return this.context.isStrictMovement();
     }
 
+    @Deprecated
     public MovingBlockSet getMovingStructure(){
-        return this.movingStructure;
+        return this.context.getMovingStructure();
     }
 
     @Override

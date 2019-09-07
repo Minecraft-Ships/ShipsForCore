@@ -20,8 +20,8 @@ import org.core.world.position.block.entity.container.furnace.FurnaceTileEntityS
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.MoveException;
+import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
-import org.ships.movement.MovingBlockSet;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredFuelMovementData;
@@ -34,7 +34,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Submarine extends AbstractShipsVessel implements UnderWaterType {
+public class Submarine extends AbstractShipsVessel implements UnderWaterType, org.ships.vessel.common.assits.VesselRequirement {
 
     protected float specialBlockPercent = ShipType.SUBMARINE.getDefaultSpecialBlockPercent();
     protected Set<BlockType> specialBlocks = ShipType.SUBMARINE.getDefaultSpecialBlockType();
@@ -116,17 +116,17 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType {
     }
 
     @Override
-    public void meetsRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
-        if(!strict){
+    public void meetsRequirements(MovementContext context) throws MoveException {
+        if(!context.isStrictMovement()){
             return;
         }
-        Optional<Integer> opWaterLevel = getWaterLevel(movingBlocks, m -> m.getAfterPosition());
+        Optional<Integer> opWaterLevel = getWaterLevel(context.getMovingStructure(), MovingBlock::getAfterPosition);
         if(!opWaterLevel.isPresent()){
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Arrays.asList(BlockTypes.WATER.get())));
         }
         int specialBlocks = 0;
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for(MovingBlock block : movingBlocks){
+        for(MovingBlock block : context.getMovingStructure()){
             BlockDetails details = block.getStoredBlockData();
             if(this.specialBlocks.stream().anyMatch(b -> b.equals(details.getType()))){
                 specialBlocks++;
@@ -140,7 +140,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType {
             }
             furnaceInventories.add(((FurnaceTileEntity)opTile.get()).getInventory());
         }
-        float specialBlockPercent = ((specialBlocks * 100.0f)/movingBlocks.stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR.get())).count());
+        float specialBlockPercent = ((specialBlocks * 100.0f)/context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR.get())).count());
         if((this.specialBlockPercent != 0) && specialBlockPercent <= this.specialBlockPercent){
             throw new MoveException(new AbstractFailedMovement(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlocks.iterator().next(), this.specialBlockPercent, specialBlockPercent)));
         }
@@ -162,16 +162,16 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType {
     }
 
     @Override
-    public void processRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException {
-        if(!strict){
+    public void processRequirements(MovementContext context) throws MoveException {
+        if(!context.isStrictMovement()){
             return;
         }
-        Optional<Integer> opWaterLevel = getWaterLevel(movingBlocks, m -> m.getAfterPosition());
+        Optional<Integer> opWaterLevel = getWaterLevel(context.getMovingStructure(), MovingBlock::getAfterPosition);
         if(!opWaterLevel.isPresent()){
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Arrays.asList(BlockTypes.WATER.get())));
         }
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for(MovingBlock movingBlock : movingBlocks){
+        for(MovingBlock movingBlock : context.getMovingStructure()){
             BlockDetails details = movingBlock.getStoredBlockData();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
             if(opTiled.isPresent()){

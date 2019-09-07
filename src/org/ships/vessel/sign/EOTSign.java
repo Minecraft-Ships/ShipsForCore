@@ -16,14 +16,25 @@ import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class EOTSign implements ShipsSign {
 
     private Set<Scheduler> eot_scheduler = new HashSet<>();
+
+    public Collection<Scheduler> getScheduler(Vessel vessel){
+        return Collections.unmodifiableCollection(this.eot_scheduler.stream().filter(e -> {
+            Runnable runnable = e.getExecutor();
+            if(!(runnable instanceof EOTExecutor)){
+                return false;
+            }
+            EOTExecutor exe = (EOTExecutor)runnable;
+            exe.getVessel().equals(vessel);
+            return true;
+        }).collect(Collectors.toSet()));
+    }
 
     public boolean isAhead(SignTileEntity entity){
         return entity.getLine(1).get().toPlain().startsWith("{");

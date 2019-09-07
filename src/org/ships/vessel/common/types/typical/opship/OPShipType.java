@@ -17,6 +17,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 
+@Deprecated
 public class OPShipType implements ShipType {
 
     public static class Default extends OPShipType {

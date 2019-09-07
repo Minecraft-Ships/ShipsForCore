@@ -6,6 +6,7 @@ import org.core.command.argument.CommandContext;
 import org.core.command.argument.arguments.child.ChildrenArgument;
 import org.core.command.argument.arguments.generic.StringArgument;
 import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ship.type.HostCloneableShipTypeArgument;
@@ -90,8 +91,11 @@ public class ShipsShipTypeCommand extends ChildArgumentCommandLauncher.ChildOnly
         }
 
         @Override
-        public Optional<String> getPermission() {
-            return Optional.of(Permissions.CMD_SHIPTYPE_CREATE);
+        public boolean hasPermission(CommandSource source) {
+            if(source instanceof LivePlayer){
+                return ((LivePlayer) source).hasPermission(Permissions.CMD_SHIPTYPE_CREATE);
+            }
+            return false;
         }
     }
 
@@ -109,8 +113,4 @@ public class ShipsShipTypeCommand extends ChildArgumentCommandLauncher.ChildOnly
         return "All commands relating to Ship types";
     }
 
-    @Override
-    public Optional<String> getPermission() {
-        return Optional.empty();
-    }
 }

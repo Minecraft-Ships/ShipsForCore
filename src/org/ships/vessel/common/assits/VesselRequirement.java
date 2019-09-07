@@ -1,11 +1,11 @@
 package org.ships.vessel.common.assits;
 
 import org.ships.exceptions.MoveException;
-import org.ships.movement.MovingBlockSet;
+import org.ships.movement.MovementContext;
 
 public interface VesselRequirement {
 
-    void meetsRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException;
-    void processRequirements(boolean strict, MovingBlockSet movingBlocks) throws MoveException;
+    void meetsRequirements(MovementContext context) throws MoveException;
+    void processRequirements(MovementContext context) throws MoveException;
 
 }

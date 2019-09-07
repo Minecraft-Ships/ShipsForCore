@@ -2,7 +2,6 @@ package org.ships.vessel.common.types;
 
 import org.core.entity.LiveEntity;
 import org.core.vector.types.Vector3Int;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
@@ -10,8 +9,8 @@ import org.core.world.position.Position;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.ships.algorthum.movement.BasicMovement;
 import org.ships.exceptions.MoveException;
+import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -39,11 +38,11 @@ public interface Vessel extends Positionable {
     Vessel setMaxSpeed(int speed);
     Vessel setAltitudeSpeed(int speed);
 
-    void moveTowards(int x, int y, int z, BasicMovement movement, ServerBossBar bar) throws MoveException;
-    void moveTowards(Vector3Int vector, BasicMovement movement, ServerBossBar bar) throws MoveException;
-    void moveTo(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException;
-    void rotateRightAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException;
-    void rotateLeftAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException;
+    void moveTowards(int x, int y, int z, MovementContext context) throws MoveException;
+    void moveTowards(Vector3Int vector, MovementContext context) throws MoveException;
+    void moveTo(Position<? extends Number> location, MovementContext context) throws MoveException;
+    void rotateRightAround(Position<? extends Number> location, MovementContext context) throws MoveException;
+    void rotateLeftAround(Position<? extends Number> location, MovementContext context) throws MoveException;
 
     void setLoading(boolean check);
     boolean isLoading();
@@ -70,18 +69,20 @@ public interface Vessel extends Positionable {
         return entities.stream()
                 .filter(e -> pss.getRelativePositions().stream().anyMatch(v -> {
                     BlockPosition shipPosition = position.getRelative(v);
-                    BlockPosition targetPos = e.getAttachedTo();
-
-                   return targetPos.equals(shipPosition);
+                    Optional<BlockPosition> opTargetPos = e.getAttachedTo();
+                    if(!opTargetPos.isPresent()){
+                        return false;
+                    }
+                   return opTargetPos.get().equals(shipPosition);
                 })).collect(Collectors.toSet());
     }
 
-    default void rotateAnticlockwiseAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
-        this.rotateRightAround(location, movement, bar);
+    default void rotateAnticlockwiseAround(Position<? extends Number> location, MovementContext context) throws MoveException{
+        this.rotateRightAround(location, context);
     }
 
-    default void rotateClockwiseAround(Position<? extends Number> location, BasicMovement movement, ServerBossBar bar) throws MoveException{
-        this.rotateLeftAround(location, movement, bar);
+    default void rotateClockwiseAround(Position<? extends Number> location, MovementContext context) throws MoveException{
+        this.rotateLeftAround(location, context);
     }
 
     default boolean isInWater(){

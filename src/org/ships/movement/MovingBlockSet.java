@@ -43,12 +43,15 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
 
     public Optional<MovingBlock> get(ShipsSign sign){
         return get(bd -> {
+            System.out.println("Block: " + bd.getType().getId());
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiledEntity = bd.get(KeyedData.TILED_ENTITY);
             if(!(opTiledEntity.isPresent())){
+                System.out.println("\tFailed: TileEntity");
                 return false;
             }
             TileEntitySnapshot<? extends TileEntity> snapshot = opTiledEntity.get();
             if(!(snapshot instanceof SignTileEntity)){
+                System.out.println("\tFailed: SignTileEntity");
                 return false;
             }
             SignTileEntity ste = (SignTileEntity)snapshot;

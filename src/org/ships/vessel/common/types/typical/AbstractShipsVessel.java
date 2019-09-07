@@ -4,8 +4,10 @@ import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.utils.Identifable;
+import org.core.vector.types.Vector3Int;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.ExactPosition;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
@@ -123,7 +125,17 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public ExactPosition getTeleportPosition(){
-        return this.teleportPosition;
+        if(this.teleportPosition != null) {
+            return this.teleportPosition;
+        }
+        return getStructure().getPositions().stream().filter(b -> {
+            for(int A = 0; A < 2; A++){
+                if (b.getRelative(new Vector3Int(0, A, 0)).getBlockType().equals(BlockTypes.AIR.get())){
+                    return false;
+                }
+            }
+            return true;
+        }).findAny().get().toExactPosition();
     }
 
     @Override

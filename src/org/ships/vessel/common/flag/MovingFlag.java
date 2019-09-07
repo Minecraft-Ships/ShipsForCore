@@ -1,44 +1,44 @@
 package org.ships.vessel.common.flag;
 
 import org.core.configuration.parser.Parser;
-import org.ships.movement.MovingBlockSet;
+import org.ships.movement.MovementContext;
 
 import java.util.Optional;
 
-public class MovingFlag implements VesselFlag<MovingBlockSet> {
+public class MovingFlag implements VesselFlag<MovementContext> {
 
-    protected MovingBlockSet set;
+    protected MovementContext context;
 
     public MovingFlag(){
         this(null);
     }
 
-    public MovingFlag(MovingBlockSet set){
-        this.set = set;
+    public MovingFlag(MovementContext context){
+        this.context = context;
     }
 
 
     @Override
-    public Optional<MovingBlockSet> getValue() {
-        return Optional.ofNullable(this.set);
+    public Optional<MovementContext> getValue() {
+        return Optional.ofNullable(this.context);
     }
 
     @Override
-    public void setValue(MovingBlockSet value) {
-        this.set = value;
+    public void setValue(MovementContext value) {
+        this.context = value;
     }
 
     @Override
-    public Parser<?, MovingBlockSet> getParser() {
-        return new Parser<Object, MovingBlockSet>() {
+    public Parser<?, MovementContext> getParser() {
+        return new Parser<Object, MovementContext>() {
             @Override
-            public Optional<MovingBlockSet> parse(Object original) {
+            public Optional<MovementContext> parse(Object original) {
                 return Optional.empty();
             }
 
             @Override
-            public Object unparse(MovingBlockSet value) {
-                return value.size();
+            public Object unparse(MovementContext value) {
+                return value;
             }
         };
     }

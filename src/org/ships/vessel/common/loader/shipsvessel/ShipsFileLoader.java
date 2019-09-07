@@ -40,14 +40,18 @@ public class ShipsFileLoader implements ShipsLoader {
     protected static final String[] META_LOCATION_Y = {"Meta", "Location", "Y"};
     protected static final String[] META_LOCATION_Z = {"Meta", "Location", "Z"};
     protected static final String[] META_LOCATION_WORLD = {"Meta", "Location", "World"};
+    protected static final String[] META_LOCATION_TELEPORT_X = {"Meta", "Location", "Teleport", "X"};
+    protected static final String[] META_LOCATION_TELEPORT_Y = {"Meta", "Location", "Teleport", "Y"};
+    protected static final String[] META_LOCATION_TELEPORT_Z = {"Meta", "Location", "Teleport", "Z"};
+    protected static final String[] META_LOCATION_TELEPORT_WORLD = {"Meta", "Location", "Teleport", "World"};
     protected static final String[] META_STRUCTURE = {"Meta", "Location", "Structure"};
     protected static final String[] META_FLAGS = {"Meta", "Flags"};
 
-    public ShipsFileLoader(File file){
+    public ShipsFileLoader(File file) {
         this.file = file;
     }
 
-    public void save(AbstractShipsVessel vessel){
+    public void save(AbstractShipsVessel vessel) {
         ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.DEFAULT);
         Map<CrewPermission, List<String>> uuidList = new HashMap<>();
         vessel.getCrew().forEach((key, value) -> {
@@ -71,6 +75,10 @@ public class ShipsFileLoader implements ShipsLoader {
         map.put(new ConfigurationNode(META_LOCATION_X), vessel.getPosition().getX());
         map.put(new ConfigurationNode(META_LOCATION_Y), vessel.getPosition().getY());
         map.put(new ConfigurationNode(META_LOCATION_Z), vessel.getPosition().getZ());
+        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_X), vessel.getTeleportPosition().getX());
+        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_Y), vessel.getTeleportPosition().getY());
+        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_Z), vessel.getTeleportPosition().getZ());
+        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_WORLD), vessel.getTeleportPosition().getWorld().getPlatformUniquieId());
         uuidList.forEach((key, value) -> map.put(new ConfigurationNode("Meta", "Permission", key.getId()), value));
         map.forEach(file::set);
         file.set(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT, vessel.getStructure().getRelativePositions());
@@ -82,80 +90,61 @@ public class ShipsFileLoader implements ShipsLoader {
     public ShipsVessel load() throws LoadVesselException {
         ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, ConfigurationLoaderTypes.DEFAULT);
         Optional<WorldExtent> opWorld = file.parse(new ConfigurationNode(META_LOCATION_WORLD), Parser.STRING_TO_WORLD);
-        if(!opWorld.isPresent()){
+        if (!opWorld.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown World of " + file.parseString(new ConfigurationNode(META_LOCATION_WORLD)).orElse("'No value found'"));
         }
         Optional<Integer> opX = file.parse(new ConfigurationNode(META_LOCATION_X), Parser.STRING_TO_INTEGER);
-        if(!opX.isPresent()){
+        if (!opX.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown X value");
         }
         Optional<Integer> opY = file.parse(new ConfigurationNode(META_LOCATION_Y), Parser.STRING_TO_INTEGER);
-        if(!opY.isPresent()){
+        if (!opY.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown Y value");
         }
         Optional<Integer> opZ = file.parse(new ConfigurationNode(META_LOCATION_Z), Parser.STRING_TO_INTEGER);
-        if(!opZ.isPresent()){
+        if (!opZ.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown Z value");
         }
         BlockPosition position = opWorld.get().getPosition(opX.get(), opY.get(), opZ.get());
         LicenceSign sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
         Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if(!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)){
+        if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity)opTile.get();
-        if(!sign.isSign(lste)){
+        LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
+        if (!sign.isSign(lste)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
         Optional<Text> opShipTypeS = lste.getLine(1);
-        if(!opShipTypeS.isPresent()){
+        if (!opShipTypeS.isPresent()) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
         String shipTypeS = opShipTypeS.get().toPlain();
         Optional<ShipType> opShipType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(s -> s.getDisplayName().equals(shipTypeS)).findAny();
-        if(!opShipType.isPresent()){
+        if (!opShipType.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown ShipType");
         }
         ShipType type = opShipType.get();
         Vessel vessel = type.createNewVessel(lste);
-        if(!(vessel instanceof ShipsVessel)){
+        if (!(vessel instanceof ShipsVessel)) {
             throw new FileLoadVesselException(this.file, "ShipType requires to be ShipsVessel");
         }
-        ShipsVessel ship = (ShipsVessel)vessel;
+        ShipsVessel ship = (ShipsVessel) vessel;
 
         file.parseInt(new ConfigurationNode(SPEED_ALTITUDE)).ifPresent(ship::setAltitudeSpeed);
         file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(ship::setMaxSpeed);
 
-        CorePlugin.createSchedulerBuilder().setDelayUnit(null).setDelay(1).setExecutor(() -> {
-            file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
-                if(structureList.isEmpty()){
-                    ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
-                        @Override
-                        public void onShipsStructureUpdated(PositionableShipsStructure structure) {
-                            ship.setStructure(structure);
-                            ship.setLoading(false);
-                            CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
-                        }
-
-                        @Override
-                        public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                            return true;
-                        }
-                    });
-                }else{
-                    PositionableShipsStructure pss = ship.getStructure();
-                    pss.setRaw(structureList);
-                    ship.setLoading(false);
-                    CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
-                }
-            });
-        }).build(ShipsPlugin.getPlugin());
-
-
-        new Thread(() -> file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
-            if(structureList.isEmpty()){
-                CorePlugin.createSchedulerBuilder().setExecutor(() -> ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
+        Optional<Double> opTelX = file.parseDouble(new ConfigurationNode(META_LOCATION_TELEPORT_X));
+        Optional<Double> opTelY = file.parseDouble(new ConfigurationNode(META_LOCATION_TELEPORT_Y));
+        Optional<Double> opTelZ = file.parseDouble(new ConfigurationNode(META_LOCATION_TELEPORT_Z));
+        Optional<String> opTelWorld = file.parseString(new ConfigurationNode(META_LOCATION_TELEPORT_WORLD));
+        if (opTelWorld.isPresent() && opTelX.isPresent() && opTelY.isPresent() && opTelZ.isPresent()) {
+            CorePlugin.getServer().getWorldByPlatformSpecific(opTelWorld.get()).ifPresent(w -> ship.setTeleportPosition(w.getPosition(opTelX.get(), opTelY.get(), opTelZ.get())));
+        }
+        CorePlugin.createSchedulerBuilder().setDelayUnit(null).setDelay(1).setExecutor(() -> file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
+            if (structureList.isEmpty()) {
+                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
                     @Override
                     public void onShipsStructureUpdated(PositionableShipsStructure structure) {
                         ship.setStructure(structure);
@@ -167,43 +156,46 @@ public class ShipsFileLoader implements ShipsLoader {
                     public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
                         return true;
                     }
-                })).setDelay(1).setDelayUnit(null).build(ShipsPlugin.getPlugin());
-            }else {
+                });
+            } else {
                 PositionableShipsStructure pss = ship.getStructure();
                 pss.setRaw(structureList);
                 ship.setLoading(false);
                 CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
             }
-        })).start();
-        ShipsPlugin.getPlugin().getDefaultPermissions().forEach(p -> file.parseList(new ConfigurationNode("Meta", "Permission", p.getId()), Parser.STRING_TO_UNIQUIE_ID).ifPresent(list -> {
-            list.forEach(u -> ship.getCrew().put(u, p));
-        }));
-        file.parseList(new ConfigurationNode(META_FLAGS), ShipsParsers.STRING_TO_VESSEL_FLAG).ifPresent(flags -> flags.forEach(f -> ship.set(f)));
+        })).build(ShipsPlugin.getPlugin()).run();
+
+        ShipsPlugin.getPlugin()
+                .getDefaultPermissions()
+                .forEach(p ->file.parseList(new ConfigurationNode("Meta","Permission", p.getId()), Parser.STRING_TO_UNIQUIE_ID)
+                        .ifPresent(list -> list.forEach(u -> ship.getCrew().put(u, p))));
+        file.parseList(new ConfigurationNode(META_FLAGS),ShipsParsers.STRING_TO_VESSEL_FLAG)
+                .ifPresent(flags ->flags.forEach(ship::set));
         try {
             ship.deserializeExtra(file);
-        }catch (Throwable e){
+        }catch(Throwable e) {
             throw new WrappedFileLoadVesselException(this.file, e);
         }
         return ship;
     }
 
-    public static File getVesselDataFolder(){
+    public static File getVesselDataFolder() {
         return new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData");
     }
 
-    public static Set<ShipsVessel> loadAll(Consumer<LoadVesselException> function){
+    public static Set<ShipsVessel> loadAll(Consumer<LoadVesselException> function) {
         Set<ShipsVessel> set = new HashSet<>();
         ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {
             File vesselDataFolder = getVesselDataFolder();
             File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
             File[] files = typeFolder.listFiles();
-            if(files == null){
+            if (files == null) {
                 return;
             }
-            for(File file : files){
+            for (File file : files) {
                 try {
                     ShipsVessel vessel = new ShipsFileLoader(file).load();
-                    if(vessel == null){
+                    if (vessel == null) {
                         continue;
                     }
                     set.add(vessel);

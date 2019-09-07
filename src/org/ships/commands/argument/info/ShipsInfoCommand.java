@@ -5,6 +5,7 @@ import org.core.command.ChildArgumentCommandLauncher;
 import org.core.command.argument.CommandContext;
 import org.core.command.argument.arguments.RemainingArguments;
 import org.core.command.argument.arguments.generic.StringArgument;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
@@ -67,8 +68,11 @@ public class ShipsInfoCommand extends ChildArgumentCommandLauncher {
     }
 
     @Override
-    public Optional<String> getPermission() {
-        return Optional.of(Permissions.CMD_INFO);
+    public boolean hasPermission(CommandSource source) {
+        if(source instanceof LivePlayer){
+            return ((LivePlayer) source).hasPermission(Permissions.CMD_INFO);
+        }
+        return true;
     }
 
     @Override
