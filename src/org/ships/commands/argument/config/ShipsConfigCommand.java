@@ -1,5 +1,6 @@
 package org.ships.commands.argument.config;
 
+import org.core.CorePlugin;
 import org.core.command.ChildArgumentCommandLauncher;
 import org.core.command.argument.CommandContext;
 import org.core.command.argument.arguments.child.ChildrenArgument;
@@ -20,6 +21,59 @@ public class ShipsConfigCommand extends ChildArgumentCommandLauncher.ChildOnly {
     public static final String CONFIG_ID = "config";
     public static final String NODE_ID = "node";
     public static final String VALUE_ID = "value";
+
+    public static class ViewArgument extends ChildArgumentCommandLauncher {
+
+        public ViewArgument(){
+            super(new ConfigArgument(CONFIG_ID), new ConfigNodeArgument(NODE_ID, CONFIG_ID));
+        }
+
+        private <T extends Object> Optional<String> getValue(Config config, DedicatedNode<T> node){
+            Optional<T> opValue = node.getValue(config.getFile());
+            if(!opValue.isPresent()){
+                return Optional.empty();
+            }
+            return Optional.ofNullable(node.getParser().unparse(opValue.get()));
+        }
+
+        @Override
+        protected boolean process(CommandContext context) {
+            Optional<Config> opConfig = context.getArgumentValue(CONFIG_ID);
+            if(!opConfig.isPresent()){
+                return false;
+            }
+            Optional<DedicatedNode<?>> opNode = context.getArgumentValue(NODE_ID);
+            if(!opNode.isPresent()){
+                return false;
+            }
+            getValue(opConfig.get(), opNode.get()).ifPresent(v -> {
+                CommandSource source = context.getSource();
+                if(source instanceof CommandViewer){
+                    ((CommandViewer) source).sendMessagePlain(CorePlugin.toString(".", opNode.get().getNode()) + ": " + v);
+                }
+            });
+            return true;
+        }
+
+        @Override
+        public String getName() {
+            return "View";
+        }
+
+        @Override
+        public String getDescription() {
+            return "View a configuration file value";
+        }
+
+        @Override
+        public boolean hasPermission(CommandSource source) {
+            if(source instanceof LivePlayer){
+                return ((LivePlayer) source).hasPermission(Permissions.CMD_CONFIG_VIEW);
+            }
+            return true;
+        }
+
+    }
 
     public static class SetArgument extends ChildArgumentCommandLauncher {
 
@@ -82,7 +136,7 @@ public class ShipsConfigCommand extends ChildArgumentCommandLauncher.ChildOnly {
     }
 
     public ShipsConfigCommand(){
-        super(new ChildrenArgument.Builder().register("set", new ShipsConfigCommand.SetArgument()).build());
+        super(new ChildrenArgument.Builder().register("view", new ShipsConfigCommand.ViewArgument()).register("set", new ShipsConfigCommand.SetArgument()).build());
     }
 
     @Override

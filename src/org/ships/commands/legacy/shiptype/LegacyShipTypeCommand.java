@@ -4,6 +4,7 @@ import org.core.CorePlugin;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
+import org.core.text.TextColours;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.SwitchableVessel;
@@ -30,6 +31,12 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
             return false;
         }
         if(args[1].equalsIgnoreCase("create")){
+            if(args.length != 4){
+                if(source instanceof CommandViewer){
+                    ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "/ships shiptype create <cloneable ship type> <name of new ship type>"));
+                }
+                return false;
+            }
             Optional<CloneableShipType> opType = ShipsPlugin.getPlugin().getAll(CloneableShipType.class).stream().filter(t -> t.getId().equalsIgnoreCase(args[2])).findAny();
             if(!opType.isPresent()){
                 if(source instanceof CommandViewer){

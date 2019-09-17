@@ -9,7 +9,9 @@ import org.core.platform.Plugin;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
@@ -17,6 +19,7 @@ import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -37,13 +40,18 @@ public class WaterShipType implements CloneableShipType {
     }
 
     public WaterShipType(String name, File file){
+        int[] mcVersion = CorePlugin.getPlatform().getMinecraftVersion();
         this.name = name;
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
         if(!this.file.getFile().exists()){
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
             this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
             this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 25);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, BlockTypes.BLACK_WOOL.get().getLike()));
+            if(mcVersion[1] == 12){
+                this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Arrays.asList(Parser.STRING_TO_BLOCK_TYPE.unparse(BlockTypes1V12.WOOL.get())));
+            }else {
+                this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Arrays.asList(BlockGroups1V13.WOOL.getGrouped())));
+            }
             this.file.save();
         }
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());

@@ -12,6 +12,7 @@ public interface Permissions {
     String CMD_BLOCK_INFO = "ships.cmd.blockinfo";
     String CMD_SHIPTYPE_CREATE = "ships.cmd.shiptype.create";
     String CMD_CONFIG_SET = "ships.cmd.config.set";
+    String CMD_CONFIG_VIEW = "ships.cmd.config.view";
 
     static String getMakePermission(ShipType type){
         return ABSTRACT_SHIP_MAKE + "." + type.getId().replace(":", ".").toLowerCase();

@@ -7,21 +7,21 @@ import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
+import org.core.inventory.item.type.post.ItemTypes1V13;
 import org.core.platform.Plugin;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.types.ShipType;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class AirshipType implements CloneableShipType<Airship> {
 
@@ -45,13 +45,22 @@ public class AirshipType implements CloneableShipType<Airship> {
     public AirshipType(String name, File file){
         this.name = name;
         this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        int[] mcVersion = CorePlugin.getPlatform().getMinecraftVersion();
         if(!this.file.getFile().exists()){
             this.file.set(new ConfigurationNode(this.BURNER_BLOCK), true);
             this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 60.0f);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, BlockTypes.WHITE_WOOL.get().getLike()));
+            if(mcVersion[1] == 12) {
+                this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Collections.singletonList(Parser.STRING_TO_BLOCK_TYPE.unparse(BlockTypes1V12.WOOL.get())));
+            }else{
+                this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Arrays.asList(BlockGroups1V13.WOOL.getGrouped())));
+            }
             this.file.set(new ConfigurationNode(this.FUEL_CONSUMPTION), 1);
             this.file.set(new ConfigurationNode(this.FUEL_SLOT), "Bottom");
-            this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Arrays.asList(ItemTypes.COAL.getId(), ItemTypes.CHARCOAL.getId())));
+            if(mcVersion[1] == 12) {
+                this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Collections.singletonList(ItemTypes.COAL.getId())));
+            }else{
+                this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Arrays.asList(ItemTypes.COAL.getId(), ItemTypes1V13.CHARCOAL.getId())));
+            }
             this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
             this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
             this.file.save();

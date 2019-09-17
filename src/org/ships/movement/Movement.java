@@ -25,6 +25,7 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -60,10 +61,12 @@ public class Movement {
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_MOVING_ALREADY, true));
         }
         vessel.set(MovingFlag.class, context);
-        System.out.println("MidMovement size: " + context.getMidMovementProcess().length);
         Set<LiveEntity> entities = vessel.getEntities();
         entities.forEach(e -> {
             EntitySnapshot<? extends LiveEntity> snapshot = e.createSnapshot();
+            if(snapshot == null){
+                new IOException("No snapshot created from entity: " + e.getType().getId()).printStackTrace();
+            }
             MovingBlock mBlock = context.getMovingStructure().getBefore(e.getAttachedTo().get()).get();
             context.getEntities().put(snapshot, mBlock);
         });
@@ -206,10 +209,8 @@ public class Movement {
                 }
                 DirectionalData directionalData = opDirectional.get();
                 Direction direction = directionalData.getDirection().getRightAngleRight();
-                System.out.println("Original Direction: " + direction.getName());
                 try {
                     directionalData.setDirection(direction);
-                    System.out.println("After direction: " + directionalData.getDirection().getName());
                 } catch (DirectionNotSupported directionNotSupported) {
                     directionNotSupported.printStackTrace();
                 }

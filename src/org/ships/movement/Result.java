@@ -35,7 +35,9 @@ public class Result extends ArrayList<Result.Run> {
             Vector3<Double> position2 = value.getAfterPosition().toExactPosition().getPosition();
             position = position2.add(position);
             entity.setPosition(position);
-            entity.setYaw(yaw).setRoll(roll).setPitch(pitch);
+            entity.setYaw(yaw);
+            entity.setRoll(roll);
+            entity.setPitch(pitch);
         });
 
         Run COMMON_RESET_GRAVITY = (v, c) -> c.getEntities().keySet().forEach(e -> e.setGravity(true));

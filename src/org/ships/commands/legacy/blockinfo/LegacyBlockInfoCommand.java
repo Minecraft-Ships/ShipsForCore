@@ -29,27 +29,29 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
         CommandViewer viewer = (CommandViewer) source;
         List<String> ids = new ArrayList<>(Arrays.asList(args));
         ids.remove(0);
-        ids.forEach(id -> CorePlugin.getPlatform().getBlockType(id).ifPresent(bt -> {
-            viewer.sendMessagePlain("--[" + bt.getName() + "]--");
-            BlockDetails details = bt.getDefaultBlockDetails();
-            viewer.sendMessagePlain("---[Keyed Data]---");
-            for(Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()){
-                if (details.getUnspecified(dataClass.getValue()).isPresent()){
-                    viewer.sendMessagePlain(" |- " + dataClass.getKey());
+        ids.forEach(id -> {
+            CorePlugin.getPlatform().getBlockType(id).ifPresent(bt -> {
+                viewer.sendMessagePlain("--[" + bt.getName() + "]--");
+                BlockDetails details = bt.getDefaultBlockDetails();
+                viewer.sendMessagePlain("---[Keyed Data]---");
+                for(Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()){
+                    if (details.getUnspecified(dataClass.getValue()).isPresent()){
+                        viewer.sendMessagePlain(" |- " + dataClass.getKey());
+                    }
                 }
-            }
-            if(details.getDirectionalData().isPresent()){
-                viewer.sendMessagePlain(" |- Directional");
-            }
-            viewer.sendMessagePlain("---[Priority]---");
-            WorldExtent world = CorePlugin.getServer().getWorlds().iterator().next();
-            BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0), details).getBlockPriority();
-            viewer.sendMessagePlain(" |- ID: " + priority.getId());
-            viewer.sendMessagePlain(" |- Value: " + priority.getPriorityNumber());
-            viewer.sendMessagePlain("---[Like]---");
-            String like = CorePlugin.toString("\n |- ", f -> f.getName(), bt.getLike());
-            viewer.sendMessagePlain("\n |- " + (like == null ? "NONE" : like));
-        }));
+                if(details.getDirectionalData().isPresent()){
+                    viewer.sendMessagePlain(" |- Directional");
+                }
+                viewer.sendMessagePlain("---[Priority]---");
+                WorldExtent world = CorePlugin.getServer().getWorlds().iterator().next();
+                BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0), details).getBlockPriority();
+                viewer.sendMessagePlain(" |- ID: " + priority.getId());
+                viewer.sendMessagePlain(" |- Value: " + priority.getPriorityNumber());
+                viewer.sendMessagePlain("---[Like]---");
+                String like = CorePlugin.toString("\n |- ", f -> f.getName(), bt.getLike());
+                viewer.sendMessagePlain("\n |- " + (like == null ? "NONE" : like));
+            });
+        });
         return true;
     }
 

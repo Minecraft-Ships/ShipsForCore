@@ -5,6 +5,7 @@ import org.core.command.argument.ArgumentCommandLauncher;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
 import org.ships.commands.argument.blockinfo.ShipsBlockInfoCommand;
+import org.ships.commands.argument.config.ShipsConfigCommand;
 import org.ships.commands.argument.info.ShipsInfoCommand;
 import org.ships.commands.argument.shiptype.ShipsShipTypeCommand;
 import org.ships.plugin.ShipsPlugin;
@@ -12,7 +13,7 @@ import org.ships.plugin.ShipsPlugin;
 public class ShipsArgumentCommandLauncher extends ArgumentCommandLauncher implements CommandLauncher {
 
     public ShipsArgumentCommandLauncher(){
-        super(new ShipsInfoCommand(), new ShipsBlockInfoCommand(), new ShipsShipTypeCommand());
+        super(new ShipsInfoCommand(), new ShipsBlockInfoCommand(), new ShipsShipTypeCommand(), new ShipsConfigCommand(), new ShipsInfoCommand());
     }
 
     @Override
