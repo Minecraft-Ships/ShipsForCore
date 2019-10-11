@@ -17,8 +17,8 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public interface Vessel extends Positionable {
@@ -62,19 +62,23 @@ public interface Vessel extends Positionable {
          return Optional.empty();
     }
 
-    default Set<LiveEntity> getEntities(){
-        BlockPosition position = getPosition();
-        Set<LiveEntity> entities = position.getWorld().getEntities();
-        PositionableShipsStructure pss = getStructure();
+    default Collection<LiveEntity> getEntities(){
+        return getEntities(e -> true);
+    }
+
+    default <X extends LiveEntity> Collection<X> getEntities(Class<X> clazz){
+        return (Collection<X>) getEntities(e -> clazz.isInstance(e));
+    }
+
+    default Collection<LiveEntity> getEntities(Predicate<LiveEntity> check){
+        Collection<LiveEntity> entities = getPosition().getWorld().getEntities();
+        Collection<BlockPosition> blocks = getStructure().getPositions();
         return entities.stream()
-                .filter(e -> pss.getRelativePositions().stream().anyMatch(v -> {
-                    BlockPosition shipPosition = position.getRelative(v);
-                    Optional<BlockPosition> opTargetPos = e.getAttachedTo();
-                    if(!opTargetPos.isPresent()){
-                        return false;
-                    }
-                   return opTargetPos.get().equals(shipPosition);
-                })).collect(Collectors.toSet());
+                .filter(check)
+                .filter(e -> e.getAttachedTo().isPresent())
+                .filter(e -> blocks.stream()
+                        .anyMatch(b -> b.getPosition().equals(e.getAttachedTo().get())))
+                .collect(Collectors.toSet());
     }
 
     default void rotateAnticlockwiseAround(Position<? extends Number> location, MovementContext context) throws MoveException{
@@ -89,11 +93,15 @@ public interface Vessel extends Positionable {
         return !getWaterLevel().isPresent();
     }
 
-    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, BlockPosition> function){
+    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, Optional<BlockPosition>> function){
         int height = -1;
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         for (MovingBlock mBlock : collection){
-            BlockPosition position = function.apply(mBlock);
+            Optional<BlockPosition> opPosition = function.apply(mBlock);
+            if(!opPosition.isPresent()){
+                continue;
+            }
+            BlockPosition position = opPosition.get();
             for(Direction direction : directions){
                 BlockType type = position.getRelative(direction).getBlockType();
                 if(type.equals(BlockTypes.WATER.get())){

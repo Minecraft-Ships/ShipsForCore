@@ -101,18 +101,20 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         boolean burnerFound = false;
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
         for(MovingBlock movingBlock : context.getMovingStructure()){
-            BlockPosition blockPosition = movingBlock.getBeforePosition();
-            BlockDetails details = movingBlock.getStoredBlockData();
-            if(blockPosition.getBlockType().equals(BlockTypes.FIRE.get())){
-                burnerFound = true;
-            }
-            if(this.specialBlocks.stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
-                specialBlockCount++;
-            }
-            Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
-            if(opTiled.isPresent()){
-                if(opTiled.get() instanceof FurnaceTileEntitySnapshot){
-                    furnaceInventories.add(((FurnaceTileEntitySnapshot) opTiled.get()).getInventory());
+            if(movingBlock.getBeforePosition().isPresent()) {
+                BlockPosition blockPosition = movingBlock.getBeforePosition().get();
+                BlockDetails details = movingBlock.getStoredBlockData();
+                if (blockPosition.getBlockType().equals(BlockTypes.FIRE.get())) {
+                    burnerFound = true;
+                }
+                if (this.specialBlocks.stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))) {
+                    specialBlockCount++;
+                }
+                Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
+                if (opTiled.isPresent()) {
+                    if (opTiled.get() instanceof FurnaceTileEntitySnapshot) {
+                        furnaceInventories.add(((FurnaceTileEntitySnapshot) opTiled.get()).getInventory());
+                    }
                 }
             }
         }

@@ -12,9 +12,11 @@ import java.util.Optional;
 
 public interface MovingBlock {
 
-    BlockPosition getBeforePosition();
+    Optional<BlockPosition> getBeforePosition();
 
-    BlockPosition getAfterPosition();
+    Optional<BlockPosition> getAfterPosition();
+
+    MovingBlock setBeforePosition(BlockPosition position);
 
     MovingBlock setAfterPosition(BlockPosition position);
 
@@ -39,54 +41,67 @@ public interface MovingBlock {
 
     default MovingBlock setMovingTo() {
         BlockDetails details = getStoredBlockData();
-        getAfterPosition().setBlock(details);
+        getAfterPosition().ifPresent(b -> b.setBlock(details));
         return this;
     }
 
     default MovingBlock rotateLeft(BlockPosition position) {
         int shift = position.getX() - position.getZ();
         int symmetry = position.getZ();
-        int x = getAfterPosition().getX() - shift;
-        int y = getAfterPosition().getY();
-        int z = getAfterPosition().getZ() - (getAfterPosition().getZ() - symmetry) * 2 + shift;
-        setAfterPosition(getBeforePosition().getWorld().getPosition(z, y, x));
+        getAfterPosition().ifPresent(p -> {
+            int x = p.getX() - shift;
+            int y = p.getY();
+            int z = p.getZ() - (p.getZ() - symmetry) * 2 + shift;
+            setAfterPosition(p.getWorld().getPosition(z, y, x));
+        });
         return this;
     }
 
     default MovingBlock rotateRight(BlockPosition position) {
         int shift = position.getX() - position.getZ();
         int symmetry = position.getX();
-        int x = getAfterPosition().getX() - (getAfterPosition().getX() - symmetry) * 2 - shift;
-        int y = getAfterPosition().getY();
-        int z = getAfterPosition().getZ() + shift;
-        setAfterPosition(getBeforePosition().getWorld().getPosition(z, y, x));
+        getAfterPosition().ifPresent(p -> {
+            int x = p.getX() - (p.getX() - symmetry) * 2 - shift;
+            int y = p.getY();
+            int z = p.getZ() + shift;
+            setAfterPosition(p.getWorld().getPosition(z, y, x));
+        });
         return this;
     }
 
     default MovingBlock removeBeforePositionOverAir() {
-        BlockPosition position = removeBeforePosition(this.getBeforePosition()).getBeforePosition();
-        Optional<Boolean> waterLogged = position.getBlockDetails().get(WaterLoggedKeyedData.class);
-        if(waterLogged.isPresent() && waterLogged.get()){
-            position.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
-        }else{
-            position.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails());
-        }
+        getBeforePosition().ifPresent(p -> {
+            removeBeforePosition(p);
+            Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
+            if(waterLogged.isPresent() && waterLogged.get()){
+                p.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+            }else{
+                p.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails());
+            }
+        });
         return this;
     }
 
     default MovingBlock removeBeforePositionUnderWater() {
-        BlockPosition position = removeBeforePosition(this.getBeforePosition()).getBeforePosition();
-        Optional<Boolean> waterLogged = position.getBlockDetails().get(WaterLoggedKeyedData.class);
-        if(waterLogged.isPresent() && waterLogged.get()) {
-            position.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
-        }else{
-            position.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails());
-        }
+        getBeforePosition().ifPresent(p -> {
+            removeBeforePosition(p);
+            Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
+            if(waterLogged.isPresent() && waterLogged.get()) {
+                p.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+            }else{
+                p.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails());
+            }
+        });
         return this;
     }
 
-    default BlockDetails getCurrentBlockData(){
-        return this.getBeforePosition().getBlockDetails();
+    default Optional<BlockDetails> getCurrentBlockData(){
+        Optional<BlockPosition> opBlock = getBeforePosition();
+        if(opBlock.isPresent()){
+            return Optional.of(opBlock.get().getBlockDetails());
+        }
+        return Optional.empty();
+
     }
 
 

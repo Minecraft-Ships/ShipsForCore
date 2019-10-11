@@ -5,6 +5,8 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
 
+import java.util.Optional;
+
 public class SetMovingBlock implements MovingBlock {
 
     protected BlockPosition before;
@@ -22,13 +24,19 @@ public class SetMovingBlock implements MovingBlock {
     }
 
     @Override
-    public BlockPosition getBeforePosition() {
-        return this.before;
+    public Optional<BlockPosition> getBeforePosition() {
+        return Optional.ofNullable(this.before);
     }
 
     @Override
-    public BlockPosition getAfterPosition() {
-        return this.after;
+    public Optional<BlockPosition> getAfterPosition() {
+        return Optional.ofNullable(this.after);
+    }
+
+    @Override
+    public MovingBlock setBeforePosition(BlockPosition position) {
+        this.before = position;
+        return this;
     }
 
     @Override
@@ -50,7 +58,7 @@ public class SetMovingBlock implements MovingBlock {
 
     @Override
     public BlockPriority getBlockPriority() {
-        if((this.detail.getType().equals(BlockTypes.AIR))) {
+        if((this.detail.getType().equals(BlockTypes.AIR.get()))) {
             return BlockPriority.AIR;
         }else if(this.detail.get(KeyedData.ATTACHABLE).isPresent()){
             return BlockPriority.ATTACHED;

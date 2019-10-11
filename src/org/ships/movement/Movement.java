@@ -5,6 +5,7 @@ import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
+import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
@@ -52,16 +53,16 @@ public class Movement {
 
     protected void move(Vessel vessel, MovementContext context) throws MoveException {
         if(vessel.isLoading()){
-            context.getBar().ifPresent(b -> b.deregisterPlayers());
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_STILL_LOADING, null));
         }
         Optional<MovementContext> opMoving = vessel.getValue(MovingFlag.class);
         if(opMoving.isPresent()){
-            context.getBar().ifPresent(b -> b.deregisterPlayers());
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_MOVING_ALREADY, true));
         }
         vessel.set(MovingFlag.class, context);
-        Set<LiveEntity> entities = vessel.getEntities();
+        Collection<LiveEntity> entities = vessel.getEntities();
         entities.forEach(e -> {
             EntitySnapshot<? extends LiveEntity> snapshot = e.createSnapshot();
             if(snapshot == null){
@@ -85,7 +86,7 @@ public class Movement {
         Optional<MovingBlock> opLicence = context.getMovingStructure().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
         if (!opLicence.isPresent()) {
             vessel.set(MovingFlag.class, null);
-            context.getBar().ifPresent(b -> b.deregisterPlayers());
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.NO_LICENCE_FOUND, null));
         }
         if (vessel instanceof VesselRequirement) {
@@ -102,19 +103,25 @@ public class Movement {
                 return;
             }
             for(BlockType type : vessel.getType().getIgnoredTypes()){
-                if(type.equals(mb.getAfterPosition().getBlockType())){
-                    return;
+                Optional<BlockPosition> opBlock = mb.getAfterPosition();
+                if(opBlock.isPresent()){
+                    if(type.equals(opBlock.get().getBlockType())){
+                        return;
+                    }
                 }
             }
             BlockList list = vessel instanceof BlockListable ? ((BlockListable)vessel).getBlockList() : ShipsPlugin.getPlugin().getBlockList();
-            BlockInstruction bi = list.getBlockInstruction(mb.getAfterPosition().getBlockType());
-            if (!bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE)) {
-                collided.add(mb.getAfterPosition());
+            Optional<BlockPosition> opAfter = mb.getAfterPosition();
+            if(opAfter.isPresent()){
+                BlockInstruction bi = list.getBlockInstruction(opAfter.get().getBlockType());
+                if (!bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE)) {
+                    collided.add(opAfter.get());
+                }
             }
         });
         if (!collided.isEmpty()) {
             vessel.set(MovingFlag.class, null);
-            context.getBar().ifPresent(b -> b.deregisterPlayers());
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
 
             VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, context, collided);
             CorePlugin.getPlatform().callEvent(collideEvent);
@@ -136,7 +143,7 @@ public class Movement {
             result.run(vessel, context);
         }catch (Throwable e) {
             entities.forEach(entity -> entity.setGravity(true));
-            context.getBar().ifPresent(b -> b.deregisterPlayers());
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             vessel.set(MovingFlag.class, null);
             throw e;
         }
@@ -163,7 +170,7 @@ public class Movement {
                     Optional<Collection<Direction>> opData = blockDetails.get(KeyedData.MULTI_DIRECTIONAL);
                     Collection<Direction> collection = new HashSet<>();
                     if(opData.isPresent()) {
-                        opData.get().stream().forEach(d -> collection.add(d.getRightAngleRight()));
+                        opData.get().forEach(d -> collection.add(d.getRightAngleRight()));
                         blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
                     }
                     return;
@@ -202,7 +209,7 @@ public class Movement {
                     Optional<Collection<Direction>> opData = blockDetails.get(KeyedData.MULTI_DIRECTIONAL);
                     Collection<Direction> collection = new HashSet<>();
                     if(opData.isPresent()) {
-                        opData.get().stream().forEach(d -> collection.add(d.getRightAngleRight()));
+                        opData.get().forEach(d -> collection.add(d.getRightAngleRight()));
                         blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
                     }
                     return;

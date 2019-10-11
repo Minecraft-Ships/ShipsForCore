@@ -3,6 +3,7 @@ package org.ships.movement;
 import org.core.entity.living.human.player.Player;
 import org.core.vector.Vector3;
 import org.core.world.boss.ServerBossBar;
+import org.core.world.position.BlockPosition;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
@@ -11,6 +12,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 
 public class Result extends ArrayList<Result.Run> {
 
@@ -31,10 +33,14 @@ public class Result extends ArrayList<Result.Run> {
             double pitch = entity.getPitch();
             double yaw = entity.getYaw();
             double roll = entity.getRoll();
-            Vector3<Double> position = entity.getPosition().getPosition().minus(value.getBeforePosition().toExactPosition().getPosition());
-            Vector3<Double> position2 = value.getAfterPosition().toExactPosition().getPosition();
-            position = position2.add(position);
-            entity.setPosition(position);
+            Optional<BlockPosition> opBefore = value.getBeforePosition();
+            Optional<BlockPosition> opAfter = value.getAfterPosition();
+            if(opBefore.isPresent() && opAfter.isPresent()){
+                Vector3<Double> position = entity.getPosition().getPosition().minus(opBefore.get().toExactPosition().getPosition());
+                Vector3<Double> position2 = opAfter.get().toExactPosition().getPosition();
+                position = position2.add(position);
+                entity.setPosition(position);
+            }
             entity.setYaw(yaw);
             entity.setRoll(roll);
             entity.setPitch(pitch);
@@ -45,10 +51,13 @@ public class Result extends ArrayList<Result.Run> {
         Run COMMON_SET_NEW_POSITIONS = (v, c) -> {
             PositionableShipsStructure pss = v.getStructure();
             pss.clear();
-            c.getMovingStructure().forEach((mb) -> pss.addPosition(mb.getAfterPosition()));
+            c.getMovingStructure().forEach((mb) -> mb.getAfterPosition().ifPresent(after -> pss.addPosition(after)));
         };
 
-        Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, c) -> c.getMovingStructure().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get()).ifPresent(mb -> v.getStructure().setPosition(mb.getAfterPosition()));
+        Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, c) -> {
+            Optional<MovingBlock> opSign = c.getMovingStructure().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
+            opSign.ifPresent(mb -> mb.getAfterPosition().ifPresent(after -> v.getStructure().setPosition(after)));
+        };
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> {
             c.getEntities().keySet().stream().forEach(e -> {

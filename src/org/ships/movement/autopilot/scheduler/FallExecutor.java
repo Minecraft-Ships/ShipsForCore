@@ -40,6 +40,7 @@ public class FallExecutor implements Runnable {
                 .setExecutor(new FallExecutor())
                 .setIterationUnit(TimeUnit.MINUTES)
                 .setIteration(1)
+                .setDisplayName("Ships fall scheduler")
                 .build(ShipsPlugin.getPlugin());
     }
 }

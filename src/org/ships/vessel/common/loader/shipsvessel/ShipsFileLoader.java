@@ -6,6 +6,7 @@ import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.text.Text;
+import org.core.vector.types.Vector3Int;
 import org.core.world.WorldExtent;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -46,6 +47,38 @@ public class ShipsFileLoader implements ShipsLoader {
     protected static final String[] META_LOCATION_TELEPORT_WORLD = {"Meta", "Location", "Teleport", "World"};
     protected static final String[] META_STRUCTURE = {"Meta", "Location", "Structure"};
     protected static final String[] META_FLAGS = {"Meta", "Flags"};
+
+    private static class StructureLoad {
+
+        private ShipsVessel ship;
+
+        public StructureLoad(ShipsVessel shipsVessel){
+            this.ship = shipsVessel;
+        }
+
+        public void load(BlockPosition position, List<Vector3Int> structureList) {
+            if (structureList.isEmpty()) {
+                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
+                    @Override
+                    public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                        ship.setStructure(structure);
+                        ship.setLoading(false);
+                        CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+                    }
+
+                    @Override
+                    public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                        return true;
+                    }
+                });
+            } else {
+                PositionableShipsStructure pss = ship.getStructure();
+                pss.setRaw(structureList);
+                ship.setLoading(false);
+                CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+            }
+        }
+    }
 
     public ShipsFileLoader(File file) {
         this.file = file;
@@ -142,27 +175,8 @@ public class ShipsFileLoader implements ShipsLoader {
         if (opTelWorld.isPresent() && opTelX.isPresent() && opTelY.isPresent() && opTelZ.isPresent()) {
             CorePlugin.getServer().getWorldByPlatformSpecific(opTelWorld.get()).ifPresent(w -> ship.setTeleportPosition(w.getPosition(opTelX.get(), opTelY.get(), opTelZ.get())));
         }
-        CorePlugin.createSchedulerBuilder().setDelayUnit(null).setDelay(1).setExecutor(() -> file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
-            if (structureList.isEmpty()) {
-                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
-                    @Override
-                    public void onShipsStructureUpdated(PositionableShipsStructure structure) {
-                        ship.setStructure(structure);
-                        ship.setLoading(false);
-                        CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
-                    }
-
-                    @Override
-                    public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                        return true;
-                    }
-                });
-            } else {
-                PositionableShipsStructure pss = ship.getStructure();
-                pss.setRaw(structureList);
-                ship.setLoading(false);
-                CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
-            }
+        CorePlugin.createSchedulerBuilder().setDisplayName(ship.getId() + " - Structure-Loader").setDelayUnit(null).setDelay(1).setExecutor(() -> file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
+            new StructureLoad(ship).load(position, structureList);
         })).build(ShipsPlugin.getPlugin()).run();
 
         ShipsPlugin.getPlugin()

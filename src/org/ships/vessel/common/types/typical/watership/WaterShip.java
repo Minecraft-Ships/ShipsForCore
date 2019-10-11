@@ -50,8 +50,11 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         }
         int specialBlockCount = 0;
         for(MovingBlock movingBlock : context.getMovingStructure()){
-            BlockPosition blockPosition = movingBlock.getBeforePosition();
-            if(this.specialBlocks.stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
+            Optional<BlockPosition> opBlockPosition = movingBlock.getBeforePosition();
+            if(!opBlockPosition.isPresent()){
+                continue;
+            }
+            if(this.specialBlocks.stream().anyMatch(b -> b.equals(opBlockPosition.get().getBlockType()))){
                 specialBlockCount++;
             }
         }

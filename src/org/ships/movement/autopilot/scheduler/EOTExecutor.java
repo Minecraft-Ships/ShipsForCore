@@ -70,7 +70,7 @@ public class EOTExecutor implements Runnable {
                 return;
             }
             if(this.disableOnNoPilot && vessel instanceof CrewStoredVessel){
-                boolean check = vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).anyMatch(e -> ((CrewStoredVessel)vessel).getPermission(((LivePlayer) e).getUniqueId()).canMove());
+                boolean check = vessel.getEntities(LivePlayer.class).stream().anyMatch(e -> ((CrewStoredVessel)vessel).getPermission(e.getUniqueId()).canMove());
                 if(!check){
                     return;
                 }
@@ -78,7 +78,7 @@ public class EOTExecutor implements Runnable {
             MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
             if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()){
                 ServerBossBar bar2 = CorePlugin.createBossBar();
-                vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar2.register((LivePlayer) e));
+                vessel.getEntities(LivePlayer.class).forEach(e -> bar2.register(e));
                 context.setBar(bar2);
             }
             try {

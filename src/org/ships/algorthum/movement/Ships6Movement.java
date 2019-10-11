@@ -43,10 +43,12 @@ public class Ships6Movement implements BasicMovement {
                     }
                 });
                 MovingBlock m = this.toProcess.get(A);
-                if(this.waterLevel >= m.getBeforePosition().getY()){
-                    m.removeBeforePositionUnderWater();
-                }else{
-                    m.removeBeforePositionOverAir();
+                if(m.getBeforePosition().isPresent()) {
+                    if (this.waterLevel >= m.getBeforePosition().get().getY()) {
+                        m.removeBeforePositionUnderWater();
+                    } else {
+                        m.removeBeforePositionOverAir();
+                    }
                 }
             }
         }
@@ -88,20 +90,31 @@ public class Ships6Movement implements BasicMovement {
     public Result move(Vessel vessel, MovementContext context) throws MoveException {
         context.getBar().ifPresent(b -> b.setValue(0));
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        context.getMovingStructure().applyMovingBlocks();
         List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
-        //List<List<MovingBlock>> blocksToRemove = new ArrayList<>();
+        List<List<MovingBlock>> blocksToRemove = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
-        //List<MovingBlock> currentlyRemoving = new ArrayList<>();
+        List<MovingBlock> currentlyRemoving = new ArrayList<>();
+        context.getBar().ifPresent(b -> b.setMessage(CorePlugin.buildText("Creating stacks")));
         for(int A = 0; A < blocks.size(); A++){
             final int B = A;
-            context.getBar().ifPresent(bar -> bar.setValue(B, blocks.size() * 3));
+            context.getBar().ifPresent(bar -> bar.setValue(B, blocks.size()));
             MovingBlock block = blocks.get(A);
             if(currentlyAdding.size() >= config.getDefaultMovementStackLimit()){
                 blocksToProcess.add(currentlyAdding);
                 currentlyAdding = new ArrayList<>();
             }
-            currentlyAdding.add(block);
+            if(currentlyRemoving.size() >= config.getDefaultMovementStackLimit()){
+                blocksToRemove.add(currentlyRemoving);
+                currentlyRemoving = new ArrayList<>();
+            }
+            if(block.getAfterPosition().isPresent()) {
+                currentlyAdding.add(block);
+            }
+            if(block.getBeforePosition().isPresent()){
+                currentlyRemoving.add(block);
+            }
         }
         blocksToProcess.add(currentlyAdding);
         int waterLevel = -1;

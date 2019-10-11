@@ -35,9 +35,21 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
         super(collection);
     }
 
+    public void applyMovingBlocks() {
+        this.stream()
+                .filter(m -> m.getBeforePosition().isPresent())
+                .filter(m -> !m.getBeforePosition().get().getTileEntity().isPresent())
+                .filter(m -> m.getAfterPosition().isPresent())
+                .forEach(m -> {
+                    m.setAfterPosition(null);
+                    m.setBeforePosition(null);
+                });
+
+    }
+
     public List<MovingBlock> order(Comparator<MovingBlock> order){
         List<MovingBlock> blocks = new ArrayList<>(this);
-        Collections.sort(blocks, order);
+        blocks.sort(order);
         return blocks;
     }
 
@@ -52,8 +64,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
                 return false;
             }
             SignTileEntity ste = (SignTileEntity)snapshot;
-            boolean check = sign.isSign(ste);
-            return check;
+            return sign.isSign(ste);
         });
     }
 
@@ -68,7 +79,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> getBefore(BlockPosition position){
-        return get(position, b -> b.getBeforePosition());
+        return get(position, MovingBlock::getBeforePosition);
     }
 
     public Optional<MovingBlock> getAfter(Positionable positionable){
@@ -77,10 +88,13 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> getAfter(BlockPosition position){
-        return get(position, b -> b.getAfterPosition());
+        return get(position, MovingBlock::getAfterPosition);
     }
 
-    private Optional<MovingBlock> get(BlockPosition position, Function<MovingBlock, BlockPosition> function){
-        return stream().filter(f -> function.apply(f).equals(position)).findFirst();
+    private Optional<MovingBlock> get(BlockPosition position, Function<MovingBlock, Optional<BlockPosition>> function){
+        return stream().filter(f -> {
+            Optional<BlockPosition> opPos = function.apply(f);
+            return opPos.map(blockPosition -> blockPosition.equals(position)).orElse(false);
+        }).findFirst();
     }
 }

@@ -80,15 +80,15 @@ public class LicenceSign implements ShipsSign {
         try {
             Vessel s = new ShipsLicenceSignFinder(position).load();
             if (!player.isSneaking()) {
-                if(s instanceof Identifable) {
-                    player.sudo("ships", "ship", ((Identifable)s).getId().substring(6), "info");
+                if (s instanceof Identifable) {
+                    player.sudo("ships", "ship", ((Identifable) s).getId().substring(6), "info");
                 }
             } else {
                 int size = s.getStructure().getPositions().size();
                 ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
                 ServerBossBar bar = null;
                 int totalCount = config.getDefaultTrackSize();
-                if(config.isBossBarVisible()){
+                if (config.isBossBarVisible()) {
                     bar = CorePlugin.createBossBar().register(player).setMessage(CorePlugin.buildText("0 / " + totalCount));
                 }
                 final ServerBossBar finalBar = bar;
@@ -98,19 +98,19 @@ public class LicenceSign implements ShipsSign {
                         s.setStructure(structure);
                         s.save();
                         player.sendMessagePlain("Vessels structure has updated by " + (structure.getPositions().size() - size));
-                        if(finalBar != null){
+                        if (finalBar != null) {
                             finalBar.deregisterPlayers();
                         }
                     }
 
                     @Override
                     public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                        if(finalBar != null){
+                        if (finalBar != null) {
                             int blockCount = currentStructure.getPositions().size() + 1;
                             finalBar.setMessage(CorePlugin.buildText(blockCount + " / " + totalCount));
                             try {
                                 finalBar.setValue(blockCount, totalCount);
-                            }catch (IllegalArgumentException e){
+                            } catch (IllegalArgumentException e) {
 
                             }
                         }

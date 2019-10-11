@@ -67,7 +67,7 @@ public abstract class ShipsPlugin implements Plugin {
         }
         this.fallScheduler = FallExecutor.createScheduler();
         this.fallScheduler.run();
-        CorePlugin.createSchedulerBuilder().setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
+        CorePlugin.createSchedulerBuilder().setDisplayName("Ships no gravity fix").setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
         init2();
     }
 
