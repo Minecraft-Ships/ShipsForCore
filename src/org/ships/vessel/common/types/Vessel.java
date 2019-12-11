@@ -74,10 +74,10 @@ public interface Vessel extends Positionable {
         Collection<LiveEntity> entities = getPosition().getWorld().getEntities();
         Collection<BlockPosition> blocks = getStructure().getPositions();
         return entities.stream()
-                .filter(check)
+                .filter(e -> check.test(e))
                 .filter(e -> e.getAttachedTo().isPresent())
                 .filter(e -> blocks.stream()
-                        .anyMatch(b -> b.getPosition().equals(e.getAttachedTo().get())))
+                        .anyMatch(b -> b.equals(e.getAttachedTo().get())))
                 .collect(Collectors.toSet());
     }
 

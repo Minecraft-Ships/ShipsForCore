@@ -102,7 +102,7 @@ public class EOTSign implements ShipsSign {
                     .createSchedulerBuilder()
                     .setExecutor(new EOTExecutor(player, vessel))
                     .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
-                    .setIterationUnit(TimeUnit.SECONDS)
+                    .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
                     .build(ShipsPlugin.getPlugin());
             task.run();
             this.eot_scheduler.add(task);

@@ -26,7 +26,7 @@ public class FallExecutor implements Runnable {
                     context.setBar(bar);
                 }
                 try {
-                    v.moveTowards(0, -1, 0, context);
+                    v.moveTowards(0, -(ShipsPlugin.getPlugin().getConfig().getFallingSpeed()), 0, context);
                 } catch (MoveException e) {
                 }catch (Throwable e2){
                     v.getEntities().forEach(e -> e.setGravity(true));
@@ -38,8 +38,8 @@ public class FallExecutor implements Runnable {
     public static Scheduler createScheduler(){
         return CorePlugin.createSchedulerBuilder()
                 .setExecutor(new FallExecutor())
-                .setIterationUnit(TimeUnit.MINUTES)
-                .setIteration(1)
+                .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
+                .setIteration(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
                 .setDisplayName("Ships fall scheduler")
                 .build(ShipsPlugin.getPlugin());
     }

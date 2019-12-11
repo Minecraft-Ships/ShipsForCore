@@ -3,6 +3,7 @@ package org.ships.movement;
 import org.core.CorePlugin;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
+import org.core.entity.living.human.player.PlayerSnapshot;
 import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
 import org.core.world.boss.ServerBossBar;
@@ -67,6 +68,8 @@ public class Movement {
             EntitySnapshot<? extends LiveEntity> snapshot = e.createSnapshot();
             if(snapshot == null){
                 new IOException("No snapshot created from entity: " + e.getType().getId()).printStackTrace();
+            }
+            if (snapshot instanceof PlayerSnapshot){
             }
             MovingBlock mBlock = context.getMovingStructure().getBefore(e.getAttachedTo().get()).get();
             context.getEntities().put(snapshot, mBlock);

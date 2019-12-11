@@ -35,8 +35,11 @@ public class ShipsConfig implements Config.CommandConfigurable {
     protected final ConfigurationNode EOT_DELAY = new ConfigurationNode("Auto", "EOT", "Delay");
     protected final ConfigurationNode EOT_DELAY_UNIT = new ConfigurationNode("Auto", "EOT", "DelayUnit");
     protected final ConfigurationNode EOT_SPEED = new ConfigurationNode("Auto", "EOT", "Speed");
+    protected final ConfigurationNode EOT_ENABLED =  new ConfigurationNode("Auto", "EOT", "Enabled");
     protected final ConfigurationNode FALL_DELAY = new ConfigurationNode("Auto", "Falling", "Delay");
+    protected final ConfigurationNode FALL_DELAY_UNIT = new ConfigurationNode("Auto", "Falling", "DelayUnit");
     protected final ConfigurationNode FALL_SPEED = new ConfigurationNode("Auto", "Falling", "Speed");
+    protected final ConfigurationNode FALL_ENABLED = new ConfigurationNode("Auto", "Falling", "Enabled");
     protected final ConfigurationNode LICENCE_SIGN_TEXT_1ST = new ConfigurationNode("Sign", "Licence", "First");
     protected final ConfigurationNode LICENCE_SIGN_TEXT_4TH = new ConfigurationNode("Sign", "Licence", "Fourth");
     protected final ConfigurationNode VISIBLE_BOSS_BAR = new ConfigurationNode("Bar", "Visible");
@@ -79,10 +82,43 @@ public class ShipsConfig implements Config.CommandConfigurable {
             modified = true;
             this.file.set(this.STRUCTURE_UPDATE_CLICK, false);
         }
+        if (!this.file.parseBoolean(this.EOT_ENABLED).isPresent()){
+            modified = true;
+            this.file.set(this.EOT_ENABLED, true);
+            this.file.set(this.EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
+            this.file.set(this.FALL_DELAY, 1);
+            this.file.set(this.FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.MINUTES);
+            this.file.set(this.FALL_SPEED, 1);
+            this.file.set(this.FALL_ENABLED, true);
+        }
         if(modified){
             this.file.save();
         }
         this.file.reload();
+    }
+
+    public boolean isFallingEnabled(){
+        return this.file.parseBoolean(this.FALL_ENABLED).orElse(true);
+    }
+
+    public TimeUnit getFallingDelayUnit(){
+        return this.file.parse(this.FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(TimeUnit.MINUTES);
+    }
+
+    public int getFallingDelay(){
+        return this.file.parseInt(this.FALL_DELAY).orElse(1);
+    }
+
+    public int getFallingSpeed(){
+        return this.file.parseInt(this.FALL_SPEED).orElse(1);
+    }
+
+    public boolean isEOTEnabled(){
+        return this.file.parseBoolean(this.EOT_ENABLED).orElse(true);
+    }
+
+    public TimeUnit getEOTDelayUnit() {
+        return this.file.parse(this.EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(TimeUnit.MINUTES);
     }
 
     public int getEOTDelay(){
@@ -162,15 +198,21 @@ public class ShipsConfig implements Config.CommandConfigurable {
         file.set(ADVANCED_TRACK_LIMIT, 4000);
         file.set(EOT_SPEED, 2);
         file.set(EOT_DELAY, 5);
+        file.set(EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
+        file.set(EOT_ENABLED, true);
+        file.set(FALL_SPEED, 1);
+        file.set(FALL_DELAY, 1);
+        file.set(FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.MINUTES);
+        file.set(FALL_ENABLED, true);
         file.set(VISIBLE_BOSS_BAR, false);
         file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 50);
         file.set(this.ADVANCED_MOVEMENT_STACK_DELAY, 1);
         file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
         file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAY, 1);
-        this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
-        this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 50);
-        this.file.set(this.STRUCTURE_UPDATE_AUTO, true);
-        this.file.set(this.STRUCTURE_UPDATE_CLICK, false);
+        file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
+        file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 50);
+        file.set(this.STRUCTURE_UPDATE_AUTO, true);
+        file.set(this.STRUCTURE_UPDATE_CLICK, false);
 
         file.set(ALPHA_COMMAND_USE_LEGACY, true);
         file.save();
@@ -189,7 +231,15 @@ public class ShipsConfig implements Config.CommandConfigurable {
                 new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Delay", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_DELAY.getPath()),
                 new DedicatedNode<>("Advanced.Block.Finder.Stack.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getPath()),
                 new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_LIMIT.getPath()),
-                new DedicatedNode<>(true, "Structure.Auto,Update", Parser.STRING_TO_BOOLEAN, STRUCTURE_UPDATE_AUTO.getPath())
+                new DedicatedNode<>(true, "Structure.Auto.Update", Parser.STRING_TO_BOOLEAN, STRUCTURE_UPDATE_AUTO.getPath()),
+                new DedicatedNode<>(true, "Running.EOT.Enabled", Parser.STRING_TO_BOOLEAN, EOT_ENABLED.getPath()),
+                new DedicatedNode<>(true, "Running.EOT.Delay", Parser.STRING_TO_INTEGER, EOT_DELAY.getPath()),
+                new DedicatedNode<>("Running.EOT.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, EOT_DELAY_UNIT.getPath()),
+                new DedicatedNode<>(true, "Running.EOT.Speed", Parser.STRING_TO_INTEGER, EOT_SPEED.getPath()),
+                new DedicatedNode<>(true, "Running.Fall.Enabled", Parser.STRING_TO_BOOLEAN, FALL_ENABLED.getPath()),
+                new DedicatedNode<>(true, "Running.Fall.Delay", Parser.STRING_TO_INTEGER, FALL_DELAY.getPath()),
+                new DedicatedNode<>("Running.Fall.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, FALL_DELAY_UNIT.getPath()),
+                new DedicatedNode<>(true, "Running.Fall.Speed", Parser.STRING_TO_INTEGER, FALL_SPEED.getPath())
         ));
     }
 }
