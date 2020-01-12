@@ -66,7 +66,14 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockType> value) {
-            viewer.sendMessagePlain("You must be moving into one of the following blocks: " + CorePlugin.toString(", ", b -> b.getId(), value));
+            String message = ShipsPlugin.getPlugin().getMessageConfig().getNotInMovingIn();
+            if(message.contains("%Block Names%")) {
+                message = message.replaceAll("%Block Names%", CorePlugin.toString(",", v -> v.getName(), value));
+            }
+            if(message.contains("%Block Ids%")) {
+                message = message.replaceAll("%Block Ids%", CorePlugin.toString(",", v -> v.getId(), value));
+            }
+            viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
         }
     }
 

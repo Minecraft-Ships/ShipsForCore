@@ -153,7 +153,7 @@ public class AltitudeSign implements ShipsSign {
 
     private void onVesselMove(LivePlayer player, ServerBossBar bar, int altitude, String line1, Vessel vessel){
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
-        if (opFlag.isPresent()) {
+        if (opFlag.isPresent() && bar != null) {
             if (opFlag.get()) {
                 bar.deregisterPlayers();
                 player.sendMessage(CorePlugin.buildText("The altitude is locked on this ship"));

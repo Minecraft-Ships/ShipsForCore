@@ -4,6 +4,8 @@ import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
+import org.core.world.direction.Direction;
+import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.BlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
@@ -42,11 +44,14 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         this.flags.add(new AltitudeLockFlag(true));
     }
 
-
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
         if(!context.isStrictMovement()){
             return;
+        }
+        Optional<Integer> opWaterLevel = getWaterLevel(context.getMovingStructure(), MovingBlock::getAfterPosition);
+        if(!opWaterLevel.isPresent()){
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Arrays.asList(BlockTypes.WATER.get())));
         }
         int specialBlockCount = 0;
         for(MovingBlock movingBlock : context.getMovingStructure()){
@@ -96,10 +101,19 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     @Override
     public boolean shouldFall() {
         int specialBlockCount = 0;
+        boolean inWater = false;
         for(BlockPosition blockPosition : this.getStructure().getPositions()){
             if(this.specialBlocks.stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
                 specialBlockCount++;
             }
+            for(Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())){
+                if (BlockTypes.WATER.get().equals(blockPosition.getRelative(direction).getBlockType())){
+                    inWater = true;
+                }
+            }
+        }
+        if(!inWater){
+            return false;
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f)/this.getStructure().getPositions().size());
         if((this.specialBlockPercent != 0) && specialBlockPercent <= this.specialBlockPercent){

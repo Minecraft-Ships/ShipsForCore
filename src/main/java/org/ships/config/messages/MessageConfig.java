@@ -15,13 +15,14 @@ import java.util.Set;
 
 public class MessageConfig implements Config.CommandConfigurable {
 
-    ConfigurationFile file;
+    private ConfigurationFile file;
 
     private static final ConfigurationNode TOO_MANY = new ConfigurationNode("Error", "TooManyOfBlocks");
     private static final ConfigurationNode NO_SPEED_SET = new ConfigurationNode("Error", "NoSpeedSet");
     private static final ConfigurationNode FAILED_TO_FIND_LICENCE = new ConfigurationNode("Error", "FailedToFindLicenceSign");
     private static final ConfigurationNode NO_SPECIAL_BLOCK_FOUND = new ConfigurationNode("Error", "NoSpecialBlockFound");
     private static final ConfigurationNode NO_SPECIAL_NAMED_BLOCK_FOUND = new ConfigurationNode("Error", "NoSpecialNamedBlockFound");
+    private static final ConfigurationNode NOT_IN_MOVING_IN = new ConfigurationNode("Error", "NotInMovingIn");
 
     public MessageConfig(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages.temp");
@@ -34,6 +35,10 @@ public class MessageConfig implements Config.CommandConfigurable {
             this.file.save();
         }
         this.file.reload();
+    }
+
+    public String getNotInMovingIn(){
+        return this.file.parseString(NOT_IN_MOVING_IN).orElse("Must be moving into one of the following blocks: %Block Names%");
     }
 
     public String getTooManyBlocks(){
@@ -68,6 +73,7 @@ public class MessageConfig implements Config.CommandConfigurable {
         this.file.set(FAILED_TO_FIND_LICENCE, "Failed to Find Licence Sign");
         this.file.set(NO_SPECIAL_BLOCK_FOUND, "Failed to find %Block Name%");
         this.file.set(NO_SPECIAL_NAMED_BLOCK_FOUND, "Failed to find %Block Name%");
+        this.file.set(NOT_IN_MOVING_IN, "Must be moving into one of the following blocks: %Block Names%");
         this.file.save();
     }
 
@@ -79,6 +85,7 @@ public class MessageConfig implements Config.CommandConfigurable {
         set.add(new DedicatedNode<>("Error.FailedToFindLicenceSign", Parser.STRING_TO_STRING_PARSER, FAILED_TO_FIND_LICENCE.getPath()));
         set.add(new DedicatedNode<>("Error.NoSpecialBlock", Parser.STRING_TO_STRING_PARSER, NO_SPECIAL_BLOCK_FOUND.getPath()));
         set.add(new DedicatedNode<>("Error.NoSpecialNamedBlock", Parser.STRING_TO_STRING_PARSER, NO_SPECIAL_NAMED_BLOCK_FOUND.getPath()));
+        set.add(new DedicatedNode<>("Error.NotMovingInto", Parser.STRING_TO_STRING_PARSER, NOT_IN_MOVING_IN.getPath()));
         return set;
     }
 }

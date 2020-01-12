@@ -42,6 +42,7 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             Config.CommandConfigurable config;
             switch(configName.toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
+                case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default:
                     if(source instanceof CommandViewer){
                         ((CommandViewer) source).sendMessagePlain("Unknown config");
@@ -53,7 +54,8 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
                     ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
                     return false;
                 }
-                if (setNode(config, args[3], args[4])){
+                String remaining = CorePlugin.toString(" ", t -> t, 4, args);
+                if (setNode(config, args[3], remaining)){
                     return true;
                 }
                 if(source instanceof CommandViewer){
@@ -101,36 +103,39 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             }
             return ret;
         }
-        if(args.length == 2 || args.length == 3 && args[2].equalsIgnoreCase("")){
-            return Arrays.asList("config");
+        if(args.length == 3 && args[2].equalsIgnoreCase("")){
+            return Arrays.asList("config", "messages");
         }
         if(args.length == 3){
-            return Arrays.asList("config");
+            return Arrays.asList("config", "messages");
         }
-        if(args.length == 3 || args.length == 4 && args[3].equalsIgnoreCase("")){
+        if(args.length == 4 && args[3].equalsIgnoreCase("")){
             Config.CommandConfigurable config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
+                case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default: return new ArrayList<>();
             }
             List<String> list = new ArrayList<>();
-            config.getNodes().stream().forEach(dn -> list.add(dn.getSimpleName()));
+            config.getNodes().forEach(dn -> list.add(dn.getSimpleName()));
             return list;
         }
         if(args.length == 4){
             Config.CommandConfigurable config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
+                case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default: return new ArrayList<>();
             }
             List<String> list = new ArrayList<>();
             config.getNodes().stream().filter(dn -> dn.getSimpleName().toLowerCase().startsWith(args[3].toLowerCase())).forEach(dn -> list.add(dn.getSimpleName()));
             return list;
         }
-        if((args.length == 4 || (args.length == 5 && args[4].equalsIgnoreCase(""))) && args[1].toLowerCase().equals("set")){
+        if(((args.length == 5 && args[4].equalsIgnoreCase(""))) && args[1].toLowerCase().equals("set")){
             Config.CommandConfigurable config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
+                case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default:
                     return new ArrayList<>();
             }
@@ -147,6 +152,7 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             Config.CommandConfigurable config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
+                case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default:
                     return new ArrayList<>();
             }
