@@ -31,7 +31,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
     protected Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
     protected CrewPermission defaultPermission = CrewPermission.DEFAULT;
-    protected ExactPosition teleportPosition;
+    protected Map<String, ExactPosition> teleportPositions = new HashMap<>();
     protected File file;
     protected ExpandedBlockList blockList;
     protected ShipType type;
@@ -103,6 +103,11 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
+    public Map<String, ExactPosition> getTeleportPositions(){
+        return this.teleportPositions;
+    }
+
+    @Override
     public ShipType getType(){
         return type;
     }
@@ -121,27 +126,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     @Override
     public ExpandedBlockList getBlockList() {
         return this.blockList;
-    }
-
-    @Override
-    public ExactPosition getTeleportPosition(){
-        if(this.teleportPosition != null) {
-            return this.teleportPosition;
-        }
-        return getStructure().getPositions().stream().filter(b -> {
-            for(int A = 0; A < 2; A++){
-                if (b.getRelative(new Vector3Int(0, A, 0)).getBlockType().equals(BlockTypes.AIR.get())){
-                    return false;
-                }
-            }
-            return true;
-        }).findAny().get().toExactPosition();
-    }
-
-    @Override
-    public AbstractShipsVessel setTeleportPosition(ExactPosition position){
-        this.teleportPosition = position;
-        return this;
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.loader.ShipsBlockFinder;
 import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;

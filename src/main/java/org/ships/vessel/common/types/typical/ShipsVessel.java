@@ -18,9 +18,11 @@ import org.ships.vessel.common.assits.*;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.sign.LicenceSign;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
 
@@ -48,6 +50,9 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     @Override
     default ShipsVessel setName(String name) throws NoLicencePresent{
         getSign().setLine(2, CorePlugin.buildText(name));
+        File file = getFile();
+        String[] ext = file.getName().split(Pattern.quote("."));
+        file.renameTo(new File(file.getParentFile(), name + "." + ext[ext.length - 1]));
         return this;
     }
 

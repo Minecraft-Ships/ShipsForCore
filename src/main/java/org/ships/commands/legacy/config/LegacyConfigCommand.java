@@ -1,6 +1,7 @@
 package org.ships.commands.legacy.config;
 
 import org.core.CorePlugin;
+import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.StringParser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
@@ -8,14 +9,12 @@ import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.config.Config;
+import org.ships.config.messages.MessageConfig;
 import org.ships.config.node.DedicatedNode;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class LegacyConfigCommand implements LegacyArgumentCommand {
     @Override
@@ -143,10 +142,27 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             if(!opNode.isPresent()){
                 return new ArrayList<>();
             }
+            if(config instanceof MessageConfig){
+                Set<String> set = ((MessageConfig)config).getSuggestions(new ConfigurationNode(opNode.get().getNode()));
+                List<String> list = new ArrayList<>(set);
+                list.sort(Comparator.naturalOrder());
+                return list;
+            }
             StringParser parser = opNode.get().getParser();
             if(parser instanceof StringParser.Suggestible){
                 return ((StringParser.Suggestible) parser).getStringSuggestions();
             }
+        }
+        if(args.length >= 5 && args[1].toLowerCase().equals("set") && args[2].toLowerCase().equals("messages")){
+            MessageConfig config = ShipsPlugin.getPlugin().getMessageConfig();
+            Optional<DedicatedNode<?>> opNode = config.get(args[3]);
+            if(!opNode.isPresent()){
+                return new ArrayList<>();
+            }
+            Set<String> set = config.getSuggestions(new ConfigurationNode(opNode.get().getNode()));
+            List<String> list = new ArrayList<>(set);
+            list.sort(Comparator.naturalOrder());
+            return list;
         }
         if(args.length == 5 && args[1].toLowerCase().equals("set")){
             Config.CommandConfigurable config;
@@ -161,6 +177,12 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
                 return new ArrayList<>();
             }
             StringParser parser = opNode.get().getParser();
+            if(config instanceof MessageConfig){
+                Set<String> set = ((MessageConfig)config).getSuggestions(new ConfigurationNode(opNode.get().getNode()));
+                List<String> list = new ArrayList<>(set);
+                list.sort(Comparator.naturalOrder());
+                return list;
+            }
             if(parser instanceof StringParser.Suggestible){
                 return ((StringParser.Suggestible) parser).getStringSuggestions(args[4]);
             }

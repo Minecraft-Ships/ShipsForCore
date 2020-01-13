@@ -9,6 +9,7 @@ import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.core.world.position.BlockPosition;
+import org.core.world.position.ExactPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -18,6 +19,7 @@ import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
+import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.Vessel;
@@ -27,6 +29,7 @@ import org.ships.vessel.sign.EOTSign;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class LegacyShipCommand implements LegacyArgumentCommand {
 
@@ -57,12 +60,13 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                     }
                     return true;
                 }
-                LivePlayer player = (LivePlayer)source;
-                if(!player.hasPermission(Permissions.CMD_SHIP_TRACK)){
+                LivePlayer player = (LivePlayer) source;
+                if (!player.hasPermission(Permissions.CMD_SHIP_TRACK)) {
                     return false;
                 }
                 vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.get().getDefaultBlockDetails(), (LivePlayer) source));
                 CorePlugin.createSchedulerBuilder()
+                        .setDisplayName("ShipsTrack:" + vessel.getName())
                         .setDelay(10)
                         .setDelayUnit(TimeUnit.SECONDS)
                         .setExecutor(() -> vessel
@@ -71,6 +75,36 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                                 .forEach(bp -> bp.resetBlock(player)))
                         .build(ShipsPlugin.getPlugin())
                         .run();
+            }else if(args[2].equalsIgnoreCase("Teleport")){
+                if(!(source instanceof LivePlayer)){
+                    if(source instanceof CommandViewer){
+                        ((CommandViewer)source).sendMessagePlain("Teleport requires to be ran as a player");
+                    }
+                    return false;
+                }
+                LivePlayer player = (LivePlayer)source;
+                TeleportToVessel tVessel = (TeleportToVessel) vessel;
+                if(args.length == 3){
+                    ExactPosition pos = tVessel.getTeleportPositions().getOrDefault("Default", tVessel.getPosition().toExactPosition());
+                    player.setPosition(pos);
+                    return true;
+                }
+                if(args.length >= 5 && args[3].equalsIgnoreCase("set")){
+                    tVessel.getTeleportPositions().put(args[4], player.getPosition());
+                    tVessel.save();
+                    return true;
+                }else if(args[3].equalsIgnoreCase("set")){
+                    tVessel.getTeleportPositions().put("Default", player.getPosition());
+                    tVessel.save();
+                    return true;
+                }
+                ExactPosition position = tVessel.getTeleportPositions().get(args[3]);
+                if(position == null){
+                    player.sendMessagePlain("Unknown position on the ship");
+                    return true;
+                }
+                player.setPosition(position);
+                return true;
             }else if(args[2].equalsIgnoreCase("EOT")){
                 if(args.length >= 5) {
                     if(args[3].equalsIgnoreCase("enable")){
@@ -83,7 +117,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                         }
                         EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
                         if(!opCheck.get()){
-                            sign.getScheduler(vessel).stream().forEach(s -> {
+                            sign.getScheduler(vessel).forEach(s -> {
                                 EOTExecutor exe = (EOTExecutor) s.getExecutor();
                                 exe.getSign().ifPresent(b -> {
                                     Optional<LiveTileEntity> opTileEntity = b.getTileEntity();
@@ -199,15 +233,55 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             list.add("track");
             list.add("crew");
             list.add("info");
-        }else if (args.length == 3){
-            if("track".startsWith(args[2].toLowerCase())){
+            list.add("teleport");
+        }else if (args.length == 3) {
+            if ("track".startsWith(args[2].toLowerCase())) {
                 list.add("track");
             }
-            if("info".startsWith(args[2].toLowerCase())){
+            if ("info".startsWith(args[2].toLowerCase())) {
                 list.add("info");
             }
-            if("crew".startsWith(args[2].toLowerCase())){
+            if ("crew".startsWith(args[2].toLowerCase())) {
                 list.add("crew");
+            }
+            if ("teleport".startsWith(args[2].toLowerCase())) {
+                list.add("teleport");
+            }
+        }else if (args.length == 4 && args[2].equalsIgnoreCase("teleport") && args[3].equalsIgnoreCase("")) {
+            list.add("set");
+            try {
+                Vessel vessel = new ShipsIDFinder(args[1]).load();
+                if(vessel instanceof TeleportToVessel){
+                    list.addAll(((TeleportToVessel) vessel).getTeleportPositions().keySet());
+                }
+            } catch (LoadVesselException e) {
+            }
+        }else if(args.length == 4 && args[2].equalsIgnoreCase("teleport")) {
+            if ("set".startsWith(args[3])) {
+                list.add("set");
+            }
+            try {
+                Vessel vessel = new ShipsIDFinder(args[1]).load();
+                if (vessel instanceof TeleportToVessel) {
+                    list.addAll(((TeleportToVessel) vessel).getTeleportPositions().keySet().stream().filter(id -> id.startsWith(args[3])).collect(Collectors.toSet()));
+                }
+            } catch (LoadVesselException e) {
+            }
+        }else if(args.length == 5 && args[2].equalsIgnoreCase("teleport") && args[3].equalsIgnoreCase("set") && args[4].equalsIgnoreCase("")){
+            try{
+                Vessel vessel = new ShipsIDFinder(args[1]).load();
+                if (vessel instanceof TeleportToVessel) {
+                    list.addAll(((TeleportToVessel) vessel).getTeleportPositions().keySet());
+                }
+            } catch (LoadVesselException e) {
+            }
+        }else if(args.length == 5 && args[2].equalsIgnoreCase("teleport") && args[3].equalsIgnoreCase("set")){
+            try{
+                Vessel vessel = new ShipsIDFinder(args[1]).load();
+                if (vessel instanceof TeleportToVessel) {
+                    list.addAll(((TeleportToVessel) vessel).getTeleportPositions().keySet().stream().filter(id -> id.startsWith(args[4])).collect(Collectors.toSet()));
+                }
+            } catch (LoadVesselException e) {
             }
         }else if (args.length == 4 && args[2].equalsIgnoreCase("crew") && args[3].equalsIgnoreCase("")){
             list.add("view");

@@ -41,7 +41,7 @@ public interface MovementResult<E> {
         public void sendMessage(Vessel vessel, CommandViewer viewer, BlockType value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getTooManyBlocks();
             message = message.replaceAll("%Block Name%", value.getName());
-            message = message.replaceAll("%Block ID%", value.getId());
+            message = message.replaceAll("%Block Id%", value.getId());
             viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
         }
     }
@@ -99,7 +99,7 @@ public interface MovementResult<E> {
         public void sendMessage(Vessel vessel, CommandViewer viewer, BlockType value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getFailedToFindSpecialBlock();
             message = message.replaceAll("%Block Name%", value.getName());
-            message = message.replaceAll("%Block ID%", value.getId());
+            message = message.replaceAll("%Block Id%", value.getId());
             viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
         }
     }
@@ -178,9 +178,9 @@ public interface MovementResult<E> {
     static String formatMessage(String message, Vessel vessel, CommandViewer viewer){
         message = message.replaceAll("%Vessel Name%", vessel.getName());
         if (vessel instanceof Identifable){
-            message = message.replaceAll("%Vessel ID%", ((Identifable)vessel).getId());
+            message = message.replaceAll("%Vessel Id%", ((Identifable)vessel).getId());
         }else{
-            message = message.replaceAll("%Vessel Name%", vessel.getName().toLowerCase());
+            message = message.replaceAll("%Vessel Id%", vessel.getName().toLowerCase());
         }
         if (viewer instanceof LivePlayer){
             message.replaceAll("%Player Name%", ((LivePlayer)viewer).getName());

@@ -41,9 +41,13 @@ public class ShipsFileLoader implements ShipsLoader {
     protected static final String[] META_LOCATION_Y = {"Meta", "Location", "Y"};
     protected static final String[] META_LOCATION_Z = {"Meta", "Location", "Z"};
     protected static final String[] META_LOCATION_WORLD = {"Meta", "Location", "World"};
+    @Deprecated
     protected static final String[] META_LOCATION_TELEPORT_X = {"Meta", "Location", "Teleport", "X"};
+    @Deprecated
     protected static final String[] META_LOCATION_TELEPORT_Y = {"Meta", "Location", "Teleport", "Y"};
+    @Deprecated
     protected static final String[] META_LOCATION_TELEPORT_Z = {"Meta", "Location", "Teleport", "Z"};
+    @Deprecated
     protected static final String[] META_LOCATION_TELEPORT_WORLD = {"Meta", "Location", "Teleport", "World"};
     protected static final String[] META_STRUCTURE = {"Meta", "Location", "Structure"};
     protected static final String[] META_FLAGS = {"Meta", "Flags"};
@@ -108,10 +112,12 @@ public class ShipsFileLoader implements ShipsLoader {
         map.put(new ConfigurationNode(META_LOCATION_X), vessel.getPosition().getX());
         map.put(new ConfigurationNode(META_LOCATION_Y), vessel.getPosition().getY());
         map.put(new ConfigurationNode(META_LOCATION_Z), vessel.getPosition().getZ());
-        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_X), vessel.getTeleportPosition().getX());
-        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_Y), vessel.getTeleportPosition().getY());
-        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_Z), vessel.getTeleportPosition().getZ());
-        map.put(new ConfigurationNode(META_LOCATION_TELEPORT_WORLD), vessel.getTeleportPosition().getWorld().getPlatformUniquieId());
+        vessel.getTeleportPositions().entrySet().forEach(e -> {
+            map.put(new ConfigurationNode("Meta", "Location", "Teleport", e.getKey(), "X"), (vessel.getPosition().getX() - e.getValue().getX()));
+            map.put(new ConfigurationNode("Meta", "Location", "Teleport", e.getKey(), "Y"), (vessel.getPosition().getY() - e.getValue().getY()));
+            map.put(new ConfigurationNode("Meta", "Location", "Teleport", e.getKey(), "Z"), (vessel.getPosition().getZ() - e.getValue().getZ()));
+            map.put(new ConfigurationNode("Meta", "Location", "Teleport", e.getKey(), "World"), e.getValue().getWorld().getPlatformUniquieId());
+        });
         uuidList.forEach((key, value) -> map.put(new ConfigurationNode("Meta", "Permission", key.getId()), value));
         map.forEach(file::set);
         file.set(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT, vessel.getStructure().getRelativePositions());
@@ -175,6 +181,23 @@ public class ShipsFileLoader implements ShipsLoader {
         if (opTelWorld.isPresent() && opTelX.isPresent() && opTelY.isPresent() && opTelZ.isPresent()) {
             CorePlugin.getServer().getWorldByPlatformSpecific(opTelWorld.get()).ifPresent(w -> ship.setTeleportPosition(w.getPosition(opTelX.get(), opTelY.get(), opTelZ.get())));
         }
+        System.out.println("ShipsFileLoader");
+        new ConfigurationNode("Meta", "Location", "Teleport").getDirectChildren(file).stream().forEach(c -> {
+            String[] path = c.getPath();
+            String id = path[path.length - 1];
+            Optional<Double> opTelX2 = file.parseDouble(new ConfigurationNode(c, "X"));
+            Optional<Double> opTelY2 = file.parseDouble(new ConfigurationNode(c, "Y"));
+            Optional<Double> opTelZ2 = file.parseDouble(new ConfigurationNode(c, "Z"));
+            Optional<String> opTelWorldString = file.parseString(new ConfigurationNode(c, "World"));
+            if (opTelWorldString.isPresent() && opTelX2.isPresent() && opTelY2.isPresent() && opTelZ2.isPresent()) {
+                System.out.println("Set Location: " + id);
+                double pX = opTelX2.get() + opX.get();
+                double pY = opTelY2.get() + opY.get();
+                double pZ = opTelZ2.get() + opZ.get();
+                String sWorld = opTelWorldString.get();
+                CorePlugin.getServer().getWorldByPlatformSpecific(sWorld).ifPresent(w -> ((ShipsVessel) vessel).getTeleportPositions().put(id, w.getPosition(pX, pY, pZ)));
+            }
+        });
         CorePlugin.createSchedulerBuilder().setDisplayName(ship.getId() + " - Structure-Loader").setDelayUnit(null).setDelay(1).setExecutor(() -> file.parseList(new ConfigurationNode(META_STRUCTURE), Parser.STRING_TO_VECTOR3INT).ifPresent(structureList -> {
             new StructureLoad(ship).load(position, structureList);
         })).build(ShipsPlugin.getPlugin()).run();

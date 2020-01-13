@@ -37,7 +37,31 @@ public class MessageConfig implements Config.CommandConfigurable {
         this.file.reload();
     }
 
-    public String getNotInMovingIn(){
+    public Set<String> getSuggestions(ConfigurationNode node){
+        Set<String> set = new HashSet<>();
+        set.add("%Vessel Name%");
+        set.add("%Vessel Id%");
+        set.add("%Player Name%");
+        if(node.equals(NOT_IN_MOVING_IN)){
+            set.add("%Block Names%");
+            set.add("%Block Ids%");
+        }else if(node.equals(NO_SPECIAL_NAMED_BLOCK_FOUND)){
+            set.add("%Block Name%");
+        } else if (node.equals(NO_SPECIAL_BLOCK_FOUND)) {
+            set.add("%Block Name%");
+            set.add("%Block Id%");
+        }else if(node.equals(FAILED_TO_FIND_LICENCE)){
+            return new HashSet<>();
+        }else if(node.equals(NO_SPEED_SET)){
+            //TODO
+        }else if(node.equals(TOO_MANY)){
+            set.add("%Block Name%");
+            set.add("%Block Id%");
+        }
+        return set;
+    }
+
+    public String getNotInMovingIn() {
         return this.file.parseString(NOT_IN_MOVING_IN).orElse("Must be moving into one of the following blocks: %Block Names%");
     }
 
