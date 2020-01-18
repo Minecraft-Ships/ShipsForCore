@@ -181,7 +181,6 @@ public class ShipsFileLoader implements ShipsLoader {
         if (opTelWorld.isPresent() && opTelX.isPresent() && opTelY.isPresent() && opTelZ.isPresent()) {
             CorePlugin.getServer().getWorldByPlatformSpecific(opTelWorld.get()).ifPresent(w -> ship.setTeleportPosition(w.getPosition(opTelX.get(), opTelY.get(), opTelZ.get())));
         }
-        System.out.println("ShipsFileLoader");
         new ConfigurationNode("Meta", "Location", "Teleport").getDirectChildren(file).stream().forEach(c -> {
             String[] path = c.getPath();
             String id = path[path.length - 1];
@@ -190,7 +189,6 @@ public class ShipsFileLoader implements ShipsLoader {
             Optional<Double> opTelZ2 = file.parseDouble(new ConfigurationNode(c, "Z"));
             Optional<String> opTelWorldString = file.parseString(new ConfigurationNode(c, "World"));
             if (opTelWorldString.isPresent() && opTelX2.isPresent() && opTelY2.isPresent() && opTelZ2.isPresent()) {
-                System.out.println("Set Location: " + id);
                 double pX = opTelX2.get() + opX.get();
                 double pY = opTelY2.get() + opY.get();
                 double pZ = opTelZ2.get() + opZ.get();

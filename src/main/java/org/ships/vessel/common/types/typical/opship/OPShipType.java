@@ -12,10 +12,13 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 @Deprecated
 public class OPShipType implements ShipType {
@@ -37,6 +40,7 @@ public class OPShipType implements ShipType {
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
     protected String display;
+    protected Set<VesselFlag<?>> flags = new HashSet<>();
 
     protected final String[] MAX_SPEED = {"Speed", "Max"};
     protected final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
@@ -88,6 +92,11 @@ public class OPShipType implements ShipType {
     @Override
     public BlockType[] getIgnoredTypes() {
         return new BlockType[]{BlockTypes.AIR.get()};
+    }
+
+    @Override
+    public Set<VesselFlag<?>> getFlags() {
+        return this.flags;
     }
 
     @Override

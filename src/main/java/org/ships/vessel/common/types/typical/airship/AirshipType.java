@@ -18,16 +18,19 @@ import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
+import org.ships.vessel.common.assits.shiptype.SerializableShipType;
+import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
 
 import java.io.File;
 import java.util.*;
 
-public class AirshipType implements CloneableShipType<Airship> {
+public class AirshipType implements CloneableShipType<Airship>, SerializableShipType<Airship> {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
     protected String name;
+    protected Set<VesselFlag<?>> flags = new HashSet<>();
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
@@ -134,6 +137,11 @@ public class AirshipType implements CloneableShipType<Airship> {
     }
 
     @Override
+    public Set<VesselFlag<?>> getFlags() {
+        return this.flags;
+    }
+
+    @Override
     public String getName() {
         return getDisplayName();
     }
@@ -146,5 +154,41 @@ public class AirshipType implements CloneableShipType<Airship> {
     @Override
     public CloneableShipType getOriginType() {
         return ShipType.AIRSHIP;
+    }
+
+    @Override
+    public void setMaxSpeed(int speed) {
+        this.file.set(new ConfigurationNode(MAX_SPEED), speed);
+    }
+
+    @Override
+    public void setAltitudeSpeed(int speed) {
+        this.file.set(new ConfigurationNode(ALTITUDE_SPEED), speed);
+    }
+
+    @Override
+    public void register(VesselFlag<?> flag) {
+        this.flags.add(flag);
+    }
+
+    @Override
+    public void save() {
+        this.getFlags().stream().forEach(f -> setFlag(f));
+        this.getFile().save();
+    }
+
+    private <F extends Object> void setFlag(VesselFlag<F> f){
+        if(!(f instanceof VesselFlag.Serializable)){
+            return;
+        }
+        VesselFlag.Serializable sFlag = (VesselFlag.Serializable)f;
+        String trueId = sFlag.getId().split(":")[1];
+        String[] flagId = trueId.split(".");
+        if(flagId.length == 0){
+            flagId = new String[]{trueId};
+        }
+        F value = f.getValue().orElse(null);
+        ConfigurationNode node = new ConfigurationNode(new ConfigurationNode("flag", sFlag.getId().split(":")[0]), flagId);
+        this.getFile().set(node, f.getParser(), value);
     }
 }

@@ -8,11 +8,15 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
+import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.typical.airship.AirshipType;
 import org.ships.vessel.common.types.typical.marsship.MarsshipType;
 import org.ships.vessel.common.types.typical.opship.OPShipType;
 import org.ships.vessel.common.types.typical.submarine.SubmarineType;
 import org.ships.vessel.common.types.typical.watership.WaterShipType;
+
+import java.util.Optional;
+import java.util.Set;
 
 public interface ShipType<T extends Vessel> extends Identifable {
 
@@ -31,8 +35,22 @@ public interface ShipType<T extends Vessel> extends Identifable {
     T createNewVessel(SignTileEntity ste, BlockPosition bPos);
     BlockType[] getIgnoredTypes();
 
+    Set<VesselFlag<?>> getFlags();
+
     default T createNewVessel(LiveSignTileEntity position){
         return createNewVessel(position, position.getPosition());
+    }
+
+    default <T> Optional<T> getFlag(Class<T> class1){
+        return (Optional<T>) getFlags().stream().filter(f -> class1.isInstance(f)).findAny();
+    }
+
+    default <T> Optional<T> getFlagValue(Class<? extends VesselFlag<T>> class1){
+        Optional<? extends VesselFlag<T>> opFlag = getFlag(class1);
+        if(!opFlag.isPresent()){
+            return Optional.empty();
+        }
+        return opFlag.get().getValue();
     }
 
     @Override

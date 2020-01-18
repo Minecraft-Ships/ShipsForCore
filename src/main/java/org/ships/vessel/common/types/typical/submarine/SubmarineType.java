@@ -15,20 +15,20 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
+import org.ships.vessel.common.assits.shiptype.SerializableShipType;
+import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class SubmarineType implements CloneableShipType {
+public class SubmarineType implements CloneableShipType<Submarine>, SerializableShipType<Submarine> {
 
     protected ConfigurationFile file;
     protected ExpandedBlockList blockList;
     protected String name;
+    protected Set<VesselFlag<?>> flags = new HashSet<>();
 
     private final String[] MAX_SPEED = {"Speed", "Max"};
     private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
@@ -110,13 +110,18 @@ public class SubmarineType implements CloneableShipType {
     }
 
     @Override
-    public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Submarine createNewVessel(SignTileEntity ste, BlockPosition bPos) {
         return new Submarine(this, ste, bPos);
     }
 
     @Override
     public BlockType[] getIgnoredTypes() {
         return new BlockType[]{BlockTypes.AIR.get(), BlockTypes.WATER.get()};
+    }
+
+    @Override
+    public Set<VesselFlag<?>> getFlags() {
+        return this.flags;
     }
 
     @Override
@@ -130,5 +135,41 @@ public class SubmarineType implements CloneableShipType {
 
     public CloneableShipType getOriginType() {
         return ShipType.SUBMARINE;
+    }
+
+    @Override
+    public void setMaxSpeed(int speed) {
+        this.file.set(new ConfigurationNode(MAX_SPEED), speed);
+    }
+
+    @Override
+    public void setAltitudeSpeed(int speed) {
+        this.file.set(new ConfigurationNode(ALTITUDE_SPEED), speed);
+    }
+
+    @Override
+    public void register(VesselFlag<?> flag) {
+        this.flags.add(flag);
+    }
+
+    @Override
+    public void save() {
+        this.getFlags().stream().forEach(f -> setFlag(f));
+        this.getFile().save();
+    }
+
+    private <F extends Object> void setFlag(VesselFlag<F> f){
+        if(!(f instanceof VesselFlag.Serializable)){
+            return;
+        }
+        VesselFlag.Serializable sFlag = (VesselFlag.Serializable)f;
+        String trueId = sFlag.getId().split(":")[1];
+        String[] flagId = trueId.split(".");
+        if(flagId.length == 0){
+            flagId = new String[]{trueId};
+        }
+        F value = f.getValue().orElse(null);
+        ConfigurationNode node = new ConfigurationNode(new ConfigurationNode("flag", sFlag.getId().split(":")[0]), flagId);
+        this.getFile().set(node, f.getParser(), value);
     }
 }

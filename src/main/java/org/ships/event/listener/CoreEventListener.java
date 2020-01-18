@@ -25,6 +25,7 @@ import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.event.vessel.create.VesselCreateEvent;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.movement.MovementContext;
 import org.ships.permissions.Permissions;
@@ -196,9 +197,20 @@ public class CoreEventListener implements EventListener {
                     if(vessel instanceof CrewStoredVessel){
                         ((CrewStoredVessel)vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
                     }
+                    VesselCreateEvent.Pre preEvent = new VesselCreateEvent.Pre.BySign(vessel, event.getEntity());
+                    CorePlugin.getEventManager().callEvent(preEvent);
+                    if(preEvent.isCancelled()){
+                        if (finalBar != null) {
+                            finalBar.deregisterPlayers();
+                        }
+                        event.setCancelled(true);
+                        return;
+                    }
                     vessel.setLoading(false);
                     vessel.save();
                     ShipsPlugin.getPlugin().registerVessel(vessel);
+                    VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
+                    CorePlugin.getEventManager().callEvent(postEvent);
                     if (finalBar != null) {
                         finalBar.deregisterPlayers();
                     }
