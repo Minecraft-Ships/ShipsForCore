@@ -125,7 +125,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         if((this.specialBlockPercent != 0) && specialBlockPercent <= this.specialBlockPercent){
             throw new MoveException(new AbstractFailedMovement(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlocks.iterator().next(), this.specialBlockPercent, specialBlockPercent)));
         }
-        if(this.fuelConsumption != 0 && (!this.fuelTypes.isEmpty())){
+        if(!(this.fuelConsumption == 0 || this.fuelTypes.isEmpty())){
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
                 Slot slot = this.takeFromTopSlot ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
@@ -157,7 +157,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
                 }
             }
         }
-        if(this.fuelConsumption != 0 && (!this.fuelTypes.isEmpty())){
+        if(!(this.fuelConsumption == 0 && this.fuelTypes.isEmpty())){
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
                 Slot slot = this.takeFromTopSlot ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();

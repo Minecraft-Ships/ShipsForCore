@@ -12,6 +12,8 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.typical.airship.AirshipType;
 import org.ships.vessel.common.types.typical.marsship.MarsshipType;
 import org.ships.vessel.common.types.typical.opship.OPShipType;
+import org.ships.vessel.common.types.typical.plane.PlaneType;
+import org.ships.vessel.common.types.typical.submarine.Submarine;
 import org.ships.vessel.common.types.typical.submarine.SubmarineType;
 import org.ships.vessel.common.types.typical.watership.WaterShipType;
 
@@ -25,6 +27,7 @@ public interface ShipType<T extends Vessel> extends Identifable {
     AirshipType AIRSHIP = new AirshipType();
     WaterShipType WATERSHIP = new WaterShipType();
     SubmarineType SUBMARINE = new SubmarineType();
+    PlaneType PLANE = new PlaneType();
 
     String getDisplayName();
     Plugin getPlugin();

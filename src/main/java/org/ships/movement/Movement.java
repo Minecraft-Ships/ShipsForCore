@@ -149,6 +149,10 @@ public class Movement {
 
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, collideEvent.getCollisions()));
         }
+        if(vessel instanceof VesselRequirement){
+            VesselRequirement requirement = (VesselRequirement)vessel;
+            requirement.processRequirements(context);
+        }
         try {
             VesselMoveEvent.Main eventMain = new VesselMoveEvent.Main(vessel, context);
             if (CorePlugin.getPlatform().callEvent(eventMain).isCancelled()){

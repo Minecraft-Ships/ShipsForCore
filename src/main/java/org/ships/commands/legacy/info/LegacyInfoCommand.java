@@ -35,6 +35,7 @@ public class LegacyInfoCommand implements LegacyArgumentCommand {
         CommandViewer viewer = (CommandViewer)source;
         viewer.sendMessage(CorePlugin.buildText(TextColours.YELLOW + "----[Ships]----"));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Version: " + TextColours.AQUA + ShipsPlugin.getPlugin().getPluginVersion()));
+        viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + ShipsPlugin.PRERELEASE_TAG + " Version: " + TextColours.AQUA + ShipsPlugin.PRERELEASE_VERSION));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Vessel Types: " + TextColours.AQUA + ShipsPlugin.getPlugin().getAll(ShipType.class).size()));
         if(contains("shipstype", args) || contains("stype", args)){
             viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + CorePlugin.toString(TextColours.GREEN + " | " + TextColours.AQUA, st -> st.getDisplayName(), ShipsPlugin.getPlugin().getAll(ShipType.class))));
