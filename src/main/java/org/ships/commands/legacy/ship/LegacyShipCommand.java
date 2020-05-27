@@ -8,17 +8,22 @@ import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
-import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
+import org.core.world.position.Positionable;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.exceptions.load.LoadVesselException;
+import org.ships.movement.autopilot.BasicFlightPath;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
+import org.ships.movement.autopilot.scheduler.FlightPathExecutor;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
+import org.ships.vessel.common.assits.FlightPathType;
 import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.ShipsIDFinder;
@@ -54,164 +59,17 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
         try {
             Vessel vessel = new ShipsIDFinder(args[1]).load();
             if(args[2].equalsIgnoreCase("track")) {
-                if (!(source instanceof LivePlayer)) {
-                    if (source instanceof CommandViewer) {
-                        ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "Player only command"));
-                    }
-                    return true;
-                }
-                LivePlayer player = (LivePlayer) source;
-                if (!player.hasPermission(Permissions.CMD_SHIP_TRACK)) {
-                    return false;
-                }
-                vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.get().getDefaultBlockDetails(), (LivePlayer) source));
-                CorePlugin.createSchedulerBuilder()
-                        .setDisplayName("ShipsTrack:" + vessel.getName())
-                        .setDelay(10)
-                        .setDelayUnit(TimeUnit.SECONDS)
-                        .setExecutor(() -> vessel
-                                .getStructure()
-                                .getPositions()
-                                .forEach(bp -> bp.resetBlock(player)))
-                        .build(ShipsPlugin.getPlugin())
-                        .run();
+                return runTrack(source, vessel);
             }else if(args[2].equalsIgnoreCase("Teleport")){
-                if(!(source instanceof LivePlayer)){
-                    if(source instanceof CommandViewer){
-                        ((CommandViewer)source).sendMessagePlain("Teleport requires to be ran as a player");
-                    }
-                    return false;
-                }
-                LivePlayer player = (LivePlayer)source;
-                TeleportToVessel tVessel = (TeleportToVessel) vessel;
-                if(args.length == 3){
-                    ExactPosition pos = tVessel.getTeleportPositions().getOrDefault("Default", tVessel.getPosition().toExactPosition());
-                    player.setPosition(pos);
-                    return true;
-                }
-                if(args.length >= 5 && args[3].equalsIgnoreCase("set")){
-                    tVessel.getTeleportPositions().put(args[4], player.getPosition());
-                    tVessel.save();
-                    return true;
-                }else if(args[3].equalsIgnoreCase("set")){
-                    tVessel.getTeleportPositions().put("Default", player.getPosition());
-                    tVessel.save();
-                    return true;
-                }
-                ExactPosition position = tVessel.getTeleportPositions().get(args[3]);
-                if(position == null){
-                    player.sendMessagePlain("Unknown position on the ship");
-                    return true;
-                }
-                player.setPosition(position);
-                return true;
+                return runTeleport(source, vessel, args);
             }else if(args[2].equalsIgnoreCase("EOT")){
-                if(args.length >= 5) {
-                    if(args[3].equalsIgnoreCase("enable")){
-                        Optional<Boolean> opCheck = Parser.STRING_TO_BOOLEAN.parse(args[4]);
-                        if(!opCheck.isPresent()){
-                            if(source instanceof CommandViewer){
-                                ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " eot enable <true/false>");
-                            }
-                            return false;
-                        }
-                        EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
-                        if(!opCheck.get()){
-                            sign.getScheduler(vessel).forEach(s -> {
-                                EOTExecutor exe = (EOTExecutor) s.getExecutor();
-                                exe.getSign().ifPresent(b -> {
-                                    Optional<LiveTileEntity> opTileEntity = b.getTileEntity();
-                                    if(!opTileEntity.isPresent()){
-                                        return;
-                                    }
-                                    if (!(opTileEntity.get() instanceof LiveSignTileEntity)){
-                                        return;
-                                    }
-                                    LiveSignTileEntity lste = (LiveSignTileEntity)opTileEntity.get();
-                                    lste.setLine(1, CorePlugin.buildText("Ahead"));
-                                    lste.setLine(2, CorePlugin.buildText("{Stop}"));
-                                });
-                                s.cancel();
-                            });
-                        }
-                        Collection<BlockPosition> eotSigns = vessel.getStructure().getAll(sign);
-                        if(eotSigns.size() == 1 && opCheck.get()){
-                            if(!(source instanceof LivePlayer)){
-                                if(source instanceof CommandViewer){
-                                    ((CommandViewer) source).sendMessagePlain("Can only enable eot as a player");
-                                }
-                                return false;
-                            }
-                            LivePlayer player = (LivePlayer)source;
-                            LiveSignTileEntity lste = (LiveSignTileEntity) eotSigns.stream().findAny().get().getTileEntity().get();
-                            sign.onSecondClick(player, lste.getPosition());
-                        }else if(opCheck.get()){
-                            if(source instanceof CommandViewer){
-                                ((CommandViewer) source).sendMessagePlain("Found more then one EOT sign, unable to enable.");
-                            }
-                            return false;
-                        }
-                    }
-                }else{
-                    if(source instanceof CommandViewer){
-                        ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " eot enable <true/false>");
-                    }
-                }
+                return runEOT(source, vessel, args);
             }else if(args[2].equalsIgnoreCase("crew")){
-                if(args.length == 3){
-                    if(source instanceof CommandViewer){
-                        ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " crew <set/view> <permission>");
-                    }
-                    return false;
-                }else if(args.length >= 5){
-                    String type = args[3];
-                    if(vessel instanceof CrewStoredVessel) {
-                        Set<User> crew = ((CrewStoredVessel)vessel).getUserCrew(args[4]);
-                        if (type.equalsIgnoreCase("view")) {
-                            if (!(source instanceof CommandViewer)) {
-                                return false;
-                            }
-                            CommandViewer viewer = (CommandViewer) source;
-                            viewer.sendMessagePlain("|----[" + args[4] + "]----|");
-                            crew.forEach(u -> viewer.sendMessagePlain(" |- " + u.getName()));
-                        }
-                    }
-                }
+                return runCrew(source, vessel, args);
             }else if(args[2].equalsIgnoreCase("info")){
-                if(!(source instanceof CommandViewer)){
-                    return false;
-                }
-                CommandViewer viewer = (CommandViewer) source;
-                viewer.sendMessagePlain("Name: " + vessel.getName());
-                if(vessel instanceof Identifable) {
-                    viewer.sendMessagePlain("ID: " + ((Identifable)vessel).getId());
-                }
-                viewer.sendMessagePlain("Max Speed: " + vessel.getMaxSpeed());
-                viewer.sendMessagePlain("Altitude Speed: " + vessel.getAltitudeSpeed());
-                viewer.sendMessagePlain("Size: " + vessel.getStructure().getPositions().size());
-                if(vessel instanceof CrewStoredVessel) {
-                    viewer.sendMessagePlain("Default Permission: " + ((CrewStoredVessel) vessel).getDefaultPermission().getId());
-                }
-                if(vessel instanceof ShipsVessel) {
-                    ((ShipsVessel) vessel).getExtraInformation().forEach((key, value) -> viewer.sendMessagePlain(key + ": " + value));
-                }
-                viewer.sendMessagePlain("Entities: ");
-                viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", e -> {
-                    if(e instanceof LivePlayer){
-                        LivePlayer player = (LivePlayer)e;
-                        return "player: " + player.getName();
-                    }
-                    return e.getType().getName();
-                }, vessel.getEntities()));
-                if(vessel instanceof ShipsVessel) {
-                    viewer.sendMessagePlain("Flags:");
-                    viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", f -> {
-                        if (f instanceof VesselFlag.Serializable) {
-                            return ((VesselFlag.Serializable<?>) f).serialize();
-                        }
-                        return "";
-                    }, ((ShipsVessel)vessel).getFlags()));
-                }
+                return runInfo(source, vessel, args);
+            }else if(args[2].equalsIgnoreCase("autopilot")){
+                return runAutoPilot(source, vessel, args);
             }
         } catch (IOException e) {
             if(source instanceof CommandViewer){
@@ -220,6 +78,244 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             return true;
         }
         return false;
+    }
+
+    private boolean runAutoPilot(CommandSource source, Vessel vessel, String... args){
+        if(args[3].equalsIgnoreCase("deploy")){
+            if(args.length < 7){
+                if(!(source instanceof CommandViewer)){
+                    return false;
+                }
+                CommandViewer viewer = (CommandViewer)source;
+                viewer.sendMessagePlain("/ships ship " + args[1] + " autopilot <deploy/cancel> <X> <Y> <Z>");
+                return false;
+            }
+            int x;
+            int y;
+            int z;
+            try {
+                x = Integer.parseInt(args[4]);
+                y = Integer.parseInt(args[5]);
+                z = Integer.parseInt(args[6]);
+            }catch (NumberFormatException e){
+                if(source instanceof CommandViewer){
+                    ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "x y z are not whole numbers"));
+                }
+                return false;
+            }
+            if(!(vessel instanceof FlightPathType)){
+                if(source instanceof CommandViewer){
+                    ((CommandViewer)source).sendMessage(CorePlugin.buildText(TextColours.RED + vessel.getType().getId() + " is not allowed to be auto piloted"));
+                }
+                return false;
+            }
+            FlightPathType flightVessel = (FlightPathType)vessel;
+            BlockPosition position = flightVessel.getPosition().getWorld().getPosition(x, y, z);
+            BasicFlightPath bfp = new BasicFlightPath(vessel.getPosition().getPosition(), position.getPosition());
+            if(source instanceof CommandViewer) {
+                bfp.setViewer((CommandViewer)source);
+            }
+            flightVessel.setFlightPath(bfp);
+            CorePlugin
+                    .createSchedulerBuilder()
+                    .setIteration(5)
+                    .setIterationUnit(TimeUnit.SECONDS)
+                    .setExecutor(new FlightPathExecutor(flightVessel))
+                    .setDisplayName("AutoPilot")
+                    .build(ShipsPlugin.getPlugin()).run();
+            return true;
+        }else if(args[3].equalsIgnoreCase("cancel")) {
+            if(!(vessel instanceof FlightPathType)){
+                if(source instanceof CommandViewer){
+                    ((CommandViewer)source).sendMessage(CorePlugin.buildText(TextColours.RED + vessel.getType().getId() + " is not allowed to be auto piloted"));
+                }
+                return false;
+            }
+            FlightPathType flightVessel = (FlightPathType)vessel;
+            flightVessel.setFlightPath(null);
+            return true;
+        }
+        if(source instanceof CommandViewer){
+            CommandViewer viewer = (CommandViewer)source;
+            viewer.sendMessagePlain(args[3] + " Unknown command");
+            viewer.sendMessagePlain("/ships ship " + args[1] + "<deploy/cancel> <x> <y> <z>");
+        }
+        return false;
+    }
+
+    private boolean runInfo(CommandSource source, Vessel vessel, String... args){
+        if(!(source instanceof CommandViewer)){
+            return false;
+        }
+        CommandViewer viewer = (CommandViewer) source;
+        viewer.sendMessagePlain("Name: " + vessel.getName());
+        if(vessel instanceof Identifable) {
+            viewer.sendMessagePlain("ID: " + ((Identifable)vessel).getId());
+        }
+        viewer.sendMessagePlain("Max Speed: " + vessel.getMaxSpeed());
+        viewer.sendMessagePlain("Altitude Speed: " + vessel.getAltitudeSpeed());
+        viewer.sendMessagePlain("Size: " + vessel.getStructure().getPositions().size());
+        if(vessel instanceof CrewStoredVessel) {
+            viewer.sendMessagePlain("Default Permission: " + ((CrewStoredVessel) vessel).getDefaultPermission().getId());
+        }
+        if(vessel instanceof ShipsVessel) {
+            ((ShipsVessel) vessel).getExtraInformation().forEach((key, value) -> viewer.sendMessagePlain(key + ": " + value));
+        }
+        viewer.sendMessagePlain("Entities: ");
+        viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", e -> {
+            if(e instanceof LivePlayer){
+                LivePlayer player = (LivePlayer)e;
+                return "player: " + player.getName();
+            }
+            return e.getType().getName();
+        }, vessel.getEntities()));
+        if(vessel instanceof ShipsVessel) {
+            viewer.sendMessagePlain("Flags:");
+            viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", f -> {
+                if (f instanceof VesselFlag.Serializable) {
+                    return ((VesselFlag.Serializable<?>) f).serialize();
+                }
+                return "";
+            }, ((ShipsVessel)vessel).getFlags()));
+        }
+        return true;
+    }
+
+    private boolean runCrew(CommandSource source, Vessel vessel, String... args){
+        if(args.length == 3){
+            if(source instanceof CommandViewer){
+                ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " crew <set/view> <permission>");
+            }
+            return false;
+        }else if(args.length >= 5){
+            String type = args[3];
+            if(vessel instanceof CrewStoredVessel) {
+                Set<User> crew = ((CrewStoredVessel)vessel).getUserCrew(args[4]);
+                if (type.equalsIgnoreCase("view")) {
+                    if (!(source instanceof CommandViewer)) {
+                        return false;
+                    }
+                    CommandViewer viewer = (CommandViewer) source;
+                    viewer.sendMessagePlain("|----[" + args[4] + "]----|");
+                    crew.forEach(u -> viewer.sendMessagePlain(" |- " + u.getName()));
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean runEOT(CommandSource source, Vessel vessel, String... args){
+        if(args.length >= 5) {
+            if(args[3].equalsIgnoreCase("enable")){
+                Optional<Boolean> opCheck = Parser.STRING_TO_BOOLEAN.parse(args[4]);
+                if(!opCheck.isPresent()){
+                    if(source instanceof CommandViewer){
+                        ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " eot enable <true/false>");
+                    }
+                    return false;
+                }
+                EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
+                if(!opCheck.get()){
+                    sign.getScheduler(vessel).forEach(s -> {
+                        EOTExecutor exe = (EOTExecutor) s.getExecutor();
+                        exe.getSign().ifPresent(b -> {
+                            Optional<LiveTileEntity> opTileEntity = b.getTileEntity();
+                            if(!opTileEntity.isPresent()){
+                                return;
+                            }
+                            if (!(opTileEntity.get() instanceof LiveSignTileEntity)){
+                                return;
+                            }
+                            LiveSignTileEntity lste = (LiveSignTileEntity)opTileEntity.get();
+                            lste.setLine(1, CorePlugin.buildText("Ahead"));
+                            lste.setLine(2, CorePlugin.buildText("{Stop}"));
+                        });
+                        s.cancel();
+                    });
+                    return true;
+                }
+                Collection<SyncBlockPosition> eotSigns = vessel.getStructure().getAll(sign);
+                if(eotSigns.size() == 1){
+                    if(!(source instanceof LivePlayer)){
+                        if(source instanceof CommandViewer){
+                            ((CommandViewer) source).sendMessagePlain("Can only enable eot as a player");
+                        }
+                        return false;
+                    }
+                    LivePlayer player = (LivePlayer)source;
+                    LiveSignTileEntity lste = (LiveSignTileEntity) eotSigns.stream().findAny().get().getTileEntity().get();
+                    sign.onSecondClick(player, lste.getPosition());
+                }else{
+                    if(source instanceof CommandViewer){
+                        ((CommandViewer) source).sendMessagePlain("Found more then one EOT sign, unable to enable.");
+                    }
+                }
+                return false;
+            }
+        }else{
+            if(source instanceof CommandViewer){
+                ((CommandViewer)source).sendMessagePlain("/ships ship " + args[1] + " eot enable <true/false>");
+            }
+            return false;
+        }
+        return false;
+    }
+
+    private boolean runTeleport(CommandSource source, Vessel vessel, String... args){
+        if(!(source instanceof LivePlayer)){
+            if(source instanceof CommandViewer){
+                ((CommandViewer)source).sendMessagePlain("Teleport requires to be ran as a player");
+            }
+            return false;
+        }
+        LivePlayer player = (LivePlayer)source;
+        TeleportToVessel tVessel = (TeleportToVessel) vessel;
+        if(args.length == 3){
+            SyncExactPosition pos = tVessel.getTeleportPositions().getOrDefault("Default", tVessel.getPosition().toExactPosition());
+            player.setPosition(pos);
+            return true;
+        }
+        if(args.length >= 5 && args[3].equalsIgnoreCase("set")){
+            tVessel.getTeleportPositions().put(args[4], player.getPosition());
+            tVessel.save();
+            return true;
+        }else if(args[3].equalsIgnoreCase("set")){
+            tVessel.getTeleportPositions().put("Default", player.getPosition());
+            tVessel.save();
+            return true;
+        }
+        SyncExactPosition position = tVessel.getTeleportPositions().get(args[3]);
+        if(position == null){
+            player.sendMessagePlain("Unknown position on the ship");
+            return true;
+        }
+        player.setPosition(position);
+        return true;
+    }
+
+    private boolean runTrack(CommandSource source, Vessel vessel){
+        if (!(source instanceof LivePlayer)) {
+            if (source instanceof CommandViewer) {
+                ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "Player only command"));
+            }
+            return true;
+        }
+        LivePlayer player = (LivePlayer) source;
+        if (!player.hasPermission(Permissions.CMD_SHIP_TRACK)) {
+            return false;
+        }
+        vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.get().getDefaultBlockDetails(), (LivePlayer) source));
+        CorePlugin.createSchedulerBuilder()
+                .setDisplayName("ShipsTrack:" + vessel.getName())
+                .setDelay(10)
+                .setDelayUnit(TimeUnit.SECONDS)
+                .setExecutor(() -> vessel
+                        .getStructure()
+                        .getPositions()
+                        .forEach(bp -> bp.resetBlock(player)))
+                .build(ShipsPlugin.getPlugin())
+                .run();
+        return true;
     }
 
     @Override
@@ -234,7 +330,11 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             list.add("crew");
             list.add("info");
             list.add("teleport");
+            list.add("autopilot");
         }else if (args.length == 3) {
+            if ("autopilot".startsWith(args[2].toLowerCase())) {
+                list.add("autopilot");
+            }
             if ("track".startsWith(args[2].toLowerCase())) {
                 list.add("track");
             }
@@ -246,6 +346,28 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             }
             if ("teleport".startsWith(args[2].toLowerCase())) {
                 list.add("teleport");
+            }
+        }else if (args.length == 4 && args[2].equalsIgnoreCase("autopilot") && args[3].equalsIgnoreCase("")){
+            list.add("deploy");
+            list.add("cancel");
+        }else if (args.length == 4 && args[2].equalsIgnoreCase("autopilot")){
+            if("deploy".startsWith(args[3].toLowerCase())){
+                list.add("deploy");
+            }
+            if("cancel".startsWith(args[3].toLowerCase())){
+                list.add("cancel");
+            }
+        }else if (args.length == 5 && args[2].equalsIgnoreCase("autopilot") && args[3].equalsIgnoreCase("deploy")){
+            if(source instanceof Positionable){
+                list.add(((Positionable)source).getPosition().getX().intValue() + "");
+            }
+        }else if (args.length == 6 && args[2].equalsIgnoreCase("autopilot") && args[3].equalsIgnoreCase("deploy")){
+            if(source instanceof Positionable){
+                list.add(((Positionable)source).getPosition().getY().intValue() + "");
+            }
+        }else if (args.length == 7 && args[2].equalsIgnoreCase("autopilot") && args[3].equalsIgnoreCase("deploy")){
+            if(source instanceof Positionable){
+                list.add(((Positionable)source).getPosition().getZ().intValue() + "");
             }
         }else if (args.length == 4 && args[2].equalsIgnoreCase("teleport") && args[3].equalsIgnoreCase("")) {
             list.add("set");

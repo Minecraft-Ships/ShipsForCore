@@ -4,7 +4,7 @@ import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
@@ -35,7 +35,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
         super(licence, type);
     }
 
-    public Marsship(MarsshipType type, SignTileEntity ste, BlockPosition position) {
+    public Marsship(MarsshipType type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
     }
 

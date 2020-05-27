@@ -8,7 +8,7 @@ import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.parts.Slot;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
@@ -53,7 +53,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
         super(licence, type);
     }
 
-    public Submarine(SubmarineType type, SignTileEntity ste, BlockPosition position) {
+    public Submarine(SubmarineType type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
     }
 

@@ -5,7 +5,7 @@ import org.core.configuration.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifable;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.movement.result.data.RequiredPercentMovementData;
@@ -141,10 +141,10 @@ public interface MovementResult<E> {
         }
     }
 
-    class CollideDetected implements MovementResult<Collection<BlockPosition>> {
+    class CollideDetected implements MovementResult<Collection<SyncBlockPosition>> {
 
         @Override
-        public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockPosition> collection) {
+        public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<SyncBlockPosition> collection) {
             Set<String> blocks = new HashSet<>();
             if(collection != null) {
                 collection.forEach(s -> {

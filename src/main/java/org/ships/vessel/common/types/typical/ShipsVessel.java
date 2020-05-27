@@ -3,9 +3,9 @@ package org.ships.vessel.common.types.typical;
 import org.core.CorePlugin;
 import org.core.utils.Identifable;
 import org.core.vector.types.Vector3Int;
-import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
-import org.core.world.position.Position;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
+import org.core.world.position.impl.sync.SyncPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.config.blocks.BlockListable;
@@ -77,20 +77,20 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     }
 
     @Override
-    default void moveTo(Position<? extends Number> location, MovementContext context) throws MoveException{
-        BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
+    default void moveTo(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
         Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context);
     }
 
     @Override
-    default void rotateRightAround(Position<? extends Number> location, MovementContext context) throws MoveException{
-        BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
+    default void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
         Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context);
     }
 
     @Override
-    default void rotateLeftAround(Position<? extends Number> location, MovementContext context) throws MoveException{
-        BlockPosition position = location instanceof BlockPosition ? (BlockPosition)location : ((ExactPosition)location).toBlockPosition();
+    default void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
         Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context);
     }
 

@@ -1,7 +1,7 @@
 package org.ships.movement;
 
-import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
@@ -79,27 +79,27 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> getBefore(Positionable positionable){
-        BlockPosition position = positionable.getPosition() instanceof BlockPosition ? (BlockPosition)positionable.getPosition()
-                : ((ExactPosition)positionable.getPosition()).toBlockPosition();
+        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition)positionable.getPosition()
+                : ((SyncExactPosition)positionable.getPosition()).toBlockPosition();
         return getBefore(position);
     }
 
-    public Optional<MovingBlock> getBefore(BlockPosition position){
+    public Optional<MovingBlock> getBefore(SyncBlockPosition position){
         return get(position, MovingBlock::getBeforePosition);
     }
 
     public Optional<MovingBlock> getAfter(Positionable positionable){
-        BlockPosition position = positionable.getPosition() instanceof BlockPosition ? (BlockPosition)positionable.getPosition() : ((ExactPosition)positionable.getPosition()).toBlockPosition();
+        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition)positionable.getPosition() : ((SyncExactPosition)positionable.getPosition()).toBlockPosition();
         return getAfter(position);
     }
 
-    public Optional<MovingBlock> getAfter(BlockPosition position){
+    public Optional<MovingBlock> getAfter(SyncBlockPosition position){
         return get(position, MovingBlock::getAfterPosition);
     }
 
-    private Optional<MovingBlock> get(BlockPosition position, Function<MovingBlock, Optional<BlockPosition>> function){
+    private Optional<MovingBlock> get(SyncBlockPosition position, Function<MovingBlock, Optional<SyncBlockPosition>> function){
         return stream().filter(f -> {
-            Optional<BlockPosition> opPos = function.apply(f);
+            Optional<SyncBlockPosition> opPos = function.apply(f);
             return opPos.map(blockPosition -> blockPosition.equals(position)).orElse(false);
         }).findFirst();
     }

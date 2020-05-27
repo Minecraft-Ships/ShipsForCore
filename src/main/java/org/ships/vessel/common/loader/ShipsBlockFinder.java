@@ -1,6 +1,6 @@
 package org.ships.vessel.common.loader;
 
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -11,9 +11,9 @@ import java.util.Optional;
 
 public class ShipsBlockFinder implements ShipsLoader {
 
-    protected BlockPosition position;
+    protected SyncBlockPosition position;
 
-    public ShipsBlockFinder(BlockPosition position){
+    public ShipsBlockFinder(SyncBlockPosition position){
         this.position = position;
     }
 
@@ -21,7 +21,7 @@ public class ShipsBlockFinder implements ShipsLoader {
     public Vessel load() throws LoadVesselException {
         Optional<Vessel> opVessel = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> {
             PositionableShipsStructure pss = v.getStructure();
-            Collection<BlockPosition> collection = pss.getPositions();
+            Collection<SyncBlockPosition> collection = pss.getPositions();
             return collection.stream().anyMatch(p -> p.equals(this.position));
         }).findAny();
         if(opVessel.isPresent()){

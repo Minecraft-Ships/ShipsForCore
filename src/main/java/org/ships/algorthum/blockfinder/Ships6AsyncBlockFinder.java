@@ -1,38 +1,42 @@
-package org.ships.algorthum.blockfinder.typeFinder;
+package org.ships.algorthum.blockfinder;
 
 import org.core.CorePlugin;
 import org.core.schedule.Scheduler;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
+import org.core.world.position.impl.async.ASyncBlockPosition;
+import org.ships.algorthum.blockfinder.typeFinder.BasicTypeBlockFinder;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
-public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
+public class Ships6AsyncBlockFinder implements BasicBlockFinder {
 
     private class Overtime {
 
         private class OvertimeSection {
 
             private Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
-            private List<SyncBlockPosition> ret = new ArrayList<>();
-            private List<SyncBlockPosition> process = new ArrayList<>();
-            private List<SyncBlockPosition> ignore = new ArrayList<>();
+            private List<ASyncBlockPosition> ret = new ArrayList<>();
+            private List<ASyncBlockPosition> process = new ArrayList<>();
+            private List<ASyncBlockPosition> ignore = new ArrayList<>();
             private Runnable runnable = () -> {
                 for (int A = 0; A < this.process.size(); A++) {
-                    SyncBlockPosition proc = this.process.get(A);
+                    ASyncBlockPosition proc = this.process.get(A);
                     for (Direction face : this.directions) {
-                        SyncBlockPosition block = proc.getRelative(face);
+                        ASyncBlockPosition block = proc.getRelative(face);
                         if(ignore.stream().anyMatch(b -> b.equals(block))){
                             continue;
                         }
@@ -47,24 +51,22 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
                 }
             };
 
-            public OvertimeSection(Collection<SyncBlockPosition> collection, Collection<SyncBlockPosition> ignore){
+            public OvertimeSection(Collection<ASyncBlockPosition> collection, Collection<ASyncBlockPosition> ignore){
                 this.process.addAll(collection);
                 this.ignore.addAll(ignore);
             }
 
         }
 
-        private List<SyncBlockPosition> process = new ArrayList<>();
-        private List<SyncBlockPosition> ret = new ArrayList<>();
-        private List<SyncBlockPosition> total = new ArrayList<>();
-
-        private OvertimeBlockTypeFinderUpdate update;
-        private boolean found;
-        private Predicate<SyncBlockPosition> predicate;
+        private PositionableShipsStructure pss;
+        private List<ASyncBlockPosition> process = new ArrayList<>();
+        private List<ASyncBlockPosition> ret = new ArrayList<>();
+        private List<ASyncBlockPosition> total = new ArrayList<>();
+        private OvertimeBlockFinderUpdate update;
         private Runnable runnable = () -> {
             ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-            List<List<SyncBlockPosition>> collections = new ArrayList<>();
-            List<SyncBlockPosition> current = new ArrayList<>();
+            List<List<ASyncBlockPosition>> collections = new ArrayList<>();
+            List<ASyncBlockPosition> current = new ArrayList<>();
             for(int A = 0; A < this.process.size(); A++){
                 current.add(this.process.get(A));
                 if(current.size() >= config.getDefaultFinderStackLimit()){
@@ -76,50 +78,54 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
 
             Scheduler scheduler = CorePlugin
                     .createSchedulerBuilder()
+                    .setAsync(true)
                     .setDelay(config.getDefaultFinderStackDelay())
                     .setDelayUnit(config.getDefaultFinderStackDelayUnit())
                     .setExecutor(() -> {
-                        if(this.found){
-                            return;
-                        }
-                        if ((this.total.size() <= Ships6BlockTypeFinder.this.limit) && (!this.ret.isEmpty())) {
+                        if ((this.total.size() <= Ships6AsyncBlockFinder.this.limit) && (!this.ret.isEmpty())) {
                             this.process = this.ret;
                             this.ret = new ArrayList<>();
 
                             CorePlugin.createSchedulerBuilder().
+                                    setAsync(true).
                                     setDelay(config.getDefaultFinderStackDelay()).
                                     setDelayUnit(config.getDefaultFinderStackDelayUnit()).
                                     setExecutor(this.runnable).
+                                    setDisplayName("Ships 6 ASync Block Finder").
                                     build(ShipsPlugin.getPlugin()).run();
                         }else{
-                            this.update.onFailedToFind();
+                            this.update.onShipsStructureUpdated(this.pss);
                         }
                     })
+                    .setDisplayName("Ships 6 async block finder")
                     .build(ShipsPlugin.getPlugin());
 
-            for(List<SyncBlockPosition> list : collections){
+            for(List<ASyncBlockPosition> list : collections){
                 scheduler = CorePlugin.createSchedulerBuilder()
+                        .setAsync(true)
                         .setDelay(config.getDefaultFinderStackDelay())
                         .setDelayUnit(config.getDefaultFinderStackDelayUnit())
                         .setExecutor(() -> {
                             OvertimeSection section = new OvertimeSection(list, this.total);
                             section.runnable.run();
-                            section.ret.stream().forEach(p -> {
-                                if (!this.found && this.predicate.test(p)){
-                                    this.found = true;
-                                    this.update.onBlockFound(p);
+                            section.ret.forEach(p -> {
+                                if (this.update.onBlockFind(this.pss, p)){
+                                    this.pss.addPosition(p);
+                                    this.ret.add(p);
+                                    this.total.add(p);
                                 }
                             });
                         })
                         .setToRunAfter(scheduler)
+                        .setDisplayName("ASync Ships 6 Block finder")
                         .build(ShipsPlugin.getPlugin());
             }
             scheduler.run();
         };
 
-        public Overtime(SyncBlockPosition position, Predicate<SyncBlockPosition> predicate, OvertimeBlockTypeFinderUpdate update){
+        public Overtime(ASyncBlockPosition position, OvertimeBlockFinderUpdate update){
+            this.pss = new AbstractPosititionableShipsStructure(Position.toSync(position));
             this.update = update;
-            this.predicate = predicate;
             process.add(position);
         }
 
@@ -130,7 +136,7 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
     private Vessel vessel;
 
     @Override
-    public Ships6BlockTypeFinder init() {
+    public Ships6AsyncBlockFinder init() {
         ShipsPlugin plugin = ShipsPlugin.getPlugin();
         ShipsConfig config = plugin.getConfig();
         this.limit = config.getDefaultTrackSize();
@@ -139,31 +145,29 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
     }
 
     @Override
-    public Optional<SyncBlockPosition> findBlock(SyncBlockPosition position, Predicate<SyncBlockPosition> predicate) {
+    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
         int count = 0;
         Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
-        List<SyncBlockPosition> ret = new ArrayList<>();
-        List<SyncBlockPosition> target = new ArrayList<>();
-        List<SyncBlockPosition> process = new ArrayList<>();
-        process.add(position);
+        PositionableShipsStructure pss = new AbstractPosititionableShipsStructure(Position.toSync(position));
+        List<ASyncBlockPosition> ret = new ArrayList<>();
+        List<ASyncBlockPosition> target = new ArrayList<>();
+        List<ASyncBlockPosition> process = new ArrayList<>();
+        process.add(Position.toASync(position));
         while (count != this.limit) {
             if (process.isEmpty()) {
-                return Optional.empty();
+                ret.forEach(bp -> pss.addPosition(bp));
+                return pss;
             }
             for (int A = 0; A < process.size(); A++) {
-                SyncBlockPosition proc = process.get(A);
+                ASyncBlockPosition proc = process.get(A);
                 count++;
                 for (Direction face : directions) {
-                    SyncBlockPosition block = proc.getRelative(face);
+                    ASyncBlockPosition block = proc.getRelative(face);
                     if (!ret.stream().anyMatch(b -> b.equals(block))) {
                         BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
                         if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
-                            if(predicate.test(block)){
-                                return Optional.of(block);
-                            }else {
-                                ret.add(block);
-                                target.add(block);
-                            }
+                            ret.add(block);
+                            target.add(block);
                         }
                     }
                 }
@@ -172,17 +176,20 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
             process.addAll(target);
             target.clear();
         }
-        return Optional.empty();
+        ret.stream().forEach(bp -> pss.addPosition(bp));
+        return pss;
     }
 
     @Override
-    public void findBlock(SyncBlockPosition position, Predicate<SyncBlockPosition> predicate, OvertimeBlockTypeFinderUpdate runAfterFullSearch) {
+    public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        Overtime overtime = new Overtime(position, predicate, runAfterFullSearch);
+        Overtime overtime = new Overtime(Position.toASync(position), runAfterFullSearch);
         CorePlugin.createSchedulerBuilder().
+                setAsync(true).
                 setDelay(config.getDefaultFinderStackDelay()).
                 setDelayUnit(config.getDefaultFinderStackDelayUnit()).
                 setExecutor(overtime.runnable).
+                setDisplayName("Ships 6 async block finder").
                 build(ShipsPlugin.getPlugin()).
                 run();
 
@@ -194,7 +201,7 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
     }
 
     @Override
-    public BasicTypeBlockFinder setBlockLimit(int limit) {
+    public BasicBlockFinder setBlockLimit(int limit) {
         this.limit = limit;
         return this;
     }
@@ -205,7 +212,7 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
     }
 
     @Override
-    public BasicTypeBlockFinder setConnectedVessel(Vessel vessel) {
+    public BasicBlockFinder setConnectedVessel(Vessel vessel) {
         this.vessel = vessel;
         if(this.vessel != null && (this.vessel instanceof BlockListable)) {
             this.list = ((BlockListable)this.vessel).getBlockList();
@@ -216,12 +223,17 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
     }
 
     @Override
+    public BasicTypeBlockFinder getTypeFinder() {
+        return BasicTypeBlockFinder.SHIPS_SIX;
+    }
+
+    @Override
     public String getId() {
-        return "ships:blockfinder_ships_six";
+        return "ships:blockfinder_ships_six_async";
     }
 
     @Override
     public String getName() {
-        return "Ships 6 BlockFinder";
+        return "Ships 6 ASync BlockFinder";
     }
 }

@@ -8,7 +8,7 @@ import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.KeyedData;
@@ -49,7 +49,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         super(licence, type);
     }
 
-    public Plane(SignTileEntity ste, BlockPosition position, ShipType type) {
+    public Plane(SignTileEntity ste, SyncBlockPosition position, ShipType type) {
         super(ste, position, type);
     }
 
@@ -171,7 +171,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return false;
         }
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for (BlockPosition loc : this.positionableShipsStructure.getPositions()) {
+        for (SyncBlockPosition loc : this.positionableShipsStructure.getPositions()) {
             BlockSnapshot snapshot = loc.getBlockDetails();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = snapshot.get(KeyedData.TILED_ENTITY);
             if (opTiled.isPresent()) {

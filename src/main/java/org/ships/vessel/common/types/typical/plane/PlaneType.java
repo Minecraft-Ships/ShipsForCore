@@ -7,9 +7,8 @@ import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
-import org.core.inventory.item.type.post.ItemTypes1V13;
 import org.core.platform.Plugin;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -96,7 +95,7 @@ public class PlaneType implements ShipType<Plane> {
     }
 
     @Override
-    public Plane createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Plane createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
         return new Plane(ste, bPos, this);
     }
 

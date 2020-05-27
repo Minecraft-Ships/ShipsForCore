@@ -5,8 +5,9 @@ import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
-import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
@@ -40,8 +41,8 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
         int minBlocks = config.parseInt(new ConfigurationNode("ShipsData", "Config", "Block", "Min")).get();
         int engineSpeed = config.parseInt(new ConfigurationNode("ShipsData", "Config", "Speed", "Engine")).get();
         UUID owner = config.parse(new ConfigurationNode("ShipsData", "Player", "Name"), Parser.STRING_TO_UNIQUIE_ID).get();
-        BlockPosition blockPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Sign"), Parser.STRING_TO_BLOCK_POSITION).get();
-        ExactPosition teleportPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Teleport"), Parser.STRING_TO_EXACT_POSITION).get();
+        SyncBlockPosition blockPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Sign"), Parser.STRING_TO_BLOCK_POSITION).get();
+        SyncExactPosition teleportPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Teleport"), Parser.STRING_TO_EXACT_POSITION).get();
 
         Optional<LiveTileEntity> opTile = blockPosition.getTileEntity();
         if(!opTile.isPresent()){

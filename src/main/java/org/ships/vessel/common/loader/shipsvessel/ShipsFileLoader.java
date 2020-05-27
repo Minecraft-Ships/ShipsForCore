@@ -8,7 +8,8 @@ import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.text.Text;
 import org.core.vector.types.Vector3Int;
 import org.core.world.WorldExtent;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
@@ -60,7 +61,7 @@ public class ShipsFileLoader implements ShipsLoader {
             this.ship = shipsVessel;
         }
 
-        public void load(BlockPosition position, List<Vector3Int> structureList) {
+        public void load(SyncBlockPosition position, List<Vector3Int> structureList) {
             if (structureList.isEmpty()) {
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
                     @Override
@@ -144,7 +145,7 @@ public class ShipsFileLoader implements ShipsLoader {
         if (!opZ.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown Z value");
         }
-        BlockPosition position = opWorld.get().getPosition(opX.get(), opY.get(), opZ.get());
+        SyncBlockPosition position = opWorld.get().getPosition(opX.get(), opY.get(), opZ.get());
         LicenceSign sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {

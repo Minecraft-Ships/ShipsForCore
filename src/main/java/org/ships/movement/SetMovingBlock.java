@@ -1,6 +1,6 @@
 package org.ships.movement;
 
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
@@ -9,38 +9,38 @@ import java.util.Optional;
 
 public class SetMovingBlock implements MovingBlock {
 
-    protected BlockPosition before;
-    protected BlockPosition after;
+    protected SyncBlockPosition before;
+    protected SyncBlockPosition after;
     protected BlockDetails detail;
 
-    public SetMovingBlock(BlockPosition before, BlockPosition after){
+    public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after){
         this(before, after, before.getBlockDetails());
     }
 
-    public SetMovingBlock(BlockPosition before, BlockPosition after, BlockDetails details){
+    public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after, BlockDetails details){
         this.before = before;
         this.after = after;
         this.detail = details;
     }
 
     @Override
-    public Optional<BlockPosition> getBeforePosition() {
+    public Optional<SyncBlockPosition> getBeforePosition() {
         return Optional.ofNullable(this.before);
     }
 
     @Override
-    public Optional<BlockPosition> getAfterPosition() {
+    public Optional<SyncBlockPosition> getAfterPosition() {
         return Optional.ofNullable(this.after);
     }
 
     @Override
-    public MovingBlock setBeforePosition(BlockPosition position) {
+    public MovingBlock setBeforePosition(SyncBlockPosition position) {
         this.before = position;
         return this;
     }
 
     @Override
-    public MovingBlock setAfterPosition(BlockPosition position) {
+    public MovingBlock setAfterPosition(SyncBlockPosition position) {
         this.after = position;
         return this;
     }

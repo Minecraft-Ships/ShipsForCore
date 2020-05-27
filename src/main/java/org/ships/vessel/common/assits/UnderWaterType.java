@@ -2,7 +2,7 @@ package org.ships.vessel.common.assits;
 
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -17,7 +17,7 @@ public interface UnderWaterType extends WaterType {
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         int height = pss.getYSize();
         Set<Integer> values = new HashSet<>();
-        for (BlockPosition position : pss.getPositions()) {
+        for (SyncBlockPosition position : pss.getPositions()) {
             if(values.contains(position.getY())){
                 continue;
             }

@@ -1,9 +1,9 @@
 package org.ships.algorthum.blockfinder.typeFinder;
 
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 
 public interface OvertimeBlockTypeFinderUpdate {
 
-    void onBlockFound(BlockPosition position);
+    void onBlockFound(SyncBlockPosition position);
     void onFailedToFind();
 }

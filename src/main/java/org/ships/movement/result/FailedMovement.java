@@ -15,4 +15,8 @@ public interface FailedMovement<E extends Object>{
         getResult().sendMessage(getShip(), viewer, value);
     }
 
+    default void sendMessage(CommandViewer viewer){
+        getResult().sendMessage(getShip(), viewer, getValue().orElse(null));
+    }
+
 }

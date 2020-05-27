@@ -1,7 +1,7 @@
 package org.ships.event.vessel.move;
 
 import org.core.event.events.Cancellable;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.event.vessel.VesselEvent;
 import org.ships.movement.MovementContext;
@@ -34,14 +34,14 @@ public class VesselMoveEvent implements VesselEvent {
 
     public static class CollideDetected extends VesselMoveEvent {
 
-        private Set<BlockPosition> collisions;
+        private Set<SyncBlockPosition> collisions;
 
-        public CollideDetected(Vessel vessel, MovementContext context, Set<BlockPosition> collision) {
+        public CollideDetected(Vessel vessel, MovementContext context, Set<SyncBlockPosition> collision) {
             super(vessel, context);
             this.collisions = collision;
         }
 
-        public Set<BlockPosition> getCollisions(){
+        public Set<SyncBlockPosition> getCollisions(){
             return this.collisions;
         }
     }

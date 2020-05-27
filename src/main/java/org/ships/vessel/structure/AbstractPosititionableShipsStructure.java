@@ -4,7 +4,8 @@ import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 
 import java.util.*;
@@ -13,33 +14,33 @@ import java.util.stream.Collectors;
 public class AbstractPosititionableShipsStructure implements PositionableShipsStructure {
 
     protected Set<Vector3Int> vectors = new HashSet<>();
-    protected BlockPosition position;
+    protected SyncBlockPosition position;
 
-    public AbstractPosititionableShipsStructure(BlockPosition position){
+    public AbstractPosititionableShipsStructure(SyncBlockPosition position){
         this.position = position;
     }
 
     @Override
-    public BlockPosition getPosition() {
+    public SyncBlockPosition getPosition() {
         return this.position;
     }
 
     @Override
-    public PositionableShipsStructure setPosition(BlockPosition pos) {
+    public PositionableShipsStructure setPosition(SyncBlockPosition pos) {
         this.position = pos;
         return this;
     }
 
     @Override
     public PositionableShipsStructure addAir() {
-        Collection<BlockPosition> positions = getPositions();
-        List<BlockPosition> toAdd = new ArrayList<>();
+        Collection<SyncBlockPosition> positions = getPositions();
+        List<SyncBlockPosition> toAdd = new ArrayList<>();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         positions.forEach(p -> {
             for(Direction dir : directions){
                 try {
                     getNextInLine(p, dir, positions).ifPresent(p1 -> {
-                        BlockPosition target = p;
+                        SyncBlockPosition target = p;
                         Vector3Int dirV = dir.getAsVector();
                         int disX = p1.getX() - target.getX();
                         int disY = p1.getY() - target.getY();
@@ -95,7 +96,7 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
         return this.vectors.add(add);
     }
 
-    private void addRawPosition(BlockPosition position){
+    private void addRawPosition(SyncBlockPosition position){
         Vector3Int original = getPosition().getPosition();
         Vector3Int next = position.getPosition();
         this.vectors.add(new Vector3Int((next.getX() - original.getX()), (next.getY() - original.getY()), (next.getZ() - original.getZ())));
@@ -121,13 +122,13 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
         return this;
     }
 
-    private static Optional<BlockPosition> getNextInLine(BlockPosition pos, Direction direction, Collection<BlockPosition> collections) throws DirectionNotSupported {
+    private static Optional<SyncBlockPosition> getNextInLine(SyncBlockPosition pos, Direction direction, Collection<SyncBlockPosition> collections) throws DirectionNotSupported {
         Vector3Int original = pos.getPosition();
         List<Direction> directions = new ArrayList<>(Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));
         if(!directions.contains(direction)){
             throw new DirectionNotSupported(direction, "");
         }
-        List<BlockPosition> positions = collections.stream().filter(p -> {
+        List<SyncBlockPosition> positions = collections.stream().filter(p -> {
             Vector3Int vector = p.getPosition();
             if(vector.getX().equals(original.getX()) && vector.getY().equals(original.getY())){
                 int oz = original.getZ();
@@ -159,8 +160,8 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
             return false;
         }).filter(p -> !p.getPosition().equals(original)).collect(Collectors.toList());
         double min = Double.MAX_VALUE;
-        BlockPosition current = null;
-        for(BlockPosition position : positions){
+        SyncBlockPosition current = null;
+        for(SyncBlockPosition position : positions){
             double distance = position.getPosition().distance(original);
             if(min > distance){
                 min = distance;

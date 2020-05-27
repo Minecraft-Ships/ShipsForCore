@@ -3,7 +3,7 @@ package org.ships.movement.autopilot.scheduler;
 import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.world.boss.ServerBossBar;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.MoveException;
@@ -56,8 +56,8 @@ public class EOTExecutor implements Runnable {
         return this.disableOnNoPilot;
     }
 
-    public Optional<BlockPosition> getSign(){
-        Collection<BlockPosition> blocks = getVessel().getStructure().getAll(SignTileEntity.class);
+    public Optional<SyncBlockPosition> getSign(){
+        Collection<SyncBlockPosition> blocks = getVessel().getStructure().getAll(SignTileEntity.class);
         EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
         return blocks.stream().filter(b -> sign.isSign((SignTileEntity) b.getTileEntity().get())).findFirst();
     }

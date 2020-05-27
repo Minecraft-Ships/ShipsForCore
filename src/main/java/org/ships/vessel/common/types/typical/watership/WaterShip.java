@@ -6,7 +6,7 @@ import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -39,7 +39,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         this.flags.add(new AltitudeLockFlag(true));
     }
 
-    public WaterShip(WaterShipType type, SignTileEntity ste, BlockPosition position){
+    public WaterShip(WaterShipType type, SignTileEntity ste, SyncBlockPosition position){
         super(ste, position, type);
         this.flags.add(new AltitudeLockFlag(true));
     }
@@ -55,7 +55,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         }
         int specialBlockCount = 0;
         for(MovingBlock movingBlock : context.getMovingStructure()){
-            Optional<BlockPosition> opBlockPosition = movingBlock.getBeforePosition();
+            Optional<SyncBlockPosition> opBlockPosition = movingBlock.getBeforePosition();
             if(!opBlockPosition.isPresent()){
                 continue;
             }
@@ -102,7 +102,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     public boolean shouldFall() {
         int specialBlockCount = 0;
         boolean inWater = false;
-        for(BlockPosition blockPosition : this.getStructure().getPositions()){
+        for(SyncBlockPosition blockPosition : this.getStructure().getPositions()){
             if(this.specialBlocks.stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
                 specialBlockCount++;
             }

@@ -6,7 +6,7 @@ import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.platform.Plugin;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -90,7 +90,7 @@ public class MarsshipType implements CloneableShipType<Marsship>, SerializableSh
     }
 
     @Override
-    public Marsship createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Marsship createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
         return new Marsship(this, ste, bPos);
     }
 

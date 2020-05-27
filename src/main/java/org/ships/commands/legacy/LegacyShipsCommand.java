@@ -6,7 +6,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
 import org.core.text.TextColours;
-import org.ships.commands.legacy.autopilot.LegacyAutoPilotCommand;
 import org.ships.commands.legacy.blockinfo.LegacyBlockInfoCommand;
 import org.ships.commands.legacy.blocklist.LegacyBlockListCommand;
 import org.ships.commands.legacy.config.LegacyConfigCommand;
@@ -23,7 +22,7 @@ import java.util.Optional;
 
 public class LegacyShipsCommand implements CommandLauncher {
 
-    private final List<LegacyArgumentCommand> arguments = Arrays.asList(new LegacyConfigCommand(), new LegacyShipCommand(), new LegacyShipTypeCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand(), new LegacyAutoPilotCommand());
+    private final List<LegacyArgumentCommand> arguments = Arrays.asList(new LegacyConfigCommand(), new LegacyShipCommand(), new LegacyShipTypeCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand());
 
     public List<LegacyArgumentCommand> getArguments(){
         return this.arguments;

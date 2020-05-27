@@ -2,7 +2,7 @@ package org.ships.algorthum.blockfinder.typeFinder;
 
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
@@ -19,19 +19,19 @@ public class Ships5BlockTypeFinder implements BasicTypeBlockFinder {
     private int blockCount = 0;
     private Vessel vessel;
     private BlockList list;
-    private Predicate<BlockPosition> predicate;
+    private Predicate<SyncBlockPosition> predicate;
 
-    private Optional<BlockPosition> getNextBlock(BlockPosition position, Direction... directions){
+    private Optional<SyncBlockPosition> getNextBlock(SyncBlockPosition position, Direction... directions){
         if(this.blockLimit != -1 && this.blockCount >= this.blockLimit){
             return Optional.empty();
         }
         this.blockCount++;
         for(Direction direction : directions){
-            BlockPosition block = position.getRelative(direction);
+            SyncBlockPosition block = position.getRelative(direction);
             BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
             if(bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
                 if (!predicate.test(block)){
-                    Optional<BlockPosition> opBlock = getNextBlock(block, directions);
+                    Optional<SyncBlockPosition> opBlock = getNextBlock(block, directions);
                     if(opBlock.isPresent()){
                         return opBlock;
                     }
@@ -43,7 +43,7 @@ public class Ships5BlockTypeFinder implements BasicTypeBlockFinder {
         return Optional.empty();
     }
 
-    private Optional<BlockPosition> getBlock(BlockPosition position){
+    private Optional<SyncBlockPosition> getBlock(SyncBlockPosition position){
         this.blockCount = 0;
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
@@ -59,14 +59,14 @@ public class Ships5BlockTypeFinder implements BasicTypeBlockFinder {
     }
 
     @Override
-    public Optional<BlockPosition> findBlock(BlockPosition position, Predicate<BlockPosition> predicate) {
+    public Optional<SyncBlockPosition> findBlock(SyncBlockPosition position, Predicate<SyncBlockPosition> predicate) {
         this.predicate = predicate;
         return getBlock(position);
     }
 
     @Override
-    public void findBlock(BlockPosition position, Predicate<BlockPosition> predicate, OvertimeBlockTypeFinderUpdate runAfterSearch) {
-        Optional<BlockPosition> opPosition = findBlock(position, predicate);
+    public void findBlock(SyncBlockPosition position, Predicate<SyncBlockPosition> predicate, OvertimeBlockTypeFinderUpdate runAfterSearch) {
+        Optional<SyncBlockPosition> opPosition = findBlock(position, predicate);
         if(opPosition.isPresent()){
             runAfterSearch.onBlockFound(opPosition.get());
         }else{

@@ -6,7 +6,7 @@ import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.platform.Plugin;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
@@ -18,7 +18,6 @@ import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.SerializableShipType;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 import java.util.Arrays;
@@ -99,7 +98,7 @@ public class WaterShipType implements CloneableShipType<WaterShip>, Serializable
     }
 
     @Override
-    public WaterShip createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public WaterShip createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
         return new WaterShip(this, ste, bPos);
     }
 

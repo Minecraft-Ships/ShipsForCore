@@ -6,7 +6,8 @@ import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.core.world.boss.ServerBossBar;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -76,7 +77,7 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, BlockPosition position){
+    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position){
         try {
             Vessel s = new ShipsLicenceSignFinder(position).load();
             if (!player.isSneaking()) {
@@ -145,7 +146,7 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public boolean onSecondClick(LivePlayer player, BlockPosition position) {
+    public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
         if(player.isSneaking()){
             return onPrimaryClick(player, position);
         }

@@ -2,7 +2,9 @@ package org.ships.algorthum.blockfinder;
 
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.blockfinder.typeFinder.BasicTypeBlockFinder;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
@@ -46,7 +48,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
 
     private PositionableShipsStructure getConnectedBlocks(BlockPosition position, OvertimeBlockFinderUpdate update){
         this.blockCount = 0;
-        this.shipsStructure = new AbstractPosititionableShipsStructure(position);
+        this.shipsStructure = new AbstractPosititionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
         getNextBlock(update, position, directions);

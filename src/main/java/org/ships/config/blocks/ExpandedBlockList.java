@@ -51,10 +51,8 @@ public class ExpandedBlockList implements BlockList{
                 this.blocks.add(opBlock.get());
                 bins.add(opBlock.get());
             }else{
-                Set<BlockInstruction> blocklist = this.expandedOn.getBlockList();
-                opBlock = blocklist.stream().filter(bi -> {
-                    return bi.getType().equals(bt);
-                }).findAny();
+                Set<BlockInstruction> blocklist = new HashSet<>(this.expandedOn.getBlockList());
+                opBlock = blocklist.stream().filter(bi -> bi.getType().equals(bt)).findAny();
                 if(opBlock.isPresent()){
                     bins.add(opBlock.get());
                 }else{

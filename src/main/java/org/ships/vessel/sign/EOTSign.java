@@ -5,7 +5,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
 import org.core.text.Text;
 import org.core.text.TextColours;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -17,7 +17,6 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class EOTSign implements ShipsSign {
@@ -61,12 +60,12 @@ public class EOTSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, BlockPosition position) {
+    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position) {
         return false;
     }
 
     @Override
-    public boolean onSecondClick(LivePlayer player, BlockPosition position) {
+    public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if(!opTile.isPresent()){
             return false;

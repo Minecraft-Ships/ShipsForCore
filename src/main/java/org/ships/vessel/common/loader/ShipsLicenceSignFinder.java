@@ -1,6 +1,6 @@
 package org.ships.vessel.common.loader;
 
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -17,7 +17,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
 
     protected SignTileEntity ste;
 
-    public ShipsLicenceSignFinder(BlockPosition position) throws IOException {
+    public ShipsLicenceSignFinder(SyncBlockPosition position) throws IOException {
         Optional<LiveTileEntity> opEntity = position.getTileEntity();
         if(!opEntity.isPresent()){
             throw new IOException("Block is not a sign");

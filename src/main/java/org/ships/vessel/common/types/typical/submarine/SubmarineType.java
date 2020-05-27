@@ -8,7 +8,7 @@ import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
 import org.core.platform.Plugin;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -18,7 +18,6 @@ import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.SerializableShipType;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
 import java.util.*;
@@ -110,7 +109,7 @@ public class SubmarineType implements CloneableShipType<Submarine>, Serializable
     }
 
     @Override
-    public Submarine createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Submarine createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
         return new Submarine(this, ste, bPos);
     }
 

@@ -8,7 +8,7 @@ import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.DirectionalData;
@@ -118,13 +118,13 @@ public class Movement {
                 throw e;
             }
         }
-        Set<BlockPosition> collided = new HashSet<>();
+        Set<SyncBlockPosition> collided = new HashSet<>();
         context.getMovingStructure().forEach(mb -> {
             if(context.getMovingStructure().stream().anyMatch(mb1 -> mb.getAfterPosition().equals(mb1.getBeforePosition()))){
                 return;
             }
             for(BlockType type : vessel.getType().getIgnoredTypes()){
-                Optional<BlockPosition> opBlock = mb.getAfterPosition();
+                Optional<SyncBlockPosition> opBlock = mb.getAfterPosition();
                 if(opBlock.isPresent()){
                     if(type.equals(opBlock.get().getBlockType())){
                         return;
@@ -132,7 +132,7 @@ public class Movement {
                 }
             }
             BlockList list = vessel instanceof BlockListable ? ((BlockListable)vessel).getBlockList() : ShipsPlugin.getPlugin().getBlockList();
-            Optional<BlockPosition> opAfter = mb.getAfterPosition();
+            Optional<SyncBlockPosition> opAfter = mb.getAfterPosition();
             if(opAfter.isPresent()){
                 BlockInstruction bi = list.getBlockInstruction(opAfter.get().getBlockType());
                 if (!bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE)) {
@@ -180,7 +180,7 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, BlockPosition rotateAround, MovementContext context) throws MoveException {
+        public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context) throws MoveException {
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateLeft(rotateAround);
@@ -219,7 +219,7 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, BlockPosition rotateAround, MovementContext context) throws MoveException{
+        public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateRight(rotateAround);
@@ -259,12 +259,12 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, BlockPosition to, MovementContext context) throws MoveException{
+        public void move(Vessel vessel, SyncBlockPosition to, MovementContext context) throws MoveException{
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().forEach(f -> {
-                BlockPosition vp = pss.getPosition().getRelative(f);
-                BlockPosition vp2 = to.getRelative(f);
+                SyncBlockPosition vp = pss.getPosition().getRelative(f);
+                SyncBlockPosition vp2 = to.getRelative(f);
                 set.add(new SetMovingBlock(vp, vp2));
             });
             context.setMovingStructure(set);
@@ -287,8 +287,8 @@ public class Movement {
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().forEach(f -> {
-                BlockPosition vp = pss.getPosition().getRelative(f);
-                BlockPosition vp2 = vp.getRelative(addTo);
+                SyncBlockPosition vp = pss.getPosition().getRelative(f);
+                SyncBlockPosition vp2 = vp.getRelative(addTo);
                 set.add(new SetMovingBlock(vp, vp2));
             });
             context.setMovingStructure(set);

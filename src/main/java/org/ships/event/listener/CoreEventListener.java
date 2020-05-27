@@ -15,8 +15,9 @@ import org.core.text.TextColours;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.block.details.data.keyed.AttachableKeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -61,7 +62,7 @@ public class CoreEventListener implements EventListener {
             return;
         }
         for(Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())){
-            BlockPosition position = event.getPosition().getRelative(direction);
+            SyncBlockPosition position = event.getPosition().getRelative(direction);
             if(!list.getBlockInstruction(position.getBlockType()).getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
                 continue;
             }
@@ -109,7 +110,7 @@ public class CoreEventListener implements EventListener {
 
     @HEvent
     public void onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer event){
-        BlockPosition position = event.getInteractPosition();
+        SyncBlockPosition position = event.getInteractPosition();
         Optional<LiveTileEntity> opTE = position.getTileEntity();
         if(!opTE.isPresent()){
             return;
@@ -182,7 +183,7 @@ public class CoreEventListener implements EventListener {
                 bar = CorePlugin.createBossBar().setMessage(CorePlugin.buildText("0 / " + trackSize)).register(event.getEntity());
             }
             final ServerBossBar finalBar = bar;
-            ExactPosition bp = event.getEntity().getPosition();
+            SyncExactPosition bp = event.getEntity().getPosition();
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                 @Override
                 public void onShipsStructureUpdated(PositionableShipsStructure structure) {
@@ -233,7 +234,7 @@ public class CoreEventListener implements EventListener {
 
     @HEvent
     public void onBlockExplode(BlockChangeEvent.Break.Pre.ByExplosion event){
-        BlockPosition position = event.getPosition();
+        SyncBlockPosition position = event.getPosition();
         List<Direction> directions = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
         directions.add(FourFacingDirection.NONE);
         for(Direction direction : directions) {
@@ -268,9 +269,9 @@ public class CoreEventListener implements EventListener {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         List<Direction> list = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
         list.add(FourFacingDirection.NONE);
-        BlockPosition position = event.getPosition();
+        SyncBlockPosition position = event.getPosition();
         for(Direction direction : list) {
-            BlockPosition pos = position.getRelative(direction);
+            SyncBlockPosition pos = position.getRelative(direction);
             if(config.isStructureClickUpdating()) {
                 try {
                     Vessel vessel = new ShipsBlockFinder(pos).load();

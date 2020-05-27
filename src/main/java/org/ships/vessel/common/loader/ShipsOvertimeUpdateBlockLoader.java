@@ -1,6 +1,7 @@
 package org.ships.vessel.common.loader;
 
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
@@ -22,7 +23,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
         @Override
         public void onShipsStructureUpdated(PositionableShipsStructure structure) {
             LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
-            Optional<BlockPosition> opBlock = structure.getAll(SignTileEntity.class).stream().filter(b -> {
+            Optional<SyncBlockPosition> opBlock = structure.getAll(SignTileEntity.class).stream().filter(b -> {
                 LiveSignTileEntity lste = (LiveSignTileEntity) b.getTileEntity().get();
                 if (!ls.isSign(lste)){
                     return false;
@@ -55,7 +56,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
     protected abstract boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block);
     protected abstract void onExceptionThrown(LoadVesselException e);
 
-    public ShipsOvertimeUpdateBlockLoader(BlockPosition position) {
+    public ShipsOvertimeUpdateBlockLoader(SyncBlockPosition position) {
         super(position);
     }
 

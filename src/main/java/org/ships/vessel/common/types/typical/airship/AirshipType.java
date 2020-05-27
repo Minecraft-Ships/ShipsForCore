@@ -9,7 +9,7 @@ import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
 import org.core.inventory.item.type.post.ItemTypes1V13;
 import org.core.platform.Plugin;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
@@ -127,7 +127,7 @@ public class AirshipType implements CloneableShipType<Airship>, SerializableShip
     }
 
     @Override
-    public Airship createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Airship createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
         return new Airship(this, ste, bPos);
     }
 

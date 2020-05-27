@@ -1,16 +1,19 @@
 package org.ships.movement.autopilot;
 
+import org.core.source.viewer.CommandViewer;
 import org.core.vector.types.Vector3Int;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class BasicFlightSinglePath implements FlightSinglePath {
 
     protected Vector3Int firstPosition;
     protected Vector3Int secondPosition;
+    protected CommandViewer viewer;
 
     public BasicFlightSinglePath(Vector3Int first, Vector3Int second){
         this.firstPosition = first;
@@ -30,6 +33,17 @@ public class BasicFlightSinglePath implements FlightSinglePath {
     @Override
     public FlightPath createUpdatedPath(Vector3Int from, Vector3Int to) {
         return new BasicFlightSinglePath(from, to);
+    }
+
+    @Override
+    public Optional<CommandViewer> getViewer() {
+        return Optional.ofNullable(this.viewer);
+    }
+
+    @Override
+    public FlightPath setViewer(CommandViewer viewer) {
+        this.viewer = viewer;
+        return this;
     }
 
     @Override

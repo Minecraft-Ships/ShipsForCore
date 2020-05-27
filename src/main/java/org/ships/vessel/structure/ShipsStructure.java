@@ -1,9 +1,10 @@
 package org.ships.vessel.structure;
 
 import org.core.vector.types.Vector3Int;
-import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
 import org.core.world.position.Positionable;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -55,14 +56,13 @@ public interface ShipsStructure {
         return max - min;
     }
 
-    default Collection<BlockPosition> getPositions(Positionable positionable){
-        BlockPosition bPos = positionable.getPosition() instanceof BlockPosition ? (BlockPosition) positionable.getPosition() : ((ExactPosition)positionable.getPosition()).toBlockPosition();
-        return getPositions(bPos);
+    default Collection<SyncBlockPosition> getPositions(Positionable<? extends Position<? extends Number>> positionable){
+        return getPositions(Position.toBlock(positionable.getPosition()));
     }
 
-    default Collection<BlockPosition> getPositions(BlockPosition position){
-        Set<BlockPosition> set = new HashSet<>();
-        getRelativePositions().stream().forEach(v -> set.add(position.getRelative(v)));
+    default Collection<SyncBlockPosition> getPositions(BlockPosition position){
+        Set<SyncBlockPosition> set = new HashSet<>();
+        getRelativePositions().forEach(v -> set.add(Position.toSync(position.getRelative(v))));
         return Collections.unmodifiableCollection(set);
     }
 }

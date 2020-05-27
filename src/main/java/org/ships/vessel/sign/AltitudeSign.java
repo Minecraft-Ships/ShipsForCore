@@ -6,7 +6,8 @@ import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.boss.ServerBossBar;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -23,7 +24,6 @@ import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.loader.ShipsBlockFinder;
 import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class AltitudeSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, BlockPosition position) {
+    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if(!opTile.isPresent()){
             return false;
@@ -74,7 +74,7 @@ public class AltitudeSign implements ShipsSign {
     }
 
     @Override
-    public boolean onSecondClick(LivePlayer player, BlockPosition position) {
+    public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTileEntity = position.getTileEntity();
         SignTileEntity ste = (SignTileEntity) opTileEntity.get();
         String line1 = ste.getLine(1).get().toPlain();

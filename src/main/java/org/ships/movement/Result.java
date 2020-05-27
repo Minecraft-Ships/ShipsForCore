@@ -4,11 +4,9 @@ import org.core.CorePlugin;
 import org.core.entity.living.human.player.Player;
 import org.core.vector.Vector3;
 import org.core.world.boss.ServerBossBar;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.event.vessel.move.ResultEvent;
-import org.ships.exceptions.MoveException;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -37,8 +35,8 @@ public class Result extends ArrayList<Result.Run> {
             double pitch = entity.getPitch();
             double yaw = entity.getYaw();
             double roll = entity.getRoll();
-            Optional<BlockPosition> opBefore = value.getBeforePosition();
-            Optional<BlockPosition> opAfter = value.getAfterPosition();
+            Optional<SyncBlockPosition> opBefore = value.getBeforePosition();
+            Optional<SyncBlockPosition> opAfter = value.getAfterPosition();
             if(opBefore.isPresent() && opAfter.isPresent()){
                 Vector3<Double> position = entity.getPosition().getPosition().minus(opBefore.get().toExactPosition().getPosition());
                 Vector3<Double> position2 = opAfter.get().toExactPosition().getPosition();

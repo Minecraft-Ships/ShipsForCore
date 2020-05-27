@@ -4,8 +4,8 @@ import org.core.entity.LiveEntity;
 import org.core.vector.types.Vector3Int;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.BlockPosition;
-import org.core.world.position.Position;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncPosition;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
@@ -40,9 +40,9 @@ public interface Vessel extends Positionable {
 
     void moveTowards(int x, int y, int z, MovementContext context) throws MoveException;
     void moveTowards(Vector3Int vector, MovementContext context) throws MoveException;
-    void moveTo(Position<? extends Number> location, MovementContext context) throws MoveException;
-    void rotateRightAround(Position<? extends Number> location, MovementContext context) throws MoveException;
-    void rotateLeftAround(Position<? extends Number> location, MovementContext context) throws MoveException;
+    void moveTo(SyncPosition<? extends Number> location, MovementContext context) throws MoveException;
+    void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException;
+    void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException;
 
     void setLoading(boolean check);
     boolean isLoading();
@@ -50,7 +50,7 @@ public interface Vessel extends Positionable {
     void save();
 
     @Override
-    default BlockPosition getPosition(){
+    default SyncBlockPosition getPosition(){
         return getStructure().getPosition();
     }
 
@@ -72,7 +72,7 @@ public interface Vessel extends Positionable {
 
     default Collection<LiveEntity> getEntities(Predicate<LiveEntity> check){
         Collection<LiveEntity> entities = getPosition().getWorld().getEntities();
-        Collection<BlockPosition> blocks = getStructure().getPositions();
+        Collection<SyncBlockPosition> blocks = getStructure().getPositions();
         return entities.stream()
                 .filter(e -> check.test(e))
                 .filter(e -> e.getAttachedTo().isPresent())
@@ -81,11 +81,11 @@ public interface Vessel extends Positionable {
                 .collect(Collectors.toSet());
     }
 
-    default void rotateAnticlockwiseAround(Position<? extends Number> location, MovementContext context) throws MoveException{
+    default void rotateAnticlockwiseAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
         this.rotateRightAround(location, context);
     }
 
-    default void rotateClockwiseAround(Position<? extends Number> location, MovementContext context) throws MoveException{
+    default void rotateClockwiseAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
         this.rotateLeftAround(location, context);
     }
 
@@ -93,15 +93,15 @@ public interface Vessel extends Positionable {
         return !getWaterLevel().isPresent();
     }
 
-    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, Optional<BlockPosition>> function){
+    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, Optional<SyncBlockPosition>> function){
         int height = -1;
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         for (MovingBlock mBlock : collection){
-            Optional<BlockPosition> opPosition = function.apply(mBlock);
+            Optional<SyncBlockPosition> opPosition = function.apply(mBlock);
             if(!opPosition.isPresent()){
                 continue;
             }
-            BlockPosition position = opPosition.get();
+            SyncBlockPosition position = opPosition.get();
             for(Direction direction : directions){
                 BlockType type = position.getRelative(direction).getBlockType();
                 if(type.equals(BlockTypes.WATER.get())){
@@ -122,7 +122,7 @@ public interface Vessel extends Positionable {
         PositionableShipsStructure pss = getStructure();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         int height = -1;
-        for (BlockPosition position : pss.getPositions()){
+        for (SyncBlockPosition position : pss.getPositions()){
             for(Direction direction : directions){
                 BlockType type = position.getRelative(direction).getBlockType();
                 if(type.equals(BlockTypes.WATER.get())){

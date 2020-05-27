@@ -1,5 +1,6 @@
 package org.ships.movement.autopilot;
 
+import org.core.source.viewer.CommandViewer;
 import org.core.vector.types.Vector3Int;
 
 import java.util.List;
@@ -11,6 +12,12 @@ public interface FlightPath {
     Vector3Int getStartingPosition();
     Vector3Int getEndingPosition();
     FlightPath createUpdatedPath(Vector3Int from, Vector3Int to);
+    Optional<CommandViewer> getViewer();
+    FlightPath setViewer(CommandViewer viewer);
+
+    default FlightPath removeViewer(){
+        return this.setViewer(null);
+    }
 
     default Optional<Vector3Int> getNext(){
         return getNext(0);

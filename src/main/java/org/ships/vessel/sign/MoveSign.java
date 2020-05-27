@@ -7,7 +7,8 @@ import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.vector.types.Vector3Int;
 import org.core.world.boss.ServerBossBar;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -58,7 +59,7 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, BlockPosition position) {
+    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!opTile.isPresent()) {
             return false;
@@ -93,7 +94,7 @@ public class MoveSign implements ShipsSign {
                 return licenceSign.isSign((LiveSignTileEntity) lte2);
             }, new OvertimeBlockTypeFinderUpdate() {
                 @Override
-                public void onBlockFound(BlockPosition position) {
+                public void onBlockFound(SyncBlockPosition position) {
                     LiveSignTileEntity sign = (LiveSignTileEntity) position.getTileEntity().get();
                     Optional<Vessel> opVessel = licenceSign.getShip(sign);
                     if(opVessel.isPresent()){
@@ -124,7 +125,7 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
-    public boolean onSecondClick(LivePlayer player, BlockPosition position) {
+    public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!opTile.isPresent()) {
             return false;
@@ -214,7 +215,7 @@ public class MoveSign implements ShipsSign {
         lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
     }
 
-    private void onVesselMove(LivePlayer player, BlockPosition position, int speed, MovementContext context, Vessel vessel){
+    private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel){
         context.getBar().ifPresent(bar -> {
             bar.deregister(player);
             vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));

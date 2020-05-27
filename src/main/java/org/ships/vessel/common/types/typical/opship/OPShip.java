@@ -2,7 +2,7 @@ package org.ships.vessel.common.types.typical.opship;
 
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.ConfigurationNode;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.movement.autopilot.FlightPath;
@@ -24,7 +24,7 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
         super(licence, origin);
     }
 
-    public OPShip(SignTileEntity ste, BlockPosition position, ShipType origin){
+    public OPShip(SignTileEntity ste, SyncBlockPosition position, ShipType origin){
         super(ste, position, origin);
     }
 

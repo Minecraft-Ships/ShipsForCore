@@ -1,6 +1,6 @@
 package org.ships.movement;
 
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.WaterLoggedKeyedData;
@@ -12,13 +12,13 @@ import java.util.Optional;
 
 public interface MovingBlock {
 
-    Optional<BlockPosition> getBeforePosition();
+    Optional<SyncBlockPosition> getBeforePosition();
 
-    Optional<BlockPosition> getAfterPosition();
+    Optional<SyncBlockPosition> getAfterPosition();
 
-    MovingBlock setBeforePosition(BlockPosition position);
+    MovingBlock setBeforePosition(SyncBlockPosition position);
 
-    MovingBlock setAfterPosition(BlockPosition position);
+    MovingBlock setAfterPosition(SyncBlockPosition position);
 
     BlockDetails getStoredBlockData();
 
@@ -26,7 +26,7 @@ public interface MovingBlock {
 
     BlockPriority getBlockPriority();
 
-    default MovingBlock removeBeforePosition(BlockPosition pos) {
+    default MovingBlock removeBeforePosition(SyncBlockPosition pos) {
         //setStoredBlockData(pos.getBlockDetails());
         Optional<LiveTileEntity> opLive = pos.getTileEntity();
         if(!opLive.isPresent()){
@@ -45,7 +45,7 @@ public interface MovingBlock {
         return this;
     }
 
-    default MovingBlock rotateLeft(BlockPosition position) {
+    default MovingBlock rotateLeft(SyncBlockPosition position) {
         int shift = position.getX() - position.getZ();
         int symmetry = position.getZ();
         getAfterPosition().ifPresent(p -> {
@@ -57,7 +57,7 @@ public interface MovingBlock {
         return this;
     }
 
-    default MovingBlock rotateRight(BlockPosition position) {
+    default MovingBlock rotateRight(SyncBlockPosition position) {
         int shift = position.getX() - position.getZ();
         int symmetry = position.getX();
         getAfterPosition().ifPresent(p -> {
@@ -96,7 +96,7 @@ public interface MovingBlock {
     }
 
     default Optional<BlockDetails> getCurrentBlockData(){
-        Optional<BlockPosition> opBlock = getBeforePosition();
+        Optional<SyncBlockPosition> opBlock = getBeforePosition();
         if(opBlock.isPresent()){
             return Optional.of(opBlock.get().getBlockDetails());
         }

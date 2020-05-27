@@ -4,10 +4,8 @@ import org.core.CorePlugin;
 import org.core.configuration.ConfigurationFile;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.utils.Identifable;
-import org.core.vector.types.Vector3Int;
-import org.core.world.position.BlockPosition;
-import org.core.world.position.ExactPosition;
-import org.core.world.position.block.BlockTypes;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
@@ -31,7 +29,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
     protected Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
     protected CrewPermission defaultPermission = CrewPermission.DEFAULT;
-    protected Map<String, ExactPosition> teleportPositions = new HashMap<>();
+    protected Map<String, SyncExactPosition> teleportPositions = new HashMap<>();
     protected File file;
     protected ExpandedBlockList blockList;
     protected ShipType type;
@@ -48,7 +46,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this.type = type;
     }
 
-    public AbstractShipsVessel(SignTileEntity ste, BlockPosition position, ShipType type){
+    public AbstractShipsVessel(SignTileEntity ste, SyncBlockPosition position, ShipType type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
         this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + ".temp");
         ConfigurationFile configuration = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
@@ -103,7 +101,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
-    public Map<String, ExactPosition> getTeleportPositions(){
+    public Map<String, SyncExactPosition> getTeleportPositions(){
         return this.teleportPositions;
     }
 

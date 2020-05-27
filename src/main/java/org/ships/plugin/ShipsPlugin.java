@@ -53,7 +53,7 @@ public abstract class ShipsPlugin implements Plugin {
     private Scheduler fallScheduler;
     private Set<Vessel> vessels = new HashSet<>();
 
-    public static final int PRERELEASE_VERSION = 2;
+    public static final double PRERELEASE_VERSION = 2.1;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin(){
@@ -135,6 +135,7 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(BasicMovement.SHIPS_SIX);
         this.identifable.add(BasicBlockFinder.SHIPS_FIVE);
         this.identifable.add(BasicBlockFinder.SHIPS_SIX);
+        this.identifable.add(BasicBlockFinder.SHIPS_SIX_ASYNC);
         this.identifable.add(BlockPriority.AIR);
         this.identifable.add(BlockPriority.DIRECTIONAL);
         this.identifable.add(BlockPriority.ATTACHED);

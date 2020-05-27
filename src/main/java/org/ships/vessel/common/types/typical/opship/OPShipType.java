@@ -6,7 +6,7 @@ import org.core.configuration.ConfigurationNode;
 import org.core.configuration.parser.Parser;
 import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.platform.Plugin;
-import org.core.world.position.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -85,7 +85,7 @@ public class OPShipType implements ShipType {
     }
 
     @Override
-    public Vessel createNewVessel(SignTileEntity ste, BlockPosition bPos) {
+    public Vessel createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
         return new OPShip(ste, bPos, this);
     }
 
