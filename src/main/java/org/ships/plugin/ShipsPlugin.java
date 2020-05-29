@@ -53,7 +53,7 @@ public abstract class ShipsPlugin implements Plugin {
     private Scheduler fallScheduler;
     private Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 2.1;
+    public static final double PRERELEASE_VERSION = 4;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin(){

@@ -58,7 +58,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         }
         if(!this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).isPresent()){
             modified = true;
-            this.file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
+            this.file.set(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
         }
         if(!this.file.parseBoolean(this.VISIBLE_BOSS_BAR).isPresent()){
             modified = true;
@@ -227,7 +227,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
                 new DedicatedNode<>(true, "Advanced.Block.Track", Parser.STRING_TO_INTEGER, ADVANCED_TRACK_LIMIT.getPath()),
                 new DedicatedNode<>("Advanced.Block.Movement.Stack.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, ADVANCED_MOVEMENT_STACK_DELAYUNIT.getPath()),
                 new DedicatedNode<>(true, "Advanced.Block.Movement.Stack.Delay", Parser.STRING_TO_INTEGER, ADVANCED_MOVEMENT_STACK_DELAY.getPath()),
-                new DedicatedNode<>(true, "Advanced.Block.Movement.Stack.Limit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, ADVANCED_MOVEMENT_STACK_LIMIT.getPath()),
+                new DedicatedNode<>(true, "Advanced.Block.Movement.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_MOVEMENT_STACK_LIMIT.getPath()),
                 new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Delay", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_DELAY.getPath()),
                 new DedicatedNode<>("Advanced.Block.Finder.Stack.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getPath()),
                 new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_LIMIT.getPath()),

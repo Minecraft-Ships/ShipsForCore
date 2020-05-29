@@ -88,7 +88,7 @@ public class Ships6Movement implements BasicMovement {
 
     @Override
     public Result move(Vessel vessel, MovementContext context) throws MoveException {
-        context.getBar().ifPresent(b -> b.setValue(0));
+        /*context.getBar().ifPresent(b -> b.setValue(0));
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         context.getMovingStructure().applyMovingBlocks();
         List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
@@ -123,7 +123,69 @@ public class Ships6Movement implements BasicMovement {
             waterLevel = opWaterLevel.get();
         }
         final int total = blocks.size();
-        Scheduler scheduler = CorePlugin.createSchedulerBuilder().setExecutor(() -> {
+        Scheduler scheduler = CorePlugin.createSchedulerBuilder()
+                .setDisplayName(vessel.getName() + ": Post movement")
+                .setExecutor(() -> {
+                    context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Processing: Post movement")));
+                    for(Movement.PostMovement movement : context.getPostMovementProcess()){
+                        movement.postMove(vessel);
+                    }
+                    Result.DEFAULT_RESULT.run(vessel, context);
+                    vessel.set(MovingFlag.class, null);
+                }).build(ShipsPlugin.getPlugin());
+        for(int A = 0; A < blocksToProcess.size(); A++){
+            List<MovingBlock> blocks2 = blocksToProcess.get(A);
+            scheduler = CorePlugin
+                    .createSchedulerBuilder()
+                    .setDisplayName("set block")
+                    .setExecutor(new SetBlocks(A, total, context, blocks2))
+                    .setToRunAfter(scheduler)
+                    .setDelay(config.getDefaultMovementStackDelay())
+                    .setDelayUnit(config.getDefaultMovementStackDelayUnit())
+                    .build(ShipsPlugin.getPlugin());
+        }
+        for(int A = 0; A < blocksToProcess.size(); A++){
+            List<MovingBlock> blocks2 = blocksToProcess.get(A);
+            scheduler = CorePlugin
+                    .createSchedulerBuilder()
+                    .setDisplayName("remove blocks")
+                    .setExecutor(new RemoveBlocks(waterLevel, A, context, blocks2))
+                    .setToRunAfter(scheduler)
+                    .setDelay(config.getDefaultMovementStackDelay())
+                    .setDelayUnit(config.getDefaultMovementStackDelayUnit())
+                    .build(ShipsPlugin.getPlugin());
+        }
+        if(scheduler == null){
+            throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.UNKNOWN, null));
+        }
+        scheduler.run();
+
+        return new Result();*/
+        context.getBar().ifPresent(b -> b.setValue(0));
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
+        List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
+        //List<List<MovingBlock>> blocksToRemove = new ArrayList<>();
+        List<MovingBlock> currentlyAdding = new ArrayList<>();
+        //List<MovingBlock> currentlyRemoving = new ArrayList<>();
+        for(int A = 0; A < blocks.size(); A++){
+            final int B = A;
+            context.getBar().ifPresent(bar -> bar.setValue(B, blocks.size() * 3));
+            MovingBlock block = blocks.get(A);
+            if(currentlyAdding.size() >= config.getDefaultMovementStackLimit()){
+                blocksToProcess.add(currentlyAdding);
+                currentlyAdding = new ArrayList<>();
+            }
+            currentlyAdding.add(block);
+        }
+        blocksToProcess.add(currentlyAdding);
+        int waterLevel = -1;
+        Optional<Integer> opWaterLevel = vessel.getWaterLevel();
+        if(opWaterLevel.isPresent()){
+            waterLevel = opWaterLevel.get();
+        }
+        final int total = blocks.size();
+        Scheduler scheduler = CorePlugin.createSchedulerBuilder().setDisplayName("Post Movement").setExecutor(() -> {
             context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Processing: Post movement")));
             for(Movement.PostMovement movement : context.getPostMovementProcess()){
                 movement.postMove(vessel);
@@ -135,6 +197,7 @@ public class Ships6Movement implements BasicMovement {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = CorePlugin
                     .createSchedulerBuilder()
+                    .setDisplayName("Set Block")
                     .setExecutor(new SetBlocks(A, total, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())
@@ -145,6 +208,7 @@ public class Ships6Movement implements BasicMovement {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = CorePlugin
                     .createSchedulerBuilder()
+                    .setDisplayName("Remove Block")
                     .setExecutor(new RemoveBlocks(waterLevel, A, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())
