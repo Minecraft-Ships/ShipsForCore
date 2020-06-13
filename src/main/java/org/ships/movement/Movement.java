@@ -8,6 +8,7 @@ import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.details.BlockDetails;
@@ -16,6 +17,7 @@ import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.result.AbstractFailedMovement;
@@ -53,6 +55,7 @@ public class Movement {
     }
 
     protected void move(Vessel vessel, MovementContext context) throws MoveException {
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         if(vessel.isLoading()){
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_STILL_LOADING, null));
@@ -93,23 +96,28 @@ public class Movement {
             blockList = ShipsPlugin.getPlugin().getBlockList();
         }
 
-        for (BlockType type : context.getMovingStructure().to(b -> b.getStoredBlockData().getType())){
-            int limit = blockList.getBlockInstruction(type).getBlockLimit();
-            long count = context.getMovingStructure().stream()
-                    .filter(b1 -> b1.getStoredBlockData().getType().equals(type)).count();
-            if (limit != -1 && count > limit){
-                vessel.set(MovingFlag.class, null);
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-                throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.TOO_MANY_OF_BLOCK, type));
+        if(config.isMovementRequirementsCheckMaxBlockType()) {
+            context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Checking requirements: Block limit check")));
+            for (BlockType type : context.getMovingStructure().to(b -> b.getStoredBlockData().getType())) {
+                int limit = blockList.getBlockInstruction(type).getBlockLimit();
+                long count = context.getMovingStructure().stream()
+                        .filter(b1 -> b1.getStoredBlockData().getType().equals(type)).count();
+                if (limit != -1 && count > limit) {
+                    vessel.set(MovingFlag.class, null);
+                    context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+                    throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.TOO_MANY_OF_BLOCK, type));
+                }
             }
         }
 
+        context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Checking requirements: valid licence")));
         Optional<MovingBlock> opLicence = context.getMovingStructure().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
         if (!opLicence.isPresent()) {
             vessel.set(MovingFlag.class, null);
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.NO_LICENCE_FOUND, null));
         }
+        context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Checking requirements: ShipType requirements")));
         if (vessel instanceof VesselRequirement) {
             try {
                 ((VesselRequirement) vessel).meetsRequirements(context);
@@ -119,6 +127,7 @@ public class Movement {
             }
         }
         Set<SyncBlockPosition> collided = new HashSet<>();
+        context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Checking requirements: Collide")));
         context.getMovingStructure().forEach(mb -> {
             if(context.getMovingStructure().stream().anyMatch(mb1 -> mb.getAfterPosition().equals(mb1.getBeforePosition()))){
                 return;
@@ -149,6 +158,7 @@ public class Movement {
 
             throw new MoveException(new AbstractFailedMovement(vessel, MovementResult.COLLIDE_DETECTED, collideEvent.getCollisions()));
         }
+        context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Processing requirements:")));
         if(vessel instanceof VesselRequirement){
             VesselRequirement requirement = (VesselRequirement)vessel;
             requirement.processRequirements(context);

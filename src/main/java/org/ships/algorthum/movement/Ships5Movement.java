@@ -1,5 +1,6 @@
 package org.ships.algorthum.movement;
 
+import org.core.world.position.block.BlockTypes;
 import org.ships.movement.*;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;

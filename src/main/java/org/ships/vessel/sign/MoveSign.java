@@ -39,10 +39,7 @@ public class MoveSign implements ShipsSign {
     @Override
     public boolean isSign(SignTileEntity entity) {
         Optional<Text> opValue = entity.getLine(0);
-        if (opValue.isPresent() && opValue.get().equals(getFirstLine())) {
-            return true;
-        }
-        return false;
+        return opValue.isPresent() && opValue.get().equals(getFirstLine());
     }
 
     @Override
@@ -82,21 +79,28 @@ public class MoveSign implements ShipsSign {
         final int finalSpeed = speed;
         if(ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating()) {
             LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+            /*player.sendMessagePlain("Licence: " + licenceSign.getId());
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getTypeFinder().init().findBlock(position, p -> {
+                player.sendMessagePlain("Pos: " + p.getTileEntity().toString());
                 Optional<LiveTileEntity> opTileEntity = p.getTileEntity();
                 if (!opTileEntity.isPresent()) {
+                    player.sendMessagePlain("Is not tile entity.");
                     return false;
                 }
                 LiveTileEntity lte2 = opTileEntity.get();
                 if (!(lte2 instanceof LiveSignTileEntity)) {
+                    player.sendMessagePlain("is not sign tile entity");
                     return false;
                 }
+                player.sendMessagePlain("is licence sign: " + (licenceSign.isSign((LiveSignTileEntity)lte2)) + "Line1: " + ((LiveSignTileEntity) lte2).getLine(0) + " | " + ((LiveSignTileEntity) lte2).getLine(1) + " | " + ((LiveSignTileEntity) lte2).getLine(2) + " | " + ((LiveSignTileEntity) lte2).getLine(3));
                 return licenceSign.isSign((LiveSignTileEntity) lte2);
             }, new OvertimeBlockTypeFinderUpdate() {
                 @Override
                 public void onBlockFound(SyncBlockPosition position) {
+                    player.sendMessagePlain("onBlockFound");
                     LiveSignTileEntity sign = (LiveSignTileEntity) position.getTileEntity().get();
                     Optional<Vessel> opVessel = licenceSign.getShip(sign);
+                    player.sendMessagePlain("Vessel: " + opVessel.toString());
                     if(opVessel.isPresent()){
                         onSignSpeedUpdate(opVessel.get(), lste, finalSpeed);
                     }else{
@@ -108,7 +112,31 @@ public class MoveSign implements ShipsSign {
                 public void onFailedToFind() {
                     player.sendMessage(CorePlugin.buildText(TextColours.RED + "Failed to find licence sign"));
                 }
-            });
+            });*/
+            new ShipsOvertimeUpdateBlockLoader(position) {
+                @Override
+                protected void onStructureUpdate(Vessel vessel) {
+                    onSignSpeedUpdate(vessel, lste, finalSpeed);
+                    return;
+                }
+
+                @Override
+                protected boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                    return true;
+                }
+
+                @Override
+                protected void onExceptionThrown(LoadVesselException e) {
+                    if (e instanceof UnableToFindLicenceSign) {
+                        UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
+                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
+                        e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+                        CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                    } else {
+                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
+                    }
+                }
+            }.loadOvertime();
         }else{
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();

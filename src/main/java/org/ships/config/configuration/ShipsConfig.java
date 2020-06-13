@@ -45,6 +45,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     protected final ConfigurationNode VISIBLE_BOSS_BAR = new ConfigurationNode("Bar", "Visible");
     protected final ConfigurationNode STRUCTURE_UPDATE_AUTO = new ConfigurationNode("Structure", "Update", "Auto");
     protected final ConfigurationNode STRUCTURE_UPDATE_CLICK = new ConfigurationNode("Structure", "Update", "Click");
+    protected final ConfigurationNode MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE = new ConfigurationNode("Movement", "Requirements", "Check", "Max", "BlockType");
 
     @Deprecated
     public final ConfigurationNode ALPHA_COMMAND_USE_LEGACY = new ConfigurationNode("AlphaOnly", "Command", "UseLegacy");
@@ -91,6 +92,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
             this.file.set(this.FALL_SPEED, 1);
             this.file.set(this.FALL_ENABLED, true);
         }
+        if(!this.file.parseBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE).isPresent()){
+            modified = true;
+            this.file.set(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, true);
+        }
         if(modified){
             this.file.save();
         }
@@ -115,6 +120,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
 
     public boolean isEOTEnabled(){
         return this.file.parseBoolean(this.EOT_ENABLED).orElse(true);
+    }
+
+    public boolean isMovementRequirementsCheckMaxBlockType(){
+        return this.file.parseBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE).orElse(true);
     }
 
     public TimeUnit getEOTDelayUnit() {
@@ -205,6 +214,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         file.set(FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.MINUTES);
         file.set(FALL_ENABLED, true);
         file.set(VISIBLE_BOSS_BAR, false);
+        file.set(MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, true);
         file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 50);
         file.set(this.ADVANCED_MOVEMENT_STACK_DELAY, 1);
         file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
@@ -239,7 +249,8 @@ public class ShipsConfig implements Config.CommandConfigurable {
                 new DedicatedNode<>(true, "Running.Fall.Enabled", Parser.STRING_TO_BOOLEAN, FALL_ENABLED.getPath()),
                 new DedicatedNode<>(true, "Running.Fall.Delay", Parser.STRING_TO_INTEGER, FALL_DELAY.getPath()),
                 new DedicatedNode<>("Running.Fall.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, FALL_DELAY_UNIT.getPath()),
-                new DedicatedNode<>(true, "Running.Fall.Speed", Parser.STRING_TO_INTEGER, FALL_SPEED.getPath())
+                new DedicatedNode<>(true, "Running.Fall.Speed", Parser.STRING_TO_INTEGER, FALL_SPEED.getPath()),
+                new DedicatedNode<>(true, "Movement.Requirements.Check.Max.BlockType", Parser.STRING_TO_BOOLEAN, MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getPath())
         ));
     }
 }

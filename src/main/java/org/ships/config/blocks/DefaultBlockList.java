@@ -138,6 +138,7 @@ public class DefaultBlockList implements BlockList {
         addToConfig(BlockTypes.REDSTONE_WIRE.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
 
         if(mcVersion[1] == 12){
+            addToConfig(BlockTypes1V12.PLANKS.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
             addToConfig(BlockTypes1V12.LOG.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
             addToConfig(BlockTypes1V12.LOG2.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
             addToConfig(BlockTypes1V12.STANDING_BANNER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);

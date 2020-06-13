@@ -63,6 +63,59 @@ public class AltitudeSign implements ShipsSign {
             return false;
         }
         LiveSignTileEntity stes = (LiveSignTileEntity) lte;
+        boolean updateSpeed = player.isSneaking();
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+
+        if(updateSpeed) {
+            if (config.isStructureAutoUpdating()) {
+                int altitude = Integer.parseInt(stes.getLine(3).get().toPlain());
+                new ShipsOvertimeUpdateBlockLoader(position) {
+                    @Override
+                    protected void onStructureUpdate(Vessel vessel) {
+                        int newSpeed = altitude + 1;
+                        if (newSpeed <= vessel.getAltitudeSpeed()) {
+                            stes.setLine(3, CorePlugin.buildText(newSpeed + ""));
+                        }
+                        return;
+                    }
+
+                    @Override
+                    protected boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                        return true;
+                    }
+
+                    @Override
+                    protected void onExceptionThrown(LoadVesselException e) {
+                        if (e instanceof UnableToFindLicenceSign) {
+                            UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
+                            player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
+                            e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+                            CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                        } else {
+                            player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
+                        }
+                    }
+                }.loadOvertime();
+            } else {
+                int altitude = Integer.parseInt(stes.getLine(3).get().toPlain());
+                try {
+                    Vessel vessel = new ShipsBlockFinder(position).load();
+                    int newSpeed = altitude + 1;
+                    if (newSpeed <= vessel.getAltitudeSpeed()) {
+                        stes.setLine(3, CorePlugin.buildText(newSpeed + ""));
+                    }
+                    return false;
+                } catch (UnableToFindLicenceSign e1) {
+                    player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
+                    e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+                    CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                } catch (LoadVesselException e) {
+                    player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
+                }
+            }
+            return false;
+        }
+
         if(stes.getLine(1).get().toPlain().startsWith("{")) {
             stes.setLine(1, CorePlugin.buildText("Increase"));
             stes.setLine(2, CorePlugin.buildText("{decrease}"));
@@ -80,6 +133,14 @@ public class AltitudeSign implements ShipsSign {
         String line1 = ste.getLine(1).get().toPlain();
         String line3 = ste.getLine(3).get().toPlain();
         int altitude = Integer.parseInt(line3);
+        boolean updateSpeed = player.isSneaking();
+        if(updateSpeed){
+            int newSpeed = altitude - 1;
+            if (newSpeed >= 0){
+                ste.setLine(3, CorePlugin.buildText(newSpeed + ""));
+            }
+            return false;
+        }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int blockLimit = config.getDefaultTrackSize();
         ServerBossBar bar = null;

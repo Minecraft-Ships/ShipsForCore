@@ -84,11 +84,13 @@ public class EOTExecutor implements Runnable {
             try {
                 this.vessel.moveTowards(directionalData.get().getDirection().getOpposite().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), context);
             } catch (MoveException e) {
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 if(e.getMovement() instanceof MovementResult.VesselMovingAlready){
                     return;
                 }
                 sendError(e.getMovement());
             }catch (Throwable e2){
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 this.vessel.getEntities().forEach(e -> e.setGravity(true));
             }
         });

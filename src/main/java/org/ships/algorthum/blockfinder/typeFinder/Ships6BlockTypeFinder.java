@@ -1,6 +1,8 @@
 package org.ships.algorthum.blockfinder.typeFinder;
 
 import org.core.CorePlugin;
+import org.core.entity.living.human.player.LivePlayer;
+import org.core.entity.living.human.player.Player;
 import org.core.schedule.Scheduler;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -128,6 +130,11 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
     protected int limit;
     private BlockList list;
     private Vessel vessel;
+    private LivePlayer removeThis;
+
+    public void setPlayer(LivePlayer player){
+        this.removeThis = player;
+    }
 
     @Override
     public Ships6BlockTypeFinder init() {
@@ -146,8 +153,14 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
         List<SyncBlockPosition> target = new ArrayList<>();
         List<SyncBlockPosition> process = new ArrayList<>();
         process.add(position);
+        if(this.removeThis != null){
+            this.removeThis.sendMessagePlain("Block Added: Count: " + count + " | Limit: " + this.limit);
+        }
         while (count != this.limit) {
             if (process.isEmpty()) {
+                if(this.removeThis != null){
+                    this.removeThis.sendMessagePlain("Process empty");
+                }
                 return Optional.empty();
             }
             for (int A = 0; A < process.size(); A++) {
@@ -156,13 +169,22 @@ public class Ships6BlockTypeFinder implements BasicTypeBlockFinder {
                 for (Direction face : directions) {
                     SyncBlockPosition block = proc.getRelative(face);
                     if (!ret.stream().anyMatch(b -> b.equals(block))) {
+                        if(this.removeThis != null){
+                            this.removeThis.sendMessagePlain("Checking Block");
+                        }
                         BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
                         if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
+                            if(this.removeThis != null){
+                                this.removeThis.sendMessagePlain("Block met requirements");
+                            }
                             if(predicate.test(block)){
                                 return Optional.of(block);
                             }else {
                                 ret.add(block);
                                 target.add(block);
+                                if(this.removeThis != null){
+                                    this.removeThis.sendMessagePlain("Added to ret and target");
+                                }
                             }
                         }
                     }
