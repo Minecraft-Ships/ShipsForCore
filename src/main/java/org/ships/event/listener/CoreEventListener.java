@@ -120,6 +120,10 @@ public class CoreEventListener implements EventListener {
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
+            if(ShipsSign.LOCKED_SIGNS.stream().anyMatch(b -> b.equals(position))){
+                event.getEntity().sendMessagePlain("Sign is moving ship already");
+                return;
+            }
             boolean cancel = event.getClickAction() == EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position) : s.onSecondClick(event.getEntity(), position);
             if(cancel){
                 event.setCancelled(true);

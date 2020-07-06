@@ -4,10 +4,12 @@ import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.world.boss.ServerBossBar;
 import org.ships.algorthum.movement.BasicMovement;
+import org.ships.event.vessel.move.VesselMoveEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class MovementContext {
 
@@ -18,6 +20,7 @@ public class MovementContext {
     protected Map<EntitySnapshot<? extends LiveEntity>, MovingBlock> entities = new HashMap<>();
     protected Movement.MidMovement[] midMovementProcess = new Movement.MidMovement[0];
     protected Movement.PostMovement[] postMovementProcess = new Movement.PostMovement[0];
+    protected Consumer<VesselMoveEvent.Post> post = (e) -> {};
 
     public Optional<ServerBossBar> getBar(){
         return Optional.ofNullable(this.bar);
@@ -77,5 +80,12 @@ public class MovementContext {
         return this;
     }
 
+    public Consumer<VesselMoveEvent.Post> getPostMovement(){
+        return this.post;
+    }
 
+    public MovementContext setPostMovement(Consumer<VesselMoveEvent.Post> consumer){
+        this.post = consumer;
+        return this;
+    }
 }

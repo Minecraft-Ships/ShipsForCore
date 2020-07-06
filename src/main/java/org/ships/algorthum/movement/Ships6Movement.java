@@ -3,6 +3,7 @@ package org.ships.algorthum.movement;
 import org.core.CorePlugin;
 import org.core.schedule.Scheduler;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.*;
 import org.ships.movement.result.AbstractFailedMovement;
@@ -190,6 +191,9 @@ public class Ships6Movement implements BasicMovement {
             for(Movement.PostMovement movement : context.getPostMovementProcess()){
                 movement.postMove(vessel);
             }
+            VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
+            CorePlugin.getPlatform().callEvent(eventPost);
+            context.getPostMovement().accept(eventPost);
             Result.DEFAULT_RESULT.run(vessel, context);
             vessel.set(MovingFlag.class, null);
         }).build(ShipsPlugin.getPlugin());

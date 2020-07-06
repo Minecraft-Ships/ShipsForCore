@@ -71,7 +71,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
-    public <T extends VesselFlag> Optional<T> get(Class<T> clazz){
+    public <T extends VesselFlag<?>> Optional<T> get(Class<T> clazz){
         return (Optional<T>) getFlags().stream().filter(clazz::isInstance).findAny();
     }
 

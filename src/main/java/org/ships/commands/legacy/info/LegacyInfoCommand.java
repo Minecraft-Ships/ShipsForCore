@@ -9,6 +9,7 @@ import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.sign.ShipsSign;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public class LegacyInfoCommand implements LegacyArgumentCommand {
             }
         }
         viewer.sendMessage(blockListText);
-
+        viewer.sendMessagePlain("Locked Sign: " + CorePlugin.toString("| ", b -> "[" + b.getX() + "," + b.getY() + "," + b.getZ() + "]" , ShipsSign.LOCKED_SIGNS));
         return true;
     }
 

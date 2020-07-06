@@ -28,6 +28,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class AltitudeSign implements ShipsSign {
 
@@ -76,7 +77,7 @@ public class AltitudeSign implements ShipsSign {
                         if (newSpeed <= vessel.getAltitudeSpeed()) {
                             stes.setLine(3, CorePlugin.buildText(newSpeed + ""));
                         }
-                        return;
+                        ShipsSign.LOCKED_SIGNS.remove(position);
                     }
 
                     @Override
@@ -86,6 +87,7 @@ public class AltitudeSign implements ShipsSign {
 
                     @Override
                     protected void onExceptionThrown(LoadVesselException e) {
+                        ShipsSign.LOCKED_SIGNS.remove(position);
                         if (e instanceof UnableToFindLicenceSign) {
                             UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                             player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
@@ -104,12 +106,15 @@ public class AltitudeSign implements ShipsSign {
                     if (newSpeed <= vessel.getAltitudeSpeed()) {
                         stes.setLine(3, CorePlugin.buildText(newSpeed + ""));
                     }
+                    ShipsSign.LOCKED_SIGNS.remove(position);
                     return false;
                 } catch (UnableToFindLicenceSign e1) {
+                    ShipsSign.LOCKED_SIGNS.remove(position);
                     player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
                     e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
                     CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
                 } catch (LoadVesselException e) {
+                    ShipsSign.LOCKED_SIGNS.remove(position);
                     player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
                 }
             }
@@ -148,11 +153,12 @@ public class AltitudeSign implements ShipsSign {
             bar = CorePlugin.createBossBar().setMessage(CorePlugin.buildText("0 / " + blockLimit)).register(player);
         }
         final ServerBossBar finalBar = bar;
+        ShipsSign.LOCKED_SIGNS.add(position);
         if(config.isStructureAutoUpdating()) {
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
-                    onVesselMove(player, finalBar, altitude, line1, vessel);
+                    onVesselMove(player, position, finalBar, altitude, line1, vessel);
                 }
 
                 @Override
@@ -162,7 +168,7 @@ public class AltitudeSign implements ShipsSign {
                         finalBar.setMessage(CorePlugin.buildText(foundBlocks + " / " + blockLimit));
                         try {
                             finalBar.setValue(foundBlocks, blockLimit);
-                        }catch (IllegalArgumentException e){
+                        }catch (IllegalArgumentException ignore){
 
                         }
                     }
@@ -171,6 +177,7 @@ public class AltitudeSign implements ShipsSign {
 
                 @Override
                 protected void onExceptionThrown(LoadVesselException e) {
+                    ShipsSign.LOCKED_SIGNS.remove(position);
                     if (finalBar != null) {
                         finalBar.deregisterPlayers();
                     }
@@ -187,12 +194,14 @@ public class AltitudeSign implements ShipsSign {
         }else{
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
-                onVesselMove(player, finalBar, altitude, line1, vessel);
+                onVesselMove(player, position, finalBar, altitude, line1, vessel);
             }catch (UnableToFindLicenceSign e1){
+                ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
                 CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
             } catch (LoadVesselException e) {
+                ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             }
         }
@@ -213,16 +222,17 @@ public class AltitudeSign implements ShipsSign {
         movement.sendMessage(viewer, (T)value);
     }
 
-    private void onVesselMove(LivePlayer player, ServerBossBar bar, int altitude, String line1, Vessel vessel){
+    private void onVesselMove(LivePlayer player, BlockPosition position, ServerBossBar bar, int altitude, String line1, Vessel vessel){
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
         if (opFlag.isPresent() && bar != null) {
             if (opFlag.get()) {
                 bar.deregisterPlayers();
                 player.sendMessage(CorePlugin.buildText("The altitude is locked on this ship"));
+                ShipsSign.LOCKED_SIGNS.remove(position);
                 return;
             }
         }
-        MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+        MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).setPostMovement((e) -> ShipsSign.LOCKED_SIGNS.remove(position));
         vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
             if(bar == null){
                 return;
@@ -230,17 +240,23 @@ public class AltitudeSign implements ShipsSign {
             bar.register((LivePlayer) e);
             context.setBar(bar);
         });
-        try {
-            if (line1.startsWith("{")) {
-                vessel.moveTowards(0, altitude, 0, context);
-            } else {
-                vessel.moveTowards(0, -altitude, 0, context);
+
+        Consumer<Throwable> exception = (exc) -> {
+            ShipsSign.LOCKED_SIGNS.remove(position);
+            if(!(exc instanceof MoveException)){
+                return;
             }
-        }catch (MoveException e){
+            MoveException e = (MoveException)exc;
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             FailedMovement<?> movement = e.getMovement();
             sendErrorMessage(player, movement, movement.getValue().orElse(null));
             ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to " + movement.getResult().getClass().getSimpleName(), "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
+
+        };
+        if (line1.startsWith("{")) {
+            vessel.moveTowards(0, altitude, 0, context, exception);
+        } else {
+            vessel.moveTowards(0, -altitude, 0, context, exception);
         }
     }
 }

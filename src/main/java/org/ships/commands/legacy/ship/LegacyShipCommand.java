@@ -2,6 +2,7 @@ package org.ships.commands.legacy.ship;
 
 import org.core.CorePlugin;
 import org.core.configuration.parser.Parser;
+import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.source.command.CommandSource;
@@ -16,6 +17,7 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.commands.legacy.LegacyArgumentCommand;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.movement.autopilot.BasicFlightPath;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
@@ -32,6 +34,7 @@ import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.EOTSign;
 
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -161,14 +164,6 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
         if(vessel instanceof ShipsVessel) {
             ((ShipsVessel) vessel).getExtraInformation().forEach((key, value) -> viewer.sendMessagePlain(key + ": " + value));
         }
-        viewer.sendMessagePlain("Entities: ");
-        viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", e -> {
-            if(e instanceof LivePlayer){
-                LivePlayer player = (LivePlayer)e;
-                return "player: " + player.getName();
-            }
-            return e.getType().getName();
-        }, vessel.getEntities()));
         if(vessel instanceof ShipsVessel) {
             viewer.sendMessagePlain("Flags:");
             viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", f -> {
@@ -178,6 +173,18 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                 return "";
             }, ((ShipsVessel)vessel).getFlags()));
         }
+        viewer.sendMessagePlain("Entities: ");
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        vessel.getEntitiesOvertime(config.getEntityTrackingLimit(), e -> true, e -> {
+            String entity = null;
+            if (e instanceof LivePlayer) {
+                LivePlayer player = (LivePlayer) e;
+                entity = "player: " + player.getName();
+            } else {
+                entity = e.getType().getName();
+            }
+            viewer.sendMessagePlain("- " + entity);
+        }, e -> {});
         return true;
     }
 

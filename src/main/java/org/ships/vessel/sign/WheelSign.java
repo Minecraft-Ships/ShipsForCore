@@ -25,6 +25,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class WheelSign implements ShipsSign {
 
@@ -76,16 +77,18 @@ public class WheelSign implements ShipsSign {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int trackLimit = config.getDefaultTrackSize();
         MovementContext context = new MovementContext();
+        context.setPostMovement(e -> ShipsSign.LOCKED_SIGNS.remove(position));
         if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
             ServerBossBar bar = CorePlugin.createBossBar();
             bar.setMessage(CorePlugin.buildText("0 / " + trackLimit)).register(player);
             context.setBar(bar);
         }
+        ShipsSign.LOCKED_SIGNS.add(position);
         if(config.isStructureAutoUpdating()) {
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
-                    onVesselRotate(player, context, vessel, left);
+                    onVesselRotate(player, context, vessel, position, left);
                 }
 
                 @Override
@@ -95,7 +98,7 @@ public class WheelSign implements ShipsSign {
                         bar.setMessage(CorePlugin.buildText(foundBlocks + " / " + trackLimit));
                         try {
                             bar.setValue(foundBlocks, trackLimit);
-                        }catch (IllegalArgumentException e){
+                        }catch (IllegalArgumentException ignore){
 
                         }
 
@@ -105,6 +108,7 @@ public class WheelSign implements ShipsSign {
 
                 @Override
                 protected void onExceptionThrown(LoadVesselException e) {
+                    ShipsSign.LOCKED_SIGNS.remove(position);
                     context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                     if (e instanceof UnableToFindLicenceSign) {
                         UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
@@ -119,7 +123,7 @@ public class WheelSign implements ShipsSign {
         }else{
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
-                onVesselRotate(player, context, vessel, true);
+                onVesselRotate(player, context, vessel, position, true);
             }catch (UnableToFindLicenceSign e1){
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
@@ -131,23 +135,26 @@ public class WheelSign implements ShipsSign {
         return false;
     }
 
-    private void onVesselRotate(LivePlayer player, MovementContext context, Vessel vessel, boolean left){
+    private void onVesselRotate(LivePlayer player, MovementContext context, Vessel vessel, SyncBlockPosition position, boolean left){
         context.getBar().ifPresent(bar -> {
             bar.deregister(player);
             vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
 
         });
         context.setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
-        try {
-            if(left) {
-                vessel.rotateLeftAround(vessel.getPosition(), context);
+        Consumer<Throwable> exception = (exc) -> {
+            ShipsSign.LOCKED_SIGNS.remove(position);
+            if(exc instanceof MoveException){
+                MoveException e = (MoveException)exc;
+                sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }else{
-                vessel.rotateRightAround(vessel.getPosition(), context);
+                vessel.getEntities().forEach(e -> e.setGravity(true));
             }
-        } catch (MoveException e) {
-            sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
-        } catch (Throwable e2) {
-            vessel.getEntities().forEach(e -> e.setGravity(true));
+        };
+        if(left) {
+            vessel.rotateLeftAround(vessel.getPosition(), context, exception);
+        }else{
+            vessel.rotateRightAround(vessel.getPosition(), context, exception);
         }
     }
 

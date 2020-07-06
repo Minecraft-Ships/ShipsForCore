@@ -3,13 +3,12 @@ package org.ships.vessel.common.types.typical;
 import org.core.CorePlugin;
 import org.core.utils.Identifable;
 import org.core.vector.types.Vector3Int;
+import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.impl.sync.SyncPosition;
-import org.core.world.position.block.entity.LiveTileEntity;
-import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.config.blocks.BlockListable;
-import org.ships.exceptions.MoveException;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
 import org.ships.movement.MovementContext;
@@ -22,6 +21,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
@@ -67,31 +67,31 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     }
 
     @Override
-    default void moveTowards(int x, int y, int z, MovementContext context) throws MoveException {
-        Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, context);
+    default void moveTowards(int x, int y, int z, MovementContext context, Consumer<Throwable> exception){
+        Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, context, exception);
     }
 
     @Override
-    default void moveTowards(Vector3Int vector, MovementContext context) throws MoveException{
-        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context);
+    default void moveTowards(Vector3Int vector, MovementContext context, Consumer<Throwable> exception){
+        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context, exception);
     }
 
     @Override
-    default void moveTo(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
+    default void moveTo(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
         SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
-        Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context);
+        Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context, exception);
     }
 
     @Override
-    default void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
+    default void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
         SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
-        Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context);
+        Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context, exception);
     }
 
     @Override
-    default void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context) throws MoveException{
+    default void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
         SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
-        Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context);
+        Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context, exception);
     }
 
     @Override

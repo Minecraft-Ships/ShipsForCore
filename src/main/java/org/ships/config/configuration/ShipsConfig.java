@@ -13,6 +13,10 @@ import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -32,6 +36,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     protected final ConfigurationNode ADVANCED_BLOCKFINDER_STACK_DELAY = new ConfigurationNode("Advanced", "BlockFinder", "Stack", "Delay");
     protected final ConfigurationNode ADVANCED_BLOCKFINDER_STACK_DELAYUNIT = new ConfigurationNode("Advanced", "BlockFinder", "Stack", "DelayUnit");
     protected final ConfigurationNode ADVANCED_BLOCKFINDER_STACK_LIMIT = new ConfigurationNode("Advanced", "BlockFinder", "Stack", "Limit");
+    protected final ConfigurationNode ADVANCED_ENTITYFINDER_STACK_LIMIT = new ConfigurationNode("Advanced", "EntityFinder", "Stack", "Limit");
     protected final ConfigurationNode EOT_DELAY = new ConfigurationNode("Auto", "EOT", "Delay");
     protected final ConfigurationNode EOT_DELAY_UNIT = new ConfigurationNode("Auto", "EOT", "DelayUnit");
     protected final ConfigurationNode EOT_SPEED = new ConfigurationNode("Auto", "EOT", "Speed");
@@ -59,7 +64,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         }
         if(!this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).isPresent()){
             modified = true;
-            this.file.set(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
+            this.file.set(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_SIX);
         }
         if(!this.file.parseBoolean(this.VISIBLE_BOSS_BAR).isPresent()){
             modified = true;
@@ -71,12 +76,12 @@ public class ShipsConfig implements Config.CommandConfigurable {
         }
         if(!this.file.parseInt(this.ADVANCED_MOVEMENT_STACK_LIMIT).isPresent()){
             modified = true;
-            this.file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 50);
+            this.file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 7);
             this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAY, 1);
-            this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
+            this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit) null);
             this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAY, 1);
-            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
-            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 50);
+            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit)null);
+            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 2);
             this.file.set(this.STRUCTURE_UPDATE_AUTO, true);
         }
         if(!this.file.parseBoolean(this.STRUCTURE_UPDATE_CLICK).isPresent()){
@@ -85,16 +90,20 @@ public class ShipsConfig implements Config.CommandConfigurable {
         }
         if (!this.file.parseBoolean(this.EOT_ENABLED).isPresent()){
             modified = true;
-            this.file.set(this.EOT_ENABLED, true);
+            this.file.set(this.EOT_ENABLED, false);
             this.file.set(this.EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
             this.file.set(this.FALL_DELAY, 1);
             this.file.set(this.FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.MINUTES);
             this.file.set(this.FALL_SPEED, 1);
-            this.file.set(this.FALL_ENABLED, true);
+            this.file.set(this.FALL_ENABLED, false);
         }
         if(!this.file.parseBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE).isPresent()){
             modified = true;
-            this.file.set(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, true);
+            this.file.set(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, false);
+        }
+        if(!this.file.parseInt(this.ADVANCED_ENTITYFINDER_STACK_LIMIT).isPresent()){
+            modified = true;
+            this.file.set(this.ADVANCED_ENTITYFINDER_STACK_LIMIT, 2);
         }
         if(modified){
             this.file.save();
@@ -107,7 +116,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     }
 
     public TimeUnit getFallingDelayUnit(){
-        return this.file.parse(this.FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(TimeUnit.MINUTES);
+        return this.file.parse(this.FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(null);
     }
 
     public int getFallingDelay(){
@@ -119,15 +128,15 @@ public class ShipsConfig implements Config.CommandConfigurable {
     }
 
     public boolean isEOTEnabled(){
-        return this.file.parseBoolean(this.EOT_ENABLED).orElse(true);
+        return this.file.parseBoolean(this.EOT_ENABLED).orElse(false);
     }
 
     public boolean isMovementRequirementsCheckMaxBlockType(){
-        return this.file.parseBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE).orElse(true);
+        return this.file.parseBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE).orElse(false);
     }
 
     public TimeUnit getEOTDelayUnit() {
-        return this.file.parse(this.EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(TimeUnit.MINUTES);
+        return this.file.parse(this.EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(null);
     }
 
     public int getEOTDelay(){
@@ -136,6 +145,10 @@ public class ShipsConfig implements Config.CommandConfigurable {
 
     public int getEOTSpeed(){
         return this.file.parseInt(this.EOT_SPEED).orElse(2);
+    }
+
+    public int getEntityTrackingLimit(){
+        return this.file.parseInt(this.ADVANCED_ENTITYFINDER_STACK_LIMIT).orElse(2);
     }
 
     public int getDefaultFinderStackDelay(){
@@ -147,7 +160,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         if(opTimeUnit == null){
             return null;
         }
-        return opTimeUnit.orElse(TimeUnit.SECONDS);
+        return opTimeUnit.orElse(null);
     }
 
     public TimeUnit getDefaultMovementStackDelayUnit(){
@@ -155,7 +168,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
         if(opTimeUnit == null){
             return null;
         }
-        return opTimeUnit.orElse(TimeUnit.SECONDS);
+        return opTimeUnit.orElse(null);
     }
 
     public boolean isStructureClickUpdating(){
@@ -167,11 +180,11 @@ public class ShipsConfig implements Config.CommandConfigurable {
     }
 
     public int getDefaultMovementStackLimit(){
-        return this.file.parseInt(this.ADVANCED_MOVEMENT_STACK_LIMIT).orElse(100);
+        return this.file.parseInt(this.ADVANCED_MOVEMENT_STACK_LIMIT).orElse(7);
     }
 
     public int getDefaultFinderStackLimit(){
-        return this.file.parseInt(this.ADVANCED_BLOCKFINDER_STACK_LIMIT).orElse(50);
+        return this.file.parseInt(this.ADVANCED_BLOCKFINDER_STACK_LIMIT).orElse(2);
     }
 
     public int getDefaultMovementStackDelay(){
@@ -183,7 +196,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     }
 
     public BasicMovement getDefaultMovement(){
-        return this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).orElse(BasicMovement.SHIPS_FIVE);
+        return this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).orElse(BasicMovement.SHIPS_SIX);
     }
 
     public boolean isBossBarVisible(){
@@ -202,7 +215,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
     @Override
     public void recreateFile() {
         ConfigurationFile file = getFile();
-        file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_FIVE);
+        file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_SIX);
         file.set(ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER, BasicBlockFinder.SHIPS_FIVE);
         file.set(ADVANCED_TRACK_LIMIT, 4000);
         file.set(EOT_SPEED, 2);
@@ -214,15 +227,16 @@ public class ShipsConfig implements Config.CommandConfigurable {
         file.set(FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.MINUTES);
         file.set(FALL_ENABLED, true);
         file.set(VISIBLE_BOSS_BAR, false);
-        file.set(MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, true);
-        file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 50);
+        file.set(MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, false);
+        file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 6);
         file.set(this.ADVANCED_MOVEMENT_STACK_DELAY, 1);
-        file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
+        file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit) null);
         file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAY, 1);
-        file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
-        file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 50);
+        file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit)null);
+        file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 2);
         file.set(this.STRUCTURE_UPDATE_AUTO, true);
         file.set(this.STRUCTURE_UPDATE_CLICK, false);
+        file.set(this.ADVANCED_ENTITYFINDER_STACK_LIMIT, 2);
 
         file.set(ALPHA_COMMAND_USE_LEGACY, true);
         file.save();
@@ -241,6 +255,7 @@ public class ShipsConfig implements Config.CommandConfigurable {
                 new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Delay", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_DELAY.getPath()),
                 new DedicatedNode<>("Advanced.Block.Finder.Stack.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getPath()),
                 new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_LIMIT.getPath()),
+                new DedicatedNode<>(true, "Advanced.Entity.Finder.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_ENTITYFINDER_STACK_LIMIT.getPath()),
                 new DedicatedNode<>(true, "Structure.Auto.Update", Parser.STRING_TO_BOOLEAN, STRUCTURE_UPDATE_AUTO.getPath()),
                 new DedicatedNode<>(true, "Running.EOT.Enabled", Parser.STRING_TO_BOOLEAN, EOT_ENABLED.getPath()),
                 new DedicatedNode<>(true, "Running.EOT.Delay", Parser.STRING_TO_INTEGER, EOT_DELAY.getPath()),

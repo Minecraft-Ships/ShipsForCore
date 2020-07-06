@@ -1,6 +1,7 @@
 package org.ships.algorthum.movement;
 
-import org.core.world.position.block.BlockTypes;
+import org.core.CorePlugin;
+import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.movement.*;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
@@ -36,6 +37,9 @@ public class Ships5Movement implements BasicMovement {
             movement.postMove(vessel);
         }
         vessel.set(MovingFlag.class, null);
+        VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
+        CorePlugin.getPlatform().callEvent(eventPost);
+        context.getPostMovement().accept(eventPost);
         return Result.DEFAULT_RESULT;
     }
 

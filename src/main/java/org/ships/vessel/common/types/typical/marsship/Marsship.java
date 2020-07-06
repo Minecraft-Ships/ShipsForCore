@@ -85,11 +85,11 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
         }
         float specialBlockPercent = ((specialBlocks * 100.0f)/context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR.get())).count());
         if((this.specialBlockPercent != 0) && specialBlockPercent <= this.specialBlockPercent){
-            throw new MoveException(new AbstractFailedMovement(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlocks.iterator().next(), this.specialBlockPercent, specialBlockPercent)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlocks.iterator().next(), this.specialBlockPercent, specialBlockPercent)));
         }
     }
 
     @Override
-    public void processRequirements(MovementContext context) throws MoveException {
+    public void processRequirements(MovementContext context) {
     }
 }
