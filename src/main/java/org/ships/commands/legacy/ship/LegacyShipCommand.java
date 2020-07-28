@@ -2,7 +2,6 @@ package org.ships.commands.legacy.ship;
 
 import org.core.CorePlugin;
 import org.core.configuration.parser.Parser;
-import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.source.command.CommandSource;
@@ -10,12 +9,12 @@ import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.core.world.position.Positionable;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.load.LoadVesselException;
@@ -32,9 +31,9 @@ import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.EOTSign;
+import org.ships.vessel.sign.ShipsSign;
 
 import java.io.IOException;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -73,6 +72,8 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                 return runInfo(source, vessel, args);
             }else if(args[2].equalsIgnoreCase("autopilot")){
                 return runAutoPilot(source, vessel, args);
+            }else if(args[2].equalsIgnoreCase("unlock")){
+                return runUnlock(source, vessel, args);
             }
         } catch (IOException e) {
             if(source instanceof CommandViewer){
@@ -81,6 +82,22 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             return true;
         }
         return false;
+    }
+
+    private boolean runUnlock(CommandSource source, Vessel vessel, String... args){
+        Set<SyncBlockPosition> set = vessel.getStructure().getPositions().stream().filter(p -> ShipsSign.LOCKED_SIGNS.stream().anyMatch(p1 -> p1.equals(p))).collect(Collectors.toSet());
+        if(set.isEmpty()){
+            if(source instanceof CommandViewer){
+                ((CommandViewer) source).sendMessagePlain("Cleared all locked signs");
+            }
+            ShipsSign.LOCKED_SIGNS.clear();
+            return true;
+        }
+        if(source instanceof CommandViewer){
+            ((CommandViewer) source).sendMessagePlain("Cleared all (" + set.size() + ") locked signs");
+        }
+        set.forEach(ShipsSign.LOCKED_SIGNS::remove);
+        return true;
     }
 
     private boolean runAutoPilot(CommandSource source, Vessel vessel, String... args){
@@ -338,6 +355,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             list.add("info");
             list.add("teleport");
             list.add("autopilot");
+            list.add("unlock");
         }else if (args.length == 3) {
             if ("autopilot".startsWith(args[2].toLowerCase())) {
                 list.add("autopilot");
@@ -353,6 +371,9 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             }
             if ("teleport".startsWith(args[2].toLowerCase())) {
                 list.add("teleport");
+            }
+            if("unlock".startsWith(args[2].toLowerCase())){
+                list.add("unlock");
             }
         }else if (args.length == 4 && args[2].equalsIgnoreCase("autopilot") && args[3].equalsIgnoreCase("")){
             list.add("deploy");

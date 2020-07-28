@@ -7,6 +7,7 @@ import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
+import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.DirectionalData;
@@ -74,6 +75,15 @@ public class Movement {
                 return;
             }
             Optional<MovingBlock> mBlock = context.getMovingStructure().getBefore(opAttached.get());
+            if(!mBlock.isPresent()){
+                SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
+                Collection<SyncBlockPosition> positions = vessel.getStructure().getPositions();
+                Optional<SyncBlockPosition> opDown = positions.stream().filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN)).findAny();
+                if(!opDown.isPresent()){
+                    return;
+                }
+                mBlock = context.getMovingStructure().getBefore(opDown.get());
+            }
             if(!mBlock.isPresent()){
                 return;
             }
@@ -198,14 +208,14 @@ public class Movement {
                 if (CorePlugin.getPlatform().callEvent(eventMain).isCancelled()){
                     return;
                 }
-                entities.forEach(e -> e.setGravity(false));
+                context.getEntities().keySet().forEach(e -> e.getCreatedFrom().get().setGravity(false));
                 context.getBar().ifPresent(b -> b.setMessage(CorePlugin.buildText("Processing: Moving")));
                 Result result = context.getMovement().move(vessel, context);
                 context.getBar().ifPresent(b -> b.setMessage(CorePlugin.buildText("Processing: Post Moving")));
 
                 result.run(vessel, context);
             }catch (Throwable e) {
-                entities.forEach(entity -> entity.setGravity(true));
+                context.getEntities().keySet().forEach(entity -> entity.getCreatedFrom().get().setGravity(true));
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 vessel.set(MovingFlag.class, null);
                 exception.accept(e);

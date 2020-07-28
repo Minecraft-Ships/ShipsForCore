@@ -83,6 +83,8 @@ public class MoveSign implements ShipsSign {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
                     onSignSpeedUpdate(vessel, lste, finalSpeed);
+                    ShipsSign.LOCKED_SIGNS.remove(position);
+                    
                 }
 
                 @Override

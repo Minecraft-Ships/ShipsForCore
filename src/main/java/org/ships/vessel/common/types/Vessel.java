@@ -13,7 +13,6 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.exceptions.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
 import org.ships.plugin.ShipsPlugin;
@@ -94,6 +93,7 @@ public interface Vessel extends Positionable<BlockPosition> {
         List<LiveEntity> entities2 = new ArrayList<>(getPosition().getWorld().getEntities());
         Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setExecutor(() -> {}).build(ShipsPlugin.getPlugin());
         int fin = entities2.size() / limit;
+        Collection<SyncBlockPosition> pss = getStructure().getPositions();
         for(int A = 0; A < fin; A++){
             final int B = A;
             sched = CorePlugin.createSchedulerBuilder().setDisplayName("entity getter " + A).setDelay(1).setExecutor(() -> {
@@ -107,7 +107,14 @@ public interface Vessel extends Positionable<BlockPosition> {
                     if (!opPosition.isPresent()) {
                         continue;
                     }
-                    if (getStructure().getPositions().stream().anyMatch(b -> b.equals(e.getAttachedTo().get()))) {
+                    if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
+                        single.accept(e);
+                        entities.add(e);
+                    }else if(!e.isOnGround()){
+                        SyncBlockPosition bPos = e.getPosition().toBlockPosition();
+                        if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))){
+                            continue;
+                        }
                         single.accept(e);
                         entities.add(e);
                     }

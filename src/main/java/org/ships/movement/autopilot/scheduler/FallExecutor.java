@@ -57,13 +57,16 @@ public class FallExecutor implements Runnable {
         } catch (ConcurrentModificationException ignore) {
 
         }
+        if(config.isFallingEnabled()){
+            createScheduler().run();
+        }
     }
 
     public static Scheduler createScheduler() {
         return CorePlugin.createSchedulerBuilder()
                 .setExecutor(new FallExecutor())
-                .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
-                .setIteration(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
+                .setDelayUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
+                .setDelay(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
                 .setDisplayName("Ships fall scheduler")
                 .build(ShipsPlugin.getPlugin());
     }
