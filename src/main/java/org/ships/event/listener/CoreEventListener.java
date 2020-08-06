@@ -69,7 +69,7 @@ public class CoreEventListener implements EventListener {
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
                 vessel.getStructure().addPosition(position);
-            } catch (LoadVesselException e) {
+            } catch (LoadVesselException ignored) {
             }
         }
     }
@@ -81,16 +81,10 @@ public class CoreEventListener implements EventListener {
         }
         boolean bool = ShipsPlugin.getPlugin().getVessels().stream().filter(e -> {
             Optional<MovementContext> opValue = e.getValue(MovingFlag.class);
-            if(!opValue.isPresent()){
-                return false;
-            }
-            return !opValue.get().getMovingStructure().isEmpty();
+            return opValue.filter(movementContext -> !movementContext.getMovingStructure().isEmpty()).isPresent();
         }).anyMatch(v -> {
             Optional<MovementContext> opSet = v.getValue(MovingFlag.class);
-            if(!opSet.isPresent()){
-                return false;
-            }
-            return opSet.get().getMovingStructure().stream().anyMatch(mb -> mb.getBeforePosition().equals(event.getPosition().toBlockPosition()) || mb.getAfterPosition().equals(event.getPosition().toBlockPosition()));
+            return opSet.map(movementContext -> movementContext.getMovingStructure().stream().anyMatch(mb -> (mb.getBeforePosition().isPresent() && mb.getBeforePosition().get().equals(event.getPosition().toBlockPosition())) || (mb.getAfterPosition().isPresent() && mb.getAfterPosition().get().equals(event.getPosition().toBlockPosition())))).orElse(false);
         });
         if(bool) {
             event.setCancelled(true);
@@ -159,7 +153,7 @@ public class CoreEventListener implements EventListener {
         }
         if(register){
             Text typeText = stes.getLine(1).get();
-            ShipType type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> typeText.equalsPlain(t.getDisplayName(), true)).findAny().get();
+            ShipType<? extends Vessel> type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> typeText.equalsPlain(t.getDisplayName(), true)).findAny().get();
             String permission = Permissions.getMakePermission(type);
             if(!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))){
                 event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission: " + permission));
@@ -171,14 +165,14 @@ public class CoreEventListener implements EventListener {
                 event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Name has already been taken"));
                 event.setCancelled(true);
                 return;
-            } catch (LoadVesselException e) {
+            } catch (LoadVesselException ignored) {
             }
             try {
                 for(Direction direction : FourFacingDirection.getFourFacingDirections()) {
                     new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
                     event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Can not create a new ship ontop of another ship"));
                 }
-            } catch (LoadVesselException e) {
+            } catch (LoadVesselException ignored) {
             }
             ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
             int trackSize = config.getDefaultTrackSize();
@@ -280,7 +274,7 @@ public class CoreEventListener implements EventListener {
                 try {
                     Vessel vessel = new ShipsBlockFinder(pos).load();
                     vessel.getStructure().removePosition(pos);
-                } catch (LoadVesselException e) {
+                } catch (LoadVesselException ignored) {
                 }
             }
             if (!(pos.getTileEntity().isPresent())) {

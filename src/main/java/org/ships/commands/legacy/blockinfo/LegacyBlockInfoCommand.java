@@ -1,6 +1,7 @@
 package org.ships.commands.legacy.blockinfo;
 
 import org.core.CorePlugin;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.WorldExtent;
@@ -32,6 +33,9 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
         CommandViewer viewer = (CommandViewer) source;
         List<String> ids = new ArrayList<>(Arrays.asList(args));
         ids.remove(0);
+        if(ids.isEmpty() && source instanceof LivePlayer){
+            ((LivePlayer)source).getBlockLookingAt().ifPresent(p -> ids.add(p.getBlockDetails().getType().getId()));
+        }
         ids.forEach(id -> {
             CorePlugin.getPlatform().getBlockType(id).ifPresent(bt -> {
                 viewer.sendMessagePlain("--[" + bt.getName() + "]--");

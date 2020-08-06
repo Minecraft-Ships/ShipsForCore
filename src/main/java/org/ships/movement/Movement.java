@@ -242,9 +242,9 @@ public class Movement {
                 Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
                 if(!(opDirectional.isPresent())){
                     Optional<Collection<Direction>> opData = blockDetails.get(KeyedData.MULTI_DIRECTIONAL);
-                    Collection<Direction> collection = new HashSet<>();
                     if(opData.isPresent()) {
-                        opData.get().forEach(d -> collection.add(d.getRightAngleRight()));
+                        Collection<Direction> collection = new HashSet<>();
+                        opData.get().forEach(d -> collection.add(d.getRightAngleLeft()));
                         blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
                     }
                     return;

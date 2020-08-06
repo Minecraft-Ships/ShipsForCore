@@ -173,7 +173,10 @@ public class ShipsFileLoader implements ShipsLoader {
         ShipsVessel ship = (ShipsVessel) vessel;
 
         file.parseInt(new ConfigurationNode(SPEED_ALTITUDE)).ifPresent(ship::setAltitudeSpeed);
-        file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(ship::setMaxSpeed);
+        file.parseInt(new ConfigurationNode(SPEED_MAX)).ifPresent(s -> {
+            System.out.println("Setting max speed of " + s);
+            ship.setMaxSpeed(s);
+        });
 
         Optional<Double> opTelX = file.parseDouble(new ConfigurationNode(META_LOCATION_TELEPORT_X));
         Optional<Double> opTelY = file.parseDouble(new ConfigurationNode(META_LOCATION_TELEPORT_Y));

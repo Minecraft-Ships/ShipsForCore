@@ -120,7 +120,7 @@ public class MoveSign implements ShipsSign {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             }
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -199,7 +199,7 @@ public class MoveSign implements ShipsSign {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             }
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -213,7 +213,9 @@ public class MoveSign implements ShipsSign {
     }
 
     private void onSignSpeedUpdate(Vessel ship, LiveSignTileEntity lste, int finalSpeed){
-        if (finalSpeed > ship.getMaxSpeed() || finalSpeed < -ship.getMaxSpeed()) {
+        int max = ship.getMaxSpeed();
+        System.out.println("onSignSpeedUpdate: " + max);
+        if (finalSpeed > max || finalSpeed < -max) {
             return;
         }
         lste.setLine(3, CorePlugin.buildText("" + finalSpeed));

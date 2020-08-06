@@ -22,6 +22,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class AbstractShipsVessel implements ShipsVessel {
 
@@ -32,27 +33,30 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected Map<String, SyncExactPosition> teleportPositions = new HashMap<>();
     protected File file;
     protected ExpandedBlockList blockList;
-    protected ShipType type;
+    protected ShipType<? extends AbstractShipsVessel> type;
     protected int maxSpeed = 10;
     protected int altitudeSpeed = 2;
     protected boolean isLoading = true;
 
-    public AbstractShipsVessel(LiveSignTileEntity licence, ShipType type){
+    public AbstractShipsVessel(LiveSignTileEntity licence, ShipType<? extends AbstractShipsVessel> type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
         this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + ".temp");
-        ConfigurationFile configuration = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
-        this.blockList = new ExpandedBlockList(configuration, ShipsPlugin.getPlugin().getBlockList());
-        this.file = configuration.getFile();
-        this.type = type;
+        init(type);
     }
 
-    public AbstractShipsVessel(SignTileEntity ste, SyncBlockPosition position, ShipType type){
+    public AbstractShipsVessel(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
         this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + ".temp");
+        init(type);
+    }
+
+    private void init(ShipType<? extends AbstractShipsVessel> type){
         ConfigurationFile configuration = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
-        this.blockList = new ExpandedBlockList(configuration, ShipsPlugin.getPlugin().getBlockList());
+        this.blockList = new ExpandedBlockList(configuration, type.getDefaultBlockList());
         this.file = configuration.getFile();
         this.type = type;
+        this.maxSpeed = this.type.getDefaultMaxSpeed();
+        this.altitudeSpeed = this.type.getDefaultAltitudeSpeed();
     }
 
     @Override
@@ -95,7 +99,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public Vessel set(VesselFlag<?> flag){
-        this.flags.stream().filter(f -> f.getId().equals(flag.getId())).forEach(f -> this.flags.remove(f));
+        Set<VesselFlag<?>> collect = this.flags.stream().filter(f -> {
+            String fID = f.getId();
+            String flagID = flag.getId();
+            return fID.equals(flagID);
+        }).collect(Collectors.toSet());
+        collect.forEach(f -> this.flags.remove(f));
         this.flags.add(flag);
         return this;
     }
@@ -106,7 +115,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
-    public ShipType getType(){
+    public ShipType<? extends AbstractShipsVessel> getType(){
         return type;
     }
 

@@ -11,11 +11,13 @@ import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FileBasedVessel;
+import org.ships.vessel.common.flag.SuccessfulMoveFlag;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ConcurrentModificationException;
+import java.util.Optional;
 
 public class FallExecutor implements Runnable {
 
@@ -24,6 +26,13 @@ public class FallExecutor implements Runnable {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         try {
             ShipsPlugin.getPlugin().getVessels().stream().filter(s -> s instanceof Fallable).forEach(v -> {
+                Optional<SuccessfulMoveFlag> opFlag = v.get(SuccessfulMoveFlag.class);
+                if(!opFlag.isPresent()){
+                    return;
+                }
+                if(!opFlag.get().getValue().orElse(false)){
+                    return;
+                }
                 if (!((Fallable) v).shouldFall()) {
                     MovementContext context = new MovementContext().setMovement(config.getDefaultMovement());
                     if (config.isBossBarVisible()) {

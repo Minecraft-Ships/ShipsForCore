@@ -152,7 +152,7 @@ public class AirshipType implements CloneableShipType<Airship>, SerializableShip
     }
 
     @Override
-    public CloneableShipType getOriginType() {
+    public AirshipType getOriginType() {
         return ShipType.AIRSHIP;
     }
 
