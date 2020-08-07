@@ -1,6 +1,9 @@
 package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
+import org.core.configuration.ConfigurationFile;
+import org.core.configuration.ConfigurationNode;
+import org.core.configuration.type.ConfigurationLoaderTypes;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.text.Text;
 import org.core.text.TextColours;
@@ -20,10 +23,13 @@ import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.loader.ShipsLicenceSignFinder;
+import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -129,15 +135,31 @@ public class LicenceSign implements ShipsSign {
                     LiveSignTileEntity lste = (LiveSignTileEntity)opTile.get();
                     String type = lste.getLine(1).get().toPlain();
                     String name = lste.getLine(2).get().toPlain();
-                    try{
-                        Vessel vessel = new ShipsIDFinder(type + ":" + name).load();
-                        vessel.getStructure().setPosition(position);
-                        vessel.save();
-                        player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "Resynced " + name + " with file. Please try again"));
-                    }catch(IOException e1){
-                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getMessage()));
+                    Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equalsIgnoreCase(type)).findAny();
+                    if(!opType.isPresent()){
+                        player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find ShipType with display name of " + type));
+                        return false;
                     }
-                    return false;
+                    File file = new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "." + ConfigurationLoaderTypes.DEFAULT.acceptedFileExtensions()[0]);
+                    if(!file.exists()){
+                        System.out.println("Could not find file: " + file.getPath());
+                        player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find the file associated with the ship"));
+                        return false;
+                    }
+                    ConfigurationFile config = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+                    config.set(new ConfigurationNode(ShipsFileLoader.META_LOCATION_X), position.getX());
+                    config.set(new ConfigurationNode(ShipsFileLoader.META_LOCATION_Y), position.getY());
+                    config.set(new ConfigurationNode(ShipsFileLoader.META_LOCATION_Z), position.getZ());
+                    config.save();
+                    try {
+                        ShipsVessel vessel = new ShipsFileLoader(file).load();
+                        ShipsPlugin.getPlugin().registerVessel(vessel);
+                        player.sendMessagePlain("Ship has resynced");
+                    } catch (LoadVesselException loadVesselException) {
+                        player.sendMessagePlain(loadVesselException.getReason());
+                        return false;
+                    }
+                    return true;
                 }
             }
             player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));

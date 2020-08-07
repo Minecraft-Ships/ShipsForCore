@@ -34,24 +34,23 @@ import java.util.function.Consumer;
 
 public class ShipsFileLoader implements ShipsLoader {
 
-    protected File file;
-    protected static final String[] SPEED_MAX = {"Speed", "Max"};
-    protected static final String[] SPEED_ALTITUDE = {"Speed", "Altitude"};
-    protected static final String[] META_DEFAULT_PERMISSION = {"Meta", "Permission", "Default"};
-    protected static final String[] META_LOCATION_X = {"Meta", "Location", "X"};
-    protected static final String[] META_LOCATION_Y = {"Meta", "Location", "Y"};
-    protected static final String[] META_LOCATION_Z = {"Meta", "Location", "Z"};
-    protected static final String[] META_LOCATION_WORLD = {"Meta", "Location", "World"};
+    public static final String[] SPEED_MAX = {"Speed", "Max"};
+    public static final String[] SPEED_ALTITUDE = {"Speed", "Altitude"};
+    public static final String[] META_DEFAULT_PERMISSION = {"Meta", "Permission", "Default"};
+    public static final String[] META_LOCATION_X = {"Meta", "Location", "X"};
+    public static final String[] META_LOCATION_Y = {"Meta", "Location", "Y"};
+    public static final String[] META_LOCATION_Z = {"Meta", "Location", "Z"};
+    public static final String[] META_LOCATION_WORLD = {"Meta", "Location", "World"};
     @Deprecated
-    protected static final String[] META_LOCATION_TELEPORT_X = {"Meta", "Location", "Teleport", "X"};
+    public static final String[] META_LOCATION_TELEPORT_X = {"Meta", "Location", "Teleport", "X"};
     @Deprecated
-    protected static final String[] META_LOCATION_TELEPORT_Y = {"Meta", "Location", "Teleport", "Y"};
+    public static final String[] META_LOCATION_TELEPORT_Y = {"Meta", "Location", "Teleport", "Y"};
     @Deprecated
-    protected static final String[] META_LOCATION_TELEPORT_Z = {"Meta", "Location", "Teleport", "Z"};
+    public static final String[] META_LOCATION_TELEPORT_Z = {"Meta", "Location", "Teleport", "Z"};
     @Deprecated
-    protected static final String[] META_LOCATION_TELEPORT_WORLD = {"Meta", "Location", "Teleport", "World"};
-    protected static final String[] META_STRUCTURE = {"Meta", "Location", "Structure"};
-    protected static final String[] META_FLAGS = {"Meta", "Flags"};
+    public static final String[] META_LOCATION_TELEPORT_WORLD = {"Meta", "Location", "Teleport", "World"};
+    public static final String[] META_STRUCTURE = {"Meta", "Location", "Structure"};
+    public static final String[] META_FLAGS = {"Meta", "Flags"};
 
     private static class StructureLoad {
 
@@ -84,6 +83,8 @@ public class ShipsFileLoader implements ShipsLoader {
             }
         }
     }
+
+    protected File file;
 
     public ShipsFileLoader(File file) {
         this.file = file;
