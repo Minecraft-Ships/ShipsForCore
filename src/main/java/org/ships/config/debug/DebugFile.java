@@ -30,7 +30,7 @@ public class DebugFile {
         }
         try {
             FileWriter writer = new FileWriter(this.file);
-            this.messages.stream().forEach(m -> {
+            this.messages.forEach(m -> {
                 try {
                     writer.write(m + "\n");
                 } catch (IOException e) {

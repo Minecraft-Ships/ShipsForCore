@@ -1,8 +1,7 @@
 package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.ConfigurationStream;
 import org.core.utils.Identifable;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
@@ -40,18 +39,18 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     public AbstractShipsVessel(LiveSignTileEntity licence, ShipType<? extends AbstractShipsVessel> type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + ".temp");
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
         init(type);
     }
 
     public AbstractShipsVessel(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + ".temp");
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
         init(type);
     }
 
     private void init(ShipType<? extends AbstractShipsVessel> type){
-        ConfigurationFile configuration = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        ConfigurationStream.ConfigurationFile configuration = CorePlugin.createConfigurationFile(this.file, CorePlugin.getPlatform().getConfigFormat());
         this.blockList = new ExpandedBlockList(configuration, type.getDefaultBlockList());
         this.file = configuration.getFile();
         this.type = type;

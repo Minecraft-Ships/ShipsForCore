@@ -1,6 +1,6 @@
 package org.ships.vessel.common.types;
 
-import org.core.configuration.ConfigurationFile;
+import org.core.config.ConfigurationStream;
 import org.core.platform.Plugin;
 import org.core.utils.Identifable;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -33,7 +33,7 @@ public interface ShipType<T extends Vessel> extends Identifable {
     ExpandedBlockList getDefaultBlockList();
     int getDefaultMaxSpeed();
     int getDefaultAltitudeSpeed();
-    ConfigurationFile getFile();
+    ConfigurationStream.ConfigurationFile getFile();
     T createNewVessel(SignTileEntity ste, SyncBlockPosition bPos);
     BlockType[] getIgnoredTypes();
 
@@ -43,12 +43,12 @@ public interface ShipType<T extends Vessel> extends Identifable {
         return createNewVessel(position, position.getPosition());
     }
 
-    default <T> Optional<T> getFlag(Class<T> class1){
-        return (Optional<T>) getFlags().stream().filter(f -> class1.isInstance(f)).findAny();
+    default <E> Optional<E> getFlag(Class<E> class1){
+        return (Optional<E>) getFlags().stream().filter(class1::isInstance).findAny();
     }
 
-    default <T> Optional<T> getFlagValue(Class<? extends VesselFlag<T>> class1){
-        Optional<? extends VesselFlag<T>> opFlag = getFlag(class1);
+    default <E> Optional<E> getFlagValue(Class<? extends VesselFlag<E>> class1){
+        Optional<? extends VesselFlag<E>> opFlag = getFlag(class1);
         if(!opFlag.isPresent()){
             return Optional.empty();
         }

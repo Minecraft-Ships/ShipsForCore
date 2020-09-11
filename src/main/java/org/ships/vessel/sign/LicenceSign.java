@@ -1,10 +1,10 @@
 package org.ships.vessel.sign;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
@@ -21,7 +21,6 @@ import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.loader.ShipsLicenceSignFinder;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
@@ -32,7 +31,6 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class LicenceSign implements ShipsSign {
 
@@ -56,7 +54,7 @@ public class LicenceSign implements ShipsSign {
         Text[] lines = snapshot.getLines();
         Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> lines[1].equalsPlain(t.getDisplayName(), true)).findFirst();
         if(!opType.isPresent()){
-            throw new IOException("Unknown Ship Type: Ship Types: " + CorePlugin.toString(", ", ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class)));
+            throw new IOException("Unknown Ship Type: Ship Types: " + ArrayUtils.toString(", ", ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class)));
         }
 
         String name = lines[2].toPlain();
@@ -117,7 +115,7 @@ public class LicenceSign implements ShipsSign {
                             finalBar.setMessage(CorePlugin.buildText(blockCount + " / " + totalCount));
                             try {
                                 finalBar.setValue(blockCount, totalCount);
-                            } catch (IllegalArgumentException e) {
+                            } catch (IllegalArgumentException ignore) {
 
                             }
                         }
@@ -140,16 +138,16 @@ public class LicenceSign implements ShipsSign {
                         player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find ShipType with display name of " + type));
                         return false;
                     }
-                    File file = new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "." + ConfigurationLoaderTypes.DEFAULT.acceptedFileExtensions()[0]);
+                    File file = new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
                     if(!file.exists()){
-                        System.out.println("Could not find file: " + file.getPath());
                         player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find the file associated with the ship"));
                         return false;
                     }
-                    ConfigurationFile config = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
-                    config.set(new ConfigurationNode(ShipsFileLoader.META_LOCATION_X), position.getX());
-                    config.set(new ConfigurationNode(ShipsFileLoader.META_LOCATION_Y), position.getY());
-                    config.set(new ConfigurationNode(ShipsFileLoader.META_LOCATION_Z), position.getZ());
+                    ConfigurationStream.ConfigurationFile config = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
+                    config.set(ShipsFileLoader.META_LOCATION_X, position.getX());
+                    config.set(ShipsFileLoader.META_LOCATION_Y, position.getY());
+                    config.set(ShipsFileLoader.META_LOCATION_Z, position.getZ());
+                    config.set(ShipsFileLoader.META_LOCATION_WORLD, position.getWorld());
                     config.save();
                     try {
                         ShipsVessel vessel = new ShipsFileLoader(file).load();

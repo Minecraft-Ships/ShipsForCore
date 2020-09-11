@@ -1,6 +1,7 @@
 package org.ships.vessel.common.flag;
 
-import org.core.configuration.parser.Parser;
+import org.core.config.parser.Parser;
+import org.core.config.parser.StringParser;
 import org.core.utils.Identifable;
 
 import java.util.Optional;
@@ -15,5 +16,5 @@ public interface VesselFlag<T> extends Identifable {
 
     Optional<T> getValue();
     void setValue(T value);
-    Parser<? extends Object, T> getParser();
+    StringParser<T> getParser();
 }

@@ -1,9 +1,11 @@
 package org.ships.commands.legacy.ship;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.configuration.parser.Parser;
+import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
+import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
@@ -17,15 +19,17 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.exceptions.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
+import org.ships.movement.MovementContext;
+import org.ships.movement.MovingBlockSet;
+import org.ships.movement.SetMovingBlock;
 import org.ships.movement.autopilot.BasicFlightPath;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.movement.autopilot.scheduler.FlightPathExecutor;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.CrewStoredVessel;
-import org.ships.vessel.common.assits.FlightPathType;
-import org.ships.vessel.common.assits.TeleportToVessel;
+import org.ships.vessel.common.assits.*;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.Vessel;
@@ -35,7 +39,6 @@ import org.ships.vessel.sign.ShipsSign;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class LegacyShipCommand implements LegacyArgumentCommand {
@@ -74,6 +77,8 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                 return runAutoPilot(source, vessel, args);
             }else if(args[2].equalsIgnoreCase("unlock")){
                 return runUnlock(source, vessel, args);
+            }else if(args[2].equalsIgnoreCase("check")){
+                return runCheck(source, vessel, args);
             }
         } catch (IOException e) {
             if(source instanceof CommandViewer){
@@ -82,6 +87,35 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             return true;
         }
         return false;
+    }
+
+    private boolean runCheck(CommandSource source, Vessel vessel, String... args){
+        if(!(source instanceof CommandViewer)){
+            return false;
+        }
+        CommandViewer viewer = (CommandViewer)source;
+        if(vessel instanceof Fallable){
+            Fallable fVessel = (Fallable)vessel;
+            viewer.sendMessagePlain("Will Fall: " + fVessel.shouldFall());
+        }
+        if(vessel instanceof VesselRequirement) {
+            VesselRequirement rVessel = (VesselRequirement) vessel;
+            MovementContext context = new MovementContext();
+            MovingBlockSet set = new MovingBlockSet();
+            for (SyncBlockPosition position : rVessel.getStructure().getPositions()) {
+                set.add(new SetMovingBlock(position, position));
+            }
+            context.setMovingStructure(set);
+            context.setStrictMovement(true);
+            try {
+                rVessel.meetsRequirements(context);
+                viewer.sendMessagePlain("Meets Requirements: true");
+            } catch (MoveException e) {
+                viewer.sendMessagePlain("Meets Requirements: False");
+                e.getMovement().sendMessage(viewer);
+            }
+        }
+        return true;
     }
 
     private boolean runUnlock(CommandSource source, Vessel vessel, String... args){
@@ -183,7 +217,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
         }
         if(vessel instanceof ShipsVessel) {
             viewer.sendMessagePlain("Flags:");
-            viewer.sendMessagePlain(" - " + CorePlugin.toString("\n - ", f -> {
+            viewer.sendMessagePlain(" - " + ArrayUtils.toString("\n - ", f -> {
                 if (f instanceof VesselFlag.Serializable) {
                     return ((VesselFlag.Serializable<?>) f).serialize();
                 }
@@ -356,6 +390,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             list.add("teleport");
             list.add("autopilot");
             list.add("unlock");
+            list.add("check");
         }else if (args.length == 3) {
             if ("autopilot".startsWith(args[2].toLowerCase())) {
                 list.add("autopilot");
@@ -372,8 +407,11 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             if ("teleport".startsWith(args[2].toLowerCase())) {
                 list.add("teleport");
             }
-            if("unlock".startsWith(args[2].toLowerCase())){
+            if ("unlock".startsWith(args[2].toLowerCase())) {
                 list.add("unlock");
+            }
+            if ("check".startsWith(args[2].toLowerCase())) {
+                list.add("check");
             }
         }else if (args.length == 4 && args[2].equalsIgnoreCase("autopilot") && args[3].equalsIgnoreCase("")){
             list.add("deploy");

@@ -25,14 +25,13 @@ public interface UnderWaterType extends WaterType {
                 BlockType type = position.getRelative(direction).getBlockType();
                 if (type.isLike(BlockTypes.WATER.get())) {
                     values.add(position.getY());
-                    continue;
                 }
             }
         }
         Integer lowest = null;
         Integer highest = null;
         for(int value : values){
-            if(lowest == null && highest == null){
+            if(lowest == null){
                 lowest = value;
                 highest = value;
                 continue;
@@ -44,7 +43,7 @@ public interface UnderWaterType extends WaterType {
                 highest = value;
             }
         }
-        if(highest == 0 || lowest == 0){
+        if(highest == null){
             return false;
         }
         return (highest - lowest) == height;

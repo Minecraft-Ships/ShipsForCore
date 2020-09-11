@@ -1,0 +1,48 @@
+#test
+Advanced:
+  Movement:
+    Default: ships:movement_ships_six
+    Stack:
+      Limit: 10
+      Delay: 1
+      DelayUnit: MINECRAFT_TICKS
+  BlockFinder:
+    Default: ships:blockfinder_ships_five
+    Track: 4000
+    Stack:
+      Delay: 1
+      DelayUnit: MINECRAFT_TICKS
+      Limit: 7
+  EntityFinder:
+    Stack:
+      Limit: 75
+Auto:
+  EOT:
+    Speed: 2
+    Delay: 1
+    DelayUnit: SECONDS
+    Enabled: false
+  Falling:
+    Speed: 1
+    Delay: 1
+    DelayUnit: MINUTES
+    Enabled: false
+Bar:
+  Visible: true
+Movement:
+  Requirements:
+    Check:
+      Max:
+        BlockType: false
+Structure:
+  Update:
+    Auto: true
+    Click: false
+Update:
+  Enabled: true
+AlphaOnly:
+  Command:
+    UseLegacy: true
+Sign:
+  Licence:
+    Fourth: ''

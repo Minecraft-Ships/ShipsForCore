@@ -1,9 +1,11 @@
 package org.ships.commands.legacy.blockinfo;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
+import org.core.utils.Identifable;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
@@ -11,6 +13,7 @@ import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.movement.BlockPriority;
 import org.ships.movement.SetMovingBlock;
 import org.ships.permissions.Permissions;
+import org.ships.plugin.ShipsPlugin;
 
 import java.util.*;
 
@@ -40,6 +43,9 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
             CorePlugin.getPlatform().getBlockType(id).ifPresent(bt -> {
                 viewer.sendMessagePlain("--[" + bt.getName() + "]--");
                 BlockDetails details = bt.getDefaultBlockDetails();
+                viewer.sendMessagePlain("---[ID]---");
+                viewer.sendMessagePlain(" |- ID: " + details.getType().getId());
+                viewer.sendMessagePlain(" |- BlockList-CollideType: " + ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(details.getType()).getCollideType().name());
                 viewer.sendMessagePlain("---[Keyed Data]---");
                 for(Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()){
                     if (details.getUnspecified(dataClass.getValue()).isPresent()){
@@ -55,8 +61,8 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
                 viewer.sendMessagePlain(" |- ID: " + priority.getId());
                 viewer.sendMessagePlain(" |- Value: " + priority.getPriorityNumber());
                 viewer.sendMessagePlain("---[Like]---");
-                String like = CorePlugin.toString("\n |- ", f -> f.getName(), bt.getLike());
-                viewer.sendMessagePlain("\n |- " + (like == null ? "NONE" : like));
+                String like = ArrayUtils.toString("\n |- ", Identifable::getName, bt.getLike());
+                viewer.sendMessagePlain("\n |- " + like);
             });
         });
         return true;

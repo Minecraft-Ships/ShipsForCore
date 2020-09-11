@@ -84,7 +84,7 @@ public class CoreEventListener implements EventListener {
             return opValue.filter(movementContext -> !movementContext.getMovingStructure().isEmpty()).isPresent();
         }).anyMatch(v -> {
             Optional<MovementContext> opSet = v.getValue(MovingFlag.class);
-            return opSet.map(movementContext -> movementContext.getMovingStructure().stream().anyMatch(mb -> (mb.getBeforePosition().isPresent() && mb.getBeforePosition().get().equals(event.getPosition().toBlockPosition())) || (mb.getAfterPosition().isPresent() && mb.getAfterPosition().get().equals(event.getPosition().toBlockPosition())))).orElse(false);
+            return opSet.map(movementContext -> movementContext.getMovingStructure().stream().anyMatch(mb -> (mb.getBeforePosition().equals(event.getPosition().toBlockPosition())) || (mb.getAfterPosition().equals(event.getPosition().toBlockPosition())))).orElse(false);
         });
         if(bool) {
             event.setCancelled(true);
@@ -127,6 +127,9 @@ public class CoreEventListener implements EventListener {
 
     @HEvent
     public void onSignChangeEvent(SignChangeEvent.ByPlayer event){
+        if(ShipsPlugin.getPlugin().getConfig().getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())){
+            return;
+        }
         ShipsSign sign = null;
         boolean register = false;
         Optional<Text> opFirstLine = event.getFrom().getLine(0);

@@ -1,6 +1,7 @@
 package org.ships.algorthum.movement;
 
 import org.core.CorePlugin;
+import org.core.world.position.impl.BlockPosition;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.movement.*;
 import org.ships.vessel.common.flag.MovingFlag;
@@ -21,13 +22,14 @@ public class Ships5Movement implements BasicMovement {
             waterLevel = opWaterLevel.get();
         }
         final int finalWaterLevel = waterLevel;
-        blocks.forEach(m -> m.getAfterPosition().ifPresent(after -> {
+        blocks.forEach(m -> {
+            BlockPosition after = m.getAfterPosition();
             if(finalWaterLevel >= after.getY()){
                 m.removeBeforePositionUnderWater();
             }else{
                 m.removeBeforePositionOverAir();
             }
-        }));
+        });
         for(int A = blocks.size(); A > 0; A--) {
             MovingBlock m = blocks.get(A-1);
             Stream.of(context.getMidMovementProcess()).forEach(mid -> mid.move(m));

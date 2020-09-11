@@ -1,6 +1,7 @@
 package org.ships.config;
 
-import org.core.configuration.ConfigurationFile;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
 import org.ships.config.node.DedicatedNode;
 
 import java.util.Optional;
@@ -8,23 +9,16 @@ import java.util.Set;
 
 public interface Config {
 
-    interface CommandConfigurable extends Config{
+    interface KnownNodes extends Config {
 
-        Set<DedicatedNode<?>> getNodes();
+        <A, V, N extends ConfigurationNode.KnownParser<?, V>> Set<DedicatedNode<A, V, N>> getNodes();
 
-        default Optional<?> getValue(String simpleName){
-            Optional<DedicatedNode<?>> opNode = getNodes().stream().filter(n -> n.getSimpleName().equalsIgnoreCase(simpleName)).findAny();
-            if(!opNode.isPresent()){
-                return Optional.empty();
-            }
-            return opNode.get().getValue(this.getFile());
+        default Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> getNode(String key){
+            return (Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>>)(Object)getNodes().parallelStream().filter(n -> n.getKeyName().equalsIgnoreCase(key)).findAny();
         }
 
-        default Optional<DedicatedNode<?>> get(String simpleName){
-            return getNodes().stream().filter(n -> n.getSimpleName().equalsIgnoreCase(simpleName)).findAny();
-        }
     }
 
-    ConfigurationFile getFile();
+    ConfigurationStream.ConfigurationFile getFile();
     void recreateFile();
 }

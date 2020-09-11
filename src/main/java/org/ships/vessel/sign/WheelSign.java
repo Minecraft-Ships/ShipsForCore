@@ -2,6 +2,7 @@ package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
@@ -24,7 +25,6 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class WheelSign implements ShipsSign {
@@ -142,6 +142,7 @@ public class WheelSign implements ShipsSign {
 
         });
         context.setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+        context.setClicked(position);
         Consumer<Throwable> exception = (exc) -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
             if(exc instanceof MoveException){

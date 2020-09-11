@@ -5,8 +5,6 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
 
-import java.util.Optional;
-
 public class SetMovingBlock implements MovingBlock {
 
     protected SyncBlockPosition before;
@@ -24,13 +22,13 @@ public class SetMovingBlock implements MovingBlock {
     }
 
     @Override
-    public Optional<SyncBlockPosition> getBeforePosition() {
-        return Optional.ofNullable(this.before);
+    public SyncBlockPosition getBeforePosition() {
+        return this.before;
     }
 
     @Override
-    public Optional<SyncBlockPosition> getAfterPosition() {
-        return Optional.ofNullable(this.after);
+    public SyncBlockPosition getAfterPosition() {
+        return this.after;
     }
 
     @Override

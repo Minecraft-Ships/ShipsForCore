@@ -1,7 +1,7 @@
 package org.ships.vessel.common.assits;
 
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
@@ -11,8 +11,8 @@ import java.util.Map;
 public interface FileBasedVessel extends Vessel {
 
     File getFile();
-    Map<ConfigurationNode, Object> serialize(ConfigurationFile file);
-    AbstractShipsVessel deserializeExtra(ConfigurationFile file);
+    Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file);
+    FileBasedVessel deserializeExtra(ConfigurationStream file);
 
 
 }

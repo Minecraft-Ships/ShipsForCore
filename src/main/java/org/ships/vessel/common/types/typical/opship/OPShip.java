@@ -1,14 +1,13 @@
 package org.ships.vessel.common.types.typical.opship;
 
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.movement.autopilot.FlightPath;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.FlightPathType;
-import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.HashMap;
@@ -20,21 +19,21 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
 
     protected FlightPath flightPath;
 
-    public OPShip(LiveSignTileEntity licence, ShipType origin) {
+    public OPShip(LiveSignTileEntity licence, OPShipType origin) {
         super(licence, origin);
     }
 
-    public OPShip(SignTileEntity ste, SyncBlockPosition position, ShipType origin){
+    public OPShip(SignTileEntity ste, SyncBlockPosition position, OPShipType origin){
         super(ste, position, origin);
     }
 
     @Override
-    public Map<ConfigurationNode, Object> serialize(ConfigurationFile file) {
+    public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
         return new HashMap<>();
     }
 
     @Override
-    public AbstractShipsVessel deserializeExtra(ConfigurationFile file) {
+    public AbstractShipsVessel deserializeExtra(ConfigurationStream file) {
         return this;
     }
 

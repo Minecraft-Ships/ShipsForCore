@@ -3,6 +3,7 @@ package org.ships.vessel.common.types;
 import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
+import org.core.schedule.unit.TimeUnit;
 import org.core.vector.types.Vector3Int;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -91,36 +92,50 @@ public interface Vessel extends Positionable<BlockPosition> {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>(getPosition().getWorld().getEntities());
-        Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setExecutor(() -> {}).build(ShipsPlugin.getPlugin());
+        Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {}).build(ShipsPlugin.getPlugin());
         int fin = entities2.size() / limit;
+        if (fin == 0) {
+            output.accept(entities);
+            return;
+        }
         Collection<SyncBlockPosition> pss = getStructure().getPositions();
+        ShipsPlugin.getPlugin().getDebugFile().addMessage("Vessel.97 > Starting loop", "-\tFinish number: " + fin, "-\tStructure size: " + pss.size(), "-\tEntities in world: " + entities2.size());
         for(int A = 0; A < fin; A++){
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("\tVessel.99 > Adding sched " + A);
             final int B = A;
-            sched = CorePlugin.createSchedulerBuilder().setDisplayName("entity getter " + A).setDelay(1).setExecutor(() -> {
+            sched = CorePlugin.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
                 int c = (B*limit);
+                ShipsPlugin.getPlugin().getDebugFile().addMessage("\tVessel.103 > Looping shed C: " + c);
                 for(int to = 0; to < limit; to++) {
                     LiveEntity e = entities2.get(c + to);
+                    ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\tVessel.106 > Checking entity of " + e.getType().getId());
                     if (!predicate.test(e)) {
+                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.108 > Failed Predicate test");
                         continue;
                     }
                     Optional<SyncBlockPosition> opPosition = e.getAttachedTo();
                     if (!opPosition.isPresent()) {
+                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.113 > Failed to find attached position");
                         continue;
                     }
                     if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
                         single.accept(e);
                         entities.add(e);
+                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.119 > Added entity");
                     }else if(!e.isOnGround()){
                         SyncBlockPosition bPos = e.getPosition().toBlockPosition();
                         if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))){
+                            ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.123 > Failed Line of sight test");
                             continue;
                         }
                         single.accept(e);
                         entities.add(e);
+                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.128 > Added entity");
                     }
                 }
                 if(B == 0){
                     output.accept(entities);
+                    ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\tVessel.133 > Running output");
                 }
             }).setToRunAfter(sched).build(ShipsPlugin.getPlugin());
         }
@@ -139,21 +154,16 @@ public interface Vessel extends Positionable<BlockPosition> {
         return !getWaterLevel().isPresent();
     }
 
-    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, Optional<SyncBlockPosition>> function){
+    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, SyncBlockPosition> function){
         int height = -1;
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         for (MovingBlock mBlock : collection){
-            Optional<SyncBlockPosition> opPosition = function.apply(mBlock);
-            if(!opPosition.isPresent()){
-                continue;
-            }
-            SyncBlockPosition position = opPosition.get();
+            SyncBlockPosition position = function.apply(mBlock);
             for(Direction direction : directions){
                 BlockType type = position.getRelative(direction).getBlockType();
                 if(type.equals(BlockTypes.WATER.get())){
                     if(height < position.getY()) {
                         height = position.getY();
-                        continue;
                     }
                 }
             }
@@ -174,7 +184,6 @@ public interface Vessel extends Positionable<BlockPosition> {
                 if(type.equals(BlockTypes.WATER.get())){
                     if(height < position.getY()) {
                         height = position.getY();
-                        continue;
                     }
                 }
             }

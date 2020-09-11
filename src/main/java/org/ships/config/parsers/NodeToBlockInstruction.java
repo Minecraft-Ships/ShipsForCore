@@ -1,7 +1,7 @@
 package org.ships.config.parsers;
 
-import org.core.configuration.parser.Parser;
-import org.core.configuration.parser.StringMapParser;
+import org.core.config.parser.Parser;
+import org.core.config.parser.StringMapParser;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.BlockInstruction;
 

@@ -2,6 +2,7 @@ package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
@@ -27,7 +28,6 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class AltitudeSign implements ShipsSign {
@@ -233,6 +233,7 @@ public class AltitudeSign implements ShipsSign {
             }
         }
         MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).setPostMovement((e) -> ShipsSign.LOCKED_SIGNS.remove(position));
+        context.setClicked(position);
         vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
             if(bar == null){
                 return;
@@ -250,8 +251,6 @@ public class AltitudeSign implements ShipsSign {
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             FailedMovement<?> movement = e.getMovement();
             sendErrorMessage(player, movement, movement.getValue().orElse(null));
-            ShipsPlugin.getPlugin().getDebugFile().addMessage("Returned due to " + movement.getResult().getClass().getSimpleName(), "--[End of AltitudeSign:onSecondClick(LivePlayer, BlockPosition)]--");
-
         };
         if (line1.startsWith("{")) {
             vessel.moveTowards(0, altitude, 0, context, exception);

@@ -12,10 +12,7 @@ public interface AutoRunPatches {
             .stream()
             .filter(v -> {
                 Optional<MovementContext> opSet = v.getValue(MovingFlag.class);
-                if(!opSet.isPresent()){
-                    return false;
-                }
-                return opSet.get().getMovingStructure().isEmpty();
+                return opSet.map(movementContext -> movementContext.getMovingStructure().isEmpty()).orElse(false);
             })
-            .forEach(v -> v.getEntities().stream().forEach(e -> e.setGravity(true))));
+            .forEach(v -> v.getEntities().forEach(e -> e.setGravity(true))));
 }

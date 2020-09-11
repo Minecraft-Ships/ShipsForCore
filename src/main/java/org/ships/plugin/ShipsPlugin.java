@@ -3,12 +3,12 @@ package org.ships.plugin;
 import org.core.CorePlugin;
 import org.core.platform.Plugin;
 import org.core.schedule.Scheduler;
+import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
-import org.ships.commands.arg.ShipsArgumentCommand;
 import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,16 +43,15 @@ import java.util.stream.Stream;
 public abstract class ShipsPlugin implements Plugin {
 
     private static ShipsPlugin plugin;
-    private Set<Identifable> identifable = new HashSet<>();
-    private Set<CrewPermission> defaultPermissions = new HashSet<>(Arrays.asList(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER));
-    private DefaultBlockList blockList;
-    private MessageConfig messageConfig;
-    private ShipsConfig config;
-    private DebugFile debugFile;
-    private Scheduler fallScheduler;
-    private Set<Vessel> vessels = new HashSet<>();
+    private final Set<Identifable> identifable = new HashSet<>();
+    private final Set<CrewPermission> defaultPermissions = new HashSet<>(Arrays.asList(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER));
+    private final DefaultBlockList blockList;
+    private final MessageConfig messageConfig;
+    private final ShipsConfig config;
+    private final DebugFile debugFile;
+    private final Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 7.0;
+    public static final double PRERELEASE_VERSION = 8;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin(){
@@ -65,14 +63,14 @@ public abstract class ShipsPlugin implements Plugin {
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
         CorePlugin.getEventManager().register(this, new CoreEventListener());
-        if(this.config.getFile().parseBoolean(this.config.ALPHA_COMMAND_USE_LEGACY).orElse(true)) {
+        //if(this.config.getFile().parseBoolean(this.config.ALPHA_COMMAND_USE_LEGACY).orElse(true)) {
             CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
-        }else{
+        /*}else{
             CorePlugin.getServer().registerCommands(new ShipsArgumentCommand());
-        }
+        }*/
         if(this.config.isFallingEnabled()) {
-            this.fallScheduler = FallExecutor.createScheduler();
-            this.fallScheduler.run();
+            Scheduler fallScheduler = FallExecutor.createScheduler();
+            fallScheduler.run();
         }
         CorePlugin.createSchedulerBuilder().setDisplayName("Ships no gravity fix").setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
         init2();
@@ -86,7 +84,7 @@ public abstract class ShipsPlugin implements Plugin {
 
     public void loadCustomShipType(){
         File folder = new File(getShipsConigFolder(), "Configuration/ShipType/Custom");
-        for(CloneableShipType type : getAll(CloneableShipType.class)){
+        for(CloneableShipType<?> type : getAll(CloneableShipType.class)){
             File folderType = new File(folder, type.getId().replace(":", ".") + "/");
             File[] files = folderType.listFiles();
             if(files == null){

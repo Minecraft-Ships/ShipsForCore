@@ -1,6 +1,7 @@
 package org.ships.config.blocks;
 
-import org.core.configuration.ConfigurationNode;
+import org.array.utils.ArrayUtils;
+import org.core.config.ConfigurationNode;
 import org.core.world.position.block.BlockType;
 import org.ships.config.Config;
 import org.ships.config.parsers.ShipsParsers;
@@ -21,7 +22,7 @@ public interface BlockList extends Config {
 
     static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes){
         String[] idSplit = type.getId().split(":");
-        ConfigurationNode node = new ConfigurationNode(extraNodes, "BlockList", idSplit[0], idSplit[1]);
-        return list.getFile().parse(node, ShipsParsers.NODE_TO_BLOCK_INSTRUCTION);
+        ConfigurationNode.KnownParser.ChildKnown<BlockInstruction> node = new ConfigurationNode.KnownParser.ChildKnown<>(ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, ArrayUtils.join(String.class, extraNodes, new String[]{"BlockList", idSplit[0], idSplit[1]}));
+        return list.getFile().parse(node);
     }
 }

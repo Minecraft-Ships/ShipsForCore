@@ -3,6 +3,7 @@ package org.ships.movement;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.world.boss.ServerBossBar;
+import org.core.world.position.impl.BlockPosition;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.event.vessel.move.VesselMoveEvent;
 
@@ -14,6 +15,7 @@ import java.util.function.Consumer;
 public class MovementContext {
 
     protected ServerBossBar bar;
+    protected BlockPosition clicked;
     protected boolean strictMovement;
     protected MovingBlockSet blocks;
     protected BasicMovement movement;
@@ -21,6 +23,15 @@ public class MovementContext {
     protected Movement.MidMovement[] midMovementProcess = new Movement.MidMovement[0];
     protected Movement.PostMovement[] postMovementProcess = new Movement.PostMovement[0];
     protected Consumer<VesselMoveEvent.Post> post = (e) -> {};
+
+    public Optional<BlockPosition> getClicked(){
+        return Optional.ofNullable(this.clicked);
+    }
+
+    public MovementContext setClicked(BlockPosition position){
+        this.clicked = position;
+        return this;
+    }
 
     public Optional<ServerBossBar> getBar(){
         return Optional.ofNullable(this.bar);

@@ -1,63 +1,55 @@
 package org.ships.config.blocks;
 
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
+import org.core.config.ConfigurationStream;
 import org.core.world.position.block.BlockType;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ExpandedBlockList implements BlockList{
 
-    ConfigurationFile file;
-    BlockList expandedOn;
-    Set<BlockInstruction> blocks = new HashSet<>();
+    private final ConfigurationStream.ConfigurationFile file;
+    private final BlockList expandedOn;
+    private Set<BlockInstruction> originalBlocks = new HashSet<>();
+    private Set<BlockInstruction> fullBlocks = new HashSet<>();
 
-    public ExpandedBlockList(ConfigurationFile file, BlockList expandedOn){
+    public ExpandedBlockList(ConfigurationStream.ConfigurationFile file, BlockList expandedOn){
         this.file = file;
-        if(expandedOn == null){
+        if(expandedOn != null){
             expandedOn.reloadBlockList();
         }
         this.expandedOn = expandedOn;
     }
 
     public Set<BlockInstruction> getRawBlockList(){
-        return this.blocks;
+        return this.originalBlocks;
     }
 
     @Override
     public Set<BlockInstruction> getBlockList() {
-        if(blocks.size() == 0){
+        if(this.fullBlocks.size() == 0){
             this.file.reload();
-            reloadBlockList();
+            this.originalBlocks = reloadBlockList();
+            this.fullBlocks = new HashSet<>(this.expandedOn.getBlockList());
+            this.fullBlocks.addAll(this.originalBlocks);
         }
-        Set<BlockInstruction> set = new HashSet<>(this.expandedOn.getBlockList());
-        set.removeAll(set.stream().filter(b -> this.blocks.stream().anyMatch(m -> m.getType().equals(b.getType()))).collect(Collectors.toList()));
-        set.addAll(this.blocks);
-        return set;
+        return this.fullBlocks;
     }
 
     @Override
     public Set<BlockInstruction> reloadBlockList() {
-        this.blocks.clear();
+        this.originalBlocks.clear();
+        this.fullBlocks.clear();
         Set<BlockInstruction> bins = new HashSet<>();
         Collection<BlockType> blocks = CorePlugin.getPlatform().getBlockTypes();
         blocks.forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(ExpandedBlockList.this, bt);
             if (opBlock.isPresent()){
-                this.blocks.add(opBlock.get());
+                this.originalBlocks.add(opBlock.get());
                 bins.add(opBlock.get());
-            }else{
-                Set<BlockInstruction> blocklist = new HashSet<>(this.expandedOn.getBlockList());
-                opBlock = blocklist.stream().filter(bi -> bi.getType().equals(bt)).findAny();
-                if(opBlock.isPresent()){
-                    bins.add(opBlock.get());
-                }else{
-                    bins.add(new BlockInstruction(bt));
-                }
             }
         });
         return bins;
@@ -65,10 +57,10 @@ public class ExpandedBlockList implements BlockList{
 
     @Override
     public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
-        Optional<BlockInstruction> opBi = blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny();
+        Optional<BlockInstruction> opBi = this.originalBlocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny();
         if(opBi.isPresent()){
             opBi.get().setCollideType(blockInstruction.getCollideType());
-        }else{
+        }else if(this.expandedOn != null){
             this.expandedOn.replaceBlockInstruction(blockInstruction);
         }
         return this;
@@ -80,12 +72,21 @@ public class ExpandedBlockList implements BlockList{
     }
 
     @Override
-    public ConfigurationFile getFile() {
+    public ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
     }
 
     @Override
     public void recreateFile() {
 
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if(!(obj instanceof BlockList)){
+            return false;
+        }
+        BlockList list = (BlockList)obj;
+        return list.getFile().getFile().equals(this.getFile().getFile());
     }
 }

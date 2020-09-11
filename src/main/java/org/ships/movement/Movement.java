@@ -26,6 +26,7 @@ import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
@@ -64,14 +65,18 @@ public class Movement {
             return;
         }
         vessel.set(MovingFlag.class, context);
+        ShipsPlugin.getPlugin().getDebugFile().addMessage("Movement.68 > Started collecting entities", "-\tEntityTrackingLimit: " + config.getEntityTrackingLimit());
         context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Collecting entities: 0")));
         vessel.getEntitiesOvertime(config.getEntityTrackingLimit(), e -> true, e -> {
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("Movement.71 > Found entity " + e.getType().getId());
             EntitySnapshot<? extends LiveEntity> snapshot = e.createSnapshot();
             if (snapshot == null) {
+                ShipsPlugin.getPlugin().getDebugFile().addMessage("\tMovement.74 > Failed to create snapshot");
                 return;
             }
             Optional<SyncBlockPosition> opAttached = e.getAttachedTo();
             if(!opAttached.isPresent()){
+                ShipsPlugin.getPlugin().getDebugFile().addMessage("\tMovement.79 > Failed to find attached");
                 return;
             }
             Optional<MovingBlock> mBlock = context.getMovingStructure().getBefore(opAttached.get());
@@ -85,18 +90,22 @@ public class Movement {
                 mBlock = context.getMovingStructure().getBefore(opDown.get());
             }
             if(!mBlock.isPresent()){
+                ShipsPlugin.getPlugin().getDebugFile().addMessage("\tMovement.93 > Failed to find moving block");
                 return;
             }
             context.getEntities().put(snapshot, mBlock.get());
             context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Collecting entities: " + context.getEntities().size())));
         }, entities -> {
+            ShipsPlugin.getPlugin().getDebugFile().addMessage("Movement.99 > Finished");
             context.getBar().ifPresent(bar -> {
                 bar.setValue(100);
                 bar.setMessage(CorePlugin.buildText("Processing: Pre"));
             });
             VesselMoveEvent.Pre preEvent = new VesselMoveEvent.Pre(vessel, context);
             if (CorePlugin.getPlatform().callEvent(preEvent).isCancelled()){
-                exception.accept(new IllegalStateException("Pre state was cancelled"));
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+                context.getClicked().ifPresent(ShipsSign.LOCKED_SIGNS::remove);
+                vessel.set(MovingFlag.class, null);
                 return;
             }
 
@@ -167,20 +176,16 @@ public class Movement {
                     return;
                 }
                 for(BlockType type : vessel.getType().getIgnoredTypes()){
-                    Optional<SyncBlockPosition> opBlock = mb.getAfterPosition();
-                    if(opBlock.isPresent()){
-                        if(type.equals(opBlock.get().getBlockType())){
+                    SyncBlockPosition block = mb.getAfterPosition();
+                        if(type.equals(block.getBlockType())) {
                             return;
                         }
-                    }
                 }
                 BlockList list = vessel instanceof BlockListable ? ((BlockListable)vessel).getBlockList() : ShipsPlugin.getPlugin().getBlockList();
-                Optional<SyncBlockPosition> opAfter = mb.getAfterPosition();
-                if(opAfter.isPresent()){
-                    BlockInstruction bi = list.getBlockInstruction(opAfter.get().getBlockType());
-                    if (!bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE)) {
-                        collided.add(opAfter.get());
-                    }
+                SyncBlockPosition after = mb.getAfterPosition();
+                BlockInstruction bi = list.getBlockInstruction(after.getBlockType());
+                if (!bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE)) {
+                    collided.add(after);
                 }
             });
             if (!collided.isEmpty()) {
@@ -210,6 +215,7 @@ public class Movement {
                 }
                 context.getEntities().keySet().forEach(e -> e.getCreatedFrom().get().setGravity(false));
                 context.getBar().ifPresent(b -> b.setMessage(CorePlugin.buildText("Processing: Moving")));
+                context.getMovingStructure().applyMovingBlocks();
                 Result result = context.getMovement().move(vessel, context);
                 context.getBar().ifPresent(b -> b.setMessage(CorePlugin.buildText("Processing: Post Moving")));
 

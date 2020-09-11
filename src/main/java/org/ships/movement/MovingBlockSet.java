@@ -1,5 +1,6 @@
 package org.ships.movement;
 
+import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.Positionable;
@@ -15,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class MovingBlockSet extends HashSet<MovingBlock> {
+
+    private MovingBlockSet blocks;
 
     public static final Comparator<MovingBlock> ORDER_ON_PRIORITY = (o1, o2) -> {
         int p1 = o1.getBlockPriority().getPriorityNumber();
@@ -36,20 +39,57 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public void applyMovingBlocks() {
-        this.stream()
-                .filter(m -> m.getBeforePosition().isPresent())
-                .filter(m -> !m.getBeforePosition().get().getTileEntity().isPresent())
-                .filter(m -> m.getAfterPosition().isPresent())
-                .forEach(m -> {
-                    m.setAfterPosition(null);
-                    m.setBeforePosition(null);
-                });
-
+        this.blocks = new MovingBlockSet(this);
+        Iterator<MovingBlock> iter = this.iterator();
+        Set<MovingBlock> remove = new HashSet<>();
+        while(iter.hasNext()){
+            MovingBlock mb = iter.next();
+            if(mb.getAfterPosition().getTileEntity().isPresent()){
+                continue;
+            }
+            if(mb.getAfterPosition().getBlockDetails().getDirectionalData().isPresent()){
+                continue;
+            }
+            if(mb.getAfterPosition().getBlockDetails().get(KeyedData.MULTI_DIRECTIONAL).isPresent()){
+                continue;
+            }
+            boolean pass;
+            do {
+                pass = false;
+                for (MovingBlock block : this) {
+                    if (mb.getAfterPosition().equals(block.getBeforePosition())) {
+                        if(mb.getAfterPosition().getTileEntity().isPresent()){
+                            continue;
+                        }
+                        if(mb.getAfterPosition().getBlockDetails().getDirectionalData().isPresent()){
+                            continue;
+                        }
+                        if(mb.getAfterPosition().getBlockDetails().get(KeyedData.MULTI_DIRECTIONAL).isPresent()){
+                            continue;
+                        }
+                        if(mb.getStoredBlockData().equals(block.getStoredBlockData())){
+                            mb.setAfterPosition(block.getAfterPosition());
+                            remove.add(block);
+                            pass = true;
+                            break;
+                        }
+                    }
+                }
+            } while (pass);
+        }
+        this.removeAll(remove);
     }
 
-    public <T extends Object> Collection<T> to(Function<MovingBlock, T> function){
+    public MovingBlockSet getOriginal(){
+        if(this.blocks == null){
+            return this;
+        }
+        return this.blocks;
+    }
+
+    public <T> Collection<T> to(Function<MovingBlock, T> function){
         Set<T> set = new HashSet<>();
-        this.stream().forEach(b -> set.add(function.apply(b)));
+        this.forEach(b -> set.add(function.apply(b)));
         return Collections.unmodifiableCollection(set);
     }
 
@@ -78,7 +118,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
         return stream().filter(mb -> predicate.test(mb.getStoredBlockData())).findFirst();
     }
 
-    public Optional<MovingBlock> getBefore(Positionable positionable){
+    public Optional<MovingBlock> getBefore(Positionable<?> positionable){
         SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition)positionable.getPosition()
                 : ((SyncExactPosition)positionable.getPosition()).toBlockPosition();
         return getBefore(position);
@@ -88,7 +128,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
         return get(position, MovingBlock::getBeforePosition);
     }
 
-    public Optional<MovingBlock> getAfter(Positionable positionable){
+    public Optional<MovingBlock> getAfter(Positionable<?> positionable){
         SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition)positionable.getPosition() : ((SyncExactPosition)positionable.getPosition()).toBlockPosition();
         return getAfter(position);
     }
@@ -97,10 +137,10 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
         return get(position, MovingBlock::getAfterPosition);
     }
 
-    private Optional<MovingBlock> get(SyncBlockPosition position, Function<MovingBlock, Optional<SyncBlockPosition>> function){
+    private Optional<MovingBlock> get(SyncBlockPosition position, Function<MovingBlock, SyncBlockPosition> function){
         return stream().filter(f -> {
-            Optional<SyncBlockPosition> opPos = function.apply(f);
-            return opPos.map(blockPosition -> blockPosition.equals(position)).orElse(false);
+            SyncBlockPosition pos = function.apply(f);
+            return pos.equals(position);
         }).findFirst();
     }
 }

@@ -1,8 +1,8 @@
 package org.ships.commands.legacy.shiptype;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.configuration.parser.StringParser;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.parser.StringParser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
@@ -48,7 +48,7 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
                 }
                 return true;
             }
-            ShipType type = opType.get();
+            ShipType<?> type = opType.get();
             Optional<VesselFlag<?>> opFlag = type.getFlags().stream().filter(f -> ((VesselFlag<?>)f).getId().equals(args[3])).findAny();
             if(!opFlag.isPresent()){
                 if(source instanceof CommandViewer){
@@ -65,9 +65,9 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
                         }
                         return true;
                     }
-                    if (updateFlag(flag, CorePlugin.toString(" ", t -> t, 5, args))) {
+                    if (updateFlag(flag, ArrayUtils.toString(" ", t -> t, ArrayUtils.filter(5, args.length, args)))) {
                         if(type instanceof SerializableShipType){
-                            ((SerializableShipType) type).save();
+                            ((SerializableShipType<?>) type).save();
                         }
                         if (source instanceof CommandViewer) {
                             ((CommandViewer) source).sendMessagePlain("Flag value updated");
@@ -80,7 +80,7 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
                 }
                 flag.setValue(null);
                 if(type instanceof SerializableShipType){
-                    ((SerializableShipType) type).save();
+                    ((SerializableShipType<?>) type).save();
                 }
                 if (source instanceof CommandViewer) {
                     ((CommandViewer) source).sendMessagePlain("Flag value updated");
@@ -112,8 +112,8 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
                 return true;
             }
             for(int A = 3; A < args.length; A++) {
-                File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/ShipType/Custom/" + opType.get().getOriginType().getId().replace(":", ".") + "/" + args[A] + ".temp");
-                file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT).getFile();
+                File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/ShipType/Custom/" + opType.get().getOriginType().getId().replace(":", ".") + "/" + args[A] + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
+                file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()).getFile();
                 if(file.exists()){
                     if(source instanceof CommandViewer){
                         ((CommandViewer) source).sendMessagePlain("Custom ShipType " + args[A] + " has already been created");
@@ -139,7 +139,7 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
         }
         if(args[1].equalsIgnoreCase("view")){
             if(source instanceof CommandViewer){
-                ((CommandViewer) source).sendMessagePlain(CorePlugin.toString(", ", e -> e.getDisplayName(), ShipsPlugin.getPlugin().getAll(ShipType.class)));
+                ((CommandViewer) source).sendMessagePlain(ArrayUtils.toString(", ", ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class)));
             }
             return true;
         }
@@ -154,7 +154,7 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
             Set<Vessel> vessels = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v.getType().equals(opType.get())).filter(v -> v instanceof SwitchableVessel).collect(Collectors.toSet());
             long count = vessels.stream().filter(v -> {
                 try {
-                    ((SwitchableVessel)v).setType(opType.get());
+                    ((SwitchableVessel<CloneableShipType<?>>)v).setType((CloneableShipType<?>)opType.get());
                     return true;
                 } catch (IOException e) {
                     return false;

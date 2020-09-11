@@ -1,10 +1,9 @@
 package org.ships.vessel.converts.vessel.shipsfive;
 
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
-import org.core.configuration.parser.Parser;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
+import org.core.config.parser.Parser;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
@@ -32,14 +31,14 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
 
     @Override
     public ShipsVessel convert(File file) throws IOException {
-        ConfigurationFile config = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        ConfigurationStream.ConfigurationFile config = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
 
-        String type = config.parseString(new ConfigurationNode("ShipsData", "Type")).get();
-        Integer percent = config.parseInt(new ConfigurationNode("ShipsData", "Config", "Block", "Percent")).orElse(null);
-        Integer consumption = config.parseInt(new ConfigurationNode("ShipsData", "Config", "Fuel", "Consumption")).orElse(null);
-        int maxBlocks = config.parseInt(new ConfigurationNode("ShipsData", "Config", "Block", "Max")).get();
-        int minBlocks = config.parseInt(new ConfigurationNode("ShipsData", "Config", "Block", "Min")).get();
-        int engineSpeed = config.parseInt(new ConfigurationNode("ShipsData", "Config", "Speed", "Engine")).get();
+        String type = config.getString(new ConfigurationNode("ShipsData", "Type")).get();
+        Integer percent = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Block", "Percent")).orElse(null);
+        Integer consumption = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Fuel", "Consumption")).orElse(null);
+        int maxBlocks = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Block", "Max")).get();
+        int minBlocks = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Block", "Min")).get();
+        int engineSpeed = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Speed", "Engine")).get();
         UUID owner = config.parse(new ConfigurationNode("ShipsData", "Player", "Name"), Parser.STRING_TO_UNIQUIE_ID).get();
         SyncBlockPosition blockPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Sign"), Parser.STRING_TO_BLOCK_POSITION).get();
         SyncExactPosition teleportPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Teleport"), Parser.STRING_TO_EXACT_POSITION).get();
@@ -61,7 +60,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
                     ((Airship) vessel).setFuelConsumption(consumption);
                 }
                 if(percent != null) {
-                    ((Airship) vessel).setSpecialBlockPercent(percent);
+                    ((Airship) vessel).setSpecialBlockPercent(percent.floatValue());
                 }
                 break;
             default:

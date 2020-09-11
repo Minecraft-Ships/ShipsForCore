@@ -1,109 +1,113 @@
 package org.ships.config.configuration;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
-import org.core.configuration.parser.Parser;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
+import org.core.config.parser.Parser;
+import org.core.schedule.unit.TimeUnit;
+import org.core.world.WorldExtent;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.Config;
+import org.ships.config.node.CollectionDedicatedNode;
 import org.ships.config.node.DedicatedNode;
+import org.ships.config.node.ObjectDedicatedNode;
+import org.ships.config.node.RawDedicatedNode;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
-public class ShipsConfig implements Config.CommandConfigurable {
+public class ShipsConfig implements Config.KnownNodes {
 
-    protected ConfigurationFile file;
+    protected ConfigurationStream.ConfigurationFile file;
 
-    protected final ConfigurationNode ADVANCED_MOVEMENT = new ConfigurationNode("Advanced", "Movement", "Default");
-    protected final ConfigurationNode ADVANCED_BLOCKFINDER = new ConfigurationNode("Advanced", "BlockFinder", "Default");
-    protected final ConfigurationNode ADVANCED_TRACK_LIMIT = new ConfigurationNode("Advanced", "BlockFinder", "Track");
-    protected final ConfigurationNode ADVANCED_MOVEMENT_STACK_LIMIT = new ConfigurationNode("Advanced", "Movement", "Stack", "Limit");
-    protected final ConfigurationNode ADVANCED_MOVEMENT_STACK_DELAY = new ConfigurationNode("Advanced", "Movement", "Stack", "Delay");
-    protected final ConfigurationNode ADVANCED_MOVEMENT_STACK_DELAYUNIT = new ConfigurationNode("Advanced", "Movement", "Stack", "DelayUnit");
-    protected final ConfigurationNode ADVANCED_BLOCKFINDER_STACK_DELAY = new ConfigurationNode("Advanced", "BlockFinder", "Stack", "Delay");
-    protected final ConfigurationNode ADVANCED_BLOCKFINDER_STACK_DELAYUNIT = new ConfigurationNode("Advanced", "BlockFinder", "Stack", "DelayUnit");
-    protected final ConfigurationNode ADVANCED_BLOCKFINDER_STACK_LIMIT = new ConfigurationNode("Advanced", "BlockFinder", "Stack", "Limit");
-    protected final ConfigurationNode ADVANCED_ENTITYFINDER_STACK_LIMIT = new ConfigurationNode("Advanced", "EntityFinder", "Stack", "Limit");
-    protected final ConfigurationNode EOT_DELAY = new ConfigurationNode("Auto", "EOT", "Delay");
-    protected final ConfigurationNode EOT_DELAY_UNIT = new ConfigurationNode("Auto", "EOT", "DelayUnit");
-    protected final ConfigurationNode EOT_SPEED = new ConfigurationNode("Auto", "EOT", "Speed");
-    protected final ConfigurationNode EOT_ENABLED =  new ConfigurationNode("Auto", "EOT", "Enabled");
-    protected final ConfigurationNode FALL_DELAY = new ConfigurationNode("Auto", "Falling", "Delay");
-    protected final ConfigurationNode FALL_DELAY_UNIT = new ConfigurationNode("Auto", "Falling", "DelayUnit");
-    protected final ConfigurationNode FALL_SPEED = new ConfigurationNode("Auto", "Falling", "Speed");
-    protected final ConfigurationNode FALL_ENABLED = new ConfigurationNode("Auto", "Falling", "Enabled");
-    protected final ConfigurationNode LICENCE_SIGN_TEXT_1ST = new ConfigurationNode("Sign", "Licence", "First");
-    protected final ConfigurationNode LICENCE_SIGN_TEXT_4TH = new ConfigurationNode("Sign", "Licence", "Fourth");
-    protected final ConfigurationNode VISIBLE_BOSS_BAR = new ConfigurationNode("Bar", "Visible");
-    protected final ConfigurationNode STRUCTURE_UPDATE_AUTO = new ConfigurationNode("Structure", "Update", "Auto");
-    protected final ConfigurationNode STRUCTURE_UPDATE_CLICK = new ConfigurationNode("Structure", "Update", "Click");
-    protected final ConfigurationNode MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE = new ConfigurationNode("Movement", "Requirements", "Check", "Max", "BlockType");
+    protected final ObjectDedicatedNode<BasicMovement, ConfigurationNode.KnownParser.SingleKnown<BasicMovement>> ADVANCED_MOVEMENT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_MOVEMENT, "Advanced", "Movement", "Default"), "Advanced.Block.Movement");
+    protected final ObjectDedicatedNode<BasicBlockFinder, ConfigurationNode.KnownParser.SingleKnown<BasicBlockFinder>> ADVANCED_BLOCKFINDER = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_BLOCK_FINDER, "Advanced", "BlockFinder", "Default"), "Advanced.Block.Finder");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_TRACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder", "Track"), "Advanced.Block.Track", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack", "Limit"), "Advanced.Block.Movement.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack", "Delay"), "Advanced.Block.Movement.Stack.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_MOVEMENT_STACK_DELAYUNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced", "Movement", "Stack", "DelayUnit"), "Advanced.Block.Movement.Stack.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder", "Stack", "Delay"), "Advanced.Block.Finder.Stack.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_BLOCKFINDER_STACK_DELAYUNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced", "BlockFinder", "Stack", "DelayUnit"), "Advanced.Block.Finder.Stack.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder", "Stack", "Limit"), "Advanced.Block.Finder.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_ENTITYFINDER_STACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "EntityFinder", "Stack", "Limit"), "Advanced.Entity.Finder.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Delay"), "Running.EOT.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> EOT_DELAY_UNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "EOT", "DelayUnit"), "Running.EOT.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_SPEED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Speed"), "Running.EOT.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EOT_ENABLED =  new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "EOT", "Enabled"), "Running.EOT.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Delay"), "Running.Fall.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> FALL_DELAY_UNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "Falling", "DelayUnit"), "Running.Fall.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_SPEED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Speed"), "Running.Fall.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> FALL_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "Falling", "Enabled"), "Running.Fall.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LICENCE_SIGN_TEXT_1ST = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Sign", "Licence", "First"), "sign.licence.first");
+    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LICENCE_SIGN_TEXT_4TH = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Sign", "Licence", "Fourth"), "sign.licence.fourth");
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> VISIBLE_BOSS_BAR = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Bar", "Visible"), "Boss.Bar.Visible", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_AUTO = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Auto"), "Structure.Auto.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_CLICK = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Click"), "Structure.Click.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Movement", "Requirements", "Check", "Max", "BlockType"), "Movement.Requirements.Check.Max.BlockType", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> UPDATE_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Update", "Enabled"), "Update.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final CollectionDedicatedNode<WorldExtent, Set<WorldExtent>, ConfigurationNode.KnownParser.CollectionKnown<WorldExtent, Set<WorldExtent>>> DISABLED_WORLDS = new CollectionDedicatedNode<>(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_WORLD, "World", "Disabled"), "Worlds.Ignore");
 
     @Deprecated
-    public final ConfigurationNode ALPHA_COMMAND_USE_LEGACY = new ConfigurationNode("AlphaOnly", "Command", "UseLegacy");
+    public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
 
     public ShipsConfig(){
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.temp");
-        this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
         boolean modified = false;
         if(!this.file.getFile().exists()){
             recreateFile();
         }
-        if(!this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).isPresent()){
+        if(!this.file.parse(this.ADVANCED_MOVEMENT.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_SIX);
+            this.file.set(this.ADVANCED_MOVEMENT.getNode(), BasicMovement.SHIPS_SIX);
         }
-        if(!this.file.parseBoolean(this.VISIBLE_BOSS_BAR).isPresent()){
+        if(!this.file.getBoolean(this.VISIBLE_BOSS_BAR.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.VISIBLE_BOSS_BAR, false);
+            this.file.set(this.VISIBLE_BOSS_BAR.getNode(), true);
         }
-        if(!this.file.parseBoolean(this.ALPHA_COMMAND_USE_LEGACY).isPresent()){
+        if(!this.file.getBoolean(this.ALPHA_COMMAND_USE_LEGACY.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.ALPHA_COMMAND_USE_LEGACY, true);
+            this.file.set(this.ALPHA_COMMAND_USE_LEGACY.getNode(), true);
         }
-        if(!this.file.parseInt(this.ADVANCED_MOVEMENT_STACK_LIMIT).isPresent()){
+        if(!this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 7);
-            this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAY, 1);
-            this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit) null);
-            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAY, 1);
-            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit)null);
-            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 2);
-            this.file.set(this.STRUCTURE_UPDATE_AUTO, true);
+            this.file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode(), 10);
+            this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAY.getNode(), 1);
+            this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
+            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAY.getNode(), 1);
+            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
+            this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT.getNode(), 7);
+            this.file.set(this.STRUCTURE_UPDATE_AUTO.getNode(), true);
         }
-        if(!this.file.parseBoolean(this.STRUCTURE_UPDATE_CLICK).isPresent()){
+        if(!this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.STRUCTURE_UPDATE_CLICK, false);
+            this.file.set(this.STRUCTURE_UPDATE_CLICK.getNode(), false);
         }
-        if (!this.file.parseBoolean(this.EOT_ENABLED).isPresent()){
+        if (!this.file.getBoolean(this.EOT_ENABLED.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.EOT_ENABLED, false);
-            this.file.set(this.EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
-            this.file.set(this.FALL_DELAY, 1);
-            this.file.set(this.FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.MINUTES);
-            this.file.set(this.FALL_SPEED, 1);
-            this.file.set(this.FALL_ENABLED, false);
+            this.file.set(this.EOT_ENABLED.getNode(), false);
+            this.file.set(this.EOT_DELAY_UNIT.getNode(), TimeUnit.SECONDS);
+            this.file.set(this.FALL_DELAY.getNode(), 1);
+            this.file.set(this.FALL_DELAY_UNIT.getNode(), TimeUnit.MINUTES);
+            this.file.set(this.FALL_SPEED.getNode(), 1);
+            this.file.set(this.FALL_ENABLED.getNode(), false);
         }
-        if(!this.file.parseBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE).isPresent()){
+        if(!this.file.getBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, false);
+            this.file.set(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getNode(), false);
         }
-        if(!this.file.parseInt(this.ADVANCED_ENTITYFINDER_STACK_LIMIT).isPresent()){
+        if(!this.file.getInteger(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode()).isPresent()){
             modified = true;
-            this.file.set(this.ADVANCED_ENTITYFINDER_STACK_LIMIT, 2);
+            this.file.set(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode(), 75);
+        }
+        if(!this.file.getBoolean(this.UPDATE_ENABLED.getNode()).isPresent()){
+            modified = true;
+            this.file.set(this.UPDATE_ENABLED.getNode(), true);
+            this.file.set(this.DISABLED_WORLDS.getNode(), Collections.emptySet());
         }
         if(modified){
             this.file.save();
@@ -111,161 +115,148 @@ public class ShipsConfig implements Config.CommandConfigurable {
         this.file.reload();
     }
 
+    public Set<WorldExtent> getDisabledWorlds(){
+        return this.file.parseCollection(this.DISABLED_WORLDS.getNode(), new HashSet<>());
+    }
+
+    public boolean isUpdateEnabled(){
+        return this.file.getBoolean(this.UPDATE_ENABLED.getNode(), true);
+    }
+
     public boolean isFallingEnabled(){
-        return this.file.parseBoolean(this.FALL_ENABLED).orElse(true);
+        return this.file.getBoolean(this.FALL_ENABLED.getNode(), true);
     }
 
     public TimeUnit getFallingDelayUnit(){
-        return this.file.parse(this.FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(null);
+        return this.file.parse(this.FALL_DELAY_UNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
     public int getFallingDelay(){
-        return this.file.parseInt(this.FALL_DELAY).orElse(1);
+        return this.file.getInteger(this.FALL_DELAY.getNode(), 1);
     }
 
     public int getFallingSpeed(){
-        return this.file.parseInt(this.FALL_SPEED).orElse(1);
+        return this.file.getInteger(this.FALL_SPEED.getNode(), 1);
     }
 
     public boolean isEOTEnabled(){
-        return this.file.parseBoolean(this.EOT_ENABLED).orElse(false);
+        return this.file.getBoolean(this.EOT_ENABLED.getNode(), false);
     }
 
     public boolean isMovementRequirementsCheckMaxBlockType(){
-        return this.file.parseBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE).orElse(false);
+        return this.file.getBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getNode(), false);
     }
 
     public TimeUnit getEOTDelayUnit() {
-        return this.file.parse(this.EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT).orElse(null);
+        return this.file.parse(this.EOT_DELAY_UNIT.getNode()).orElse(TimeUnit.SECONDS);
     }
 
     public int getEOTDelay(){
-        return this.file.parseInt(this.EOT_DELAY).orElse(5);
+        return this.file.getInteger(this.EOT_DELAY.getNode(), 5);
     }
 
     public int getEOTSpeed(){
-        return this.file.parseInt(this.EOT_SPEED).orElse(2);
+        return this.file.getInteger(this.EOT_SPEED.getNode(), 2);
     }
 
     public int getEntityTrackingLimit(){
-        return this.file.parseInt(this.ADVANCED_ENTITYFINDER_STACK_LIMIT).orElse(2);
+        return this.file.getInteger(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode(), 75);
     }
 
     public int getDefaultFinderStackDelay(){
-        return this.file.parseInt(this.ADVANCED_BLOCKFINDER_STACK_DELAY).orElse(1);
+        return this.file.getInteger(this.ADVANCED_BLOCKFINDER_STACK_DELAY.getNode(), 1);
     }
 
     public TimeUnit getDefaultFinderStackDelayUnit(){
-        Optional<TimeUnit> opTimeUnit = this.file.parse(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT);
-        if(opTimeUnit == null){
-            return null;
-        }
-        return opTimeUnit.orElse(null);
+        return this.file.parse(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
     public TimeUnit getDefaultMovementStackDelayUnit(){
-        Optional<TimeUnit> opTimeUnit = this.file.parse(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT);
-        if(opTimeUnit == null){
-            return null;
-        }
-        return opTimeUnit.orElse(null);
+        return this.file.parse(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
     public boolean isStructureClickUpdating(){
-        return this.file.parseBoolean(this.STRUCTURE_UPDATE_CLICK).orElse(false);
+        return this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode(), false);
     }
 
     public boolean isStructureAutoUpdating(){
-        return this.file.parseBoolean(this.STRUCTURE_UPDATE_AUTO).orElse(true);
+        return this.file.getBoolean(this.STRUCTURE_UPDATE_AUTO.getNode(), true);
     }
 
     public int getDefaultMovementStackLimit(){
-        return this.file.parseInt(this.ADVANCED_MOVEMENT_STACK_LIMIT).orElse(7);
+        return this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode(), 7);
     }
 
     public int getDefaultFinderStackLimit(){
-        return this.file.parseInt(this.ADVANCED_BLOCKFINDER_STACK_LIMIT).orElse(2);
+        return this.file.getInteger(this.ADVANCED_BLOCKFINDER_STACK_LIMIT.getNode(), 2);
     }
 
     public int getDefaultMovementStackDelay(){
-        return this.file.parseInt(this.ADVANCED_MOVEMENT_STACK_DELAY).orElse(1);
+        return this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_DELAY.getNode(), 1);
     }
 
     public BasicBlockFinder getDefaultFinder(){
-        return this.file.parse(this.ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER).orElse(BasicBlockFinder.SHIPS_FIVE).init();
+        return this.file.parse(this.ADVANCED_BLOCKFINDER.getNode(), BasicBlockFinder.SHIPS_FIVE).init();
     }
 
     public BasicMovement getDefaultMovement(){
-        return this.file.parse(this.ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT).orElse(BasicMovement.SHIPS_SIX);
+        return this.file.parse(this.ADVANCED_MOVEMENT.getNode(), BasicMovement.SHIPS_SIX);
     }
 
     public boolean isBossBarVisible(){
-        return this.file.parseBoolean(this.VISIBLE_BOSS_BAR).orElse(false);
+        return this.file.getBoolean(this.VISIBLE_BOSS_BAR.getNode(), true);
     }
 
     public int getDefaultTrackSize(){
-        return this.file.parseInt(this.ADVANCED_TRACK_LIMIT).orElse(4000);
+        return this.file.getInteger(this.ADVANCED_TRACK_LIMIT.getNode(), 4000);
     }
 
     @Override
-    public org.core.configuration.ConfigurationFile getFile() {
+    public ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
     }
 
     @Override
     public void recreateFile() {
-        ConfigurationFile file = getFile();
-        file.set(ADVANCED_MOVEMENT, ShipsParsers.STRING_TO_MOVEMENT, BasicMovement.SHIPS_SIX);
-        file.set(ADVANCED_BLOCKFINDER, ShipsParsers.STRING_TO_BLOCK_FINDER, BasicBlockFinder.SHIPS_FIVE);
-        file.set(ADVANCED_TRACK_LIMIT, 4000);
-        file.set(EOT_SPEED, 2);
-        file.set(EOT_DELAY, 5);
-        file.set(EOT_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.SECONDS);
-        file.set(EOT_ENABLED, true);
-        file.set(FALL_SPEED, 1);
-        file.set(FALL_DELAY, 1);
-        file.set(FALL_DELAY_UNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, TimeUnit.MINUTES);
-        file.set(FALL_ENABLED, true);
-        file.set(VISIBLE_BOSS_BAR, false);
-        file.set(MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, false);
-        file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT, 6);
-        file.set(this.ADVANCED_MOVEMENT_STACK_DELAY, 1);
-        file.set(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit) null);
-        file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAY, 1);
-        file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT, Parser.STRING_TO_MINECRAFT_TIME_UNIT, (TimeUnit)null);
-        file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT, 2);
-        file.set(this.STRUCTURE_UPDATE_AUTO, true);
-        file.set(this.STRUCTURE_UPDATE_CLICK, false);
-        file.set(this.ADVANCED_ENTITYFINDER_STACK_LIMIT, 2);
-
-        file.set(ALPHA_COMMAND_USE_LEGACY, true);
-        file.save();
+        File file = this.getFile().getFile();
+        file.delete();
+        Optional<ConfigurationStream.ConfigurationFile> opConfig = ShipsPlugin.getPlugin().createConfig("Config.yml", file);
+        if(opConfig.isPresent()){
+            this.file = opConfig.get();
+        }else{
+            throw new IllegalStateException("Failed to create the config. Something went wrong");
+        }
     }
 
     @Override
-    public Set<DedicatedNode<?>> getNodes() {
-        return new HashSet<>(Arrays.asList(
-                new DedicatedNode<>(true, "Boss.Bar.Visible", Parser.STRING_TO_BOOLEAN, VISIBLE_BOSS_BAR.getPath()),
-                new DedicatedNode<>("Advanced.Block.Movement", ShipsParsers.STRING_TO_MOVEMENT, ADVANCED_MOVEMENT.getPath()),
-                new DedicatedNode<>("Advanced.Block.Finder", ShipsParsers.STRING_TO_BLOCK_FINDER, ADVANCED_BLOCKFINDER.getPath()),
-                new DedicatedNode<>(true, "Advanced.Block.Track", Parser.STRING_TO_INTEGER, ADVANCED_TRACK_LIMIT.getPath()),
-                new DedicatedNode<>("Advanced.Block.Movement.Stack.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, ADVANCED_MOVEMENT_STACK_DELAYUNIT.getPath()),
-                new DedicatedNode<>(true, "Advanced.Block.Movement.Stack.Delay", Parser.STRING_TO_INTEGER, ADVANCED_MOVEMENT_STACK_DELAY.getPath()),
-                new DedicatedNode<>(true, "Advanced.Block.Movement.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_MOVEMENT_STACK_LIMIT.getPath()),
-                new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Delay", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_DELAY.getPath()),
-                new DedicatedNode<>("Advanced.Block.Finder.Stack.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getPath()),
-                new DedicatedNode<>(true, "Advanced.Block.Finder.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_BLOCKFINDER_STACK_LIMIT.getPath()),
-                new DedicatedNode<>(true, "Advanced.Entity.Finder.Stack.Limit", Parser.STRING_TO_INTEGER, ADVANCED_ENTITYFINDER_STACK_LIMIT.getPath()),
-                new DedicatedNode<>(true, "Structure.Auto.Update", Parser.STRING_TO_BOOLEAN, STRUCTURE_UPDATE_AUTO.getPath()),
-                new DedicatedNode<>(true, "Running.EOT.Enabled", Parser.STRING_TO_BOOLEAN, EOT_ENABLED.getPath()),
-                new DedicatedNode<>(true, "Running.EOT.Delay", Parser.STRING_TO_INTEGER, EOT_DELAY.getPath()),
-                new DedicatedNode<>("Running.EOT.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, EOT_DELAY_UNIT.getPath()),
-                new DedicatedNode<>(true, "Running.EOT.Speed", Parser.STRING_TO_INTEGER, EOT_SPEED.getPath()),
-                new DedicatedNode<>(true, "Running.Fall.Enabled", Parser.STRING_TO_BOOLEAN, FALL_ENABLED.getPath()),
-                new DedicatedNode<>(true, "Running.Fall.Delay", Parser.STRING_TO_INTEGER, FALL_DELAY.getPath()),
-                new DedicatedNode<>("Running.Fall.DelayUnit", Parser.STRING_TO_MINECRAFT_TIME_UNIT, FALL_DELAY_UNIT.getPath()),
-                new DedicatedNode<>(true, "Running.Fall.Speed", Parser.STRING_TO_INTEGER, FALL_SPEED.getPath()),
-                new DedicatedNode<>(true, "Movement.Requirements.Check.Max.BlockType", Parser.STRING_TO_BOOLEAN, MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getPath())
-        ));
+    public Set<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
+        return ArrayUtils.ofSet(
+                this.ADVANCED_BLOCKFINDER,
+                this.ADVANCED_BLOCKFINDER_STACK_DELAY,
+                this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT,
+                this.ADVANCED_BLOCKFINDER_STACK_LIMIT,
+                this.ADVANCED_ENTITYFINDER_STACK_LIMIT,
+                this.ADVANCED_MOVEMENT,
+                this.ADVANCED_MOVEMENT_STACK_DELAY,
+                this.ADVANCED_MOVEMENT_STACK_DELAYUNIT,
+                this.ADVANCED_MOVEMENT_STACK_LIMIT,
+                this.ADVANCED_TRACK_LIMIT,
+                this.DISABLED_WORLDS,
+                this.EOT_DELAY,
+                this.EOT_DELAY_UNIT,
+                this.EOT_SPEED,
+                this.EOT_ENABLED,
+                this.FALL_DELAY,
+                this.FALL_DELAY_UNIT,
+                this.FALL_ENABLED,
+                this.FALL_SPEED,
+                this.LICENCE_SIGN_TEXT_1ST,
+                this.LICENCE_SIGN_TEXT_4TH,
+                this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE,
+                this.STRUCTURE_UPDATE_AUTO,
+                this.STRUCTURE_UPDATE_CLICK,
+                this.VISIBLE_BOSS_BAR,
+                this.UPDATE_ENABLED
+        );
     }
 }

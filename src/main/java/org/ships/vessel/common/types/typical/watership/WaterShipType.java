@@ -1,10 +1,10 @@
 package org.ships.vessel.common.types.typical.watership;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
-import org.core.configuration.parser.Parser;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
+import org.core.config.parser.Parser;
 import org.core.platform.Plugin;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
@@ -20,39 +20,39 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 public class WaterShipType implements CloneableShipType<WaterShip>, SerializableShipType<WaterShip> {
 
-    protected ConfigurationFile file;
+    protected ConfigurationStream.ConfigurationFile file;
     protected ExpandedBlockList blockList;
     protected String name;
     protected Set<VesselFlag<?>> flags = new HashSet<>();
 
-    private final String[] MAX_SPEED = {"Speed", "Max"};
-    private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
-    private final String[] SPECIAL_BLOCK_TYPE = {"Special", "Block", "Type"};
-    private final String[] SPECIAL_BLOCK_PERCENT = {"Special", "Block", "Percent"};
+    private final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");
+    private final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Altitude");
+    private final ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
+    private final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
 
     public WaterShipType(){
-        this("Ship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Watership.temp"));
+        this("Ship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Watership." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public WaterShipType(String name, File file){
         int[] mcVersion = CorePlugin.getPlatform().getMinecraftVersion();
         this.name = name;
-        this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
         if(!this.file.getFile().exists()){
-            this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
-            this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 25);
+            this.file.set(this.MAX_SPEED, 10);
+            this.file.set(this.ALTITUDE_SPEED, 5);
+            this.file.set(this.SPECIAL_BLOCK_PERCENT, 25);
             if(mcVersion[1] == 12){
-                this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Arrays.asList(Parser.STRING_TO_BLOCK_TYPE.unparse(BlockTypes1V12.WOOL.get())));
+                this.file.set(this.SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes1V12.WOOL.get()));
             }else {
-                this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Arrays.asList(BlockGroups1V13.WOOL.getGrouped())));
+                this.file.set(this.SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
             }
             this.file.save();
         }
@@ -76,24 +76,24 @@ public class WaterShipType implements CloneableShipType<WaterShip>, Serializable
 
     @Override
     public int getDefaultMaxSpeed() {
-        return file.parse(new ConfigurationNode(this.MAX_SPEED), Parser.STRING_TO_INTEGER).get();
+        return file.parse(this.MAX_SPEED, Parser.STRING_TO_INTEGER).get();
     }
 
     @Override
     public int getDefaultAltitudeSpeed() {
-        return file.parse(new ConfigurationNode(this.ALTITUDE_SPEED), Parser.STRING_TO_INTEGER).get();
+        return file.parse(this.ALTITUDE_SPEED, Parser.STRING_TO_INTEGER).get();
     }
 
     public float getDefaultSpecialBlockPercent(){
-        return this.file.parseDouble(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT)).get().floatValue();
+        return this.file.getDouble(this.SPECIAL_BLOCK_PERCENT).get().floatValue();
     }
 
     public Set<BlockType> getDefaultSpecialBlockType(){
-        return new HashSet<>(this.file.parseList(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.STRING_TO_BLOCK_TYPE).get());
+        return this.file.parseCollection(this.SPECIAL_BLOCK_TYPE, new HashSet<>());
     }
 
     @Override
-    public ConfigurationFile getFile() {
+    public ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
     }
 
@@ -117,26 +117,26 @@ public class WaterShipType implements CloneableShipType<WaterShip>, Serializable
         String name = this.file.getFile().getName();
         String[] split = name.split(Pattern.quote("."));
         int length = split.length;
-        name = CorePlugin.toString(".", CorePlugin.strip(String.class, 0, length - 1, split));
+        name = ArrayUtils.toString(".", t -> t, ArrayUtils.filter(0, length - 1, split));
         return name;
     }
 
-    public CloneableShipType cloneWithName(File file, String name) {
+    public WaterShipType cloneWithName(File file, String name) {
         return new WaterShipType(name, file);
     }
 
-    public CloneableShipType getOriginType() {
+    public WaterShipType getOriginType() {
         return ShipType.WATERSHIP;
     }
 
     @Override
     public void setMaxSpeed(int speed) {
-        this.file.set(new ConfigurationNode(this.MAX_SPEED), speed);
+        this.file.set(this.MAX_SPEED, speed);
     }
 
     @Override
     public void setAltitudeSpeed(int speed) {
-        this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), speed);
+        this.file.set(this.ALTITUDE_SPEED, speed);
     }
 
     @Override
@@ -146,22 +146,22 @@ public class WaterShipType implements CloneableShipType<WaterShip>, Serializable
 
     @Override
     public void save() {
-        this.getFlags().stream().forEach(f -> setFlag(f));
+        this.getFlags().forEach(this::setFlag);
         this.getFile().save();
     }
 
-    private <F extends Object> void setFlag(VesselFlag<F> f){
+    private <F> void setFlag(VesselFlag<F> f){
         if(!(f instanceof VesselFlag.Serializable)){
             return;
         }
-        VesselFlag.Serializable sFlag = (VesselFlag.Serializable)f;
+        VesselFlag.Serializable<F> sFlag = (VesselFlag.Serializable<F>)f;
         String trueId = sFlag.getId().split(":")[1];
-        String[] flagId = trueId.split(".");
+        String[] flagId = trueId.split("\\.");
         if(flagId.length == 0){
             flagId = new String[]{trueId};
         }
         F value = f.getValue().orElse(null);
-        ConfigurationNode node = new ConfigurationNode(new ConfigurationNode("flag", sFlag.getId().split(":")[0]), flagId);
+        ConfigurationNode node = new ConfigurationNode(ArrayUtils.join(String.class, new String[]{"flag", sFlag.getId().split(":")[0]}, flagId));
         this.getFile().set(node, f.getParser(), value);
     }
 }

@@ -1,7 +1,7 @@
 package org.ships.movement.result;
 
-import org.core.CorePlugin;
-import org.core.configuration.parser.Parser;
+import org.array.utils.ArrayUtils;
+import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifable;
@@ -68,10 +68,10 @@ public interface MovementResult<E> {
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockType> value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getNotInMovingIn();
             if(message.contains("%Block Names%")) {
-                message = message.replaceAll("%Block Names%", CorePlugin.toString(",", v -> v.getName(), value));
+                message = message.replaceAll("%Block Names%", ArrayUtils.toString(",", Identifable::getName, value));
             }
             if(message.contains("%Block Ids%")) {
-                message = message.replaceAll("%Block Ids%", CorePlugin.toString(",", v -> v.getId(), value));
+                message = message.replaceAll("%Block Ids%", ArrayUtils.toString(",", Identifable::getId, value));
             }
             viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
         }
@@ -81,7 +81,7 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredFuelMovementData value) {
-            viewer.sendMessagePlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " + CorePlugin.toString(", ", t -> t, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) + " in a single furnace");
+            viewer.sendMessagePlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " + ArrayUtils.toString(", ", t -> t, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) + " in a single furnace");
         }
     }
 
@@ -155,7 +155,7 @@ public interface MovementResult<E> {
                     blocks.add(value);
                 });
             }
-            String value = CorePlugin.toString(", ", b -> b, blocks);
+            String value = ArrayUtils.toString(", ", b -> b, blocks);
             if(value == null){
                 value = "Unknown position";
             }
@@ -183,9 +183,9 @@ public interface MovementResult<E> {
             message = message.replaceAll("%Vessel Id%", vessel.getName().toLowerCase());
         }
         if (viewer instanceof LivePlayer){
-            message.replaceAll("%Player Name%", ((LivePlayer)viewer).getName());
+            message = message.replaceAll("%Player Name%", ((LivePlayer)viewer).getName());
         }else{
-            message.replaceAll("%Player Name%", "_");
+            message = message.replaceAll("%Player Name%", "_");
         }
         return message;
     }

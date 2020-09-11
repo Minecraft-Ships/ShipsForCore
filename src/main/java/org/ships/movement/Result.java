@@ -44,14 +44,12 @@ public class Result extends ArrayList<Result.Run> {
             double pitch = entity.getPitch();
             double yaw = entity.getYaw();
             double roll = entity.getRoll();
-            Optional<SyncBlockPosition> opBefore = value.getBeforePosition();
-            Optional<SyncBlockPosition> opAfter = value.getAfterPosition();
-            if(opBefore.isPresent() && opAfter.isPresent()){
-                Vector3<Double> position = entity.getPosition().getPosition().minus(opBefore.get().toExactPosition().getPosition());
-                Vector3<Double> position2 = opAfter.get().toExactPosition().getPosition();
-                position = position2.add(position);
-                entity.setPosition(position);
-            }
+            SyncBlockPosition before = value.getBeforePosition();
+            SyncBlockPosition after = value.getAfterPosition();
+            Vector3<Double> position = entity.getPosition().getPosition().minus(before.toExactPosition().getPosition());
+            Vector3<Double> position2 = after.toExactPosition().getPosition();
+            position = position2.add(position);
+            entity.setPosition(position);
             entity.setYaw(yaw);
             entity.setRoll(roll);
             entity.setPitch(pitch);
@@ -60,14 +58,20 @@ public class Result extends ArrayList<Result.Run> {
         Run COMMON_RESET_GRAVITY = (v, c) -> c.getEntities().keySet().forEach(e -> e.setGravity(true));
 
         Run COMMON_SET_NEW_POSITIONS = (v, c) -> {
+            if (!ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating()){
+                return;
+            }
             PositionableShipsStructure pss = v.getStructure();
             pss.clear();
-            c.getMovingStructure().forEach((mb) -> mb.getAfterPosition().ifPresent(pss::addPosition));
+            c.getMovingStructure().getOriginal().forEach((mb) -> pss.addPosition(mb.getAfterPosition()));
         };
 
         Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, c) -> {
-            Optional<MovingBlock> opSign = c.getMovingStructure().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
-            opSign.flatMap(MovingBlock::getAfterPosition).ifPresent(after -> v.getStructure().setPosition(after));
+            Optional<MovingBlock> opSign = c.getMovingStructure().getOriginal().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
+            if(!opSign.isPresent()){
+                return;
+            }
+            v.getStructure().setPosition(opSign.get().getAfterPosition());
         };
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> c.getEntities().keySet().forEach(e -> {

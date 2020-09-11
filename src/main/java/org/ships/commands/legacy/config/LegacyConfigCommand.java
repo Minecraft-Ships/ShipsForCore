@@ -1,8 +1,9 @@
 package org.ships.commands.legacy.config;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationNode;
-import org.core.configuration.parser.StringParser;
+import org.core.config.ConfigurationNode;
+import org.core.config.parser.StringParser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
@@ -14,6 +15,7 @@ import org.ships.config.node.DedicatedNode;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
+import java.io.IOException;
 import java.util.*;
 
 public class LegacyConfigCommand implements LegacyArgumentCommand {
@@ -38,7 +40,7 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
                 return false;
             }
             String configName = args[2];
-            Config.CommandConfigurable config;
+            Config.KnownNodes config;
             switch(configName.toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
                 case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
@@ -53,19 +55,21 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
                     ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
                     return false;
                 }
-                String remaining = CorePlugin.toString(" ", t -> t, 4, args);
-                if (setNode(config, args[3], remaining)){
+                String remaining = ArrayUtils.toString(" ", t -> t, ArrayUtils.filter(4, args.length, args));
+                try {
+                    setNode(config, args[3], remaining);
                     return true;
-                }
-                if(source instanceof CommandViewer){
-                    ((CommandViewer) source).sendMessagePlain("Unknown key or value");
+                } catch (IOException e) {
+                    if(source instanceof CommandViewer){
+                        ((CommandViewer) source).sendMessagePlain(e.getMessage());
+                    }
                 }
             }else if(tag.equalsIgnoreCase("view")){
                 if (source instanceof LivePlayer && !((LivePlayer)source).hasPermission(Permissions.CMD_CONFIG_VIEW)){
                     ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
                     return false;
                 }
-                Optional<DedicatedNode<?>> opNode = config.get(args[3]);
+                Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> opNode = config.getNode(args[3]);
                 if(!opNode.isPresent()){
                     if(source instanceof CommandViewer){
                         ((CommandViewer) source).sendMessagePlain("Unknown key");
@@ -109,115 +113,107 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             return Arrays.asList("config", "messages");
         }
         if(args.length == 4 && args[3].equalsIgnoreCase("")){
-            Config.CommandConfigurable config;
+            Config.KnownNodes config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
                 case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default: return new ArrayList<>();
             }
             List<String> list = new ArrayList<>();
-            config.getNodes().forEach(dn -> list.add(dn.getSimpleName()));
+            config.getNodes().forEach(dn -> list.add(dn.getKeyName()));
             return list;
         }
         if(args.length == 4){
-            Config.CommandConfigurable config;
+            Config.KnownNodes config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
                 case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default: return new ArrayList<>();
             }
             List<String> list = new ArrayList<>();
-            config.getNodes().stream().filter(dn -> dn.getSimpleName().toLowerCase().startsWith(args[3].toLowerCase())).forEach(dn -> list.add(dn.getSimpleName()));
+            config.getNodes().stream().filter(dn -> dn.getKeyName().toLowerCase().startsWith(args[3].toLowerCase())).forEach(dn -> list.add(dn.getKeyName()));
             return list;
         }
         if(((args.length == 5 && args[4].equalsIgnoreCase(""))) && args[1].toLowerCase().equals("set")){
-            Config.CommandConfigurable config;
+            Config.KnownNodes config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
                 case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default:
                     return new ArrayList<>();
             }
-            Optional<DedicatedNode<?>> opNode = config.get(args[3]);
+            Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> opNode = config.getNode(args[3]);
             if(!opNode.isPresent()){
                 return new ArrayList<>();
             }
             if(config instanceof MessageConfig){
-                Set<String> set = ((MessageConfig)config).getSuggestions(new ConfigurationNode(opNode.get().getNode()));
+                Set<String> set = ((MessageConfig)config).getSuggestions(new ConfigurationNode(opNode.get().getNode().getPath()));
                 List<String> list = new ArrayList<>(set);
                 list.sort(Comparator.naturalOrder());
                 return list;
             }
-            StringParser parser = opNode.get().getParser();
+            StringParser<?> parser = (StringParser<?>) opNode.get().getNode().getParser();
             if(parser instanceof StringParser.Suggestible){
-                return ((StringParser.Suggestible) parser).getStringSuggestions();
+                return ((StringParser.Suggestible<?>) parser).getStringSuggestions();
             }
         }
         if(args.length >= 5 && args[1].toLowerCase().equals("set") && args[2].toLowerCase().equals("messages")){
             MessageConfig config = ShipsPlugin.getPlugin().getMessageConfig();
-            Optional<DedicatedNode<?>> opNode = config.get(args[3]);
+            Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> opNode = config.getNode(args[3]);
             if(!opNode.isPresent()){
                 return new ArrayList<>();
             }
-            Set<String> set = config.getSuggestions(new ConfigurationNode(opNode.get().getNode()));
+            Set<String> set = config.getSuggestions(new ConfigurationNode(opNode.get().getNode().getPath()));
             List<String> list = new ArrayList<>(set);
             list.sort(Comparator.naturalOrder());
             return list;
         }
         if(args.length == 5 && args[1].toLowerCase().equals("set")){
-            Config.CommandConfigurable config;
+            Config.KnownNodes config;
             switch(args[2].toLowerCase()){
                 case "config": config = ShipsPlugin.getPlugin().getConfig(); break;
                 case "messages": config = ShipsPlugin.getPlugin().getMessageConfig(); break;
                 default:
                     return new ArrayList<>();
             }
-            Optional<DedicatedNode<?>> opNode = config.get(args[3]);
+            Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> opNode = config.getNode(args[3]);
             if(!opNode.isPresent()){
                 return new ArrayList<>();
             }
-            StringParser parser = opNode.get().getParser();
+            StringParser<?> parser = (StringParser<?>) opNode.get().getNode().getParser();
             if(config instanceof MessageConfig){
-                Set<String> set = ((MessageConfig)config).getSuggestions(new ConfigurationNode(opNode.get().getNode()));
+                Set<String> set = ((MessageConfig)config).getSuggestions(new ConfigurationNode(opNode.get().getNode().getPath()));
                 List<String> list = new ArrayList<>(set);
                 list.sort(Comparator.naturalOrder());
                 return list;
             }
             if(parser instanceof StringParser.Suggestible){
-                return ((StringParser.Suggestible) parser).getStringSuggestions(args[4]);
+                return ((StringParser.Suggestible<?>) parser).getStringSuggestions(args[4]);
             }
         }
         return new ArrayList<>();
     }
 
-    private <T> String readNode(Config.CommandConfigurable config, DedicatedNode<T> node){
-        Optional<T> opValue = node.getValue(config.getFile());
-        if(opValue == null){
-            return node.getParser().unparse(null);
-        }
+    private <T> String readNode(Config.KnownNodes config, DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>> node){
+        Optional<T> opValue = config.getFile().parse(node.getNode());
         if(!opValue.isPresent()){
             return "<no value>";
         }
-        return node.getParser().unparse(opValue.get());
+        return node.getNode().getParser().unparse(opValue.get());
     }
 
-    private <T> boolean setNode(Config.CommandConfigurable config, String arg, String value){
-        Optional<DedicatedNode<?>> opDedicated = config.get(arg);
+    private <T> void setNode(Config.KnownNodes config, String arg, String value) throws IOException {
+        Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> opDedicated = config.getNode(arg);
         if(!opDedicated.isPresent()){
-            return false;
+            throw new IOException("Unknown Key");
         }
-        DedicatedNode<T> dedicated = (DedicatedNode<T>) opDedicated.get();
-        Optional<T> opResult = dedicated.getParser().parse(value);
-        if(opResult == null){
-            dedicated.setValue(config.getFile(), null);
-            config.getFile().save();
-            return true;
-        }
+        DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>> dedicated = (DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>>)(Object) opDedicated.get();
+        Optional<T> opResult = dedicated.getNode().getParser().parse(value);
         if(opResult.isPresent()){
-            dedicated.setValue(config.getFile(), opResult.get());
+            dedicated.apply(config.getFile(), opResult.get());
             config.getFile().save();
-            return true;
+            return;
         }
-        return false;
+        throw new IOException("Unknown Value");
     }
 }

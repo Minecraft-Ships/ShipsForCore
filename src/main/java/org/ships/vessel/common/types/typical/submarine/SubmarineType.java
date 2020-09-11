@@ -1,10 +1,11 @@
 package org.ships.vessel.common.types.typical.submarine;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
-import org.core.configuration.parser.Parser;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
+import org.core.config.parser.Parser;
+import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
 import org.core.platform.Plugin;
@@ -14,6 +15,7 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.SerializableShipType;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -24,58 +26,57 @@ import java.util.*;
 
 public class SubmarineType implements CloneableShipType<Submarine>, SerializableShipType<Submarine> {
 
-    protected ConfigurationFile file;
+    protected ConfigurationStream.ConfigurationFile file;
     protected ExpandedBlockList blockList;
     protected String name;
     protected Set<VesselFlag<?>> flags = new HashSet<>();
 
-    private final String[] MAX_SPEED = {"Speed", "Max"};
-    private final String[] ALTITUDE_SPEED = {"Speed", "Altitude"};
-    private final String[] SPECIAL_BLOCK_TYPE = {"Block", "Special", "Type"};
-    private final String[] SPECIAL_BLOCK_PERCENT = {"Block", "Special", "Percent"};
-    private final String[] FUEL_CONSUMPTION = {"Block", "Fuel", "Consumption"};
-    private final String[] FUEL_SLOT = {"Block", "Fuel", "Slot"};
-    private final String[] FUEL_TYPES = {"Block", "Fuel", "Types"};
+    private final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");
+    private final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Altitude");
+    private final ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
+    private final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
+    private final ConfigurationNode.KnownParser.SingleKnown<Integer> FUEL_CONSUMPTION = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    private final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> FUEL_SLOT = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
+    private final ConfigurationNode.KnownParser.CollectionKnown<ItemType, Set<ItemType>> FUEL_TYPES = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     public SubmarineType(){
-        this("Submarine", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Submarine.temp"));
+        this("Submarine", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Submarine." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public SubmarineType(String name, File file){
         this.name = name;
-        this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
-        if((!this.file.getFile().exists()) || (!this.file.parseDouble(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT)).isPresent())){
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT), 75.0f);
-            this.file.set(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.unparseList(Parser.STRING_TO_BLOCK_TYPE, Collections.singletonList(BlockTypes.IRON_BLOCK.get())));
-            this.file.set(new ConfigurationNode(this.FUEL_CONSUMPTION), 1);
-            this.file.set(new ConfigurationNode(this.FUEL_SLOT), "Bottom");
-            this.file.set(new ConfigurationNode(this.FUEL_TYPES), new ArrayList<>(Collections.singletonList(ItemTypes.COAL_BLOCK.getId())));
-            this.file.set(new ConfigurationNode(this.MAX_SPEED), 10);
-            this.file.set(new ConfigurationNode(this.ALTITUDE_SPEED), 5);
+        this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
+        if((!this.file.getFile().exists()) || (!this.file.getDouble(this.SPECIAL_BLOCK_PERCENT).isPresent())){
+            this.file.set(this.SPECIAL_BLOCK_PERCENT, 75.0);
+            this.file.set(this.SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes.IRON_BLOCK.get()));
+            this.file.set(this.FUEL_CONSUMPTION, 1);
+            this.file.set(this.FUEL_SLOT, FuelSlot.BOTTOM);
+            this.file.set(this.FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK));
+            this.file.set(this.MAX_SPEED, 10);
+            this.file.set(this.ALTITUDE_SPEED, 5);
             this.file.save();
         }
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
     }
 
     public float getDefaultSpecialBlockPercent(){
-        return this.file.parseDouble(new ConfigurationNode(this.SPECIAL_BLOCK_PERCENT)).get().floatValue();
+        return this.file.getDouble(this.SPECIAL_BLOCK_PERCENT).get().floatValue();
     }
 
     public Set<BlockType> getDefaultSpecialBlockType(){
-        return new HashSet<>(this.file.parseList(new ConfigurationNode(this.SPECIAL_BLOCK_TYPE), Parser.STRING_TO_BLOCK_TYPE).get());
+        return this.file.parseCollection(this.SPECIAL_BLOCK_TYPE, new HashSet<>());
     }
 
     public int getDefaultFuelConsumption(){
-        return this.file.parseInt(new ConfigurationNode(this.FUEL_CONSUMPTION)).get();
+        return this.file.getInteger(this.FUEL_CONSUMPTION).get();
     }
 
     public boolean isUsingTopSlot(){
-        String slot = this.file.parseString(new ConfigurationNode(this.FUEL_SLOT)).get();
-        return "top".equals(slot.toLowerCase());
+        return this.file.parse(this.FUEL_SLOT).get().equals(FuelSlot.TOP);
     }
 
     public Set<ItemType> getDefaultFuelTypes(){
-        return new HashSet<>(this.file.parseList(new ConfigurationNode(this.FUEL_TYPES), Parser.STRING_TO_ITEM_TYPE).get());
+        return this.file.parseCollection(this.FUEL_TYPES, new HashSet<>());
     }
 
     @Override
@@ -95,16 +96,16 @@ public class SubmarineType implements CloneableShipType<Submarine>, Serializable
 
     @Override
     public int getDefaultMaxSpeed() {
-        return this.file.parse(new ConfigurationNode(this.MAX_SPEED), Parser.STRING_TO_INTEGER).get();
+        return this.file.parse(this.MAX_SPEED, Parser.STRING_TO_INTEGER).get();
     }
 
     @Override
     public int getDefaultAltitudeSpeed() {
-        return this.file.parse(new ConfigurationNode(this.ALTITUDE_SPEED), Parser.STRING_TO_INTEGER).get();
+        return this.file.parse(this.ALTITUDE_SPEED, Parser.STRING_TO_INTEGER).get();
     }
 
     @Override
-    public ConfigurationFile getFile() {
+    public ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
     }
 
@@ -128,22 +129,22 @@ public class SubmarineType implements CloneableShipType<Submarine>, Serializable
         return getDisplayName();
     }
 
-    public CloneableShipType cloneWithName(File file, String name) {
+    public SubmarineType cloneWithName(File file, String name) {
         return new SubmarineType(name, file);
     }
 
-    public CloneableShipType getOriginType() {
+    public SubmarineType getOriginType() {
         return ShipType.SUBMARINE;
     }
 
     @Override
     public void setMaxSpeed(int speed) {
-        this.file.set(new ConfigurationNode(MAX_SPEED), speed);
+        this.file.set(this.MAX_SPEED, speed);
     }
 
     @Override
     public void setAltitudeSpeed(int speed) {
-        this.file.set(new ConfigurationNode(ALTITUDE_SPEED), speed);
+        this.file.set(this.ALTITUDE_SPEED, speed);
     }
 
     @Override
@@ -153,22 +154,22 @@ public class SubmarineType implements CloneableShipType<Submarine>, Serializable
 
     @Override
     public void save() {
-        this.getFlags().stream().forEach(f -> setFlag(f));
+        this.getFlags().forEach(this::setFlag);
         this.getFile().save();
     }
 
-    private <F extends Object> void setFlag(VesselFlag<F> f){
+    private <F> void setFlag(VesselFlag<F> f){
         if(!(f instanceof VesselFlag.Serializable)){
             return;
         }
-        VesselFlag.Serializable sFlag = (VesselFlag.Serializable)f;
+        VesselFlag.Serializable<F> sFlag = (VesselFlag.Serializable<F>)f;
         String trueId = sFlag.getId().split(":")[1];
-        String[] flagId = trueId.split(".");
+        String[] flagId = trueId.split("\\.");
         if(flagId.length == 0){
             flagId = new String[]{trueId};
         }
         F value = f.getValue().orElse(null);
-        ConfigurationNode node = new ConfigurationNode(new ConfigurationNode("flag", sFlag.getId().split(":")[0]), flagId);
+        ConfigurationNode node = new ConfigurationNode(ArrayUtils.join(String.class, new String[]{"flag", sFlag.getId().split(":")[0]}, flagId));
         this.getFile().set(node, f.getParser(), value);
     }
 }

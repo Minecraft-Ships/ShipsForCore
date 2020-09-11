@@ -1,6 +1,7 @@
 package org.ships.config.parsers.identify;
 
-import org.core.configuration.parser.StringParser;
+import org.array.utils.ArrayUtils;
+import org.core.config.parser.StringParser;
 import org.core.utils.Identifable;
 import org.ships.plugin.ShipsPlugin;
 

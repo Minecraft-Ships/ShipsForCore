@@ -1,6 +1,7 @@
 package org.ships.vessel.common.flag;
 
-import org.core.configuration.parser.Parser;
+import org.core.config.parser.Parser;
+import org.core.config.parser.StringParser;
 import org.ships.movement.MovementContext;
 
 import java.util.Optional;
@@ -29,16 +30,16 @@ public class MovingFlag implements VesselFlag<MovementContext> {
     }
 
     @Override
-    public Parser<?, MovementContext> getParser() {
-        return new Parser<Object, MovementContext>() {
+    public StringParser<MovementContext> getParser() {
+        return new StringParser<MovementContext>() {
             @Override
-            public Optional<MovementContext> parse(Object original) {
+            public Optional<MovementContext> parse(String original) {
                 return Optional.empty();
             }
 
             @Override
-            public Object unparse(MovementContext value) {
-                return value;
+            public String unparse(MovementContext value) {
+                return value.toString();
             }
         };
     }

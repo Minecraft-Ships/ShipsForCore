@@ -1,9 +1,9 @@
 package org.ships.config.blocks;
 
 import org.core.CorePlugin;
-import org.core.configuration.ConfigurationFile;
-import org.core.configuration.ConfigurationNode;
-import org.core.configuration.type.ConfigurationLoaderTypes;
+import org.core.config.ConfigurationFormat;
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
@@ -23,12 +23,13 @@ import java.util.stream.Stream;
 
 public class DefaultBlockList implements BlockList {
 
-    protected ConfigurationFile file;
+    protected ConfigurationStream.ConfigurationFile file;
     protected Set<BlockInstruction> blocks = new HashSet<>();
 
     public DefaultBlockList(){
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList.temp");
-        this.file = CorePlugin.createConfigurationFile(file, ConfigurationLoaderTypes.DEFAULT);
+        ConfigurationFormat format = CorePlugin.getPlatform().getConfigFormat();
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList." + format.getFileType()[0]);
+        this.file = CorePlugin.createConfigurationFile(file, format);
         if(!this.file.getFile().exists()){
             recreateFile();
             reloadBlockList();
@@ -63,6 +64,7 @@ public class DefaultBlockList implements BlockList {
     @Override
     public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
         BlockInstruction bi = this.blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny().get();
+        System.out.println("Replace: " + blockInstruction.type.getId() + " | BlockIns: " + blockInstruction.getCollideType().name() + " | " + blockInstruction.blockLimit);
         bi.setCollideType(blockInstruction.getCollideType());
         bi.setBlockLimit(blockInstruction.getBlockLimit());
         return this;
@@ -70,23 +72,24 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public BlockList saveChanges() {
-        this.blocks.stream().forEach(b -> {
+        this.blocks.forEach(b -> {
             String[] idSplit = b.getType().getId().split(":");
             file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]), ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, b);
+            System.out.println("Set: Id: " + b.type.getId() + " | Limit: " + b.blockLimit + " | Collide: " + b.collideType.name());
         });
         file.save();
         return this;
     }
 
     @Override
-    public ConfigurationFile getFile() {
+    public ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
     }
 
     @Override
     public void recreateFile() {
         int[] mcVersion = CorePlugin.getPlatform().getMinecraftVersion();
-        ConfigurationFile file = getFile();
+        ConfigurationStream.ConfigurationFile file = getFile();
         Set<BlockType> completedBefore = new HashSet<>();
         BlockTypes.OAK_SIGN.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
         BlockTypes.OAK_WALL_SIGN.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));

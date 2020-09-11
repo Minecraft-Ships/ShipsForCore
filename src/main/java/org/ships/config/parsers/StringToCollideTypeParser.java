@@ -1,6 +1,6 @@
 package org.ships.config.parsers;
 
-import org.core.configuration.parser.StringParser;
+import org.core.config.parser.StringParser;
 import org.ships.config.blocks.BlockInstruction;
 
 import java.util.Arrays;

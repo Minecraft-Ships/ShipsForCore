@@ -1,6 +1,7 @@
 package org.ships.vessel.common.flag;
 
-import org.core.configuration.parser.Parser;
+import org.core.config.parser.Parser;
+import org.core.config.parser.StringParser;
 
 import java.util.Optional;
 
@@ -27,7 +28,7 @@ public class AltitudeLockFlag implements VesselFlag<Boolean> {
     }
 
     @Override
-    public Parser<String, Boolean> getParser() {
+    public StringParser<Boolean> getParser() {
         return Parser.STRING_TO_BOOLEAN;
     }
 

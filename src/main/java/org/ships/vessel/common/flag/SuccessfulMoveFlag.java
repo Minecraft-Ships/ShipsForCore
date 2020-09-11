@@ -1,6 +1,7 @@
 package org.ships.vessel.common.flag;
 
-import org.core.configuration.parser.Parser;
+import org.core.config.parser.Parser;
+import org.core.config.parser.StringParser;
 
 import java.util.Optional;
 
@@ -19,8 +20,8 @@ public class SuccessfulMoveFlag implements VesselFlag<Boolean>{
     }
 
     @Override
-    public Parser<?, Boolean> getParser() {
-        return null;
+    public StringParser<Boolean> getParser() {
+        return Parser.STRING_TO_BOOLEAN;
     }
 
     @Override
