@@ -4,9 +4,8 @@ import org.core.exceptions.DirectionNotSupported;
 import org.core.vector.types.Vector3Int;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 
 import java.util.*;
 import java.util.stream.Collectors;

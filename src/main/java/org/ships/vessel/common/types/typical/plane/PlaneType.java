@@ -3,15 +3,15 @@ package org.ships.vessel.common.types.typical.plane;
 import org.core.CorePlugin;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
-import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.config.parser.Parser;
+import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.ItemTypes;
 import org.core.platform.Plugin;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
@@ -19,7 +19,9 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PlaneType implements ShipType<Plane> {
 

@@ -51,7 +51,7 @@ public abstract class ShipsPlugin implements Plugin {
     private final DebugFile debugFile;
     private final Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 8;
+    public static final double PRERELEASE_VERSION = 8.1;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin(){

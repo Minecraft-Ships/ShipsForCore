@@ -1,14 +1,13 @@
 package org.ships.movement;
 
-import org.core.world.position.block.details.data.DirectionalData;
-import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.*;
@@ -39,7 +38,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public void applyMovingBlocks() {
-        this.blocks = new MovingBlockSet(this);
+        /*this.blocks = new MovingBlockSet(this);
         Iterator<MovingBlock> iter = this.iterator();
         Set<MovingBlock> remove = new HashSet<>();
         while(iter.hasNext()){
@@ -77,7 +76,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
                 }
             } while (pass);
         }
-        this.removeAll(remove);
+        this.removeAll(remove);*/
     }
 
     public MovingBlockSet getOriginal(){

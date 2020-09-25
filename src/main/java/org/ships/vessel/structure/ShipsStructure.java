@@ -1,9 +1,9 @@
 package org.ships.vessel.structure;
 
 import org.core.vector.types.Vector3Int;
+import org.core.world.position.Positionable;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
-import org.core.world.position.Positionable;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 
 import java.util.Collection;

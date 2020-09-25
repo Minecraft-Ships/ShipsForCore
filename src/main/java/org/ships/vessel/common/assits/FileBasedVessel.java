@@ -3,7 +3,6 @@ package org.ships.vessel.common.assits;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.io.File;
 import java.util.Map;

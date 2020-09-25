@@ -18,7 +18,10 @@ import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 public class ShipsConfig implements Config.KnownNodes {
 

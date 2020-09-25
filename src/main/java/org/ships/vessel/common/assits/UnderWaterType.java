@@ -2,9 +2,9 @@ package org.ships.vessel.common.assits;
 
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.HashSet;

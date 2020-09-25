@@ -1,6 +1,5 @@
 package org.ships.vessel.common.flag;
 
-import org.core.config.parser.Parser;
 import org.core.config.parser.StringParser;
 import org.ships.movement.MovementContext;
 
