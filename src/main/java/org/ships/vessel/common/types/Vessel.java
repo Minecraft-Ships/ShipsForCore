@@ -93,49 +93,45 @@ public interface Vessel extends Positionable<BlockPosition> {
         Set<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>(getPosition().getWorld().getEntities());
         Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {}).build(ShipsPlugin.getPlugin());
-        int fin = entities2.size() / limit;
+        double fin = entities2.size() / (double)limit;
+        if(fin != ((int)fin)){
+            fin++;
+        }
         if (fin == 0) {
             output.accept(entities);
             return;
         }
         Collection<SyncBlockPosition> pss = getStructure().getPositions();
-        ShipsPlugin.getPlugin().getDebugFile().addMessage("Vessel.97 > Starting loop", "-\tFinish number: " + fin, "-\tStructure size: " + pss.size(), "-\tEntities in world: " + entities2.size());
         for(int A = 0; A < fin; A++){
-            ShipsPlugin.getPlugin().getDebugFile().addMessage("\tVessel.99 > Adding sched " + A);
             final int B = A;
             sched = CorePlugin.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
                 int c = (B*limit);
-                ShipsPlugin.getPlugin().getDebugFile().addMessage("\tVessel.103 > Looping shed C: " + c);
                 for(int to = 0; to < limit; to++) {
+                    if((c + to) >= entities2.size()){
+                        break;
+                    }
                     LiveEntity e = entities2.get(c + to);
-                    ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\tVessel.106 > Checking entity of " + e.getType().getId());
                     if (!predicate.test(e)) {
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.108 > Failed Predicate test");
                         continue;
                     }
                     Optional<SyncBlockPosition> opPosition = e.getAttachedTo();
                     if (!opPosition.isPresent()) {
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.113 > Failed to find attached position");
                         continue;
                     }
                     if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
                         single.accept(e);
                         entities.add(e);
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.119 > Added entity");
                     }else if(!e.isOnGround()){
                         SyncBlockPosition bPos = e.getPosition().toBlockPosition();
                         if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))){
-                            ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.123 > Failed Line of sight test");
                             continue;
                         }
                         single.accept(e);
                         entities.add(e);
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.128 > Added entity");
                     }
                 }
                 if(B == 0){
                     output.accept(entities);
-                    ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\tVessel.133 > Running output");
                 }
             }).setToRunAfter(sched).build(ShipsPlugin.getPlugin());
         }

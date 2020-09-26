@@ -1,6 +1,7 @@
 package org.ships.movement;
 
 import org.core.CorePlugin;
+import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.Player;
 import org.core.vector.Vector3;
@@ -75,12 +76,15 @@ public class Result extends ArrayList<Result.Run> {
         };
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> c.getEntities().keySet().forEach(e -> {
-            if(!(e instanceof Player)) {
+            if(e instanceof EntitySnapshot.NoneDestructibleSnapshot){
+                EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot = (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) e;
+                snapshot.teleportEntity(true);
+            }else{
                 e.getCreatedFrom().ifPresent(LiveEntity::remove);
-            }
-            try {
-                e.spawnEntity();
-            }catch (IllegalStateException ignored){
+                try {
+                    e.spawnEntity();
+                }catch (IllegalStateException ignored){
+                }
             }
         });
 
