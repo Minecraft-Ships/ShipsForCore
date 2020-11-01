@@ -2,7 +2,7 @@ package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
 import org.core.utils.Identifable;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -72,7 +72,7 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     }
 
     @Override
-    default void moveTowards(Vector3Int vector, MovementContext context, Consumer<Throwable> exception){
+    default void moveTowards(Vector3<Integer> vector, MovementContext context, Consumer<Throwable> exception){
         Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context, exception);
     }
 

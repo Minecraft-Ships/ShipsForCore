@@ -12,7 +12,6 @@ import org.core.inventory.item.type.post.ItemTypes1V13;
 import org.core.platform.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -56,11 +55,7 @@ public class AirshipType implements CloneableShipType<Airship>, SerializableShip
         if(!this.file.getFile().exists()){
             this.file.set(this.BURNER_BLOCK, true);
             this.file.set(this.SPECIAL_BLOCK_PERCENT, 60.0f);
-            if(mcVersion[1] == 12) {
-                this.file.set(this.SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes1V12.WOOL.get()));
-            }else{
-                this.file.set(this.SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
-            }
+            this.file.set(this.SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
             this.file.set(this.FUEL_CONSUMPTION, 1);
             this.file.set(this.FUEL_SLOT, FuelSlot.BOTTOM);
             if(mcVersion[1] == 12) {

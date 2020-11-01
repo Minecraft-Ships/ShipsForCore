@@ -4,7 +4,7 @@ import org.core.CorePlugin;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.exceptions.DirectionNotSupported;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -335,10 +335,10 @@ public class Movement {
         }
 
         public void move(Vessel vessel, int x, int y, int z, MovementContext context, Consumer<Throwable> exception) {
-            move(vessel, new Vector3Int(x, y, z), context, exception);
+            move(vessel, Vector3.valueOf(x, y, z), context, exception);
         }
 
-        public void move(Vessel vessel, Vector3Int addTo, MovementContext context, Consumer<Throwable> exception){
+        public void move(Vessel vessel, Vector3<Integer> addTo, MovementContext context, Consumer<Throwable> exception){
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().forEach(f -> {

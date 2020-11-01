@@ -8,7 +8,6 @@ import org.core.config.parser.Parser;
 import org.core.platform.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -20,7 +19,6 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -49,11 +47,7 @@ public class WaterShipType implements CloneableShipType<WaterShip>, Serializable
             this.file.set(this.MAX_SPEED, 10);
             this.file.set(this.ALTITUDE_SPEED, 5);
             this.file.set(this.SPECIAL_BLOCK_PERCENT, 25);
-            if(mcVersion[1] == 12){
-                this.file.set(this.SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes1V12.WOOL.get()));
-            }else {
-                this.file.set(this.SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
-            }
+            this.file.set(this.SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
             this.file.save();
         }
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());

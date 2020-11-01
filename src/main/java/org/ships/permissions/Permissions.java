@@ -19,16 +19,18 @@ public interface Permissions {
     String CMD_SHIP_TRACK = "ships.cmd.ship.track";
     String CMD_SHIP_EOT = "ships.cmd.ship.eot";
     String CMD_SHIP_CREW = "ships.cmd.ship.crew";
+    String CMD_SHIP_TELEPORT = "ships.cmd.ship.teleport";
+    String CMD_SHIP_TELEPORT_SET = "ships.cmd.ship.teleport.set";
 
-    static String getMakePermission(ShipType type){
+    static String getMakePermission(ShipType<?> type){
         return ABSTRACT_SHIP_MAKE + "." + type.getId().replace(":", ".").toLowerCase();
     }
 
-    static String getMovePermission(ShipType type){
+    static String getMovePermission(ShipType<?> type){
         return ABSTRACT_SHIP_MOVE + "." + type.getId().replace(":", ".").toLowerCase();
     }
 
-    static String getOtherMovePermission(ShipType type){
+    static String getOtherMovePermission(ShipType<?> type){
         return ABSTRACT_SHIP_MOVE_OTHER + "." + type.getId().replace(":", ".").toLowerCase();
     }
 }

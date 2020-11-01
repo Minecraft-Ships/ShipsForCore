@@ -6,9 +6,7 @@ import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.blocktypes.legacy.BlockTypes1V12;
 import org.core.world.position.block.blocktypes.post.BlockTypes1V13;
-import org.core.world.position.block.grouptype.versions.BlockGroups1V12;
 import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.core.world.position.block.grouptype.versions.CommonBlockGroups;
 import org.ships.config.parsers.ShipsParsers;
@@ -140,30 +138,6 @@ public class DefaultBlockList implements BlockList {
 
         addToConfig(BlockTypes.REDSTONE_WIRE.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
 
-        if(mcVersion[1] == 12){
-            addToConfig(BlockTypes1V12.PLANKS.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.LOG.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.LOG2.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.STANDING_BANNER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.WALL_BANNER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.CARPET.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.WOOL.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.STONE_BUTTON.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.WOODEN_BUTTON.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.BED.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.CONCRETE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.CONCRETE_POWDER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            Stream.of(BlockGroups1V12.LEGACY_STAIRS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V12.LEGACY_SLAB.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            addToConfig(BlockTypes1V12.FLOWER_POT.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.TORCH.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.STAINED_GLASS.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.STAINED_GLASS_PANE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            Stream.of(BlockGroups1V12.LEGACY_PRESSURE_PLATE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            addToConfig(BlockTypes1V12.OAK_TRAPDOOR.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V12.IRON_TRAPDOOR.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-
-        }else {
             Stream.of(BlockGroups1V13.LOG.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
             Stream.of(BlockGroups1V13.WOOD_PLANKS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
             Stream.of(BlockGroups1V13.BANNER.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
@@ -189,7 +163,6 @@ public class DefaultBlockList implements BlockList {
             addToConfig(BlockTypes1V13.KELP.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
             addToConfig(BlockTypes1V13.REPEATER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
             addToConfig(BlockTypes1V13.COMPARATOR.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        }
         CorePlugin.getPlatform().getBlockTypes().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
         file.save();
     }

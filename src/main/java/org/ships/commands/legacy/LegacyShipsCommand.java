@@ -22,10 +22,10 @@ import java.util.Optional;
 
 public class LegacyShipsCommand implements CommandLauncher {
 
-    private final List<LegacyArgumentCommand> arguments = Arrays.asList(new LegacyConfigCommand(), new LegacyShipCommand(), new LegacyShipTypeCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand());
+    public static final List<LegacyArgumentCommand> ARGUMENTS = Arrays.asList(new LegacyConfigCommand(), new LegacyShipCommand(), new LegacyShipTypeCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand());
 
     public List<LegacyArgumentCommand> getArguments(){
-        return this.arguments;
+        return ARGUMENTS;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class LegacyShipsCommand implements CommandLauncher {
             new LegacyHelpCommand().run(source, args);
         }else{
             String argument = args[0];
-            Optional<LegacyArgumentCommand> opCommand = this.arguments.stream().filter(a -> argument.equalsIgnoreCase(a.getName())).findAny();
+            Optional<LegacyArgumentCommand> opCommand = this.getArguments().stream().filter(a -> argument.equalsIgnoreCase(a.getName())).findAny();
             if(opCommand.isPresent()){
                 LegacyArgumentCommand command = opCommand.get();
                 if(command.getPermission().isPresent() && source instanceof LivePlayer && !((LivePlayer)source).hasPermission(command.getPermission().get())){
@@ -80,12 +80,12 @@ public class LegacyShipsCommand implements CommandLauncher {
     public List<String> tab(CommandSource source, String... args) {
         List<String> list = new ArrayList<>();
         if(args.length == 0){
-            this.arguments.forEach(c -> list.add(c.getName()));
+            this.getArguments().forEach(c -> list.add(c.getName()));
         }else if(args.length == 1){
-            this.arguments.stream().filter(c -> c.getName().toLowerCase().startsWith(args[0])).forEach(c -> list.add(c.getName()));
+            this.getArguments().stream().filter(c -> c.getName().toLowerCase().startsWith(args[0])).forEach(c -> list.add(c.getName()));
         }else{
             String argument = args[0];
-            Optional<LegacyArgumentCommand> opCommand = this.arguments.stream().filter(a -> argument.equalsIgnoreCase(a.getName())).findAny();
+            Optional<LegacyArgumentCommand> opCommand = this.getArguments().stream().filter(a -> argument.equalsIgnoreCase(a.getName())).findAny();
             if(opCommand.isPresent()){
                 LegacyArgumentCommand command = opCommand.get();
                 if(command.getPermission().isPresent() && source instanceof LivePlayer && !((LivePlayer)source).hasPermission(command.getPermission().get())){

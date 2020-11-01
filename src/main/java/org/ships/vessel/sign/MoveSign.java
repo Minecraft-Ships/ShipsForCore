@@ -6,7 +6,7 @@ import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.data.DirectionalData;
@@ -50,6 +50,7 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
+    @Deprecated
     public Text getFirstLine() {
         return CorePlugin.buildText(TextColours.YELLOW + "[Move]");
     }
@@ -239,7 +240,7 @@ public class MoveSign implements ShipsSign {
                 return;
             }
         }
-        Vector3Int direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
+        Vector3<Integer> direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
         BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
         context.setMovement(movement);
         context.setClicked(position);

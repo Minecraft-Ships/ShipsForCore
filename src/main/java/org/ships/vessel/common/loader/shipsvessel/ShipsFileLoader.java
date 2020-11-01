@@ -7,7 +7,7 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -52,7 +52,7 @@ public class ShipsFileLoader implements ShipsLoader {
     public static final ConfigurationNode.KnownParser.SingleKnown<Double> META_LOCATION_TELEPORT_Z = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Meta", "Location", "Teleport", "Z");
     @Deprecated //USED FOR BACKWARDS COMPATIBILITY - WILL REMOVE IN FULL RELEASE
     public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_TELEPORT_WORLD = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_WORLD, "Meta", "Location", "Teleport", "World");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3Int, Set<Vector3Int>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>, Set<Vector3<Integer>>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
     public static final ConfigurationNode.KnownParser.CollectionKnown<VesselFlag.Serializable<?>, Set<VesselFlag.Serializable<?>>> META_FLAGS = new ConfigurationNode.KnownParser.CollectionKnown<>((StringToIdentifiable<VesselFlag.Serializable<?>>)(Object)ShipsParsers.STRING_TO_VESSEL_FLAG, "Meta", "Flags");
 
     private static class StructureLoad {
@@ -63,7 +63,7 @@ public class ShipsFileLoader implements ShipsLoader {
             this.ship = shipsVessel;
         }
 
-        public void load(SyncBlockPosition position, List<Vector3Int> structureList) {
+        public void load(SyncBlockPosition position, List<Vector3<Integer>> structureList) {
             if (structureList.isEmpty()) {
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
                     @Override

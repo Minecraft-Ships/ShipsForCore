@@ -1,6 +1,7 @@
 package org.ships.plugin;
 
 import org.core.CorePlugin;
+import org.core.command.CommandRegister;
 import org.core.platform.Plugin;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
@@ -9,6 +10,7 @@ import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
+import org.ships.commands.argument.ShipsArgumentCommand;
 import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
@@ -51,7 +53,7 @@ public abstract class ShipsPlugin implements Plugin {
     private final DebugFile debugFile;
     private final Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 8.2;
+    public static final double PRERELEASE_VERSION = 8.3;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin(){
@@ -63,17 +65,21 @@ public abstract class ShipsPlugin implements Plugin {
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
         CorePlugin.getEventManager().register(this, new CoreEventListener());
-        //if(this.config.getFile().parseBoolean(this.config.ALPHA_COMMAND_USE_LEGACY).orElse(true)) {
-            CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
-        /*}else{
-            CorePlugin.getServer().registerCommands(new ShipsArgumentCommand());
-        }*/
         if(this.config.isFallingEnabled()) {
             Scheduler fallScheduler = FallExecutor.createScheduler();
             fallScheduler.run();
         }
         CorePlugin.createSchedulerBuilder().setDisplayName("Ships no gravity fix").setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
         init2();
+    }
+
+    @Override
+    public void registerCommands(CommandRegister register) {
+        if(this.config.getFile().getBoolean(this.config.ALPHA_COMMAND_USE_LEGACY.getNode()).orElse(true)) {
+            register.register(new LegacyShipsCommand());
+        }else{
+            register.register(new ShipsArgumentCommand());
+        }
     }
 
     public abstract File getShipsConigFolder();

@@ -3,8 +3,7 @@ package org.ships.movement;
 import org.core.CorePlugin;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
-import org.core.entity.living.human.player.Player;
-import org.core.vector.Vector3;
+import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.event.vessel.move.ResultEvent;
@@ -49,7 +48,7 @@ public class Result extends ArrayList<Result.Run> {
             SyncBlockPosition after = value.getAfterPosition();
             Vector3<Double> position = entity.getPosition().getPosition().minus(before.toExactPosition().getPosition());
             Vector3<Double> position2 = after.toExactPosition().getPosition();
-            position = position2.add(position);
+            position = position2.plus(position);
             entity.setPosition(position);
             entity.setYaw(yaw);
             entity.setRoll(roll);
