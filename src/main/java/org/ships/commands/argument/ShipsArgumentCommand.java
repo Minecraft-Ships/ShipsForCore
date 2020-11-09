@@ -7,6 +7,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
 import org.ships.commands.argument.blockinfo.ShipsBlockInfoArgumentCommand;
+import org.ships.commands.argument.fix.NoGravityArgumentCommand;
 import org.ships.commands.argument.help.ShipsHelpArgumentCommand;
 import org.ships.commands.argument.info.ShipsInfoArgumentCommand;
 import org.ships.commands.argument.ship.blocklist.ShipsBlockListViewArgumentCommand;
@@ -37,6 +38,8 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new ShipsBlockListViewArgumentCommand());
         COMMANDS.add(new ShipsBlockListSetCollideTypeArgumentCommand());
         COMMANDS.add(new ShipsBlockListSetBlockLimitArgumentCommand());
+
+        COMMANDS.add(new NoGravityArgumentCommand());
 
         COMMANDS.add(new ShipsShipInfoArgumentCommand());
         COMMANDS.add(new ShipsShipTrackArgumentCommand());

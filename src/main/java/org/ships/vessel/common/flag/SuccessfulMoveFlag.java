@@ -7,6 +7,14 @@ import java.util.Optional;
 
 public class SuccessfulMoveFlag implements VesselFlag<Boolean>{
 
+    public static class Builder extends VesselFlag.Builder<Boolean, SuccessfulMoveFlag> {
+
+        @Override
+        protected SuccessfulMoveFlag buildEmpty() {
+            return new SuccessfulMoveFlag();
+        }
+    }
+
     private boolean successful;
 
     @Override
@@ -22,6 +30,11 @@ public class SuccessfulMoveFlag implements VesselFlag<Boolean>{
     @Override
     public StringParser<Boolean> getParser() {
         return Parser.STRING_TO_BOOLEAN;
+    }
+
+    @Override
+    public Builder toBuilder() {
+        return new Builder();
     }
 
     @Override

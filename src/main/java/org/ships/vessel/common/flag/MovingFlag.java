@@ -7,6 +7,14 @@ import java.util.Optional;
 
 public class MovingFlag implements VesselFlag<MovementContext> {
 
+    public static class Builder extends VesselFlag.Builder<MovementContext, MovingFlag> {
+
+        @Override
+        protected MovingFlag buildEmpty() {
+            return new MovingFlag();
+        }
+    }
+
     protected MovementContext context;
 
     public MovingFlag(){
@@ -41,6 +49,11 @@ public class MovingFlag implements VesselFlag<MovementContext> {
                 return value.toString();
             }
         };
+    }
+
+    @Override
+    public Builder toBuilder() {
+        return new Builder();
     }
 
     @Override

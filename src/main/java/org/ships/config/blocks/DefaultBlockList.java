@@ -62,7 +62,6 @@ public class DefaultBlockList implements BlockList {
     @Override
     public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
         BlockInstruction bi = this.blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny().get();
-        System.out.println("Replace: " + blockInstruction.type.getId() + " | BlockIns: " + blockInstruction.getCollideType().name() + " | " + blockInstruction.blockLimit);
         bi.setCollideType(blockInstruction.getCollideType());
         bi.setBlockLimit(blockInstruction.getBlockLimit());
         return this;
@@ -73,7 +72,6 @@ public class DefaultBlockList implements BlockList {
         this.blocks.forEach(b -> {
             String[] idSplit = b.getType().getId().split(":");
             file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]), ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, b);
-            System.out.println("Set: Id: " + b.type.getId() + " | Limit: " + b.blockLimit + " | Collide: " + b.collideType.name());
         });
         file.save();
         return this;

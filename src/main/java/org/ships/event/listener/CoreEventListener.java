@@ -1,6 +1,7 @@
 package org.ships.event.listener;
 
 import org.core.CorePlugin;
+import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.scene.droppeditem.DroppedItem;
 import org.core.event.EventListener;
@@ -12,6 +13,7 @@ import org.core.event.events.entity.EntityInteractEvent;
 import org.core.event.events.entity.EntitySpawnEvent;
 import org.core.text.Text;
 import org.core.text.TextColours;
+import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -36,10 +38,12 @@ import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.assits.FileBasedVessel;
 import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.flag.MovingFlag;
+import org.ships.vessel.common.flag.PlayerStatesFlag;
 import org.ships.vessel.common.loader.ShipsBlockFinder;
 import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.sign.ShipsSign;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -47,10 +51,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class CoreEventListener implements EventListener {
 
@@ -92,14 +93,55 @@ public class CoreEventListener implements EventListener {
     }
 
     @HEvent
-    public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event){
-        boolean check = ShipsPlugin.getPlugin().getVessels()
-                .stream()
-                .anyMatch(v -> v.getEntities().stream().anyMatch(e -> e.equals(event.getEntity())));
-        if(!check){
-            return;
+    public void onPlayerJoinEvent(ClientConnectionEvent.Incoming.Joined event) {
+        for (Vessel vessel : ShipsPlugin.getPlugin().getVessels()) {
+            if (!(vessel instanceof ShipsVessel)) {
+                continue;
+            }
+            ShipsVessel shipsVessel = (ShipsVessel) vessel;
+            Optional<PlayerStatesFlag> opFlag = shipsVessel.get(PlayerStatesFlag.class);
+            if(!opFlag.isPresent()){
+                continue;
+            }
+            Map<UUID, Vector3<Double>> map = opFlag.get().getValue().get();
+            Vector3<Double> vector = map.get(event.getEntity().getUniqueId());
+            if(vector == null){
+                continue;
+            }
+            SyncBlockPosition sPos = vessel.getPosition();
+            SyncExactPosition position = sPos.toExactPosition().getRelative(vector);
+            if(!position.equals(event.getEntity().getPosition())) {
+                event.getEntity().setPosition(position);
+            }
+            Optional<MovingFlag> opMovingFlag = shipsVessel.get(MovingFlag.class);
+            event.getEntity().setGravity(!opMovingFlag.isPresent() || !opMovingFlag.get().getValue().isPresent());
         }
-        event.getEntity().setGravity(true);
+    }
+
+    @HEvent
+    public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event){
+        for (Vessel vessel : ShipsPlugin.getPlugin().getVessels()) {
+            if(!(vessel instanceof ShipsVessel)){
+                continue;
+            }
+            ShipsVessel shipsVessel = (ShipsVessel)vessel;
+            PlayerStatesFlag flag = shipsVessel.get(PlayerStatesFlag.class).orElse(new PlayerStatesFlag());
+            vessel.getEntitiesOvertime(ShipsPlugin.getPlugin().getConfig().getEntityTrackingLimit(), l -> event.getEntity().equals(l), s -> {}, c -> {
+                Map<UUID, Vector3<Double>> map = flag.getValue().get();
+                for(LiveEntity entity : c) {
+                    double x = entity.getPosition().getX() - vessel.getPosition().getX();
+                    double y = entity.getPosition().getY() - vessel.getPosition().getY();
+                    double z = entity.getPosition().getZ() - vessel.getPosition().getZ();
+                    map.put(((LivePlayer)entity).getUniqueId(), Vector3.valueOf(x, y, z));
+                }
+                if(c.isEmpty()){
+                    map.remove(event.getEntity().getUniqueId());
+                }
+                flag.setValue(map);
+                vessel.set(flag);
+                vessel.save();
+            });
+        }
     }
 
     @HEvent
