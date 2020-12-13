@@ -219,9 +219,9 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             viewer.sendMessagePlain("Flags:");
             viewer.sendMessagePlain(" - " + ArrayUtils.toString("\n - ", f -> {
                 if (f instanceof VesselFlag.Serializable) {
-                    return ((VesselFlag.Serializable<?>) f).serialize();
+                    return f.getId() + ": " + ((VesselFlag.Serializable<?>) f).serialize();
                 }
-                return "";
+                return f.getId();
             }, ((ShipsVessel)vessel).getFlags()));
         }
         viewer.sendMessagePlain("Entities: ");

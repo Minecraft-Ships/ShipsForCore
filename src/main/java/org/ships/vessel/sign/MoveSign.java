@@ -1,6 +1,8 @@
 package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
+import org.core.entity.EntitySnapshot;
+import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
@@ -224,14 +226,11 @@ public class MoveSign implements ShipsSign {
     }
 
     private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel){
-        context.getBar().ifPresent(bar -> {
-            bar.deregister(player);
-            vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
-        });
         Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
         if (!opDirectional.isPresent()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
             player.sendMessage(CorePlugin.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             return;
         }
         if (vessel instanceof CrewStoredVessel) {
@@ -239,6 +238,7 @@ public class MoveSign implements ShipsSign {
             if (!(stored.getPermission(player.getUniqueId()).canMove() || player.hasPermission(Permissions.getMovePermission(stored.getType())) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission"));
                 ShipsSign.LOCKED_SIGNS.remove(position);
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 return;
             }
         }
@@ -248,11 +248,16 @@ public class MoveSign implements ShipsSign {
         context.setClicked(position);
         vessel.moveTowards(direction, context, exc -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             if(exc instanceof MoveException){
                 MoveException e = (MoveException)exc;
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }else{
-                vessel.getEntities().forEach(e -> e.setGravity(true));
+                context.getEntities().keySet().forEach(s -> {
+                    if (s instanceof EntitySnapshot.NoneDestructibleSnapshot){
+                        ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
+                    }
+                });
                 exc.printStackTrace();
             }
         });

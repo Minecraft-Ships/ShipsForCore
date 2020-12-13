@@ -37,7 +37,7 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
 
     @Override
     public String getPermissionNode() {
-        return Permissions.CMD_BLOCKLIST_VIEW;
+        return Permissions.CMD_BLOCKLIST_VIEW.getPermissionValue();
     }
 
     @Override

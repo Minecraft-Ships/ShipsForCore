@@ -45,7 +45,7 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
 
     @Override
     public String getPermissionNode() {
-        return Permissions.CMD_SHIP_EOT;
+        return Permissions.CMD_SHIP_EOT.getPermissionValue();
     }
 
     @Override

@@ -68,7 +68,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         if(!context.isStrictMovement()){
             return;
         }
-        Optional<Integer> opWaterLevel = getWaterLevel(context.getMovingStructure(), MovingBlock::getAfterPosition);
+        Optional<Integer> opWaterLevel = getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
         if(!opWaterLevel.isPresent()){
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER.get())));
         }
@@ -81,7 +81,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f)/(context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR.get())).count()));
         if((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()){
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.specialBlocks.iterator().next(), this.specialBlockPercent, specialBlockPercent)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
     }
 

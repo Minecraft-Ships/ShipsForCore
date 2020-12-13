@@ -28,7 +28,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument(SHIP_ID_ARGUMENT), new ExactArgument(TRACK_ARGUMENT));
+        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT), new ExactArgument(TRACK_ARGUMENT));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
     @Override
     public String getPermissionNode() {
-        return Permissions.CMD_SHIP_TRACK;
+        return Permissions.CMD_SHIP_TRACK.getPermissionValue();
     }
 
     @Override

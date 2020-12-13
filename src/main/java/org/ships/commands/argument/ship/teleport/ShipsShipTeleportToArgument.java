@@ -37,7 +37,7 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
 
     @Override
     public String getPermissionNode() {
-        return Permissions.CMD_SHIP_TELEPORT;
+        return Permissions.CMD_SHIP_TELEPORT.getPermissionValue();
     }
 
     @Override

@@ -38,7 +38,7 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public String getPermissionNode() {
-        return Permissions.CMD_INFO;
+        return Permissions.CMD_INFO.getPermissionValue();
     }
 
     @Override

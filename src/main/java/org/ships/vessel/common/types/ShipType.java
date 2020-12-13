@@ -21,7 +21,7 @@ import java.util.Set;
 
 public interface ShipType<T extends Vessel> extends Identifable {
 
-    OPShipType OVERPOWERED_SHIP = new OPShipType.Default();
+    OPShipType OVERPOWERED_SHIP = new OPShipType();
     MarsshipType MARSSHIP = new MarsshipType();
     AirshipType AIRSHIP = new AirshipType();
     WaterShipType WATERSHIP = new WaterShipType();

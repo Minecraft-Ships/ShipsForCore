@@ -40,7 +40,7 @@ public class ShipsBlockListSetBlockLimitArgumentCommand implements ArgumentComma
 
     @Override
     public String getPermissionNode() {
-        return Permissions.CMD_BLOCKLIST_SET;
+        return Permissions.CMD_BLOCKLIST_SET.getPermissionValue();
     }
 
     @Override

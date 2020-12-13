@@ -58,7 +58,7 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public String getPermissionNode() {
-        return Permissions.CMD_BLOCK_INFO;
+        return Permissions.CMD_BLOCK_INFO.getPermissionValue();
     }
 
     @Override

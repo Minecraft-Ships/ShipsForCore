@@ -40,7 +40,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
     protected Float specialBlockPercent;
     protected Set<BlockType> specialBlocks = new HashSet<>();
     protected Integer fuelConsumption;
-    protected Boolean takeFromTopSlot;
+    protected FuelSlot fuelSlot;
     protected Set<ItemType> fuelTypes = new HashSet<>();
 
     protected ConfigurationNode.KnownParser.SingleKnown<Boolean> configBurnerBlock = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
@@ -89,15 +89,15 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         return this;
     }
 
-    public boolean shouldTakeFromTopSlot() {
-        if (this.takeFromTopSlot == null) {
-            return this.getType().isUsingTopSlot();
+    public FuelSlot getFuelSlot() {
+        if (this.fuelSlot == null) {
+            return this.getType().getDefaultFuelSlot();
         }
-        return this.takeFromTopSlot;
+        return this.fuelSlot;
     }
 
-    public Airship setShouldTakeFromTopSlot(Boolean check) {
-        this.takeFromTopSlot = check;
+    public Airship setFuelSlot(FuelSlot check) {
+        this.fuelSlot = check;
         return this;
     }
 
@@ -152,13 +152,13 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         }
         if (!(this.getFuelConsumption() == 0 || this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
             }).filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().get().getQuantity() >= this.getFuelConsumption();
             }).filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
             }).collect(Collectors.toList());
             if (acceptedSlots.isEmpty()) {
@@ -184,20 +184,20 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         }
         if (!(this.getFuelConsumption() == 0 && this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
             }).filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().get().getQuantity() >= this.getFuelConsumption();
             }).filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
             }).collect(Collectors.toList());
             if (acceptedSlots.isEmpty()) {
                 throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
             FurnaceInventory inv = acceptedSlots.get(0);
-            Slot slot = this.shouldTakeFromTopSlot() ? inv.getSmeltingSlot() : inv.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? inv.getSmeltingSlot() : inv.getFuelSlot();
             ItemStack item = slot.getItem().get();
             item = item.copyWithQuantity(item.getQuantity() - this.getFuelConsumption());
             if (item.getQuantity() == 0) {
@@ -214,7 +214,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         map.put(this.configSpecialBlockType, this.getSpecialBlocks());
         map.put(this.configSpecialBlockPercent, this.getSpecialBlockPercent());
         map.put(this.configFuelConsumption, this.getFuelConsumption());
-        map.put(this.configFuelSlot, this.shouldTakeFromTopSlot() ? FuelSlot.TOP : FuelSlot.BOTTOM);
+        map.put(this.configFuelSlot, this.getFuelSlot().equals(FuelSlot.TOP));
         map.put(this.configFuelTypes, this.getFuelTypes());
         return map;
     }
@@ -226,19 +226,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         file.getInteger(this.configFuelConsumption).ifPresent(v -> this.fuelConsumption = v);
         this.fuelTypes = file.parseCollection(this.configFuelTypes, new HashSet<>());
         this.specialBlocks = file.parseCollection(this.configSpecialBlockType, new HashSet<>());
-        file.parse(this.configFuelSlot).ifPresent(v -> {
-            switch (v) {
-                case TOP:
-                    this.takeFromTopSlot = true;
-                    break;
-                case BOTTOM:
-                    this.takeFromTopSlot = false;
-                    break;
-                default:
-                    System.err.println("Failed to read " + this.configFuelSlot.toString() + ". Only 'Top' and 'Bottom' are allowed as values. Using default");
-                    break;
-            }
-        });
+        this.fuelSlot = file.parse(this.configFuelSlot).orElse(null);
         return this;
     }
 
@@ -247,7 +235,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         Map<String, String> map = new HashMap<>();
         map.put("Fuel", ArrayUtils.toString(", ", Parser.STRING_TO_ITEM_TYPE::unparse, this.getFuelTypes()));
         map.put("Fuel Consumption", this.getFuelConsumption() + "");
-        map.put("Fuel Slot", (this.shouldTakeFromTopSlot() ? "True" : "False"));
+        map.put("Fuel Slot", this.getFuelSlot().name());
         map.put("Special Block", ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
         map.put("Required Percent", this.getSpecialBlockPercent() + "");
         map.put("Requires Burner", this.isUsingBurner() + "");
@@ -282,13 +270,13 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         }
         if (this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
             }).filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().get().getQuantity() >= this.getFuelConsumption();
             }).filter(i -> {
-                Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
             }).collect(Collectors.toList());
             return !acceptedSlots.isEmpty();

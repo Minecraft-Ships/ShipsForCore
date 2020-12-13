@@ -55,8 +55,12 @@ public class ShipsFileLoader implements ShipsLoader {
     @Deprecated //USED FOR BACKWARDS COMPATIBILITY - WILL REMOVE IN FULL RELEASE
     public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_TELEPORT_WORLD = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_WORLD, "Meta", "Location", "Teleport", "World");
     public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>, Set<Vector3<Integer>>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
-    public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(
-            ShipsPlugin.getPlugin().getVesselFlags().entrySet().stream().collect(Collectors.<Map.Entry<String, VesselFlag.Builder<?, ?>>, String, Parser<String, VesselFlag<?>>>toMap(e -> e.getKey().replaceAll(":", " "), new Function<Map.Entry<String, VesselFlag.Builder<?, ?>>, VesselFlagWrappedParser<?>>() {
+    public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(() -> ShipsPlugin
+            .getPlugin()
+            .getVesselFlags()
+            .entrySet()
+            .stream()
+            .collect(Collectors.<Map.Entry<String, VesselFlag.Builder<?, ?>>, String, Parser<String, VesselFlag<?>>>toMap(e -> e.getKey().replaceAll(":", " "), new Function<Map.Entry<String, VesselFlag.Builder<?, ?>>, VesselFlagWrappedParser<?>>() {
 
 
                 @Override
@@ -67,9 +71,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 private <T> VesselFlagWrappedParser<?> build(VesselFlag.Builder<?, ?> builder) {
                     return new VesselFlagWrappedParser<>((VesselFlag.Builder<T, VesselFlag<T>>) builder);
                 }
-            })),
-            i -> i.getId().replaceAll(":", " "),
-            "Meta", "Flags");
+            })), i -> i.getId().replaceAll(":", " "), "Meta", "Flags");
 
     private static class StructureLoad {
 

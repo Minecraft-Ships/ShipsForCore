@@ -1,5 +1,6 @@
 package org.ships.vessel.common.types;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
@@ -151,11 +152,11 @@ public interface Vessel extends Positionable<BlockPosition> {
         return !getWaterLevel().isPresent();
     }
 
-    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, SyncBlockPosition> function){
+    default <T> Optional<Integer> getWaterLevel(Function<T, BlockPosition> function, Collection<T> collection){
         Map<Vector2<Integer>, Integer> height = new HashMap<>();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        for (MovingBlock mBlock : collection){
-            SyncBlockPosition position = function.apply(mBlock);
+        for (T value : collection){
+            BlockPosition position = function.apply(value);
             for(Direction direction : directions){
                 BlockType type = position.getRelative(direction).getBlockType();
                 if(type.equals(BlockTypes.WATER.get())){
@@ -194,53 +195,12 @@ public interface Vessel extends Positionable<BlockPosition> {
         if(best == null){
             return Optional.empty();
         }
-        return Optional.of(best.getValue());
+        return Optional.of(best.getKey());
     }
 
     default Optional<Integer> getWaterLevel(){
         PositionableShipsStructure pss = getStructure();
-        Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        Map<Vector2<Integer>, Integer> height = new HashMap<>();
-        for (SyncBlockPosition position : pss.getPositions()){
-            for(Direction direction : directions){
-                BlockType type = position.getRelative(direction).getBlockType();
-                if(type.equals(BlockTypes.WATER.get())){
-                    Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(), position.getZ() + direction.getAsVector().getZ());
-                    if(height.containsKey(vector)){
-                        if(height.getOrDefault(vector, -1) < position.getY()) {
-                            height.replace(vector, position.getY());
-                            continue;
-                        }
-                    }
-                    height.put(vector, position.getY());
-                }
-            }
-        }
-        if(height.isEmpty()){
-            return Optional.empty();
-        }
-        Map<Integer, Integer> mean = new HashMap<>();
-        height.values().forEach(value -> {
-            if(mean.containsKey(value)){
-                mean.replace(value, mean.get(value) + 1);
-            }else{
-                mean.put(value, 1);
-            }
-        });
-        Map.Entry<Integer, Integer> best = null;
-        for(Map.Entry<Integer, Integer> entry : mean.entrySet()){
-            if(best == null){
-                best = entry;
-                continue;
-            }
-            if(best.getValue() < entry.getValue()){
-                best = entry;
-            }
-        }
-        if(best == null){
-            return Optional.empty();
-        }
-        return Optional.of(best.getValue());
+        return getWaterLevel(p -> p, pss.getPositions());
     }
 
 }

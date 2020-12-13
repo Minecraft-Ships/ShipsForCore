@@ -25,7 +25,7 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
 
     @Override
     public Optional<String> getPermission() {
-        return Optional.of(Permissions.CMD_BLOCK_INFO);
+        return Optional.of(Permissions.CMD_BLOCK_INFO.getPermissionValue());
     }
 
     @Override
