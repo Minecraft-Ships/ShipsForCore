@@ -1,7 +1,7 @@
 package org.ships.movement.autopilot;
 
 import org.core.source.viewer.CommandViewer;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,9 +9,9 @@ import java.util.Optional;
 public interface FlightPath {
 
     List<FlightSinglePath> getPath();
-    Vector3Int getStartingPosition();
-    Vector3Int getEndingPosition();
-    FlightPath createUpdatedPath(Vector3Int from, Vector3Int to);
+    Vector3<Integer> getStartingPosition();
+    Vector3<Integer> getEndingPosition();
+    FlightPath createUpdatedPath(Vector3<Integer> from, Vector3<Integer> to);
     Optional<CommandViewer> getViewer();
     FlightPath setViewer(CommandViewer viewer);
 
@@ -19,17 +19,17 @@ public interface FlightPath {
         return this.setViewer(null);
     }
 
-    default Optional<Vector3Int> getNext(){
+    default Optional<Vector3<Integer>> getNext(){
         return getNext(0);
     }
 
-    default Optional<Vector3Int> getNext(int B){
+    default Optional<Vector3<Integer>> getNext(int B){
         List<FlightSinglePath> list = getPath();
         if(list.isEmpty()){
             return Optional.empty();
         }
         for (FlightSinglePath flightSinglePath : list) {
-            List<Vector3Int> vectors = flightSinglePath.getLinedPath();
+            List<Vector3<Integer>> vectors = flightSinglePath.getLinedPath();
             if (vectors.isEmpty()) {
                 continue;
             }

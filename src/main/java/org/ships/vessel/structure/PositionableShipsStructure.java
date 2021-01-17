@@ -1,12 +1,12 @@
 package org.ships.vessel.structure;
 
-import org.core.vector.types.Vector3Int;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.vector.type.Vector3;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Collection;
@@ -22,15 +22,15 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     PositionableShipsStructure addAir();
 
     default boolean addPosition(BlockPosition position){
-        Vector3Int original = getPosition().getPosition();
-        Vector3Int next = position.getPosition();
-        return addPosition(new Vector3Int((next.getX() - original.getX()), (next.getY() - original.getY()), (next.getZ() - original.getZ())));
+        Vector3<Integer> original = getPosition().getPosition();
+        Vector3<Integer> next = position.getPosition();
+        return addPosition(next.minus(original));
     }
 
     default boolean removePosition(BlockPosition position){
-        Vector3Int original = getPosition().getPosition();
-        Vector3Int next = position.getPosition();
-        return removePosition(new Vector3Int((next.getX() - original.getX()), (next.getY() - original.getY()), (next.getZ() - original.getZ())));
+        Vector3<Integer> original = getPosition().getPosition();
+        Vector3<Integer> next = position.getPosition();
+        return removePosition(next.minus(original));
     }
 
     default <T extends Object> Collection<T> getAllLike(Function<SyncBlockPosition, T> function){

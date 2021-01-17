@@ -3,10 +3,10 @@ package org.ships.vessel.common.types;
 import org.core.config.ConfigurationStream;
 import org.core.platform.Plugin;
 import org.core.utils.Identifable;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.typical.airship.AirshipType;
@@ -21,7 +21,7 @@ import java.util.Set;
 
 public interface ShipType<T extends Vessel> extends Identifable {
 
-    OPShipType OVERPOWERED_SHIP = new OPShipType.Default();
+    OPShipType OVERPOWERED_SHIP = new OPShipType();
     MarsshipType MARSSHIP = new MarsshipType();
     AirshipType AIRSHIP = new AirshipType();
     WaterShipType WATERSHIP = new WaterShipType();

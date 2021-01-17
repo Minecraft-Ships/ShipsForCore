@@ -9,7 +9,6 @@ import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.KeyedData;
@@ -18,6 +17,7 @@ import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class Plane extends AbstractShipsVessel implements AirType, VesselRequirement, Fallable, FlightPathType {
 
     protected Integer fuelConsumption;
-    protected Boolean takeFromTopSlot;
+    protected FuelSlot fuelSlot;
     protected Set<ItemType> fuelTypes = new HashSet<>();
     protected FlightPath path;
 
@@ -65,11 +65,11 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         return this.getType().getDefaultFuelConsumption();
     }
 
-    public boolean shouldTakeFromTopSlot(){
-        if(this.takeFromTopSlot == null){
-            return this.getType().isUsingTopSlot();
+    public FuelSlot getFuelSlot(){
+        if(this.fuelSlot == null){
+            return this.getType().getDefaultFuelSlot();
         }
-        return this.takeFromTopSlot;
+        return this.fuelSlot;
     }
 
     @Override
@@ -82,7 +82,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         Map<String, String> map = new HashMap<>();
         map.put("Fuel", ArrayUtils.toString(", ", Parser.STRING_TO_ITEM_TYPE::unparse, this.getFuelTypes()));
         map.put("Fuel Consumption", this.getFuelConsumption() + "");
-        map.put("Fuel Slot", (this.shouldTakeFromTopSlot() ? "True" : "False"));
+        map.put("Fuel Slot", this.fuelSlot.name());
         return map;
     }
 
@@ -90,7 +90,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configFuelConsumption, this.getFuelConsumption());
-        map.put(this.configFuelSlot, this.shouldTakeFromTopSlot() ? FuelSlot.TOP : FuelSlot.BOTTOM);
+        map.put(this.configFuelSlot, this.fuelSlot);
         map.put(this.configFuelTypes, this.getFuelTypes());
         return map;
     }
@@ -99,19 +99,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     public AbstractShipsVessel deserializeExtra(ConfigurationStream file) {
         file.getInteger(this.configFuelConsumption).ifPresent(v -> this.fuelConsumption = v);
         this.fuelTypes = file.parseCollection(this.configFuelTypes, new HashSet<>());
-        file.getString(this.configFuelSlot).ifPresent(v -> {
-            switch (v) {
-                case "top":
-                    this.takeFromTopSlot = true;
-                    break;
-                case "bottom":
-                    this.takeFromTopSlot = false;
-                    break;
-                default:
-                    System.err.println("Failed to read " + this.configFuelSlot.toString() + ". Only 'Top' and 'Bottom' are allowed as values. Using default");
-                    break;
-            }
-        });
+        this.fuelSlot = file.parse(this.configFuelSlot).orElse(null);
         return this;
     }
 
@@ -134,13 +122,13 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             }
         }
         List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().isPresent();
         }).filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().get().getQuantity() >= this.getFuelConsumption();
         }).filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
         }).collect(Collectors.toList());
         if (acceptedSlots.isEmpty()) {
@@ -167,20 +155,20 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             }
         }
         List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().isPresent();
         }).filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().get().getQuantity() >= this.fuelConsumption;
         }).filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
         }).collect(Collectors.toList());
         if (acceptedSlots.isEmpty()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
         }
         FurnaceInventory inv = acceptedSlots.get(0);
-        Slot slot = this.shouldTakeFromTopSlot() ? inv.getSmeltingSlot() : inv.getFuelSlot();
+        Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? inv.getSmeltingSlot() : inv.getFuelSlot();
         ItemStack item = slot.getItem().get();
         item = item.copyWithQuantity(item.getQuantity() - this.getFuelConsumption());
         if (item.getQuantity() == 0) {
@@ -205,13 +193,13 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             }
         }
         List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().isPresent();
         }).filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().get().getQuantity() >= this.getFuelConsumption();
         }).filter(i -> {
-            Slot slot = this.shouldTakeFromTopSlot() ? i.getSmeltingSlot() : i.getFuelSlot();
+            Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
             return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
         }).collect(Collectors.toList());
         return acceptedSlots.isEmpty();

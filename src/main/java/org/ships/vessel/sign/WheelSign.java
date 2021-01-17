@@ -1,24 +1,28 @@
 package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
+import org.core.entity.EntitySnapshot;
+import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.world.boss.ServerBossBar;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.MovementContext;
 import org.ships.movement.result.FailedMovement;
+import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.loader.ShipsBlockFinder;
 import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
@@ -51,7 +55,7 @@ public class WheelSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position){
+    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position) {
         return onClick(player, position, true);
     }
 
@@ -70,21 +74,21 @@ public class WheelSign implements ShipsSign {
         return "Wheel Sign";
     }
 
-    private boolean onClick(LivePlayer player, SyncBlockPosition position, boolean left){
-        if(player.isSneaking()){
+    private boolean onClick(LivePlayer player, SyncBlockPosition position, boolean left) {
+        if (player.isSneaking()) {
             return false;
         }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int trackLimit = config.getDefaultTrackSize();
         MovementContext context = new MovementContext();
         context.setPostMovement(e -> ShipsSign.LOCKED_SIGNS.remove(position));
-        if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
+        if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
             ServerBossBar bar = CorePlugin.createBossBar();
             bar.setMessage(CorePlugin.buildText("0 / " + trackLimit)).register(player);
             context.setBar(bar);
         }
         ShipsSign.LOCKED_SIGNS.add(position);
-        if(config.isStructureAutoUpdating()) {
+        if (config.isStructureAutoUpdating()) {
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
@@ -98,7 +102,7 @@ public class WheelSign implements ShipsSign {
                         bar.setMessage(CorePlugin.buildText(foundBlocks + " / " + trackLimit));
                         try {
                             bar.setValue(foundBlocks, trackLimit);
-                        }catch (IllegalArgumentException ignore){
+                        } catch (IllegalArgumentException ignore) {
 
                         }
 
@@ -120,46 +124,59 @@ public class WheelSign implements ShipsSign {
                     }
                 }
             }.loadOvertime();
-        }else{
+        } else {
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
                 onVesselRotate(player, context, vessel, position, true);
-            }catch (UnableToFindLicenceSign e1){
+            } catch (UnableToFindLicenceSign e1) {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
                 CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                ShipsSign.LOCKED_SIGNS.remove(position);
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             } catch (LoadVesselException e) {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
+                ShipsSign.LOCKED_SIGNS.remove(position);
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             }
         }
         return false;
     }
 
-    private void onVesselRotate(LivePlayer player, MovementContext context, Vessel vessel, SyncBlockPosition position, boolean left){
-        context.getBar().ifPresent(bar -> {
-            bar.deregister(player);
-            vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
-
-        });
+    private void onVesselRotate(LivePlayer player, MovementContext context, Vessel vessel, SyncBlockPosition position, boolean left) {
+        if (vessel instanceof CrewStoredVessel) {
+            CrewStoredVessel stored = (CrewStoredVessel) vessel;
+            if (!(stored.getPermission(player.getUniqueId()).canMove() || player.hasPermission(Permissions.getMovePermission(stored.getType())) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
+                player.sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission"));
+                ShipsSign.LOCKED_SIGNS.remove(position);
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+                return;
+            }
+        }
         context.setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
         context.setClicked(position);
         Consumer<Throwable> exception = (exc) -> {
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             ShipsSign.LOCKED_SIGNS.remove(position);
-            if(exc instanceof MoveException){
-                MoveException e = (MoveException)exc;
+            if (exc instanceof MoveException) {
+                MoveException e = (MoveException) exc;
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
-            }else{
-                vessel.getEntities().forEach(e -> e.setGravity(true));
+            } else {
+                context.getEntities().keySet().forEach(s -> {
+                    if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
+                        ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
+                    }
+                });
             }
         };
-        if(left) {
+        if (left) {
             vessel.rotateLeftAround(vessel.getPosition(), context, exception);
-        }else{
+        } else {
             vessel.rotateRightAround(vessel.getPosition(), context, exception);
         }
     }
 
-    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value){
-        movement.sendMessage(viewer, (T)value);
+    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value) {
+        movement.sendMessage(viewer, (T) value);
     }
 }

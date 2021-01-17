@@ -1,12 +1,19 @@
 package org.ships.vessel.common.flag;
 
-import org.core.config.parser.Parser;
 import org.core.config.parser.StringParser;
 import org.ships.movement.MovementContext;
 
 import java.util.Optional;
 
 public class MovingFlag implements VesselFlag<MovementContext> {
+
+    public static class Builder extends VesselFlag.Builder<MovementContext, MovingFlag> {
+
+        @Override
+        protected MovingFlag buildEmpty() {
+            return new MovingFlag();
+        }
+    }
 
     protected MovementContext context;
 
@@ -42,6 +49,11 @@ public class MovingFlag implements VesselFlag<MovementContext> {
                 return value.toString();
             }
         };
+    }
+
+    @Override
+    public Builder toBuilder() {
+        return new Builder();
     }
 
     @Override

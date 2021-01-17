@@ -1,9 +1,9 @@
 package org.ships.movement;
 
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 
 public class SetMovingBlock implements MovingBlock {
 

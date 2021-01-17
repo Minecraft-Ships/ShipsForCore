@@ -2,9 +2,9 @@ package org.ships.vessel.common.types.typical.opship;
 
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.movement.autopilot.FlightPath;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.FlightPathType;

@@ -2,7 +2,6 @@ package org.ships.algorthum.blockfinder.typeFinder;
 
 import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.entity.living.human.player.Player;
 import org.core.schedule.Scheduler;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;

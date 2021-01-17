@@ -10,6 +10,5 @@ public interface ShipsParsers {
     StringToShipTypeParser.StringToHostClonableShipTypeParser STRING_TO_HOST_CLONABLE_SHIP_TYPE = new StringToShipTypeParser.StringToHostClonableShipTypeParser();
     StringToBlockFinder STRING_TO_BLOCK_FINDER = new StringToBlockFinder();
     StringToMovement STRING_TO_MOVEMENT = new StringToMovement();
-    StringToVesselFlag STRING_TO_VESSEL_FLAG = new StringToVesselFlag();
     StringToCrewPermission STRING_TO_CREW_PERMISSION = new StringToCrewPermission();
 }

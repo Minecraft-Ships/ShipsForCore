@@ -7,15 +7,16 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
-import org.core.vector.types.Vector3Int;
+import org.core.utils.Identifable;
+import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.parsers.ShipsParsers;
-import org.ships.config.parsers.identify.StringToIdentifiable;
+import org.ships.config.parsers.VesselFlagWrappedParser;
 import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.WrappedFileLoadVesselException;
@@ -33,6 +34,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ShipsFileLoader implements ShipsLoader {
@@ -52,8 +54,24 @@ public class ShipsFileLoader implements ShipsLoader {
     public static final ConfigurationNode.KnownParser.SingleKnown<Double> META_LOCATION_TELEPORT_Z = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Meta", "Location", "Teleport", "Z");
     @Deprecated //USED FOR BACKWARDS COMPATIBILITY - WILL REMOVE IN FULL RELEASE
     public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_TELEPORT_WORLD = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_WORLD, "Meta", "Location", "Teleport", "World");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3Int, Set<Vector3Int>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<VesselFlag.Serializable<?>, Set<VesselFlag.Serializable<?>>> META_FLAGS = new ConfigurationNode.KnownParser.CollectionKnown<>((StringToIdentifiable<VesselFlag.Serializable<?>>)(Object)ShipsParsers.STRING_TO_VESSEL_FLAG, "Meta", "Flags");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>, Set<Vector3<Integer>>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
+    public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(() -> ShipsPlugin
+            .getPlugin()
+            .getVesselFlags()
+            .entrySet()
+            .stream()
+            .collect(Collectors.<Map.Entry<String, VesselFlag.Builder<?, ?>>, String, Parser<String, VesselFlag<?>>>toMap(e -> e.getKey().replaceAll(":", " "), new Function<Map.Entry<String, VesselFlag.Builder<?, ?>>, VesselFlagWrappedParser<?>>() {
+
+
+                @Override
+                public VesselFlagWrappedParser<?> apply(Map.Entry<String, VesselFlag.Builder<?, ?>> stringVesselFlagEntry) {
+                    return build(stringVesselFlagEntry.getValue());
+                }
+
+                private <T> VesselFlagWrappedParser<?> build(VesselFlag.Builder<?, ?> builder) {
+                    return new VesselFlagWrappedParser<>((VesselFlag.Builder<T, VesselFlag<T>>) builder);
+                }
+            })), i -> i.getId().replaceAll(":", " "), "Meta", "Flags");
 
     private static class StructureLoad {
 
@@ -63,7 +81,7 @@ public class ShipsFileLoader implements ShipsLoader {
             this.ship = shipsVessel;
         }
 
-        public void load(SyncBlockPosition position, List<Vector3Int> structureList) {
+        public void load(SyncBlockPosition position, List<Vector3<Integer>> structureList) {
             if (structureList.isEmpty()) {
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
                     @Override
@@ -134,7 +152,8 @@ public class ShipsFileLoader implements ShipsLoader {
         });
         uuidList.forEach((key, value) -> file.set(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_STRING_PARSER, "Meta", "Permission", key.getId()), value));
         file.set(META_STRUCTURE, vessel.getStructure().getRelativePositions());
-        file.set(META_FLAGS, ShipsParsers.STRING_TO_VESSEL_FLAG, (Set<VesselFlag.Serializable>)(Object)vessel.getFlags().parallelStream().filter(s -> s instanceof VesselFlag.Serializable).collect(Collectors.toSet()));
+        Set<VesselFlag<?>> flags = vessel.getFlags().stream().filter(s -> s instanceof VesselFlag.Serializable).collect(Collectors.toSet());
+        file.set(META_FLAGS, flags);
         file.save();
     }
 
@@ -225,7 +244,7 @@ public class ShipsFileLoader implements ShipsLoader {
                         Parser.STRING_TO_UNIQUIE_ID,
                         new ArrayList<>()
                 ).forEach(u -> ship.getCrew().put(u, p)));
-        file.parseCollection(META_FLAGS, ShipsParsers.STRING_TO_VESSEL_FLAG, new HashSet<>()).forEach(ship::set);
+        file.parseCollection(META_FLAGS, new HashSet<>()).forEach(ship::set);
         try {
             ship.deserializeExtra(file);
         }catch(Throwable e) {

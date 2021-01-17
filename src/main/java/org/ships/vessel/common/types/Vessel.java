@@ -1,10 +1,12 @@
 package org.ships.vessel.common.types;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector2;
+import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.Positionable;
@@ -44,7 +46,7 @@ public interface Vessel extends Positionable<BlockPosition> {
     Vessel setAltitudeSpeed(int speed);
 
     void moveTowards(int x, int y, int z, MovementContext context, Consumer<Throwable> exception);
-    void moveTowards(Vector3Int vector, MovementContext context, Consumer<Throwable> exception);
+    void moveTowards(Vector3<Integer> vector, MovementContext context, Consumer<Throwable> exception);
     void moveTo(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
     void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
     void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
@@ -93,49 +95,45 @@ public interface Vessel extends Positionable<BlockPosition> {
         Set<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>(getPosition().getWorld().getEntities());
         Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {}).build(ShipsPlugin.getPlugin());
-        int fin = entities2.size() / limit;
+        double fin = entities2.size() / (double)limit;
+        if(fin != ((int)fin)){
+            fin++;
+        }
         if (fin == 0) {
             output.accept(entities);
             return;
         }
         Collection<SyncBlockPosition> pss = getStructure().getPositions();
-        ShipsPlugin.getPlugin().getDebugFile().addMessage("Vessel.97 > Starting loop", "-\tFinish number: " + fin, "-\tStructure size: " + pss.size(), "-\tEntities in world: " + entities2.size());
         for(int A = 0; A < fin; A++){
-            ShipsPlugin.getPlugin().getDebugFile().addMessage("\tVessel.99 > Adding sched " + A);
             final int B = A;
             sched = CorePlugin.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
                 int c = (B*limit);
-                ShipsPlugin.getPlugin().getDebugFile().addMessage("\tVessel.103 > Looping shed C: " + c);
                 for(int to = 0; to < limit; to++) {
+                    if((c + to) >= entities2.size()){
+                        break;
+                    }
                     LiveEntity e = entities2.get(c + to);
-                    ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\tVessel.106 > Checking entity of " + e.getType().getId());
                     if (!predicate.test(e)) {
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.108 > Failed Predicate test");
                         continue;
                     }
                     Optional<SyncBlockPosition> opPosition = e.getAttachedTo();
                     if (!opPosition.isPresent()) {
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.113 > Failed to find attached position");
                         continue;
                     }
                     if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
                         single.accept(e);
                         entities.add(e);
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.119 > Added entity");
                     }else if(!e.isOnGround()){
                         SyncBlockPosition bPos = e.getPosition().toBlockPosition();
                         if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))){
-                            ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.123 > Failed Line of sight test");
                             continue;
                         }
                         single.accept(e);
                         entities.add(e);
-                        ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\t\tVessel.128 > Added entity");
                     }
                 }
                 if(B == 0){
                     output.accept(entities);
-                    ShipsPlugin.getPlugin().getDebugFile().addMessage("\t\tVessel.133 > Running output");
                 }
             }).setToRunAfter(sched).build(ShipsPlugin.getPlugin());
         }
@@ -154,44 +152,55 @@ public interface Vessel extends Positionable<BlockPosition> {
         return !getWaterLevel().isPresent();
     }
 
-    default Optional<Integer> getWaterLevel(Collection<MovingBlock> collection, Function<MovingBlock, SyncBlockPosition> function){
-        int height = -1;
+    default <T> Optional<Integer> getWaterLevel(Function<T, BlockPosition> function, Collection<T> collection){
+        Map<Vector2<Integer>, Integer> height = new HashMap<>();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        for (MovingBlock mBlock : collection){
-            SyncBlockPosition position = function.apply(mBlock);
+        for (T value : collection){
+            BlockPosition position = function.apply(value);
             for(Direction direction : directions){
                 BlockType type = position.getRelative(direction).getBlockType();
                 if(type.equals(BlockTypes.WATER.get())){
-                    if(height < position.getY()) {
-                        height = position.getY();
+                    Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(), position.getZ() + direction.getAsVector().getZ());
+                    if(height.containsKey(vector)){
+                        if(height.getOrDefault(vector, -1) < position.getY()) {
+                            height.replace(vector, position.getY());
+                            continue;
+                        }
                     }
+                    height.put(vector, position.getY());
                 }
             }
         }
-        if(height == -1){
+        if(height.isEmpty()){
             return Optional.empty();
         }
-        return Optional.of(height);
+        Map<Integer, Integer> mean = new HashMap<>();
+        height.values().forEach(value -> {
+            if(mean.containsKey(value)){
+                mean.replace(value, mean.get(value) + 1);
+            }else{
+                mean.put(value, 1);
+            }
+        });
+        Map.Entry<Integer, Integer> best = null;
+        for(Map.Entry<Integer, Integer> entry : mean.entrySet()){
+            if(best == null){
+                best = entry;
+                continue;
+            }
+            if(best.getValue() < entry.getValue()){
+                best = entry;
+            }
+        }
+        if(best == null){
+            return Optional.empty();
+        }
+        return Optional.of(best.getKey());
     }
 
     default Optional<Integer> getWaterLevel(){
         PositionableShipsStructure pss = getStructure();
-        Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        int height = -1;
-        for (SyncBlockPosition position : pss.getPositions()){
-            for(Direction direction : directions){
-                BlockType type = position.getRelative(direction).getBlockType();
-                if(type.equals(BlockTypes.WATER.get())){
-                    if(height < position.getY()) {
-                        height = position.getY();
-                    }
-                }
-            }
-        }
-        if(height == -1){
-            return Optional.empty();
-        }
-        return Optional.of(height);
+        return getWaterLevel(p -> p, pss.getPositions());
     }
 
 }

@@ -1,7 +1,7 @@
 package org.ships.movement.autopilot;
 
 import org.core.source.viewer.CommandViewer;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,27 +11,27 @@ import java.util.function.Function;
 
 public class BasicFlightSinglePath implements FlightSinglePath {
 
-    protected Vector3Int firstPosition;
-    protected Vector3Int secondPosition;
+    protected Vector3<Integer> firstPosition;
+    protected Vector3<Integer> secondPosition;
     protected CommandViewer viewer;
 
-    public BasicFlightSinglePath(Vector3Int first, Vector3Int second){
+    public BasicFlightSinglePath(Vector3<Integer> first, Vector3<Integer> second){
         this.firstPosition = first;
         this.secondPosition = second;
     }
 
     @Override
-    public Vector3Int getStartingPosition(){
+    public Vector3<Integer> getStartingPosition(){
         return this.firstPosition;
     }
 
     @Override
-    public Vector3Int getEndingPosition(){
+    public Vector3<Integer> getEndingPosition(){
         return this.secondPosition;
     }
 
     @Override
-    public FlightPath createUpdatedPath(Vector3Int from, Vector3Int to) {
+    public FlightPath createUpdatedPath(Vector3<Integer> from, Vector3<Integer> to) {
         return new BasicFlightSinglePath(from, to);
     }
 
@@ -64,27 +64,27 @@ public class BasicFlightSinglePath implements FlightSinglePath {
     }
 
     @Override
-    public List<Vector3Int> getLinedPath(){
-        List<Vector3Int> list = new ArrayList<>();
+    public List<Vector3<Integer>> getLinedPath(){
+        List<Vector3<Integer>> list = new ArrayList<>();
         if(isUsingY()){
-            getLinedPath(Vector3Int::getY).forEach(i -> {
-                Vector3Int vector = new Vector3Int(this.firstPosition.getX(), i, this.firstPosition.getZ());
+            getLinedPath(Vector3::getY).forEach(i -> {
+                Vector3<Integer> vector = Vector3.valueOf(this.firstPosition.getX(), i, this.firstPosition.getZ());
                 if(vector.equals(this.firstPosition)){
                     return;
                 }
                 list.add(vector);
             });
         }else if(isUsingX()) {
-            getLinedPath(Vector3Int::getX).forEach(i -> {
-                Vector3Int vector = new Vector3Int(i, this.firstPosition.getY(), this.firstPosition.getZ());
+            getLinedPath(Vector3::getX).forEach(i -> {
+                Vector3<Integer> vector = Vector3.valueOf(i, this.firstPosition.getY(), this.firstPosition.getZ());
                 if(vector.equals(this.firstPosition)){
                     return;
                 }
                 list.add(vector);
             });
         }else if(isUsingZ()){
-            getLinedPath(Vector3Int::getZ).forEach(i -> {
-                Vector3Int vector = new Vector3Int(this.firstPosition.getX(), this.firstPosition.getY(), i);
+            getLinedPath(Vector3::getZ).forEach(i -> {
+                Vector3<Integer> vector = Vector3.valueOf(this.firstPosition.getX(), this.firstPosition.getY(), i);
                 if(vector.equals(this.firstPosition)){
                     return;
                 }
@@ -94,7 +94,7 @@ public class BasicFlightSinglePath implements FlightSinglePath {
         return list;
     }
 
-    private List<Integer> getLinedPath(Function<Vector3Int, Integer> function){
+    private List<Integer> getLinedPath(Function<Vector3<Integer>, Integer> function){
         List<Integer> list = new ArrayList<>();
         int pos1 = function.apply(this.firstPosition);
         int pos2 = function.apply(this.secondPosition);

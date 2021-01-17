@@ -1,21 +1,23 @@
 package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
+import org.core.entity.EntitySnapshot;
+import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
@@ -50,6 +52,7 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
+    @Deprecated
     public Text getFirstLine() {
         return CorePlugin.buildText(TextColours.YELLOW + "[Move]");
     }
@@ -190,12 +193,14 @@ public class MoveSign implements ShipsSign {
                 Vessel vessel = new ShipsBlockFinder(position).load();
                 onVesselMove(player, position, speed, context, vessel);
             }catch (UnableToFindLicenceSign e1){
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
                 CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
             } catch (LoadVesselException e) {
                 ShipsSign.LOCKED_SIGNS.remove(position);
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
             }
         }
@@ -221,14 +226,11 @@ public class MoveSign implements ShipsSign {
     }
 
     private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel){
-        context.getBar().ifPresent(bar -> {
-            bar.deregister(player);
-            vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
-        });
         Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
         if (!opDirectional.isPresent()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
             player.sendMessage(CorePlugin.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             return;
         }
         if (vessel instanceof CrewStoredVessel) {
@@ -236,20 +238,26 @@ public class MoveSign implements ShipsSign {
             if (!(stored.getPermission(player.getUniqueId()).canMove() || player.hasPermission(Permissions.getMovePermission(stored.getType())) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission"));
                 ShipsSign.LOCKED_SIGNS.remove(position);
+                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 return;
             }
         }
-        Vector3Int direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
+        Vector3<Integer> direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
         BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
         context.setMovement(movement);
         context.setClicked(position);
         vessel.moveTowards(direction, context, exc -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             if(exc instanceof MoveException){
                 MoveException e = (MoveException)exc;
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }else{
-                vessel.getEntities().forEach(e -> e.setGravity(true));
+                context.getEntities().keySet().forEach(s -> {
+                    if (s instanceof EntitySnapshot.NoneDestructibleSnapshot){
+                        ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
+                    }
+                });
                 exc.printStackTrace();
             }
         });

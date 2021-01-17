@@ -5,16 +5,14 @@ import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifable;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockType;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public interface MovementResult<E> {
 
@@ -161,7 +159,11 @@ public interface MovementResult<E> {
             }
             viewer.sendMessagePlain("Found the following blocks in the way: " + value);
             if (collection != null) {
-                collection.forEach(v -> viewer.sendMessagePlain(v.getX() + ", " + v.getY() + ", " + v.getZ()));
+                List<SyncBlockPosition> list = new ArrayList<>(collection);
+                for(int A = 0; A < Math.min(collection.size(), 3); A++){
+                    SyncBlockPosition v = list.get(A);
+                    viewer.sendMessagePlain(v.getX() + ", " + v.getY() + ", " + v.getZ());
+                }
             }
         }
     }

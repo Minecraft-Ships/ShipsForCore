@@ -1,7 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.Algorthum;
 import org.ships.algorthum.blockfinder.typeFinder.BasicTypeBlockFinder;
 import org.ships.vessel.common.types.Vessel;

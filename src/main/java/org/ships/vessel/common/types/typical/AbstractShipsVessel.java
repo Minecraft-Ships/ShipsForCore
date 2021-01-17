@@ -3,10 +3,10 @@ package org.ships.vessel.common.types.typical;
 import org.core.CorePlugin;
 import org.core.config.ConfigurationStream;
 import org.core.utils.Identifable;
-import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncExactPosition;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.event.vessel.VesselStructureUpdate;
 import org.ships.permissions.vessel.CrewPermission;
@@ -39,13 +39,13 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     public AbstractShipsVessel(LiveSignTileEntity licence, ShipType<? extends AbstractShipsVessel> type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
         init(type);
     }
 
     public AbstractShipsVessel(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type){
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).get().equalsPlain(t.getDisplayName(), true)).findFirst().get().getId().replaceAll(":", ".") + "/" + ste.getLine(2).get().toPlain() + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
         init(type);
     }
 

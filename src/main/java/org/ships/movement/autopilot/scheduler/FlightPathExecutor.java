@@ -3,7 +3,7 @@ package org.ships.movement.autopilot.scheduler;
 import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
@@ -47,7 +47,7 @@ public class FlightPathExecutor implements Runnable {
     public void run() {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         this.vessel.getFlightPath().ifPresent(fp -> {
-            Optional<Vector3Int> opVector = fp.getNext();
+            Optional<Vector3<Integer>> opVector = fp.getNext();
             if (!opVector.isPresent()) {
                 this.vessel.setFlightPath(null);
                 return;

@@ -1,9 +1,9 @@
 package org.ships.vessel.common.loader;
 
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;

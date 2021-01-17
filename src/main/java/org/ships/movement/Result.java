@@ -1,9 +1,9 @@
 package org.ships.movement;
 
 import org.core.CorePlugin;
+import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
-import org.core.entity.living.human.player.Player;
-import org.core.vector.Vector3;
+import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.event.vessel.move.ResultEvent;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Result extends ArrayList<Result.Run> {
 
@@ -48,7 +49,7 @@ public class Result extends ArrayList<Result.Run> {
             SyncBlockPosition after = value.getAfterPosition();
             Vector3<Double> position = entity.getPosition().getPosition().minus(before.toExactPosition().getPosition());
             Vector3<Double> position2 = after.toExactPosition().getPosition();
-            position = position2.add(position);
+            position = position2.plus(position);
             entity.setPosition(position);
             entity.setYaw(yaw);
             entity.setRoll(roll);
@@ -58,9 +59,9 @@ public class Result extends ArrayList<Result.Run> {
         Run COMMON_RESET_GRAVITY = (v, c) -> c.getEntities().keySet().forEach(e -> e.setGravity(true));
 
         Run COMMON_SET_NEW_POSITIONS = (v, c) -> {
-            if (!ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating()){
+            /*if (!ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating()){
                 return;
-            }
+            }*/
             PositionableShipsStructure pss = v.getStructure();
             pss.clear();
             c.getMovingStructure().getOriginal().forEach((mb) -> pss.addPosition(mb.getAfterPosition()));
@@ -75,12 +76,15 @@ public class Result extends ArrayList<Result.Run> {
         };
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> c.getEntities().keySet().forEach(e -> {
-            if(!(e instanceof Player)) {
+            if(e instanceof EntitySnapshot.NoneDestructibleSnapshot){
+                EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot = (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) e;
+                snapshot.teleportEntity(true);
+            }else{
                 e.getCreatedFrom().ifPresent(LiveEntity::remove);
-            }
-            try {
-                e.spawnEntity();
-            }catch (IllegalStateException ignored){
+                try {
+                    e.spawnEntity();
+                }catch (IllegalStateException ignored){
+                }
             }
         });
 

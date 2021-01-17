@@ -28,8 +28,7 @@ public class LegacyHelpCommand implements LegacyArgumentCommand {
             return false;
         }
         CommandViewer commandViewer = (CommandViewer) source;
-        LegacyShipsCommand lsc = (LegacyShipsCommand) CorePlugin.getServer().getCommands().stream().filter(c -> c.getName().equalsIgnoreCase("ships")).findAny().get();
-        lsc.getArguments().stream().filter(c -> {
+        LegacyShipsCommand.ARGUMENTS.stream().filter(c -> {
             Optional<String> opPermission = c.getPermission();
             if(opPermission.isPresent()) {
                 if (source instanceof LivePlayer) {

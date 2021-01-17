@@ -10,7 +10,6 @@ import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.sign.ShipsSign;
 
 import java.util.ArrayList;
 import java.util.List;

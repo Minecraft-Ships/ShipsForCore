@@ -1,6 +1,7 @@
 package org.ships.plugin;
 
 import org.core.CorePlugin;
+import org.core.command.CommandRegister;
 import org.core.platform.Plugin;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
@@ -9,6 +10,7 @@ import org.core.text.TextColours;
 import org.core.utils.Identifable;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
+import org.ships.commands.argument.ShipsArgumentCommand;
 import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
@@ -21,6 +23,8 @@ import org.ships.movement.autopilot.scheduler.FallExecutor;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.patches.AutoRunPatches;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
+import org.ships.vessel.common.flag.PlayerStatesFlag;
+import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
@@ -32,10 +36,7 @@ import org.ships.vessel.sign.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,6 +44,7 @@ import java.util.stream.Stream;
 public abstract class ShipsPlugin implements Plugin {
 
     private static ShipsPlugin plugin;
+    private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
     private final Set<Identifable> identifable = new HashSet<>();
     private final Set<CrewPermission> defaultPermissions = new HashSet<>(Arrays.asList(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER));
     private final DefaultBlockList blockList;
@@ -51,7 +53,7 @@ public abstract class ShipsPlugin implements Plugin {
     private final DebugFile debugFile;
     private final Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 8;
+    public static final double PRERELEASE_VERSION = 9.3;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin(){
@@ -63,17 +65,21 @@ public abstract class ShipsPlugin implements Plugin {
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
         CorePlugin.getEventManager().register(this, new CoreEventListener());
-        //if(this.config.getFile().parseBoolean(this.config.ALPHA_COMMAND_USE_LEGACY).orElse(true)) {
-            CorePlugin.getServer().registerCommands(new LegacyShipsCommand());
-        /*}else{
-            CorePlugin.getServer().registerCommands(new ShipsArgumentCommand());
-        }*/
         if(this.config.isFallingEnabled()) {
             Scheduler fallScheduler = FallExecutor.createScheduler();
             fallScheduler.run();
         }
         CorePlugin.createSchedulerBuilder().setDisplayName("Ships no gravity fix").setIteration(1).setIterationUnit(TimeUnit.SECONDS).setExecutor(AutoRunPatches.NO_GRAVITY_FIX).build(this);
         init2();
+    }
+
+    @Override
+    public void registerCommands(CommandRegister register) {
+        if(this.config.getFile().getBoolean(this.config.ALPHA_COMMAND_USE_LEGACY.getNode()).orElse(true)) {
+            register.register(new LegacyShipsCommand());
+        }else{
+            register.register(new ShipsArgumentCommand());
+        }
     }
 
     public abstract File getShipsConigFolder();
@@ -144,6 +150,7 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(new WheelSign());
         this.identifable.add(new MoveSign());
         this.identifable.add(new EOTSign());
+        this.vesselFlags.put("ships:player_states", new PlayerStatesFlag.Builder());
     }
 
     private void init2(){
@@ -208,6 +215,10 @@ public abstract class ShipsPlugin implements Plugin {
         return (Optional<T>)identifable.stream().filter(class1::isInstance).findAny();
     }
 
+    public Map<String, VesselFlag.Builder<?, ?>> getVesselFlags(){
+        return this.vesselFlags;
+    }
+
     public void registerVessel(Vessel... vessels){
         this.vessels.addAll(Arrays.asList(vessels));
     }
@@ -226,6 +237,10 @@ public abstract class ShipsPlugin implements Plugin {
 
     public void register(CrewPermission... permissions){
         this.defaultPermissions.addAll(Arrays.asList(permissions));
+    }
+
+    public void register(String id, VesselFlag.Builder<?, ?> flag){
+        this.vesselFlags.put(id, flag);
     }
 
     public static ShipsPlugin getPlugin(){

@@ -1,19 +1,18 @@
 package org.ships.vessel.structure;
 
 import org.core.exceptions.DirectionNotSupported;
-import org.core.vector.types.Vector3Int;
+import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class AbstractPosititionableShipsStructure implements PositionableShipsStructure {
 
-    protected Set<Vector3Int> vectors = new HashSet<>();
+    protected Set<Vector3<Integer>> vectors = new HashSet<>();
     protected SyncBlockPosition position;
 
     public AbstractPosititionableShipsStructure(SyncBlockPosition position){
@@ -41,7 +40,7 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
                 try {
                     getNextInLine(p, dir, positions).ifPresent(p1 -> {
                         SyncBlockPosition target = p;
-                        Vector3Int dirV = dir.getAsVector();
+                        Vector3<Integer> dirV = dir.getAsVector();
                         int disX = p1.getX() - target.getX();
                         int disY = p1.getY() - target.getY();
                         int disZ = p1.getZ() - target.getZ();
@@ -75,21 +74,21 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
     }
 
     @Override
-    public Set<Vector3Int> getRelativePositions() {
-        Set<Vector3Int> vectors = new HashSet<>(getOriginalRelativePositions());
-        if (!vectors.stream().anyMatch(v -> v.equals(new Vector3Int(0, 0, 0)))){
-            vectors.add(new Vector3Int(0, 0, 0));
+    public Set<Vector3<Integer>> getRelativePositions() {
+        Set<Vector3<Integer>> vectors = new HashSet<>(getOriginalRelativePositions());
+        if (!vectors.stream().anyMatch(v -> v.equals(Vector3.valueOf(0, 0, 0)))){
+            vectors.add(Vector3.valueOf(0, 0, 0));
         }
         return vectors;
     }
 
     @Override
-    public Set<Vector3Int> getOriginalRelativePositions() {
+    public Set<Vector3<Integer>> getOriginalRelativePositions() {
         return this.vectors;
     }
 
     @Override
-    public boolean addPosition(Vector3Int add) {
+    public boolean addPosition(Vector3<Integer> add) {
         if(this.vectors.stream().anyMatch(v -> v.equals(add))){
             return false;
         }
@@ -97,17 +96,16 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
     }
 
     private void addRawPosition(SyncBlockPosition position){
-        Vector3Int original = getPosition().getPosition();
-        Vector3Int next = position.getPosition();
-        this.vectors.add(new Vector3Int((next.getX() - original.getX()), (next.getY() - original.getY()), (next.getZ() - original.getZ())));
+        Vector3<Integer> original = getPosition().getPosition();
+        Vector3<Integer> next = position.getPosition();
+        this.vectors.add(next.minus(original));
     }
 
     @Override
-    public boolean removePosition(Vector3Int remove) {
-        if(!this.vectors.stream().anyMatch(v -> v.equals(remove))){
-            return false;
-        }
-        return this.vectors.remove(remove);
+    public boolean removePosition(Vector3<Integer> remove) {
+        Vector3<Integer> original = getPosition().getPosition();
+        Vector3<Integer> next = position.getPosition();
+        return this.vectors.remove(next.minus(original));
     }
 
     @Override
@@ -117,19 +115,19 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
     }
 
     @Override
-    public ShipsStructure setRaw(Collection<Vector3Int> collection) {
+    public ShipsStructure setRaw(Collection<Vector3<Integer>> collection) {
         this.vectors = new HashSet<>(collection);
         return this;
     }
 
     private static Optional<SyncBlockPosition> getNextInLine(SyncBlockPosition pos, Direction direction, Collection<SyncBlockPosition> collections) throws DirectionNotSupported {
-        Vector3Int original = pos.getPosition();
+        Vector3<Integer> original = pos.getPosition();
         List<Direction> directions = new ArrayList<>(Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));
         if(!directions.contains(direction)){
             throw new DirectionNotSupported(direction, "");
         }
         List<SyncBlockPosition> positions = collections.stream().filter(p -> {
-            Vector3Int vector = p.getPosition();
+            Vector3<Integer> vector = p.getPosition();
             if(vector.getX().equals(original.getX()) && vector.getY().equals(original.getY())){
                 int oz = original.getZ();
                 int vz = vector.getZ();
@@ -162,7 +160,7 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
         double min = Double.MAX_VALUE;
         SyncBlockPosition current = null;
         for(SyncBlockPosition position : positions){
-            double distance = position.getPosition().distance(original);
+            double distance = position.getPosition().distanceSquared(original);
             if(min > distance){
                 min = distance;
                 current = position;

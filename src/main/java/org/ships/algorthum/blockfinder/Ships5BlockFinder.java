@@ -4,7 +4,6 @@ import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.blockfinder.typeFinder.BasicTypeBlockFinder;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
