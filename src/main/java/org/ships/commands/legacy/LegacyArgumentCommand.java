@@ -5,6 +5,7 @@ import org.core.source.command.CommandSource;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 public interface LegacyArgumentCommand {
 
     String getName();

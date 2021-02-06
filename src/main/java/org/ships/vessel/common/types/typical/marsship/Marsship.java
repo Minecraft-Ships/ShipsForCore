@@ -17,6 +17,7 @@ import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.AirType;
+import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.HashMap;
@@ -84,6 +85,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
 
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.meetsRequirements(context);
         if(!context.isStrictMovement()){
             return;
         }
@@ -101,6 +103,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
     }
 
     @Override
-    public void processRequirements(MovementContext context) {
+    public void processRequirements(MovementContext context) throws MoveException{
+        VesselRequirement.super.processRequirements(context);
     }
 }

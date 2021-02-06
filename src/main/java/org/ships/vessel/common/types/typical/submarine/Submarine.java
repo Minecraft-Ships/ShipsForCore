@@ -29,6 +29,7 @@ import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.UnderWaterType;
+import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -38,10 +39,10 @@ import java.util.stream.Collectors;
 public class Submarine extends AbstractShipsVessel implements UnderWaterType, org.ships.vessel.common.assits.VesselRequirement {
 
     protected Float specialBlockPercent;
-    protected Set<BlockType> specialBlocks;
+    protected Set<BlockType> specialBlocks = new HashSet<>();
     protected Integer fuelConsumption;
     protected FuelSlot fuelSlot;
-    protected Set<ItemType> fuelTypes;
+    protected Set<ItemType> fuelTypes = new HashSet<>();
 
     protected ConfigurationNode configBurnerBlock = new ConfigurationNode("Block", "Burner");
     protected ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
@@ -132,6 +133,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
 
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.meetsRequirements(context);
         if(!context.isStrictMovement()){
             return;
         }
@@ -178,6 +180,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
 
     @Override
     public void processRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.processRequirements(context);
         if(!context.isStrictMovement()){
             return;
         }

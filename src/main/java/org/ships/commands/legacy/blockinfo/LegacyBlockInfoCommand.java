@@ -17,6 +17,7 @@ import org.ships.plugin.ShipsPlugin;
 
 import java.util.*;
 
+@Deprecated
 public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
     @Override
     public String getName() {

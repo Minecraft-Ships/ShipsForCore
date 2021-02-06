@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class LegacyShipTypeCommand implements LegacyArgumentCommand {
 
     @Override

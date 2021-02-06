@@ -18,6 +18,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -43,6 +44,8 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
 
 
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Altitude");
     public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(() -> ShipsPlugin
@@ -120,6 +123,16 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     }
 
     @Override
+    public Optional<Integer> getDefaultMaxSize() {
+        return this.getFile().parse(MAX_SIZE, Parser.STRING_TO_INTEGER);
+    }
+
+    @Override
+    public int getDefaultMinSize() {
+        return this.getFile().parse(MIN_SIZE, Parser.STRING_TO_INTEGER).orElse(0);
+    }
+
+    @Override
     public BlockType[] getIgnoredTypes() {
         return this.types;
     }
@@ -156,6 +169,8 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     @Override
     public void save() {
         this.getFile().set(META_FLAGS, this.flags);
+        this.getDefaultMaxSize().ifPresent((size -> this.getFile().set(MAX_SIZE, size)));
+        this.getFile().set(MIN_SIZE, this.getDefaultMinSize());
         this.getFile().save();
     }
 }

@@ -39,6 +39,9 @@ import java.util.stream.Collectors;
 
 public class ShipsFileLoader implements ShipsLoader {
 
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SIZE_MAX = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SIZE_MIN = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Count", "Min");
+
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SPEED_MAX = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SPEED_ALTITUDE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Altitude");
     public static final ConfigurationNode.KnownParser.SingleKnown<CrewPermission> META_DEFAULT_PERMISSION = new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_CREW_PERMISSION, "Meta", "Permission", "Default");
@@ -144,6 +147,8 @@ public class ShipsFileLoader implements ShipsLoader {
         file.set(META_LOCATION_X, vessel.getPosition().getX());
         file.set(META_LOCATION_Y, vessel.getPosition().getY());
         file.set(META_LOCATION_Z, vessel.getPosition().getZ());
+        vessel.getMaxSize().ifPresent((size) -> file.set(SIZE_MAX, size));
+        file.set(SIZE_MIN, vessel.getMinSize());
         vessel.getTeleportPositions().forEach((key, value) -> {
             file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "X"), (vessel.getPosition().getX() - value.getX()));
             file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "Y"), (vessel.getPosition().getY() - value.getY()));
@@ -205,6 +210,9 @@ public class ShipsFileLoader implements ShipsLoader {
 
         file.getInteger(SPEED_ALTITUDE).ifPresent(ship::setAltitudeSpeed);
         file.getInteger(SPEED_MAX).ifPresent(ship::setMaxSpeed);
+
+        file.getInteger(SIZE_MAX).ifPresent(ship::setMaxSize);
+        file.getInteger(SIZE_MIN).ifPresent(ship::setMinSize);
 
         Optional<Double> opTelX = file.getDouble(META_LOCATION_TELEPORT_X);
         Optional<Double> opTelY = file.getDouble(META_LOCATION_TELEPORT_Y);

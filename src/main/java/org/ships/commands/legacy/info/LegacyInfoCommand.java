@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+@Deprecated
 public class LegacyInfoCommand implements LegacyArgumentCommand {
     @Override
     public String getName() {

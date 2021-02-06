@@ -18,6 +18,7 @@ import org.ships.plugin.ShipsPlugin;
 import java.io.IOException;
 import java.util.*;
 
+@Deprecated
 public class LegacyConfigCommand implements LegacyArgumentCommand {
     @Override
     public String getName() {

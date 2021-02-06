@@ -15,6 +15,7 @@ import org.ships.plugin.ShipsPlugin;
 import java.util.*;
 import java.util.stream.Stream;
 
+@Deprecated
 public class LegacyBlockListCommand implements LegacyArgumentCommand {
 
     @Override
@@ -32,6 +33,7 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
         if(!(source instanceof CommandViewer)){
             return false;
         }
+        CommandViewer viewer = (CommandViewer)source;
         List<BlockType> list = new ArrayList<>();
         if(args.length == 1) {
             list.addAll(CorePlugin.getPlatform().getBlockTypes());
@@ -43,73 +45,51 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
             if(args.length >= 3){
                 if (args[2].equalsIgnoreCase("blocklimit") || args[2].equalsIgnoreCase("bl")){
                     if (args.length < 5) {
-                        if (source instanceof CommandViewer){
-                            ((CommandViewer) source).sendMessagePlain("/ships blocklist set blocklimit <amount> <blocks>");
-                        }
+                            viewer.sendMessagePlain("/ships blocklist set blocklimit <amount> <blocks>");
                         return false;
                     }
                     try{
                         int limit = Integer.parseInt(args[3]);
                         if (limit < -1){
-                            if (source instanceof CommandViewer){
-                                ((CommandViewer) source).sendMessagePlain("Number must be greater then -1");
-                            }
+                            viewer.sendMessagePlain("Number must be greater then -1");
                             return false;
                         }
                         Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
                         for(int A = 3; A < args.length; A++){
                             int B = A;
                             Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().startsWith(args[B]) || b.getId().split(":", 2)[1].startsWith(args[B])).findAny();
-                            if(opType.isPresent()){
-                                list.add(opType.get());
-                            }
+                            opType.ifPresent(list::add);
                         }
                         DefaultBlockList dbl = ShipsPlugin.getPlugin().getBlockList();
-                        list.stream().forEach(b -> {
-                            dbl.replaceBlockInstruction(dbl.getBlockInstruction(b).setBlockLimit(limit));
-                        });
+                        list.forEach(b -> dbl.replaceBlockInstruction(dbl.getBlockInstruction(b).setBlockLimit(limit)));
                         dbl.saveChanges();
-                        if(source instanceof CommandViewer){
-                            ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
-                        }
+                        viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
                         return true;
                     }catch (NumberFormatException e){
-                        if (source instanceof CommandViewer){
-                            ((CommandViewer)source).sendMessagePlain("Unknown number of " + args[3]);
-                        }
+                        viewer.sendMessagePlain("Unknown number of " + args[3]);
                         return false;
                     }
                 }
                 if(args[2].equalsIgnoreCase("collidetype") || args[2].equalsIgnoreCase("ct")) {
                     if (args.length < 5) {
-                        if (source instanceof CommandViewer) {
-                            ((CommandViewer) source).sendMessagePlain("/ships blocklist set collidetype <collidetype> <blocks>");
-                        }
+                        viewer.sendMessagePlain("/ships blocklist set collidetype <collidetype> <blocks>");
                         return false;
                     }
                     BlockInstruction.CollideType type = Stream.of(BlockInstruction.CollideType.values()).filter(b -> b.name().equalsIgnoreCase(args[3])).findAny().orElse(null);
                     if(type == null){
-                        if(source instanceof CommandViewer){
-                            ((CommandViewer)source).sendMessagePlain("Unknown collide type of " + args[3]);
-                        }
+                        viewer.sendMessagePlain("Unknown collide type of " + args[3]);
                         return false;
                     }
                     Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
                     for(int A = 3; A < args.length; A++){
                         int B = A;
-                        Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().startsWith(args[B]) || b.getId().split(":", 2)[1].startsWith(args[B])).findAny();
-                        if(opType.isPresent()){
-                            list.add(opType.get());
-                        }
+                        Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().equalsIgnoreCase(args[B]) || b.getId().split(":", 2)[1].equalsIgnoreCase(args[B])).findAny();
+                        opType.ifPresent(list::add);
                     }
                     DefaultBlockList dbl = ShipsPlugin.getPlugin().getBlockList();
-                    list.stream().forEach(b -> {
-                        dbl.replaceBlockInstruction(dbl.getBlockInstruction(b).setCollideType(type));
-                    });
+                    list.forEach(b -> dbl.replaceBlockInstruction(dbl.getBlockInstruction(b).setCollideType(type)));
                     dbl.saveChanges();
-                    if(source instanceof CommandViewer){
-                        ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
-                    }
+                    viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
                     return true;
                 }
             }
@@ -147,7 +127,6 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
                         break;
                 }
             });
-            CommandViewer viewer = (CommandViewer) source;
             viewer.sendMessage(CorePlugin.buildText(TextColours.RED + "|----{Blocks}----|"));
             viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Material: " + TextColours.AQUA + material.size()));
             viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Ignore: " + TextColours.AQUA + ignore.size()));

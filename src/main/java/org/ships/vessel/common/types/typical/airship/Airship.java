@@ -29,6 +29,7 @@ import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
+import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.*;
@@ -121,6 +122,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
 
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.meetsRequirements(context);
         if (!context.isStrictMovement()) {
             return;
         }
@@ -169,6 +171,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
 
     @Override
     public void processRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.processRequirements(context);
         if (!context.isStrictMovement()) {
             return;
         }
