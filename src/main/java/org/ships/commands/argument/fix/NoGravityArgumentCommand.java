@@ -16,7 +16,7 @@ import java.util.List;
 public class NoGravityArgumentCommand implements ArgumentCommand {
 
     private static final String SHIP_FIX_ARGUMENT = "fix";
-    private static final String SHIP_NO_GRAVITY = "no gravity";
+    private static final String SHIP_NO_GRAVITY = "noGravity";
 
     @Override
     public List<CommandArgument<?>> getArguments() {

@@ -105,6 +105,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
 
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.meetsRequirements(context);
         if (!context.isStrictMovement()) {
             return;
         }
@@ -138,6 +139,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
 
     @Override
     public void processRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.processRequirements(context);
         if (!context.isStrictMovement()) {
             return;
         }

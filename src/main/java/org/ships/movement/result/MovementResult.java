@@ -17,6 +17,8 @@ import java.util.*;
 public interface MovementResult<E> {
 
     NoSpeedSet NO_SPEED_SET = new NoSpeedSet();
+    OverSized OVER_SIZED = new OverSized();
+    UnderSized UNDER_SIZED = new UnderSized();
     VesselMovingAlready VESSEL_MOVING_ALREADY = new VesselMovingAlready();
     VesselStillLoading VESSEL_STILL_LOADING = new VesselStillLoading();
     NoMovingToFound NO_MOVING_TO_FOUND = new NoMovingToFound();
@@ -32,6 +34,22 @@ public interface MovementResult<E> {
     Unknown UNKNOWN = new Unknown();
 
     void sendMessage(Vessel vessel, CommandViewer viewer, E value);
+
+    class OverSized implements MovementResult<Integer> {
+
+        @Override
+        public void sendMessage(Vessel vessel, CommandViewer viewer, Integer value) {
+            viewer.sendMessagePlain("Your vessel is over the max size by " + value + " blocks");
+        }
+    }
+
+    class UnderSized implements MovementResult<Integer> {
+
+        @Override
+        public void sendMessage(Vessel vessel, CommandViewer viewer, Integer value) {
+            viewer.sendMessagePlain("Your vessel is under the max size by " + value + " blocks");
+        }
+    }
 
     class TooManyOfBlock implements MovementResult<BlockType> {
 

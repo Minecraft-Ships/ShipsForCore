@@ -24,6 +24,7 @@ public class MessageConfig implements Config.KnownNodes {
     private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPECIAL_BLOCK_FOUND = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "NoSpecialBlockFound");
     private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPECIAL_NAMED_BLOCK_FOUND = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "NoSpecialNamedBlockFound");
     private static final ConfigurationNode.KnownParser.SingleKnown<String> NOT_IN_MOVING_IN = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "NotInMovingIn");
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> SYNCED_SHIP = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "SyncedShip");
 
     public MessageConfig(){
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
@@ -32,6 +33,10 @@ public class MessageConfig implements Config.KnownNodes {
         if (!this.file.getString(TOO_MANY).isPresent()){
             modifications = true;
             recreateFile();
+        }
+        if(!this.file.getString(SYNCED_SHIP).isPresent()){
+            modifications = true;
+            this.file.set(SYNCED_SHIP, StringParser.STRING_TO_STRING_PARSER, "Ship has resynced");
         }
         if (modifications){
             this.file.save();
@@ -65,6 +70,10 @@ public class MessageConfig implements Config.KnownNodes {
 
     public String getNotInMovingIn() {
         return this.file.getString(NOT_IN_MOVING_IN, "Must be moving into one of the following blocks: %Block Names%");
+    }
+
+    public String getSyncedShip(){
+        return this.file.getString(SYNCED_SHIP, "Ship has resynced");
     }
 
     public String getTooManyBlocks(){
@@ -112,6 +121,7 @@ public class MessageConfig implements Config.KnownNodes {
         set.add(new ObjectDedicatedNode<>(NO_SPECIAL_BLOCK_FOUND, "Error.NoSpecialBlock"));
         set.add(new ObjectDedicatedNode<>(NO_SPECIAL_NAMED_BLOCK_FOUND, "Error.NoSpecialNamedBlock"));
         set.add(new ObjectDedicatedNode<>(NOT_IN_MOVING_IN, "Error.NotMovingInto"));
+        set.add(new ObjectDedicatedNode<>(SYNCED_SHIP, "Error.SyncedShip"));
         return set;
     }
 }

@@ -33,6 +33,8 @@ public interface ShipType<T extends Vessel> extends Identifable {
     ExpandedBlockList getDefaultBlockList();
     int getDefaultMaxSpeed();
     int getDefaultAltitudeSpeed();
+    Optional<Integer> getDefaultMaxSize();
+    int getDefaultMinSize();
     ConfigurationStream.ConfigurationFile getFile();
     T createNewVessel(SignTileEntity ste, SyncBlockPosition bPos);
     BlockType[] getIgnoredTypes();

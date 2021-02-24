@@ -35,6 +35,8 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected ShipType<? extends AbstractShipsVessel> type;
     protected int maxSpeed = 10;
     protected int altitudeSpeed = 2;
+    protected Integer maxSize;
+    protected Integer minSize;
     protected boolean isLoading = true;
 
     public AbstractShipsVessel(LiveSignTileEntity licence, ShipType<? extends AbstractShipsVessel> type){
@@ -166,6 +168,28 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     @Override
     public Vessel setAltitudeSpeed(int speed) {
         this.altitudeSpeed = speed;
+        return this;
+    }
+
+    @Override
+    public Optional<Integer> getMaxSize() {
+        return (this.maxSize == null) ? this.getType().getDefaultMaxSize() : Optional.of(this.maxSize);
+    }
+
+    @Override
+    public int getMinSize() {
+        return (this.minSize == null) ? this.getType().getDefaultMinSize() : this.minSize;
+    }
+
+    @Override
+    public Vessel setMaxSize(Integer size) {
+        this.maxSize = size;
+        return this;
+    }
+
+    @Override
+    public Vessel setMinSize(Integer size) {
+        this.minSize = size;
         return this;
     }
 

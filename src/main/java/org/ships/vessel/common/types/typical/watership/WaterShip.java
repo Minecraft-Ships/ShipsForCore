@@ -18,6 +18,7 @@ import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.Fallable;
+import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.types.ShipType;
@@ -65,6 +66,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
 
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
+        VesselRequirement.super.meetsRequirements(context);
         if(!context.isStrictMovement()){
             return;
         }
@@ -86,8 +88,8 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
-    public void processRequirements(MovementContext context) {
-
+    public void processRequirements(MovementContext context) throws MoveException{
+        VesselRequirement.super.processRequirements(context);
     }
 
     @Override

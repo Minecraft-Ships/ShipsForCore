@@ -5,8 +5,11 @@ import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.Bounds;
 import org.core.vector.type.Vector2;
 import org.core.vector.type.Vector3;
+import org.core.world.ChunkExtent;
+import org.core.world.Extent;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.Positionable;
@@ -41,6 +44,12 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     int getMaxSpeed();
     int getAltitudeSpeed();
+
+    Optional<Integer> getMaxSize();
+    int getMinSize();
+
+    Vessel setMaxSize(Integer size);
+    Vessel setMinSize(Integer size);
 
     Vessel setMaxSpeed(int speed);
     Vessel setAltitudeSpeed(int speed);
@@ -78,7 +87,16 @@ public interface Vessel extends Positionable<BlockPosition> {
     }
 
     default Collection<LiveEntity> getEntities(Predicate<LiveEntity> check){
-        Collection<LiveEntity> entities = getPosition().getWorld().getEntities();
+        Bounds<Integer> bounds = this.getStructure().getBounds();
+        Set<LiveEntity> entities = new HashSet<>();
+        this.getStructure().getChunks().stream().map(Extent::getEntities).forEach(entities::addAll);
+        entities = entities.stream().filter(e -> {
+            Optional<SyncBlockPosition> opTo = e.getAttachedTo();
+            if(!opTo.isPresent()){
+                return false;
+            }
+            return bounds.contains(opTo.get().getPosition());
+        }).collect(Collectors.toSet());
         Collection<SyncBlockPosition> blocks = getStructure().getPositions();
         return entities.stream()
                 .filter(check)
@@ -91,9 +109,13 @@ public interface Vessel extends Positionable<BlockPosition> {
     }
 
     default void getEntitiesOvertime(int limit, Predicate<LiveEntity> predicate, Consumer<LiveEntity> single, Consumer<Collection<LiveEntity>> output){
+        System.out.println("Getting entities overtime");
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<LiveEntity> entities = new HashSet<>();
-        List<LiveEntity> entities2 = new ArrayList<>(getPosition().getWorld().getEntities());
+        List<LiveEntity> entities2 = new ArrayList<>();
+        Set<ChunkExtent> chunks = this.getStructure().getChunks();
+        chunks.forEach(c -> entities2.addAll(c.getEntities()));
+
         Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {}).build(ShipsPlugin.getPlugin());
         double fin = entities2.size() / (double)limit;
         if(fin != ((int)fin)){
@@ -104,6 +126,7 @@ public interface Vessel extends Positionable<BlockPosition> {
             return;
         }
         Collection<SyncBlockPosition> pss = getStructure().getPositions();
+        System.out.println("Sorting schedule. Structure: " + pss.size() + "| Chunks: " + chunks.size() + "| EntityCount: " + entities2.size());
         for(int A = 0; A < fin; A++){
             final int B = A;
             sched = CorePlugin.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {

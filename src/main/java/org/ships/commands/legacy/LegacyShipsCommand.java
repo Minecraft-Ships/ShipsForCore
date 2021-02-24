@@ -9,6 +9,7 @@ import org.core.text.TextColours;
 import org.ships.commands.legacy.blockinfo.LegacyBlockInfoCommand;
 import org.ships.commands.legacy.blocklist.LegacyBlockListCommand;
 import org.ships.commands.legacy.config.LegacyConfigCommand;
+import org.ships.commands.legacy.fix.FixLegacyCommand;
 import org.ships.commands.legacy.help.LegacyHelpCommand;
 import org.ships.commands.legacy.info.LegacyInfoCommand;
 import org.ships.commands.legacy.ship.LegacyShipCommand;
@@ -20,9 +21,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 public class LegacyShipsCommand implements CommandLauncher {
 
-    public static final List<LegacyArgumentCommand> ARGUMENTS = Arrays.asList(new LegacyConfigCommand(), new LegacyShipCommand(), new LegacyShipTypeCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand());
+    public static final List<LegacyArgumentCommand> ARGUMENTS = Arrays.asList(new FixLegacyCommand(), new LegacyConfigCommand(), new LegacyShipCommand(), new LegacyShipTypeCommand(), new LegacyInfoCommand(), new LegacyBlockListCommand(), new LegacyBlockInfoCommand());
 
     public List<LegacyArgumentCommand> getArguments(){
         return ARGUMENTS;

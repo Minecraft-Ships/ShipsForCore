@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class LegacyShipCommand implements LegacyArgumentCommand {
 
     @Override

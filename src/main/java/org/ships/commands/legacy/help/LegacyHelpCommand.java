@@ -1,6 +1,5 @@
 package org.ships.commands.legacy.help;
 
-import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
@@ -11,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 public class LegacyHelpCommand implements LegacyArgumentCommand {
     @Override
     public String getName() {
