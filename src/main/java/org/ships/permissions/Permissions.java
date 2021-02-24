@@ -21,6 +21,7 @@ public interface Permissions {
     Permission CMD_SHIP_TRACK = CorePlugin.getPlatform().register("ships.cmd.ship.track");
     Permission CMD_SHIP_EOT = CorePlugin.getPlatform().register("ships.cmd.ship.eot");
     Permission CMD_SHIP_CREW = CorePlugin.getPlatform().register("ships.cmd.ship.crew");
+    Permission CMD_SHIP_MOVETO = CorePlugin.getPlatform().register("ships.cmd.ship.moveto");
     Permission CMD_SHIP_TELEPORT = CorePlugin.getPlatform().register("ships.cmd.ship.teleport");
     Permission CMD_SHIP_TELEPORT_SET = CorePlugin.getPlatform().register("ships.cmd.ship.teleport.set");
 

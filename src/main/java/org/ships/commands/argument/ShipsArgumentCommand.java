@@ -17,6 +17,7 @@ import org.ships.commands.argument.ship.blocklist.set.ShipsBlockListSetBlockLimi
 import org.ships.commands.argument.ship.blocklist.set.ShipsBlockListSetCollideTypeArgumentCommand;
 import org.ships.commands.argument.ship.eot.ShipsShipEOTEnableArgumentCommand;
 import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
+import org.ships.commands.argument.ship.moveto.ShipsShipMovetoArgumentCommand;
 import org.ships.commands.argument.ship.teleport.ShipsShipTeleportSetArgument;
 import org.ships.commands.argument.ship.teleport.ShipsShipTeleportToArgument;
 import org.ships.commands.argument.ship.track.ShipsShipTrackArgumentCommand;
@@ -48,6 +49,7 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new ShipsShipInfoArgumentCommand());
         COMMANDS.add(new ShipsShipTrackArgumentCommand());
         COMMANDS.add(new ShipsShipTeleportToArgument());
+        COMMANDS.add(new ShipsShipMovetoArgumentCommand());
         COMMANDS.add(new ShipsShipTeleportSetArgument());
         COMMANDS.add(new ShipsShipUnlockArgumentCommand());
         COMMANDS.add(new ShipsShipEOTEnableArgumentCommand());

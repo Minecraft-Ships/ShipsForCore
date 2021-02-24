@@ -1,6 +1,5 @@
 package org.ships.vessel.common.types;
 
-import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
@@ -20,7 +19,6 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.movement.MovementContext;
-import org.ships.movement.MovingBlock;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -161,6 +159,32 @@ public interface Vessel extends Positionable<BlockPosition> {
             }).setToRunAfter(sched).build(ShipsPlugin.getPlugin());
         }
         sched.run();
+    }
+
+    default Integer[] getVesselArea(){
+        Collection<SyncBlockPosition> blocks = this.getStructure().getPositions();
+        Integer minX = null, minZ = null, maxX = null, maxZ = null;
+        for (SyncBlockPosition block : blocks) {
+            Integer posX = block.getX();
+            Integer posZ = block.getZ();
+            if (minX == null){
+                minX = maxX = posX;
+                minZ = maxZ = posZ;
+            } else {
+                if (posX < minX)
+                    minX = posX;
+
+                if (posZ < minZ)
+                    minZ = posZ;
+
+                if (posX > maxX)
+                    minX = posX;
+
+                if (posZ > maxZ)
+                    minZ = posZ;
+            }
+        }
+        return new Integer[]{minX, minZ, maxX, maxZ};
     }
 
     default void rotateAnticlockwiseAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
