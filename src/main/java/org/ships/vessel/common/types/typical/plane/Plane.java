@@ -90,7 +90,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configFuelConsumption, this.getFuelConsumption());
-        map.put(this.configFuelSlot, this.fuelSlot);
+        map.put(this.configFuelSlot, this.getFuelSlot());
         map.put(this.configFuelTypes, this.getFuelTypes());
         return map;
     }
