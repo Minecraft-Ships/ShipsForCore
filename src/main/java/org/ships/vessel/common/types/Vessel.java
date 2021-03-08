@@ -1,6 +1,5 @@
 package org.ships.vessel.common.types;
 
-import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
