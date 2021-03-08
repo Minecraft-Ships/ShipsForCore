@@ -1,6 +1,7 @@
 package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
+import org.core.entity.EntitySnapshot;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
@@ -244,11 +245,18 @@ public class AltitudeSign implements ShipsSign {
 
         Consumer<Throwable> exception = (exc) -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+            context
+                    .getEntities()
+                    .keySet()
+                    .stream()
+                    .filter(e -> e instanceof EntitySnapshot.NoneDestructibleSnapshot)
+                    .map(e -> (EntitySnapshot.NoneDestructibleSnapshot<?>)e)
+                    .forEach(e -> e.setGravity(true));
             if(!(exc instanceof MoveException)){
                 return;
             }
             MoveException e = (MoveException)exc;
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             FailedMovement<?> movement = e.getMovement();
             sendErrorMessage(player, movement, movement.getValue().orElse(null));
         };

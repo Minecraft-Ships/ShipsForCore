@@ -7,7 +7,10 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
 import org.ships.commands.argument.blockinfo.ShipsBlockInfoArgumentCommand;
+import org.ships.commands.argument.config.AbstractShipsConfigSetArgument;
 import org.ships.commands.argument.config.AbstractShipsConfigViewArgument;
+import org.ships.commands.argument.config.shiptype.ShipTypeSetSingleConfigArgument;
+import org.ships.commands.argument.config.shiptype.ShipTypeViewSingleConfigArgument;
 import org.ships.commands.argument.fix.NoGravityArgumentCommand;
 import org.ships.commands.argument.help.ShipsHelpArgumentCommand;
 import org.ships.commands.argument.info.ShipsInfoArgumentCommand;
@@ -44,6 +47,10 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
 
         COMMANDS.add(new AbstractShipsConfigViewArgument(ShipsPlugin.getPlugin().getConfig(), "config", "configuration"));
         COMMANDS.add(new AbstractShipsConfigViewArgument(ShipsPlugin.getPlugin().getMessageConfig(), "messages"));
+        COMMANDS.add(new AbstractShipsConfigSetArgument(ShipsPlugin.getPlugin().getConfig(), "config", "configuration"));
+        COMMANDS.add(new AbstractShipsConfigSetArgument(ShipsPlugin.getPlugin().getMessageConfig(), "messages"));
+        COMMANDS.add(new ShipTypeViewSingleConfigArgument());
+        COMMANDS.add(new ShipTypeSetSingleConfigArgument());
 
         COMMANDS.add(new ShipsShipInfoArgumentCommand());
         COMMANDS.add(new ShipsShipTrackArgumentCommand());

@@ -24,8 +24,6 @@ public class FixLegacyCommand implements LegacyArgumentCommand {
 
     @Override
     public boolean run(CommandSource source, String... args) {
-        System.out.println(ArrayUtils.toString(", ", t -> t, args));
-
         if(args[1].equalsIgnoreCase("noGravity")){
             if(!(source instanceof LivePlayer)){
                 return false;
@@ -42,7 +40,6 @@ public class FixLegacyCommand implements LegacyArgumentCommand {
 
     @Override
     public List<String> tab(CommandSource source, String... args) {
-        System.out.println(ArrayUtils.toString(", ", t -> t, args));
         if(args.length == 2 && args[1].equals("")){
             return Collections.singletonList("nogravity");
         }

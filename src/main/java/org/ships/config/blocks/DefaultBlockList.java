@@ -133,6 +133,8 @@ public class DefaultBlockList implements BlockList {
         addToConfig(BlockTypes.OBSERVER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.REDSTONE_WIRE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes.CAULDRON.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.CAVE_AIR.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes.TALL_GRASS.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
 
         addToConfig(BlockTypes.REDSTONE_WIRE.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
 

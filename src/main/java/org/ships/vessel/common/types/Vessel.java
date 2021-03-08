@@ -109,7 +109,6 @@ public interface Vessel extends Positionable<BlockPosition> {
     }
 
     default void getEntitiesOvertime(int limit, Predicate<LiveEntity> predicate, Consumer<LiveEntity> single, Consumer<Collection<LiveEntity>> output){
-        System.out.println("Getting entities overtime");
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>();
@@ -126,7 +125,6 @@ public interface Vessel extends Positionable<BlockPosition> {
             return;
         }
         Collection<SyncBlockPosition> pss = getStructure().getPositions();
-        System.out.println("Sorting schedule. Structure: " + pss.size() + "| Chunks: " + chunks.size() + "| EntityCount: " + entities2.size());
         for(int A = 0; A < fin; A++){
             final int B = A;
             sched = CorePlugin.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {

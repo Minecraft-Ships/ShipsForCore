@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class EOTSign implements ShipsSign {
 
-    private Set<Scheduler> eot_scheduler = new HashSet<>();
+    private final Set<Scheduler> eot_scheduler = new HashSet<>();
 
     public Collection<Scheduler> getScheduler(Vessel vessel){
         return Collections.unmodifiableCollection(this.eot_scheduler.stream().filter(e -> {
@@ -30,8 +30,7 @@ public class EOTSign implements ShipsSign {
                 return false;
             }
             EOTExecutor exe = (EOTExecutor)runnable;
-            exe.getVessel().equals(vessel);
-            return true;
+            return exe.getVessel().equals(vessel);
         }).collect(Collectors.toSet()));
     }
 

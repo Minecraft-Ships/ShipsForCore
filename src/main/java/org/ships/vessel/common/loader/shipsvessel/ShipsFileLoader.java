@@ -268,22 +268,31 @@ public class ShipsFileLoader implements ShipsLoader {
     public static Set<ShipsVessel> loadAll(Consumer<LoadVesselException> function) {
         Set<ShipsVessel> set = new HashSet<>();
         ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {
-            File vesselDataFolder = getVesselDataFolder();
-            File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
-            File[] files = typeFolder.listFiles();
-            if (files == null) {
-                return;
-            }
-            for (File file : files) {
-                try {
-                    ShipsVessel vessel = new ShipsFileLoader(file).load();
-                    if (vessel == null) {
-                        continue;
-                    }
-                    set.add(vessel);
-                } catch (LoadVesselException e) {
-                    function.accept(e);
+            try {
+                File vesselDataFolder = getVesselDataFolder();
+                File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
+                File[] files = typeFolder.listFiles();
+                if (files == null) {
+                    return;
                 }
+                for (File file : files) {
+                    try {
+                        ShipsVessel vessel = new ShipsFileLoader(file).load();
+                        if (vessel == null) {
+                            continue;
+                        }
+                        set.add(vessel);
+                    } catch (LoadVesselException e) {
+                        System.err.println("Failed to load " + file.getAbsolutePath() + ":");
+                        function.accept(e);
+                    } catch (Throwable e) {
+                        System.err.println("Failed to load " + file.getAbsolutePath() + ":");
+                        e.printStackTrace();
+                    }
+                }
+            }catch (Throwable e){
+                System.err.println("Could not load any ships of " + st.getId());
+                e.printStackTrace();
             }
         });
         return set;

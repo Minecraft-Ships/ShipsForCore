@@ -7,7 +7,7 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.algorthum.blockfinder.typeFinder.BasicTypeBlockFinder;
+import org.ships.algorthum.blockfinder.exact.ExactBlockFinder;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
@@ -219,8 +219,8 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public BasicTypeBlockFinder getTypeFinder() {
-        return BasicTypeBlockFinder.SHIPS_SIX;
+    public ExactBlockFinder getTypeFinder() {
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override

@@ -80,14 +80,13 @@ public class MoveSign implements ShipsSign {
         }
         final int finalSpeed = speed;
         ShipsSign.LOCKED_SIGNS.add(position);
-        if(ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating()) {
+        if (ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating()) {
             LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
                     onSignSpeedUpdate(vessel, lste, finalSpeed);
                     ShipsSign.LOCKED_SIGNS.remove(position);
-                    
                 }
 
                 @Override
@@ -108,12 +107,12 @@ public class MoveSign implements ShipsSign {
                     }
                 }
             }.loadOvertime();
-        }else{
+        } else {
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
                 onSignSpeedUpdate(vessel, lste, finalSpeed);
                 ShipsSign.LOCKED_SIGNS.remove(position);
-            }catch (UnableToFindLicenceSign e1){
+            } catch (UnableToFindLicenceSign e1) {
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
@@ -146,14 +145,14 @@ public class MoveSign implements ShipsSign {
         int speed = Integer.parseInt(name);
         MovementContext context = new MovementContext();
         context.setPostMovement(e -> ShipsSign.LOCKED_SIGNS.remove(position));
-        if(config.isBossBarVisible()) {
+        if (config.isBossBarVisible()) {
             ServerBossBar bar = CorePlugin.createBossBar();
             bar.register(player);
             bar.setMessage(CorePlugin.buildText("0 / " + trackLimit));
             context.setBar(bar);
         }
         ShipsSign.LOCKED_SIGNS.add(position);
-        if(config.isStructureAutoUpdating()) {
+        if (config.isStructureAutoUpdating()) {
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
@@ -167,7 +166,7 @@ public class MoveSign implements ShipsSign {
                         bar.setMessage(CorePlugin.buildText(foundBlocks + " / " + trackLimit));
                         try {
                             bar.setValue(foundBlocks, trackLimit);
-                        }catch (IllegalArgumentException ignore){
+                        } catch (IllegalArgumentException ignore) {
 
                         }
                     });
@@ -188,11 +187,11 @@ public class MoveSign implements ShipsSign {
                     }
                 }
             }.loadOvertime();
-        }else{
+        } else {
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
                 onVesselMove(player, position, speed, context, vessel);
-            }catch (UnableToFindLicenceSign e1){
+            } catch (UnableToFindLicenceSign e1) {
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
@@ -217,15 +216,18 @@ public class MoveSign implements ShipsSign {
         return "Move sign";
     }
 
-    private void onSignSpeedUpdate(Vessel ship, LiveSignTileEntity lste, int finalSpeed){
+    private void onSignSpeedUpdate(Vessel ship, LiveSignTileEntity lste, int finalSpeed) {
         int max = ship.getMaxSpeed();
-        if (finalSpeed > max || finalSpeed < -max) {
-            return;
+        if(finalSpeed > max){
+            lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
+        }else if (finalSpeed < -max) {
+            lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
+        }else {
+            lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
         }
-        lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
     }
 
-    private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel){
+    private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel) {
         Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
         if (!opDirectional.isPresent()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
@@ -249,17 +251,18 @@ public class MoveSign implements ShipsSign {
         vessel.moveTowards(direction, context, exc -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-            if(exc instanceof MoveException){
-                MoveException e = (MoveException)exc;
+            if (exc instanceof MoveException) {
+                MoveException e = (MoveException) exc;
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
-            }else{
-                context.getEntities().keySet().forEach(s -> {
-                    if (s instanceof EntitySnapshot.NoneDestructibleSnapshot){
-                        ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
-                    }
-                });
+            } else {
                 exc.printStackTrace();
             }
+            context.getEntities().keySet().forEach(s -> {
+                if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
+                    ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
+                }
+            });
+
         });
     }
 

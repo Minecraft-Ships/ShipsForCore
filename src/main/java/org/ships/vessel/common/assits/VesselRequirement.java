@@ -17,11 +17,9 @@ public interface VesselRequirement extends Vessel {
     default void processRequirements(MovementContext context) throws MoveException{
         int size = this.getStructure().getOriginalRelativePositions().size() + 1;
         if(this.getMaxSize().isPresent() && (this.getMaxSize().get() < size)){
-            System.out.println("Size: " + size + " Max: " + this.getMaxSize().get());
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.OVER_SIZED, (size - this.getMaxSize().get())));
         }
         if(this.getMinSize() > size){
-            System.out.println("Size: " + size + " Min: " + this.getMinSize());
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.UNDER_SIZED, (this.getMinSize() - size)));
         }
     }

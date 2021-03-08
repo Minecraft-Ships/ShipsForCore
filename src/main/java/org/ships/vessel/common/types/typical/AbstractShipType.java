@@ -43,7 +43,6 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
 
     public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
 
-
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");

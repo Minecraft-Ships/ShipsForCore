@@ -9,10 +9,10 @@ import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
+import org.ships.commands.argument.arguments.config.ConfigKeyArgument;
 import org.ships.config.Config;
 import org.ships.config.node.DedicatedNode;
 import org.ships.permissions.Permissions;
-import org.ships.plugin.ShipsPlugin;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +21,6 @@ import java.util.Optional;
 public class AbstractShipsConfigViewArgument implements ArgumentCommand {
 
     private static final String COMMAND_NAME = "cmd_name_config";
-    private static final String VIEW = "view";
     private static final String CONFIG_TYPE = "config_type";
     private static final String CONFIG_KEY = "config_key";
 

@@ -161,13 +161,13 @@ public class WheelSign implements ShipsSign {
             if (exc instanceof MoveException) {
                 MoveException e = (MoveException) exc;
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
-            } else {
-                context.getEntities().keySet().forEach(s -> {
-                    if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
-                        ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
-                    }
-                });
             }
+            context.getEntities().keySet().forEach(s -> {
+                if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
+                    ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
+                }
+            });
+
         };
         if (left) {
             vessel.rotateLeftAround(vessel.getPosition(), context, exception);
