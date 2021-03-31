@@ -85,7 +85,7 @@ public class MoveSign implements ShipsSign {
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
-                    onSignSpeedUpdate(vessel, lste, finalSpeed);
+                    onSignSpeedUpdate(player, vessel, lste, finalSpeed);
                     ShipsSign.LOCKED_SIGNS.remove(position);
                 }
 
@@ -110,7 +110,7 @@ public class MoveSign implements ShipsSign {
         } else {
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
-                onSignSpeedUpdate(vessel, lste, finalSpeed);
+                onSignSpeedUpdate(player, vessel, lste, finalSpeed);
                 ShipsSign.LOCKED_SIGNS.remove(position);
             } catch (UnableToFindLicenceSign e1) {
                 ShipsSign.LOCKED_SIGNS.remove(position);
@@ -216,18 +216,33 @@ public class MoveSign implements ShipsSign {
         return "Move sign";
     }
 
-    private void onSignSpeedUpdate(Vessel ship, LiveSignTileEntity lste, int finalSpeed) {
+    private void onSignSpeedUpdate(LivePlayer player, Vessel ship, LiveSignTileEntity lste, int finalSpeed) {
+        int originalSpeed = 2;
+        Optional<Text> opSpeed = lste.getLine(3);
+        if(opSpeed.isPresent()) {
+            try {
+                originalSpeed = Integer.parseInt(opSpeed.get().toPlain());
+            }catch (NumberFormatException ignored){
+
+            }
+        }
         int max = ship.getMaxSpeed();
-        if(finalSpeed > max){
-            lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
-        }else if (finalSpeed < -max) {
-            lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
+        if(finalSpeed > max && originalSpeed < finalSpeed){
+            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Speed error: Your speed cannot go higher"));
+        }else if (finalSpeed < -max && originalSpeed > finalSpeed) {
+            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Speed error: Your speed cannot go lower"));
         }else {
             lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
         }
     }
 
     private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel) {
+        if(speed > vessel.getMaxSpeed() || speed < -vessel.getMaxSpeed()){
+            ShipsSign.LOCKED_SIGNS.remove(position);
+            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Speed error: Your ship cannot move that fast"));
+            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+            return;
+        }
         Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
         if (!opDirectional.isPresent()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
