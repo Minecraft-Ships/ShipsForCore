@@ -217,7 +217,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         map.put(this.configSpecialBlockType, this.getSpecialBlocks());
         map.put(this.configSpecialBlockPercent, this.getSpecialBlockPercent());
         map.put(this.configFuelConsumption, this.getFuelConsumption());
-        map.put(this.configFuelSlot, this.getFuelSlot().equals(FuelSlot.TOP));
+        map.put(this.configFuelSlot, this.getFuelSlot());
         map.put(this.configFuelTypes, this.getFuelTypes());
         return map;
     }

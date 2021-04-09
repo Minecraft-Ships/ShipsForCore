@@ -1,16 +1,21 @@
 package org.ships.event.listener;
 
+import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.entity.living.human.player.Player;
 import org.core.entity.scene.droppeditem.DroppedItem;
 import org.core.event.EventListener;
+import org.core.event.EventPriority;
 import org.core.event.HEvent;
 import org.core.event.events.block.BlockChangeEvent;
 import org.core.event.events.block.tileentity.SignChangeEvent;
 import org.core.event.events.connection.ClientConnectionEvent;
+import org.core.event.events.entity.EntityCommandEvent;
 import org.core.event.events.entity.EntityInteractEvent;
 import org.core.event.events.entity.EntitySpawnEvent;
+import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.vector.type.Vector3;
@@ -22,6 +27,7 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
@@ -54,6 +60,23 @@ import java.nio.file.Files;
 import java.util.*;
 
 public class CoreEventListener implements EventListener {
+
+    @HEvent
+    public void onPlayerCommand(EntityCommandEvent event){
+        Optional<String> opLoginCommand = ShipsPlugin.getPlugin().getConfig().getDefaultLoginCommand();
+        if(!opLoginCommand.isPresent()){
+            return;
+        }
+        if (!ArrayUtils.toString(", ", t -> t, event.getCommand()).toLowerCase().startsWith(opLoginCommand.get().toLowerCase())){
+    return;
+        }
+        CorePlugin
+                .createSchedulerBuilder()
+                .setDelay(2)
+                .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                .setExecutor(() -> onPlayerJoin(event.getEntity()))
+                .build(ShipsPlugin.getPlugin());
+    }
 
     @HEvent
     public void onPlaceEvent(BlockChangeEvent.Place event){
@@ -94,6 +117,10 @@ public class CoreEventListener implements EventListener {
 
     @HEvent
     public void onPlayerJoinEvent(ClientConnectionEvent.Incoming.Joined event) {
+        onPlayerJoin(event.getEntity());
+    }
+
+    public void onPlayerJoin(Player<?> player){
         for (Vessel vessel : ShipsPlugin.getPlugin().getVessels()) {
             if (!(vessel instanceof ShipsVessel)) {
                 continue;
@@ -104,29 +131,28 @@ public class CoreEventListener implements EventListener {
                 continue;
             }
             Map<UUID, Vector3<Double>> map = opFlag.get().getValue().get();
-            Vector3<Double> vector = map.get(event.getEntity().getUniqueId());
+            Vector3<Double> vector = map.get(player.getUniqueId());
             if(vector == null){
                 continue;
             }
             SyncBlockPosition sPos = vessel.getPosition();
             SyncExactPosition position = sPos.toExactPosition().getRelative(vector);
-            if(!position.equals(event.getEntity().getPosition())) {
-                event.getEntity().setPosition(position);
+            if(!position.equals(player.getPosition())) {
+                player.setPosition(position);
             }
             Optional<MovingFlag> opMovingFlag = shipsVessel.get(MovingFlag.class);
-            event.getEntity().setGravity(!opMovingFlag.isPresent() || !opMovingFlag.get().getValue().isPresent());
+            player.setGravity(!opMovingFlag.isPresent() || !opMovingFlag.get().getValue().isPresent());
         }
     }
 
-    @HEvent
-    public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event){
+    public void onPlayerLeave(Player<?> player, ExactPosition position){
         for (Vessel vessel : ShipsPlugin.getPlugin().getVessels()) {
             if(!(vessel instanceof ShipsVessel)){
                 continue;
             }
             ShipsVessel shipsVessel = (ShipsVessel)vessel;
             PlayerStatesFlag flag = shipsVessel.get(PlayerStatesFlag.class).orElse(new PlayerStatesFlag());
-            vessel.getEntitiesOvertime(ShipsPlugin.getPlugin().getConfig().getEntityTrackingLimit(), l -> event.getEntity().equals(l), s -> {}, c -> {
+            vessel.getEntitiesOvertime(ShipsPlugin.getPlugin().getConfig().getEntityTrackingLimit(), player::equals, s -> {}, c -> {
                 Map<UUID, Vector3<Double>> map = flag.getValue().get();
                 for(LiveEntity entity : c) {
                     double x = entity.getPosition().getX() - vessel.getPosition().getX();
@@ -135,13 +161,18 @@ public class CoreEventListener implements EventListener {
                     map.put(((LivePlayer)entity).getUniqueId(), Vector3.valueOf(x, y, z));
                 }
                 if(c.isEmpty()){
-                    map.remove(event.getEntity().getUniqueId());
+                    map.remove(player.getUniqueId());
                 }
                 flag.setValue(map);
                 vessel.set(flag);
                 vessel.save();
             });
         }
+    }
+
+    @HEvent(priority = EventPriority.HIGHEST)
+    public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event){
+onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
     }
 
     @HEvent

@@ -52,7 +52,9 @@ public class ShipsConfig implements Config.KnownNodes {
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_CLICK = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Click"), "Structure.Click.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Movement", "Requirements", "Check", "Max", "BlockType"), "Movement.Requirements.Check.Max.BlockType", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> UPDATE_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Update", "Enabled"), "Update.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final CollectionDedicatedNode<WorldExtent, Set<WorldExtent>, ConfigurationNode.KnownParser.CollectionKnown<WorldExtent, Set<WorldExtent>>> DISABLED_WORLDS = new CollectionDedicatedNode<>(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_WORLD, "World", "Disabled"), "Worlds.Ignore");
+    protected final CollectionDedicatedNode<WorldExtent, Set<WorldExtent>, ConfigurationNode.KnownParser.CollectionKnown<WorldExtent, Set<WorldExtent>>> DISABLED_WORLDS = new CollectionDedicatedNode<>(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_WORLD, "World", "Disabled"), "worlds.ignore");
+    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LOGIN_COMMAND = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Login", "Command"), "login.command");
+
 
     @Deprecated
     public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
@@ -111,6 +113,10 @@ public class ShipsConfig implements Config.KnownNodes {
             modified = true;
             this.file.set(this.UPDATE_ENABLED.getNode(), true);
             this.file.set(this.DISABLED_WORLDS.getNode(), Collections.emptySet());
+        }
+        if (!this.file.getString(this.LOGIN_COMMAND.getNode()).isPresent()) {
+            modified = true;
+            this.file.set(new ConfigurationNode(this.LOGIN_COMMAND.getNode().getPath()), "");
         }
         if(modified){
             this.file.save();
@@ -196,6 +202,14 @@ public class ShipsConfig implements Config.KnownNodes {
 
     public int getDefaultMovementStackDelay(){
         return this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_DELAY.getNode(), 1);
+    }
+
+    public Optional<String> getDefaultLoginCommand(){
+        String command = this.file.getString(this.LOGIN_COMMAND.getNode(), "");
+        if(command.equals("")){
+            return Optional.empty();
+        }
+        return Optional.of(command);
     }
 
     public BasicBlockFinder getDefaultFinder(){
