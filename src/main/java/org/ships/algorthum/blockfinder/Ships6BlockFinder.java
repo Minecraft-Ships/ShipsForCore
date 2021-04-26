@@ -141,7 +141,6 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         return this;
     }
 
-    @Override
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
         int count = 0;
         Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
@@ -230,6 +229,6 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
     @Override
     public String getName() {
-        return "Ships 6 BlockFinder";
+        return "Ships 6 R2 BlockFinder";
     }
 }

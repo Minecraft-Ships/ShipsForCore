@@ -1,9 +1,13 @@
 package org.ships.algorthum.blockfinder;
 
+import org.core.CorePlugin;
+import org.core.schedule.unit.TimeUnit;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
+import org.core.world.position.impl.async.ASyncBlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.blockfinder.exact.Ships5ExactBlockFinder;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
@@ -16,7 +20,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
 
-public class Ships5BlockFinder implements BasicBlockFinder {
+public class Ships5AsyncBlockFinder implements BasicBlockFinder {
 
     private int blockLimit;
     private int blockCount = 0;
@@ -24,13 +28,13 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     private Vessel vessel;
     private BlockList list;
 
-    private void getNextBlock(OvertimeBlockFinderUpdate event, BlockPosition position, Direction... directions){
+    private void getNextBlock(OvertimeBlockFinderUpdate event, ASyncBlockPosition position, Direction... directions){
         if(this.blockLimit != -1 && this.blockCount >= this.blockLimit){
             return;
         }
         this.blockCount++;
         for(Direction direction : directions){
-            BlockPosition block = position.getRelative(direction);
+            ASyncBlockPosition block = position.getRelative(direction);
             BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
             if(bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
                 if(event != null){
@@ -38,14 +42,14 @@ public class Ships5BlockFinder implements BasicBlockFinder {
                         getNextBlock(event, block, directions);
                     }
                 }
-                if (shipsStructure.addPosition(block)){
+                if (shipsStructure.addPosition(Position.toSync(block))){
                     getNextBlock(event, block, directions);
                 }
             }
         }
     }
 
-    private PositionableShipsStructure getConnectedBlocks(BlockPosition position, OvertimeBlockFinderUpdate update){
+    private PositionableShipsStructure getConnectedBlocks(ASyncBlockPosition position, OvertimeBlockFinderUpdate update){
         this.blockCount = 0;
         this.shipsStructure = new AbstractPosititionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
@@ -55,7 +59,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public Ships5BlockFinder init() {
+    public Ships5AsyncBlockFinder init() {
         ShipsPlugin plugin = ShipsPlugin.getPlugin();
         ShipsConfig config = plugin.getConfig();
         this.blockLimit = config.getDefaultTrackSize();
@@ -63,12 +67,17 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
-        return getConnectedBlocks(position, null);
+        ASyncBlockPosition asyncPos = Position.toASync(position);
+        return getConnectedBlocks(asyncPos, null);
     }
 
     @Override
     public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
-        runAfterFullSearch.onShipsStructureUpdated(getConnectedBlocks(position));
+        CorePlugin.createSchedulerBuilder().setAsync(true).setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setDisplayName("async5blockfinder").setExecutor(() -> {
+            PositionableShipsStructure positions = getConnectedBlocks(position);
+            CorePlugin.createSchedulerBuilder().setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setDisplayName("ToSync").setExecutor(() -> runAfterFullSearch.onShipsStructureUpdated(positions)).build(ShipsPlugin.getPlugin()).run();
+        }).build(ShipsPlugin.getPlugin()).run();
+
     }
 
     @Override
@@ -105,11 +114,11 @@ public class Ships5BlockFinder implements BasicBlockFinder {
 
     @Override
     public String getId() {
-        return "ships:blockfinder_ships_five";
+        return "ships:blockfinder_ships_five_async";
     }
 
     @Override
     public String getName() {
-        return "Ships 5 BlockFinder";
+        return "Ships 5 Async BlockFinder";
     }
 }

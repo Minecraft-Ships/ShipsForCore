@@ -53,7 +53,7 @@ public abstract class ShipsPlugin implements Plugin {
     private final DebugFile debugFile;
     private final Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 10.3;
+    public static final double PRERELEASE_VERSION = 11;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin(){
@@ -138,7 +138,9 @@ public abstract class ShipsPlugin implements Plugin {
         this.identifable.add(BasicMovement.SHIPS_FIVE);
         this.identifable.add(BasicMovement.SHIPS_SIX);
         this.identifable.add(BasicBlockFinder.SHIPS_FIVE);
+        this.identifable.add(BasicBlockFinder.SHIPS_FIVE_ASYNC);
         this.identifable.add(BasicBlockFinder.SHIPS_SIX);
+        this.identifable.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_ASYNC);
         this.identifable.add(BlockPriority.AIR);
         this.identifable.add(BlockPriority.DIRECTIONAL);
         this.identifable.add(BlockPriority.ATTACHED);
