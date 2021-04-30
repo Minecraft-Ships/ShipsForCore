@@ -17,7 +17,12 @@ public class ShipsIDFinder implements ShipsLoader {
 
     @Override
     public Vessel load() throws LoadVesselException {
-        Optional<Vessel> opVessel = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v instanceof Identifable).filter(v -> {
+        Optional<Vessel> opVessel = ShipsPlugin
+                .getPlugin()
+                .getVessels()
+                .stream()
+                .filter(v -> v instanceof Identifable)
+                .filter(v -> {
             try {
                 String id = ((Identifable) v).getId();
                 if (id.equals(this.id)) {

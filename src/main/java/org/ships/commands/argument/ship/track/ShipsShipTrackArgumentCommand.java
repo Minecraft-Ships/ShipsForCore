@@ -7,18 +7,20 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.core.world.position.block.BlockTypes;
-import org.ships.commands.argument.type.ShipIdArgument;
+import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
@@ -37,14 +39,14 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_SHIP_TRACK.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_SHIP_TRACK);
     }
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if(source instanceof LivePlayer){
-            return ((LivePlayer) source).hasPermission(this.getPermissionNode());
+        if (source instanceof LivePlayer) {
+            return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
         }
         return false;
     }

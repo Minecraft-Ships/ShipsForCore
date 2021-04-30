@@ -1,4 +1,4 @@
-package org.ships.commands.argument.ship.blocklist;
+package org.ships.commands.argument.blocklist;
 
 import org.core.CorePlugin;
 import org.core.command.argument.ArgumentCommand;
@@ -7,6 +7,7 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
@@ -32,14 +33,14 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_BLOCKLIST_VIEW.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_BLOCKLIST_VIEW);
     }
 
     @Override
     public boolean hasPermission(CommandSource source) {
         if(source instanceof LivePlayer){
-            return ((LivePlayer) source).hasPermission(this.getPermissionNode());
+            return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
         }
         return source instanceof CommandViewer;
     }

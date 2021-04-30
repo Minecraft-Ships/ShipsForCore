@@ -5,10 +5,11 @@ import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.commands.argument.type.ShipIdArgument;
+import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlockSet;
@@ -19,6 +20,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
 
@@ -29,7 +31,7 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT, vessel -> {
-            if(vessel instanceof Fallable){
+            if (vessel instanceof Fallable) {
                 return true;
             }
             return vessel instanceof VesselRequirement;
@@ -42,23 +44,23 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return "";
+    public Optional<Permission> getPermissionNode() {
+        return Optional.empty();
     }
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if(!(source instanceof CommandViewer)){
+        if (!(source instanceof CommandViewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer)source;
+        CommandViewer viewer = (CommandViewer) source;
         Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        if(vessel instanceof Fallable){
-            Fallable fVessel = (Fallable)vessel;
+        if (vessel instanceof Fallable) {
+            Fallable fVessel = (Fallable) vessel;
             viewer.sendMessagePlain("Will Fall: " + fVessel.shouldFall());
         }
-        if(vessel instanceof VesselRequirement) {
+        if (vessel instanceof VesselRequirement) {
             VesselRequirement rVessel = (VesselRequirement) vessel;
             MovementContext context = new MovementContext();
             MovingBlockSet set = new MovingBlockSet();

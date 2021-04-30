@@ -11,6 +11,7 @@ import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
@@ -57,8 +58,8 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_BLOCK_INFO.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_BLOCK_INFO);
     }
 
     @Override

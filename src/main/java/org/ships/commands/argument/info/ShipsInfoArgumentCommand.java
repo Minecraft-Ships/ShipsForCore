@@ -8,6 +8,7 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
@@ -19,6 +20,7 @@ import org.ships.vessel.common.types.ShipType;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ShipsInfoArgumentCommand implements ArgumentCommand {
@@ -28,7 +30,7 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(INFO_ARGUMENT), new OptionalArgument<>(new ExactArgument(SHIP_TYPE_ARGUMENT, false, "shipstype", "stype"), (String)null));
+        return Arrays.asList(new ExactArgument(INFO_ARGUMENT), new OptionalArgument<>(new ExactArgument(SHIP_TYPE_ARGUMENT, false, "shipstype", "stype"), (String) null));
     }
 
     @Override
@@ -37,30 +39,30 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_INFO.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_INFO);
     }
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if(!(source instanceof CommandViewer)){
+        if (!(source instanceof CommandViewer)) {
             return true;
         }
-        CommandViewer viewer = (CommandViewer)source;
+        CommandViewer viewer = (CommandViewer) source;
         viewer.sendMessage(CorePlugin.buildText(TextColours.YELLOW + "----[Ships]----"));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Version: " + TextColours.AQUA + ShipsPlugin.getPlugin().getPluginVersion()));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + ShipsPlugin.PRERELEASE_TAG + " Version: " + TextColours.AQUA + ShipsPlugin.PRERELEASE_VERSION));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Vessel Types: " + TextColours.AQUA + ShipsPlugin.getPlugin().getAll(ShipType.class).size()));
-        if(commandContext.getArgument(this, SHIP_TYPE_ARGUMENT) != null){
+        if (commandContext.getArgument(this, SHIP_TYPE_ARGUMENT) != null) {
             viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + ArrayUtils.toString(TextColours.GREEN + " | " + TextColours.AQUA, ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class))));
         }
         Set<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
         Text blockListText = null;
-        for(BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()){
-            if(blockListText == null){
+        for (BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()) {
+            if (blockListText == null) {
                 blockListText = CorePlugin.buildText(TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count());
-            }else{
+            } else {
                 blockListText = blockListText.append(CorePlugin.buildText(", " + TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count()));
 
             }

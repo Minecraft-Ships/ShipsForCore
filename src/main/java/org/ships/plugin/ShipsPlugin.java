@@ -8,6 +8,7 @@ import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
 import org.core.text.TextColours;
 import org.core.utils.Identifable;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.argument.ShipsArgumentCommand;
@@ -220,8 +221,8 @@ public abstract class ShipsPlugin implements Plugin {
         return this.vesselFlags;
     }
 
-    public void registerVessel(Vessel... vessels){
-        this.vessels.addAll(Arrays.asList(vessels));
+    public void registerVessel(@NotNull Vessel vessel){
+        this.vessels.add(vessel);
     }
 
     public void unregisterVessel(Vessel... vessels){

@@ -1,7 +1,6 @@
-package org.ships.commands.argument.type;
+package org.ships.commands.argument.arguments;
 
 import org.core.command.argument.arguments.CommandArgument;
-import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;

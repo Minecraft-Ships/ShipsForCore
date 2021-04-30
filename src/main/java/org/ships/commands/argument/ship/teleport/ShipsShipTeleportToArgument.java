@@ -7,16 +7,18 @@ import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.impl.sync.SyncExactPosition;
-import org.ships.commands.argument.type.ShipIdArgument;
-import org.ships.commands.argument.type.ShipTeleportLocationArgument;
+import org.ships.commands.argument.arguments.ShipIdArgument;
+import org.ships.commands.argument.arguments.ShipTeleportLocationArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.assits.TeleportToVessel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ShipsShipTeleportToArgument implements ArgumentCommand {
 
@@ -36,13 +38,13 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_SHIP_TELEPORT.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_SHIP_TELEPORT);
     }
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if(source instanceof LivePlayer){
+        if (source instanceof LivePlayer) {
             return ((LivePlayer) source).hasPermission(Permissions.CMD_SHIP_TELEPORT);
         }
         return false;
@@ -51,13 +53,13 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if(!(source instanceof LivePlayer)){
-            if(source instanceof CommandViewer){
-                ((CommandViewer)source).sendMessagePlain("Teleport requires to be ran as a player");
+        if (!(source instanceof LivePlayer)) {
+            if (source instanceof CommandViewer) {
+                ((CommandViewer) source).sendMessagePlain("Teleport requires to be ran as a player");
             }
             return false;
         }
-        LivePlayer player = (LivePlayer)source;
+        LivePlayer player = (LivePlayer) source;
         TeleportToVessel tVessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
         String telPos = commandContext.getArgument(this, SHIP_LOCATION);
         SyncExactPosition position = tVessel.getTeleportPositions().get(telPos);

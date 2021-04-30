@@ -7,6 +7,7 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.ships.commands.argument.arguments.config.ConfigKeyArgument;
@@ -18,6 +19,7 @@ import org.ships.permissions.Permissions;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class AbstractShipsConfigSetArgument implements ArgumentCommand {
 
@@ -53,8 +55,8 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_CONFIG_VIEW.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_CONFIG_VIEW);
     }
 
     @Override

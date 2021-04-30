@@ -7,6 +7,7 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.ships.commands.argument.arguments.ShipIdentifiableArgument;
@@ -41,8 +42,8 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_CONFIG_VIEW.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_CONFIG_VIEW);
     }
 
     @Override
@@ -50,15 +51,15 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
         return runGeneric(commandContext, args);
     }
 
-    private <T> boolean runGeneric(CommandContext commandContext, String... args){
-        if(!(commandContext.getSource() instanceof CommandViewer)){
+    private <T> boolean runGeneric(CommandContext commandContext, String... args) {
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         ShipType<?> type = commandContext.getArgument(this, SHIP_TYPE);
         ConfigurationNode.KnownParser<String, T> parser = commandContext.getArgument(this, CONFIG_KEY);
         Optional<T> opResult = type.getFile().parse(parser);
-        if(!opResult.isPresent()){
+        if (!opResult.isPresent()) {
             viewer.sendMessagePlain("No value found at node. Is it for this ShipType?");
             return true;
         }

@@ -7,10 +7,11 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifable;
-import org.ships.commands.argument.type.ShipIdArgument;
+import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
@@ -20,6 +21,7 @@ import org.ships.vessel.common.types.typical.ShipsVessel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
@@ -39,45 +41,45 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if(source instanceof CommandViewer){
+        if (source instanceof CommandViewer) {
             return true;
         }
         return false;
     }
 
     @Override
-    public String getPermissionNode() {
-        return "";
+    public Optional<Permission> getPermissionNode() {
+        return Optional.empty();
     }
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if(!(commandContext.getSource() instanceof CommandViewer)){
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
         viewer.sendMessagePlain("Name: " + vessel.getName());
-        if(vessel instanceof Identifable) {
-            viewer.sendMessagePlain("ID: " + ((Identifable)vessel).getId());
+        if (vessel instanceof Identifable) {
+            viewer.sendMessagePlain("ID: " + ((Identifable) vessel).getId());
         }
         viewer.sendMessagePlain("Max Speed: " + vessel.getMaxSpeed());
         viewer.sendMessagePlain("Altitude Speed: " + vessel.getAltitudeSpeed());
         viewer.sendMessagePlain("Size: " + vessel.getStructure().getPositions().size());
-        if(vessel instanceof CrewStoredVessel) {
+        if (vessel instanceof CrewStoredVessel) {
             viewer.sendMessagePlain("Default Permission: " + ((CrewStoredVessel) vessel).getDefaultPermission().getId());
         }
-        if(vessel instanceof ShipsVessel) {
+        if (vessel instanceof ShipsVessel) {
             ((ShipsVessel) vessel).getExtraInformation().forEach((key, value) -> viewer.sendMessagePlain(key + ": " + value));
         }
-        if(vessel instanceof ShipsVessel) {
+        if (vessel instanceof ShipsVessel) {
             viewer.sendMessagePlain("Flags:");
             viewer.sendMessagePlain(" - " + ArrayUtils.toString("\n - ", f -> {
                 if (f instanceof VesselFlag.Serializable) {
                     return f.getId() + ": " + ((VesselFlag.Serializable<?>) f).serialize();
                 }
                 return f.getId();
-            }, ((ShipsVessel)vessel).getFlags()));
+            }, ((ShipsVessel) vessel).getFlags()));
         }
         viewer.sendMessagePlain("Entities: ");
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
@@ -90,7 +92,8 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
                 entity = e.getType().getName();
             }
             viewer.sendMessagePlain("- " + entity);
-        }, e -> {});
+        }, e -> {
+        });
         return true;
     }
 }

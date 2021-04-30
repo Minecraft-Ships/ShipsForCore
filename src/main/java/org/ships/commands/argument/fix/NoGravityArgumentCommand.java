@@ -6,12 +6,13 @@ import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.text.TextColours;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class NoGravityArgumentCommand implements ArgumentCommand {
 
@@ -34,17 +35,17 @@ public class NoGravityArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return "";
+    public Optional<Permission> getPermissionNode() {
+        return Optional.empty();
     }
 
     @Override
     public boolean run(CommandContext commandContext, String... args) {
         CommandSource source = commandContext.getSource();
-        if(!(source instanceof LivePlayer)){
+        if (!(source instanceof LivePlayer)) {
             return false;
         }
-        LivePlayer player = (LivePlayer)source;
+        LivePlayer player = (LivePlayer) source;
         player.setGravity(true);
         player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "Other plugins maybe disrupted by this fix"));
         return true;

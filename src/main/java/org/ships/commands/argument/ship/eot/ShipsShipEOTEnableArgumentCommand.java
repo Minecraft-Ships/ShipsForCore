@@ -8,12 +8,13 @@ import org.core.command.argument.arguments.simple.BooleanArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
+import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.commands.argument.type.ShipIdArgument;
+import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
@@ -44,8 +45,8 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public String getPermissionNode() {
-        return Permissions.CMD_SHIP_EOT.getPermissionValue();
+    public Optional<Permission> getPermissionNode() {
+        return Optional.of(Permissions.CMD_SHIP_EOT);
     }
 
     @Override

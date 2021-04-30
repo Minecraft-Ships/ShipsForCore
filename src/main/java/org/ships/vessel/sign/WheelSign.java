@@ -127,7 +127,7 @@ public class WheelSign implements ShipsSign {
         } else {
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
-                onVesselRotate(player, context, vessel, position, true);
+                onVesselRotate(player, context, vessel, position, left);
             } catch (UnableToFindLicenceSign e1) {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
