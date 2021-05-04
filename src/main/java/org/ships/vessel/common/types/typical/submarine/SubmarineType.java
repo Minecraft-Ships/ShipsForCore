@@ -19,12 +19,12 @@ import java.util.Collections;
 
 public class SubmarineType extends AbstractShipType<Submarine> implements SpecialBlockShipType<Submarine>, FuelledShipType<Submarine> {
 
-    public SubmarineType(){
+    public SubmarineType() {
         this("Submarine", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Submarine." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
-    public SubmarineType(String name, File file){
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR.get(), BlockTypes.WATER.get());
+    public SubmarineType(String name, File file) {
+        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
     }
 
     public SubmarineType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {
@@ -34,7 +34,7 @@ public class SubmarineType extends AbstractShipType<Submarine> implements Specia
     @Override
     protected void createDefault(ConfigurationStream.ConfigurationFile file) {
         this.file.set(SPECIAL_BLOCK_PERCENT, 75.0);
-        this.file.set(SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes.IRON_BLOCK.get()));
+        this.file.set(SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes.IRON_BLOCK));
         this.file.set(FUEL_CONSUMPTION, 1);
         this.file.set(FUEL_SLOT, FuelSlot.BOTTOM);
         this.file.set(FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK));

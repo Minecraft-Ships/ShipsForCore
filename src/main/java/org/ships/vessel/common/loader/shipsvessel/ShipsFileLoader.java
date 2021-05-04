@@ -7,7 +7,6 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
-import org.core.utils.Identifable;
 import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -80,7 +79,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
         private final ShipsVessel ship;
 
-        public StructureLoad(ShipsVessel shipsVessel){
+        public StructureLoad(ShipsVessel shipsVessel) {
             this.ship = shipsVessel;
         }
 
@@ -95,8 +94,8 @@ public class ShipsFileLoader implements ShipsLoader {
                     }
 
                     @Override
-                    public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                        return true;
+                    public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                        return BlockFindControl.USE;
                     }
                 });
             } else {
@@ -248,14 +247,14 @@ public class ShipsFileLoader implements ShipsLoader {
         ShipsPlugin.getPlugin()
                 .getDefaultPermissions()
                 .forEach(p -> file.parseCollection(
-                        new ConfigurationNode("Meta","Permission", p.getId()),
+                        new ConfigurationNode("Meta", "Permission", p.getId()),
                         Parser.STRING_TO_UNIQUIE_ID,
                         new ArrayList<>()
                 ).forEach(u -> ship.getCrew().put(u, p)));
         file.parseCollection(META_FLAGS, new HashSet<>()).forEach(ship::set);
         try {
             ship.deserializeExtra(file);
-        }catch(Throwable e) {
+        } catch (Throwable e) {
             throw new WrappedFileLoadVesselException(this.file, e);
         }
         return ship;
@@ -290,7 +289,7 @@ public class ShipsFileLoader implements ShipsLoader {
                         e.printStackTrace();
                     }
                 }
-            }catch (Throwable e){
+            } catch (Throwable e) {
                 System.err.println("Could not load any ships of " + st.getId());
                 e.printStackTrace();
             }
@@ -298,11 +297,11 @@ public class ShipsFileLoader implements ShipsLoader {
         return set;
     }
 
-    private <T, C extends Collection<T>> void setCollectionInFile(ConfigurationStream stream, ConfigurationNode.KnownParser.CollectionKnown<T, C> node, Collection<?> value){
-        stream.set(node, (C)value);
+    private <T, C extends Collection<T>> void setCollectionInFile(ConfigurationStream stream, ConfigurationNode.KnownParser.CollectionKnown<T, C> node, Collection<?> value) {
+        stream.set(node, (C) value);
     }
 
-    private <T> void setSingleInFile(ConfigurationStream stream, ConfigurationNode.KnownParser.SingleKnown<T> node, Object value){
-        stream.set(node, (T)value);
+    private <T> void setSingleInFile(ConfigurationStream stream, ConfigurationNode.KnownParser.SingleKnown<T> node, Object value) {
+        stream.set(node, (T) value);
     }
 }

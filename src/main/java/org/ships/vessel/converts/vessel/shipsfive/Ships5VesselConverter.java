@@ -44,29 +44,29 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
         SyncExactPosition teleportPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Teleport"), Parser.STRING_TO_EXACT_POSITION).get();
 
         Optional<LiveTileEntity> opTile = blockPosition.getTileEntity();
-        if(!opTile.isPresent()){
+        if (!opTile.isPresent()) {
             throw new IOException("Unable to locate licence sign");
         }
         LiveTileEntity lte = opTile.get();
-        if(!(lte instanceof LiveSignTileEntity)){
+        if (!(lte instanceof LiveSignTileEntity)) {
             throw new IOException("Unable to locate licence sign");
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity)lte;
+        LiveSignTileEntity lste = (LiveSignTileEntity) lte;
         ShipsVessel vessel;
-        switch (type){
+        switch (type) {
             case "Airship":
                 vessel = ShipType.AIRSHIP.createNewVessel(lste);
-                if(consumption != null) {
+                if (consumption != null) {
                     ((Airship) vessel).setFuelConsumption(consumption);
                 }
-                if(percent != null) {
+                if (percent != null) {
                     ((Airship) vessel).setSpecialBlockPercent(percent.floatValue());
                 }
                 break;
             default:
                 throw new IOException("Unknown ships 5 type of " + type);
         }
-        if(vessel != null){
+        if (vessel != null) {
             vessel.setTeleportPosition(teleportPosition);
             vessel.setMaxSpeed(engineSpeed);
             vessel.getCrew().put(owner, CrewPermission.CAPTAIN);
@@ -79,8 +79,8 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
                 }
 
                 @Override
-                public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                    return true;
+                public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                    return BlockFindControl.USE;
                 }
             });
             return vessel;

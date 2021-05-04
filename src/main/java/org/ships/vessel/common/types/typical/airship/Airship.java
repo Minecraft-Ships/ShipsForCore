@@ -132,7 +132,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         for (MovingBlock movingBlock : context.getMovingStructure()) {
             SyncBlockPosition blockPosition = movingBlock.getBeforePosition();
             BlockDetails details = movingBlock.getStoredBlockData();
-            if (blockPosition.getBlockType().equals(BlockTypes.FIRE.get())) {
+            if (blockPosition.getBlockType().equals(BlockTypes.FIRE)) {
                 burnerFound = true;
             }
             if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))) {
@@ -251,7 +251,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
         boolean burnerFound = false;
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
         for (SyncBlockPosition position : this.getStructure().getPositions()) {
-            if (position.getBlockType().equals(BlockTypes.FIRE.get())) {
+            if (position.getBlockType().equals(BlockTypes.FIRE)) {
                 burnerFound = true;
             }
             if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(position.getBlockType()))) {

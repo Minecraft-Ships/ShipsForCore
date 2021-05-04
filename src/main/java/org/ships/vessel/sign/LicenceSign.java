@@ -34,7 +34,7 @@ import java.util.Optional;
 
 public class LicenceSign implements ShipsSign {
 
-    public Optional<Vessel> getShip(SignTileEntity entity){
+    public Optional<Vessel> getShip(SignTileEntity entity) {
         try {
             return Optional.of(new ShipsLicenceSignFinder(entity).load());
         } catch (LoadVesselException e) {
@@ -49,22 +49,22 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException{
+    public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot snapshot = sign.getSnapshot();
         Text[] lines = snapshot.getLines();
         Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> lines[1].equalsPlain(t.getDisplayName(), true)).findFirst();
-        if(!opType.isPresent()){
+        if (!opType.isPresent()) {
             throw new IOException("Unknown Ship Type: Ship Types: " + ArrayUtils.toString(", ", ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class)));
         }
 
         String name = lines[2].toPlain();
-        if(name.replaceAll(" ", "").length() == 0){
+        if (name.replaceAll(" ", "").length() == 0) {
             throw new IOException("Invalid name: Change 3rd line");
         }
-        if(name.contains(":")){
+        if (name.contains(":")) {
             name = name.replaceAll(":", "");
         }
-        if(name.contains(" ")){
+        if (name.contains(" ")) {
             name = name.replaceAll(" ", "_");
         }
         name = (Character.toUpperCase(name.charAt(0))) + name.substring(1);
@@ -81,12 +81,12 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position){
+    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position) {
         try {
             Vessel s = new ShipsLicenceSignFinder(position).load();
             if (!player.isSneaking()) {
                 if (s instanceof Identifable) {
-                    player.sudo("ships", "ship", ((Identifable) s).getId().substring(6), "info");
+                    player.sudo("ships", "ship", ((Identifable) s).getId(), "info");
                 }
             } else {
                 int size = s.getStructure().getPositions().size();
@@ -109,7 +109,7 @@ public class LicenceSign implements ShipsSign {
                     }
 
                     @Override
-                    public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                    public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
                         if (finalBar != null) {
                             int blockCount = currentStructure.getPositions().size() + 1;
                             finalBar.setMessage(CorePlugin.buildText(blockCount + " / " + totalCount));
@@ -119,27 +119,27 @@ public class LicenceSign implements ShipsSign {
 
                             }
                         }
-                        return true;
+                        return BlockFindControl.USE;
                     }
                 });
             }
-        }catch (UnableToFindLicenceSign e1){
-            e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+        } catch (UnableToFindLicenceSign e1) {
+            e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
         } catch (IOException e) {
             Optional<LiveTileEntity> opTile = position.getTileEntity();
-            if(opTile.isPresent()){
-                if(opTile.get() instanceof LiveSignTileEntity){
-                    LiveSignTileEntity lste = (LiveSignTileEntity)opTile.get();
+            if (opTile.isPresent()) {
+                if (opTile.get() instanceof LiveSignTileEntity) {
+                    LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
                     String type = lste.getLine(1).get().toPlain();
                     String name = lste.getLine(2).get().toPlain();
                     Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equalsIgnoreCase(type)).findAny();
-                    if(!opType.isPresent()){
+                    if (!opType.isPresent()) {
                         player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find ShipType with display name of " + type));
                         return false;
                     }
                     File file = new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
-                    if(!file.exists()){
+                    if (!file.exists()) {
                         player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find the file associated with the ship"));
                         return false;
                     }
@@ -167,7 +167,7 @@ public class LicenceSign implements ShipsSign {
 
     @Override
     public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
-        if(player.isSneaking()){
+        if (player.isSneaking()) {
             return onPrimaryClick(player, position);
         }
         return false;

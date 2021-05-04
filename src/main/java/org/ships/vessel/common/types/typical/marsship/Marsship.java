@@ -42,21 +42,21 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
         super(ste, position, type);
     }
 
-    public float getSpecialBlockPercent(){
-        if(this.specialBlockPercent == null){
+    public float getSpecialBlockPercent() {
+        if (this.specialBlockPercent == null) {
             return this.getType().getDefaultSpecialBlockPercent();
         }
         return this.specialBlockPercent;
     }
 
-    public Set<BlockType> getSpecialBlocks(){
-        if(this.specialBlocks.isEmpty()){
+    public Set<BlockType> getSpecialBlocks() {
+        if (this.specialBlocks.isEmpty()) {
             return this.getType().getDefaultSpecialBlockType();
         }
         return this.specialBlocks;
     }
 
-    public MarsshipType getType(){
+    public MarsshipType getType() {
         return (MarsshipType) super.getType();
     }
 
@@ -86,24 +86,24 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.meetsRequirements(context);
-        if(!context.isStrictMovement()){
+        if (!context.isStrictMovement()) {
             return;
         }
         int specialBlocks = 0;
-        for (MovingBlock block : context.getMovingStructure()){
+        for (MovingBlock block : context.getMovingStructure()) {
             BlockDetails details = block.getStoredBlockData();
-            if(this.getSpecialBlocks().stream().anyMatch(b -> b.equals(details.getType()))){
+            if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(details.getType()))) {
                 specialBlocks++;
             }
         }
-        float specialBlockPercent = ((specialBlocks * 100.0f)/context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR.get())).count());
-        if((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()){
+        float specialBlockPercent = ((specialBlocks * 100.0f) / context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count());
+        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
     }
 
     @Override
-    public void processRequirements(MovementContext context) throws MoveException{
+    public void processRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.processRequirements(context);
     }
 }

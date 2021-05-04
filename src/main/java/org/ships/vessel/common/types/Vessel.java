@@ -19,7 +19,6 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.movement.MovementContext;
-import org.ships.movement.MovingBlock;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -33,68 +32,81 @@ import java.util.stream.Collectors;
 public interface Vessel extends Positionable<BlockPosition> {
 
     String getName();
+
     PositionableShipsStructure getStructure();
+
     void setStructure(PositionableShipsStructure pss);
+
     ShipType<? extends Vessel> getType();
 
     <T extends VesselFlag<?>> Optional<T> get(Class<T> clazz);
+
     <T> Vessel set(Class<? extends VesselFlag<T>> flag, T value);
+
     Vessel set(VesselFlag<?> flag);
 
     int getMaxSpeed();
+
     int getAltitudeSpeed();
 
     Optional<Integer> getMaxSize();
+
     int getMinSize();
 
     Vessel setMaxSize(Integer size);
+
     Vessel setMinSize(Integer size);
 
     Vessel setMaxSpeed(int speed);
+
     Vessel setAltitudeSpeed(int speed);
 
     void moveTowards(int x, int y, int z, MovementContext context, Consumer<Throwable> exception);
+
     void moveTowards(Vector3<Integer> vector, MovementContext context, Consumer<Throwable> exception);
+
     void moveTo(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
+
     void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
+
     void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
 
     void setLoading(boolean check);
+
     boolean isLoading();
 
     void save();
 
     @Override
-    default SyncBlockPosition getPosition(){
+    default SyncBlockPosition getPosition() {
         return getStructure().getPosition();
     }
 
-    default <V, F extends VesselFlag<V>> Optional<V> getValue(Class<F> flagClass){
-         Optional<F> opFlag = get(flagClass);
-         if (opFlag.isPresent()){
-             return opFlag.get().getValue();
-         }
-         return Optional.empty();
+    default <V, F extends VesselFlag<V>> Optional<V> getValue(Class<F> flagClass) {
+        Optional<F> opFlag = get(flagClass);
+        if (opFlag.isPresent()) {
+            return opFlag.get().getValue();
+        }
+        return Optional.empty();
     }
 
-    default Collection<LiveEntity> getEntities(){
+    default Collection<LiveEntity> getEntities() {
         return getEntities(e -> true);
     }
 
-    default <X extends LiveEntity> Collection<X> getEntities(Class<X> clazz){
+    default <X extends LiveEntity> Collection<X> getEntities(Class<X> clazz) {
         return (Collection<X>) getEntities(clazz::isInstance);
     }
 
-    default Collection<LiveEntity> getEntities(Predicate<LiveEntity> check){
+    default Collection<LiveEntity> getEntities(Predicate<LiveEntity> check) {
         Bounds<Integer> bounds = this.getStructure().getBounds();
         Set<LiveEntity> entities = new HashSet<>();
         this.getStructure().getChunks().stream().map(Extent::getEntities).forEach(entities::addAll);
         entities = entities.stream().filter(e -> {
             Optional<SyncBlockPosition> opTo = e.getAttachedTo();
-            if(!opTo.isPresent()){
-                return false;
-            }
-            return bounds.contains(opTo.get().getPosition());
+            return opTo
+                    .filter(syncBlockPosition -> bounds.contains(syncBlockPosition.getPosition()))
+                    .isPresent();
         }).collect(Collectors.toSet());
         Collection<SyncBlockPosition> blocks = getStructure().getPositions();
         return entities.stream()
@@ -107,16 +119,17 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     }
 
-    default void getEntitiesOvertime(int limit, Predicate<LiveEntity> predicate, Consumer<LiveEntity> single, Consumer<Collection<LiveEntity>> output){
+    default void getEntitiesOvertime(int limit, Predicate<LiveEntity> predicate, Consumer<LiveEntity> single, Consumer<Collection<LiveEntity>> output) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>();
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
         chunks.forEach(c -> entities2.addAll(c.getEntities()));
 
-        Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {}).build(ShipsPlugin.getPlugin());
-        double fin = entities2.size() / (double)limit;
-        if(fin != ((int)fin)){
+        Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
+        }).build(ShipsPlugin.getPlugin());
+        double fin = entities2.size() / (double) limit;
+        if (fin != ((int) fin)) {
             fin++;
         }
         if (fin == 0) {
@@ -124,12 +137,12 @@ public interface Vessel extends Positionable<BlockPosition> {
             return;
         }
         Collection<SyncBlockPosition> pss = getStructure().getPositions();
-        for(int A = 0; A < fin; A++){
+        for (int A = 0; A < fin; A++) {
             final int B = A;
             sched = CorePlugin.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
-                int c = (B*limit);
-                for(int to = 0; to < limit; to++) {
-                    if((c + to) >= entities2.size()){
+                int c = (B * limit);
+                for (int to = 0; to < limit; to++) {
+                    if ((c + to) >= entities2.size()) {
                         break;
                     }
                     LiveEntity e = entities2.get(c + to);
@@ -143,16 +156,16 @@ public interface Vessel extends Positionable<BlockPosition> {
                     if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
                         single.accept(e);
                         entities.add(e);
-                    }else if(!e.isOnGround()){
+                    } else if (!e.isOnGround()) {
                         SyncBlockPosition bPos = e.getPosition().toBlockPosition();
-                        if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))){
+                        if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))) {
                             continue;
                         }
                         single.accept(e);
                         entities.add(e);
                     }
                 }
-                if(B == 0){
+                if (B == 0) {
                     output.accept(entities);
                 }
             }).setToRunAfter(sched).build(ShipsPlugin.getPlugin());
@@ -160,29 +173,29 @@ public interface Vessel extends Positionable<BlockPosition> {
         sched.run();
     }
 
-    default void rotateAnticlockwiseAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
+    default void rotateAnticlockwiseAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception) {
         this.rotateRightAround(location, context, exception);
     }
 
-    default void rotateClockwiseAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
+    default void rotateClockwiseAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception) {
         this.rotateLeftAround(location, context, exception);
     }
 
-    default boolean isInWater(){
+    default boolean isInWater() {
         return !getWaterLevel().isPresent();
     }
 
-    default <T> Optional<Integer> getWaterLevel(Function<T, BlockPosition> function, Collection<T> collection){
+    default <T> Optional<Integer> getWaterLevel(Function<T, BlockPosition> function, Collection<T> collection) {
         Map<Vector2<Integer>, Integer> height = new HashMap<>();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        for (T value : collection){
+        for (T value : collection) {
             BlockPosition position = function.apply(value);
-            for(Direction direction : directions){
+            for (Direction direction : directions) {
                 BlockType type = position.getRelative(direction).getBlockType();
-                if(type.equals(BlockTypes.WATER.get())){
+                if (type.equals(BlockTypes.WATER)) {
                     Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(), position.getZ() + direction.getAsVector().getZ());
-                    if(height.containsKey(vector)){
-                        if(height.getOrDefault(vector, -1) < position.getY()) {
+                    if (height.containsKey(vector)) {
+                        if (height.getOrDefault(vector, -1) < position.getY()) {
                             height.replace(vector, position.getY());
                             continue;
                         }
@@ -191,34 +204,34 @@ public interface Vessel extends Positionable<BlockPosition> {
                 }
             }
         }
-        if(height.isEmpty()){
+        if (height.isEmpty()) {
             return Optional.empty();
         }
         Map<Integer, Integer> mean = new HashMap<>();
         height.values().forEach(value -> {
-            if(mean.containsKey(value)){
+            if (mean.containsKey(value)) {
                 mean.replace(value, mean.get(value) + 1);
-            }else{
+            } else {
                 mean.put(value, 1);
             }
         });
         Map.Entry<Integer, Integer> best = null;
-        for(Map.Entry<Integer, Integer> entry : mean.entrySet()){
-            if(best == null){
+        for (Map.Entry<Integer, Integer> entry : mean.entrySet()) {
+            if (best == null) {
                 best = entry;
                 continue;
             }
-            if(best.getValue() < entry.getValue()){
+            if (best.getValue() < entry.getValue()) {
                 best = entry;
             }
         }
-        if(best == null){
+        if (best == null) {
             return Optional.empty();
         }
         return Optional.of(best.getKey());
     }
 
-    default Optional<Integer> getWaterLevel(){
+    default Optional<Integer> getWaterLevel() {
         PositionableShipsStructure pss = getStructure();
         return getWaterLevel(p -> p, pss.getPositions());
     }

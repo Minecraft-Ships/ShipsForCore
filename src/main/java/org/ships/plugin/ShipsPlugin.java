@@ -54,7 +54,7 @@ public abstract class ShipsPlugin implements Plugin {
     private final DebugFile debugFile;
     private final Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 11.1;
+    public static final double PRERELEASE_VERSION = 11.2;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin() {
@@ -76,7 +76,7 @@ public abstract class ShipsPlugin implements Plugin {
 
     @Override
     public void registerCommands(CommandRegister register) {
-        if (this.config.getFile().getBoolean(this.config.ALPHA_COMMAND_USE_LEGACY.getNode()).orElse(true)) {
+        if (this.config.getFile().getBoolean(this.config.ALPHA_COMMAND_USE_LEGACY.getNode()).orElse(false)) {
             register.register(new LegacyShipsCommand());
         } else {
             register.register(new ShipsArgumentCommand());

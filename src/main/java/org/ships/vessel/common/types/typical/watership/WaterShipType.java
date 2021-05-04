@@ -19,12 +19,12 @@ import java.io.File;
 
 public class WaterShipType extends AbstractShipType<WaterShip> implements CloneableShipType<WaterShip>, SpecialBlockShipType<WaterShip> {
 
-    public WaterShipType(){
+    public WaterShipType() {
         this("Ship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Watership." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
-    public WaterShipType(String name, File file){
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR.get(), BlockTypes.WATER.get());
+    public WaterShipType(String name, File file) {
+        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
     }
 
     public WaterShipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {

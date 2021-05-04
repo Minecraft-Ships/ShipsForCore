@@ -56,7 +56,7 @@ public class SetMovingBlock implements MovingBlock {
 
     @Override
     public BlockPriority getBlockPriority() {
-        if((this.detail.getType().equals(BlockTypes.AIR.get()))) {
+        if((this.detail.getType().equals(BlockTypes.AIR))) {
             return BlockPriority.AIR;
         }else if(this.detail.get(KeyedData.ATTACHABLE).isPresent()){
             return BlockPriority.ATTACHED;

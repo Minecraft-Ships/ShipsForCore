@@ -14,6 +14,9 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
@@ -34,13 +37,13 @@ import java.util.function.Consumer;
 public class WheelSign implements ShipsSign {
 
     @Override
-    public boolean isSign(SignTileEntity entity) {
+    public boolean isSign(@NotNull SignTileEntity entity) {
         Optional<Text> opValue = entity.getLine(0);
         return opValue.isPresent() && opValue.get().equals(getFirstLine());
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
+    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
         stes.setLine(0, CorePlugin.buildText(TextColours.YELLOW + "[Wheel]"));
         stes.setLine(1, CorePlugin.buildText(TextColours.RED + "\\\\||//"));
@@ -55,12 +58,12 @@ public class WheelSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position) {
+    public boolean onPrimaryClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         return onClick(player, position, true);
     }
 
     @Override
-    public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
+    public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         return onClick(player, position, false);
     }
 
@@ -74,7 +77,7 @@ public class WheelSign implements ShipsSign {
         return "Wheel Sign";
     }
 
-    private boolean onClick(LivePlayer player, SyncBlockPosition position, boolean left) {
+    private boolean onClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position, boolean left) {
         if (player.isSneaking()) {
             return false;
         }
@@ -96,7 +99,7 @@ public class WheelSign implements ShipsSign {
                 }
 
                 @Override
-                protected boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
                     int foundBlocks = currentStructure.getPositions().size() + 1;
                     context.getBar().ifPresent(bar -> {
                         bar.setMessage(CorePlugin.buildText(foundBlocks + " / " + trackLimit));
@@ -107,7 +110,7 @@ public class WheelSign implements ShipsSign {
                         }
 
                     });
-                    return true;
+                    return OvertimeBlockFinderUpdate.BlockFindControl.USE;
                 }
 
                 @Override
@@ -117,7 +120,7 @@ public class WheelSign implements ShipsSign {
                     if (e instanceof UnableToFindLicenceSign) {
                         UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                         player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
-                        e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+                        e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                         CorePlugin.createSchedulerBuilder().setDelay(5).setDisplayName("Wheel bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
                     } else {
                         player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getReason()));
@@ -130,7 +133,7 @@ public class WheelSign implements ShipsSign {
                 onVesselRotate(player, context, vessel, position, left);
             } catch (UnableToFindLicenceSign e1) {
                 player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
-                e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.get().getDefaultBlockDetails(), player));
+                e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                 CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
@@ -143,7 +146,7 @@ public class WheelSign implements ShipsSign {
         return false;
     }
 
-    private void onVesselRotate(LivePlayer player, MovementContext context, Vessel vessel, SyncBlockPosition position, boolean left) {
+    private void onVesselRotate(@NotNull LivePlayer player, @NotNull MovementContext context, @NotNull Vessel vessel, @NotNull SyncBlockPosition position, boolean left) {
         if (vessel instanceof CrewStoredVessel) {
             CrewStoredVessel stored = (CrewStoredVessel) vessel;
             if (!(stored.getPermission(player.getUniqueId()).canMove() || player.hasPermission(Permissions.getMovePermission(stored.getType())) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
@@ -176,7 +179,7 @@ public class WheelSign implements ShipsSign {
         }
     }
 
-    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value) {
+    private <T> void sendErrorMessage(@NotNull CommandViewer viewer, @NotNull FailedMovement<T> movement, @Nullable Object value) {
         movement.sendMessage(viewer, (T) value);
     }
 }

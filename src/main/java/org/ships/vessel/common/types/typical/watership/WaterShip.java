@@ -40,20 +40,20 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         this.flags.add(new AltitudeLockFlag(true));
     }
 
-    public WaterShip(WaterShipType type, SignTileEntity ste, SyncBlockPosition position){
+    public WaterShip(WaterShipType type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
         this.flags.add(new AltitudeLockFlag(true));
     }
 
-    public float getSpecialBlockPercent(){
-        if(this.specialBlockPercent == null){
+    public float getSpecialBlockPercent() {
+        if (this.specialBlockPercent == null) {
             return this.getType().getDefaultSpecialBlockPercent();
         }
         return this.specialBlockPercent;
     }
 
-    public Set<BlockType> getSpecialBlocks(){
-        if(this.specialBlocks.isEmpty()){
+    public Set<BlockType> getSpecialBlocks() {
+        if (this.specialBlocks.isEmpty()) {
             return this.getType().getDefaultSpecialBlockType();
         }
         return this.specialBlocks;
@@ -67,28 +67,28 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.meetsRequirements(context);
-        if(!context.isStrictMovement()){
+        if (!context.isStrictMovement()) {
             return;
         }
         Optional<Integer> opWaterLevel = getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
-        if(!opWaterLevel.isPresent()){
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER.get())));
+        if (!opWaterLevel.isPresent()) {
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }
         int specialBlockCount = 0;
-        for(MovingBlock movingBlock : context.getMovingStructure()){
+        for (MovingBlock movingBlock : context.getMovingStructure()) {
             SyncBlockPosition blockPosition = movingBlock.getBeforePosition();
-            if(this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
+            if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))) {
                 specialBlockCount++;
             }
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f)/(context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR.get())).count()));
-        if((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()){
+        float specialBlockPercent = ((specialBlockCount * 100.0f) / (context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count()));
+        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
     }
 
     @Override
-    public void processRequirements(MovementContext context) throws MoveException{
+    public void processRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.processRequirements(context);
     }
 
@@ -119,25 +119,25 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     public boolean shouldFall() {
         int specialBlockCount = 0;
         boolean inWater = false;
-        for(SyncBlockPosition blockPosition : this.getStructure().getPositions()){
-            if(this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))){
+        for (SyncBlockPosition blockPosition : this.getStructure().getPositions()) {
+            if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))) {
                 specialBlockCount++;
             }
-            for(Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())){
-                if (BlockTypes.WATER.get().equals(blockPosition.getRelative(direction).getBlockType())){
+            for (Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())) {
+                if (BlockTypes.WATER.equals(blockPosition.getRelative(direction).getBlockType())) {
                     inWater = true;
                 }
             }
         }
-        if(!inWater){
+        if (!inWater) {
             return false;
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f)/this.getStructure().getPositions().size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getPositions().size());
         return (this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent());
     }
 
     @Override
-    public void setStructure(PositionableShipsStructure structure){
+    public void setStructure(PositionableShipsStructure structure) {
         structure.addAir();
         super.setStructure(structure);
     }

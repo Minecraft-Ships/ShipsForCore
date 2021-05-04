@@ -7,7 +7,8 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.algorthum.blockfinder.exact.ExactBlockFinder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
@@ -28,16 +29,15 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
         private class OvertimeSection {
 
-            private Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
-            private List<SyncBlockPosition> ret = new ArrayList<>();
-            private List<SyncBlockPosition> process = new ArrayList<>();
-            private List<SyncBlockPosition> ignore = new ArrayList<>();
-            private Runnable runnable = () -> {
-                for (int A = 0; A < this.process.size(); A++) {
-                    SyncBlockPosition proc = this.process.get(A);
+            private final Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
+            private final List<SyncBlockPosition> ret = new ArrayList<>();
+            private final List<SyncBlockPosition> process = new ArrayList<>();
+            private final List<SyncBlockPosition> ignore = new ArrayList<>();
+            private final Runnable runnable = () -> {
+                for (SyncBlockPosition proc : this.process) {
                     for (Direction face : this.directions) {
                         SyncBlockPosition block = proc.getRelative(face);
-                        if(ignore.stream().anyMatch(b -> b.equals(block))){
+                        if (ignore.stream().anyMatch(b -> b.equals(block))) {
                             continue;
                         }
                         if (ret.stream().anyMatch(b -> b.equals(block))) {
@@ -51,7 +51,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                 }
             };
 
-            public OvertimeSection(Collection<SyncBlockPosition> collection, Collection<SyncBlockPosition> ignore){
+            public OvertimeSection(Collection<SyncBlockPosition> collection, Collection<SyncBlockPosition> ignore) {
                 this.process.addAll(collection);
                 this.ignore.addAll(ignore);
             }
@@ -61,15 +61,15 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         private PositionableShipsStructure pss;
         private List<SyncBlockPosition> process = new ArrayList<>();
         private List<SyncBlockPosition> ret = new ArrayList<>();
-        private List<SyncBlockPosition> total = new ArrayList<>();
+        private final List<SyncBlockPosition> total = new ArrayList<>();
         private OvertimeBlockFinderUpdate update;
-        private Runnable runnable = () -> {
+        private final Runnable runnable = () -> {
             ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
             List<List<SyncBlockPosition>> collections = new ArrayList<>();
             List<SyncBlockPosition> current = new ArrayList<>();
-            for(int A = 0; A < this.process.size(); A++){
-                current.add(this.process.get(A));
-                if(current.size() >= config.getDefaultFinderStackLimit()){
+            for (SyncBlockPosition syncBlockPosition : this.process) {
+                current.add(syncBlockPosition);
+                if (current.size() >= config.getDefaultFinderStackLimit()) {
                     collections.add(current);
                     current = new ArrayList<>();
                 }
@@ -91,26 +91,28 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                                     setExecutor(this.runnable).
                                     setDisplayName("Ships 6 ASync Block Finder").
                                     build(ShipsPlugin.getPlugin()).run();
-                        }else{
+                        } else {
                             this.update.onShipsStructureUpdated(this.pss);
                         }
                     })
                     .setDisplayName("Ships 6 block finder")
                     .build(ShipsPlugin.getPlugin());
 
-            for(List<SyncBlockPosition> list : collections){
+            for (List<SyncBlockPosition> list : collections) {
                 scheduler = CorePlugin.createSchedulerBuilder()
                         .setDelay(config.getDefaultFinderStackDelay())
                         .setDelayUnit(config.getDefaultFinderStackDelayUnit())
                         .setExecutor(() -> {
                             OvertimeSection section = new OvertimeSection(list, this.total);
                             section.runnable.run();
-                            section.ret.stream().forEach(p -> {
-                                if (this.update.onBlockFind(this.pss, p)){
-                                    this.pss.addPosition(p);
-                                    this.ret.add(p);
-                                    this.total.add(p);
+                            section.ret.forEach(p -> {
+                                OvertimeBlockFinderUpdate.BlockFindControl blockFind = this.update.onBlockFind(this.pss, p);
+                                if (blockFind.equals(OvertimeBlockFinderUpdate.BlockFindControl.IGNORE)) {
+                                    return;
                                 }
+                                this.pss.addPosition(p);
+                                this.ret.add(p);
+                                this.total.add(p);
                             });
                         })
                         .setToRunAfter(scheduler)
@@ -120,7 +122,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             scheduler.run();
         };
 
-        public Overtime(SyncBlockPosition position, OvertimeBlockFinderUpdate update){
+        public Overtime(SyncBlockPosition position, OvertimeBlockFinderUpdate update) {
             this.pss = new AbstractPosititionableShipsStructure(position);
             this.update = update;
             process.add(position);
@@ -133,7 +135,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     private Vessel vessel;
 
     @Override
-    public Ships6BlockFinder init() {
+    public @NotNull Ships6BlockFinder init() {
         ShipsPlugin plugin = ShipsPlugin.getPlugin();
         ShipsConfig config = plugin.getConfig();
         this.limit = config.getDefaultTrackSize();
@@ -151,15 +153,14 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         process.add(Position.toSync(position));
         while (count != this.limit) {
             if (process.isEmpty()) {
-                ret.forEach(bp -> pss.addPosition(bp));
+                ret.forEach(pss::addPosition);
                 return pss;
             }
-            for (int A = 0; A < process.size(); A++) {
-                SyncBlockPosition proc = process.get(A);
+            for (SyncBlockPosition proc : process) {
                 count++;
                 for (Direction face : directions) {
                     SyncBlockPosition block = proc.getRelative(face);
-                    if (!ret.stream().anyMatch(b -> b.equals(block))) {
+                    if (ret.stream().noneMatch(b -> b.equals(block))) {
                         BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
                         if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
                             ret.add(block);
@@ -172,12 +173,12 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             process.addAll(target);
             target.clear();
         }
-        ret.stream().forEach(bp -> pss.addPosition(bp));
+        ret.forEach(pss::addPosition);
         return pss;
     }
 
     @Override
-    public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
+    public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch);
         CorePlugin.createSchedulerBuilder().
@@ -196,7 +197,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public BasicBlockFinder setBlockLimit(int limit) {
+    public @NotNull BasicBlockFinder setBlockLimit(int limit) {
         this.limit = limit;
         return this;
     }
@@ -207,19 +208,14 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public BasicBlockFinder setConnectedVessel(Vessel vessel) {
+    public @NotNull BasicBlockFinder setConnectedVessel(@Nullable Vessel vessel) {
         this.vessel = vessel;
-        if(this.vessel != null && (this.vessel instanceof BlockListable)) {
-            this.list = ((BlockListable)this.vessel).getBlockList();
-        }else{
+        if (this.vessel != null && (this.vessel instanceof BlockListable)) {
+            this.list = ((BlockListable) this.vessel).getBlockList();
+        } else {
             this.list = ShipsPlugin.getPlugin().getBlockList();
         }
         return this;
-    }
-
-    @Override
-    public ExactBlockFinder getTypeFinder() {
-        throw new IllegalStateException("Not implemented");
     }
 
     @Override

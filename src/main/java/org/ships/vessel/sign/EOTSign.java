@@ -15,7 +15,6 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,18 +22,18 @@ public class EOTSign implements ShipsSign {
 
     private final Set<Scheduler> eot_scheduler = new HashSet<>();
 
-    public Collection<Scheduler> getScheduler(Vessel vessel){
+    public Collection<Scheduler> getScheduler(Vessel vessel) {
         return Collections.unmodifiableCollection(this.eot_scheduler.stream().filter(e -> {
             Runnable runnable = e.getExecutor();
-            if(!(runnable instanceof EOTExecutor)){
+            if (!(runnable instanceof EOTExecutor)) {
                 return false;
             }
-            EOTExecutor exe = (EOTExecutor)runnable;
+            EOTExecutor exe = (EOTExecutor) runnable;
             return exe.getVessel().equals(vessel);
         }).collect(Collectors.toSet()));
     }
 
-    public boolean isAhead(SignTileEntity entity){
+    public boolean isAhead(SignTileEntity entity) {
         return entity.getLine(1).get().toPlain().startsWith("{");
     }
 
@@ -66,46 +65,40 @@ public class EOTSign implements ShipsSign {
     @Override
     public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if(!opTile.isPresent()){
+        if (!opTile.isPresent()) {
             return false;
         }
         LiveTileEntity lte = opTile.get();
-        if(!(lte instanceof LiveSignTileEntity)){
+        if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
         LiveSignTileEntity stes = (LiveSignTileEntity) lte;
-        Vessel vessel;
-        try {
-            vessel = new ShipsUpdateBlockLoader(position).load();
-        } catch (IOException e) {
-            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find connected ship"));
-            return false;
-        }
-        final Vessel vesselFinal = vessel;
-        if(stes.getLine(1).get().toPlain().startsWith("{")) {
-            stes.setLine(1, CorePlugin.buildText("Ahead"));
-            stes.setLine(2, CorePlugin.buildText("{Stop}"));
-            this.eot_scheduler.stream().filter(e -> {
-                Runnable runnable = e.getExecutor();
-                if(!(runnable instanceof EOTExecutor)){
-                    return false;
-                }
-                EOTExecutor eotExecutor = (EOTExecutor) runnable;
-                return vesselFinal.equals(eotExecutor.getVessel());
-            }).forEach(Scheduler::cancel);
-        }else{
-            stes.setLine(1, CorePlugin.buildText("{Ahead}"));
-            stes.setLine(2, CorePlugin.buildText("Stop"));
-            Scheduler task = CorePlugin
-                    .createSchedulerBuilder()
-                    .setDisplayName("EOT: " + vessel.getName())
-                    .setExecutor(new EOTExecutor(player, vessel))
-                    .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
-                    .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
-                    .build(ShipsPlugin.getPlugin());
-            task.run();
-            this.eot_scheduler.add(task);
-        }
+        new ShipsUpdateBlockLoader(position).loadOvertime(vessel -> {
+            if (stes.getLine(1).get().toPlain().startsWith("{")) {
+                stes.setLine(1, CorePlugin.buildText("Ahead"));
+                stes.setLine(2, CorePlugin.buildText("{Stop}"));
+                this.eot_scheduler.stream().filter(e -> {
+                    Runnable runnable = e.getExecutor();
+                    if (!(runnable instanceof EOTExecutor)) {
+                        return false;
+                    }
+                    EOTExecutor eotExecutor = (EOTExecutor) runnable;
+                    return vessel.equals(eotExecutor.getVessel());
+                }).forEach(Scheduler::cancel);
+            } else {
+                stes.setLine(1, CorePlugin.buildText("{Ahead}"));
+                stes.setLine(2, CorePlugin.buildText("Stop"));
+                Scheduler task = CorePlugin
+                        .createSchedulerBuilder()
+                        .setDisplayName("EOT: " + vessel.getName())
+                        .setExecutor(new EOTExecutor(player, vessel))
+                        .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
+                        .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
+                        .build(ShipsPlugin.getPlugin());
+                task.run();
+                this.eot_scheduler.add(task);
+            }
+        }, ex -> player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find connected ship (" + ex.getMessage() + ")")));
         return false;
     }
 

@@ -62,7 +62,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
             return true;
         }
         LivePlayer player = (LivePlayer) source;
-        vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.get().getDefaultBlockDetails(), (LivePlayer) source));
+        vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
         CorePlugin.createSchedulerBuilder()
                 .setDisplayName("ShipsTrack:" + vessel.getName())
                 .setDelay(10)

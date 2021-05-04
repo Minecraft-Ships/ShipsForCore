@@ -15,12 +15,12 @@ import java.io.File;
 @Deprecated
 public class OPShipType extends AbstractShipType<OPShip> {
 
-    public OPShipType(){
+    public OPShipType() {
         this("OPShip", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/OPShip." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
-    public OPShipType(String name, File file){
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR.get());
+    public OPShipType(String name, File file) {
+        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR);
     }
 
     public OPShipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {

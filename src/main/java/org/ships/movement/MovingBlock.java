@@ -29,11 +29,11 @@ public interface MovingBlock {
 
     default MovingBlock removeBeforePosition(SyncBlockPosition pos) {
         Optional<LiveTileEntity> opLive = pos.getTileEntity();
-        if(!opLive.isPresent()){
+        if (!opLive.isPresent()) {
             return this;
         }
-        if(opLive.get() instanceof ContainerTileEntity){
-            ContainerTileEntity cte = (ContainerTileEntity)opLive.get();
+        if (opLive.get() instanceof ContainerTileEntity) {
+            ContainerTileEntity cte = (ContainerTileEntity) opLive.get();
             cte.getInventory().getSlots().forEach(s -> s.setItem(null));
         }
         return this;
@@ -71,10 +71,10 @@ public interface MovingBlock {
         SyncBlockPosition p = this.getBeforePosition();
         removeBeforePosition(p);
         Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
-        if(waterLogged.isPresent() && waterLogged.get()){
-            p.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
-        }else{
-            p.setBlock(BlockTypes.AIR.get().getDefaultBlockDetails());
+        if (waterLogged.isPresent() && waterLogged.get()) {
+            p.setBlock(BlockTypes.AIR.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+        } else {
+            p.setBlock(BlockTypes.AIR.getDefaultBlockDetails());
         }
         return this;
     }
@@ -83,15 +83,15 @@ public interface MovingBlock {
         SyncBlockPosition p = this.getBeforePosition();
         removeBeforePosition(p);
         Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
-        if(waterLogged.isPresent() && waterLogged.get()) {
-            p.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
-        }else{
-            p.setBlock(BlockTypes.WATER.get().getDefaultBlockDetails());
+        if (waterLogged.isPresent() && waterLogged.get()) {
+            p.setBlock(BlockTypes.WATER.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+        } else {
+            p.setBlock(BlockTypes.WATER.getDefaultBlockDetails());
         }
         return this;
     }
 
-    default BlockDetails getCurrentBlockData(){
+    default BlockDetails getCurrentBlockData() {
         return this.getBeforePosition().getBlockDetails();
 
     }

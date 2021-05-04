@@ -40,7 +40,7 @@ public class ShipsConfig implements Config.KnownNodes {
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Delay"), "Running.EOT.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> EOT_DELAY_UNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "EOT", "DelayUnit"), "Running.EOT.DelayUnit");
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_SPEED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Speed"), "Running.EOT.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EOT_ENABLED =  new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "EOT", "Enabled"), "Running.EOT.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EOT_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "EOT", "Enabled"), "Running.EOT.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Delay"), "Running.Fall.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> FALL_DELAY_UNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "Falling", "DelayUnit"), "Running.Fall.DelayUnit");
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_SPEED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Speed"), "Running.Fall.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
@@ -59,26 +59,22 @@ public class ShipsConfig implements Config.KnownNodes {
     @Deprecated
     public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
 
-    public ShipsConfig(){
+    public ShipsConfig() {
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
         boolean modified = false;
-        if(!this.file.getFile().exists()){
+        if (!this.file.getFile().exists()) {
             recreateFile();
         }
-        if(!this.file.parse(this.ADVANCED_MOVEMENT.getNode()).isPresent()){
+        if (!this.file.parse(this.ADVANCED_MOVEMENT.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.ADVANCED_MOVEMENT.getNode(), BasicMovement.SHIPS_SIX);
         }
-        if(!this.file.getBoolean(this.VISIBLE_BOSS_BAR.getNode()).isPresent()){
+        if (!this.file.getBoolean(this.VISIBLE_BOSS_BAR.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.VISIBLE_BOSS_BAR.getNode(), true);
         }
-        if(!this.file.getBoolean(this.ALPHA_COMMAND_USE_LEGACY.getNode()).isPresent()){
-            modified = true;
-            this.file.set(this.ALPHA_COMMAND_USE_LEGACY.getNode(), true);
-        }
-        if(!this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode()).isPresent()){
+        if (!this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode(), 10);
             this.file.set(this.ADVANCED_MOVEMENT_STACK_DELAY.getNode(), 1);
@@ -88,11 +84,11 @@ public class ShipsConfig implements Config.KnownNodes {
             this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT.getNode(), 7);
             this.file.set(this.STRUCTURE_UPDATE_AUTO.getNode(), true);
         }
-        if(!this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode()).isPresent()){
+        if (!this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.STRUCTURE_UPDATE_CLICK.getNode(), false);
         }
-        if (!this.file.getBoolean(this.EOT_ENABLED.getNode()).isPresent()){
+        if (!this.file.getBoolean(this.EOT_ENABLED.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.EOT_ENABLED.getNode(), false);
             this.file.set(this.EOT_DELAY_UNIT.getNode(), TimeUnit.SECONDS);
@@ -101,15 +97,15 @@ public class ShipsConfig implements Config.KnownNodes {
             this.file.set(this.FALL_SPEED.getNode(), 1);
             this.file.set(this.FALL_ENABLED.getNode(), false);
         }
-        if(!this.file.getBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getNode()).isPresent()){
+        if (!this.file.getBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getNode(), false);
         }
-        if(!this.file.getInteger(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode()).isPresent()){
+        if (!this.file.getInteger(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode(), 75);
         }
-        if(!this.file.getBoolean(this.UPDATE_ENABLED.getNode()).isPresent()){
+        if (!this.file.getBoolean(this.UPDATE_ENABLED.getNode()).isPresent()) {
             modified = true;
             this.file.set(this.UPDATE_ENABLED.getNode(), true);
             this.file.set(this.DISABLED_WORLDS.getNode(), Collections.emptySet());
@@ -118,41 +114,41 @@ public class ShipsConfig implements Config.KnownNodes {
             modified = true;
             this.file.set(new ConfigurationNode(this.LOGIN_COMMAND.getNode().getPath()), "");
         }
-        if(modified){
+        if (modified) {
             this.file.save();
         }
         this.file.reload();
     }
 
-    public Set<WorldExtent> getDisabledWorlds(){
+    public Set<WorldExtent> getDisabledWorlds() {
         return this.file.parseCollection(this.DISABLED_WORLDS.getNode(), new HashSet<>());
     }
 
-    public boolean isUpdateEnabled(){
+    public boolean isUpdateEnabled() {
         return this.file.getBoolean(this.UPDATE_ENABLED.getNode(), true);
     }
 
-    public boolean isFallingEnabled(){
+    public boolean isFallingEnabled() {
         return this.file.getBoolean(this.FALL_ENABLED.getNode(), true);
     }
 
-    public TimeUnit getFallingDelayUnit(){
+    public TimeUnit getFallingDelayUnit() {
         return this.file.parse(this.FALL_DELAY_UNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
-    public int getFallingDelay(){
+    public int getFallingDelay() {
         return this.file.getInteger(this.FALL_DELAY.getNode(), 1);
     }
 
-    public int getFallingSpeed(){
+    public int getFallingSpeed() {
         return this.file.getInteger(this.FALL_SPEED.getNode(), 1);
     }
 
-    public boolean isEOTEnabled(){
+    public boolean isEOTEnabled() {
         return this.file.getBoolean(this.EOT_ENABLED.getNode(), false);
     }
 
-    public boolean isMovementRequirementsCheckMaxBlockType(){
+    public boolean isMovementRequirementsCheckMaxBlockType() {
         return this.file.getBoolean(this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE.getNode(), false);
     }
 
@@ -160,71 +156,71 @@ public class ShipsConfig implements Config.KnownNodes {
         return this.file.parse(this.EOT_DELAY_UNIT.getNode()).orElse(TimeUnit.SECONDS);
     }
 
-    public int getEOTDelay(){
+    public int getEOTDelay() {
         return this.file.getInteger(this.EOT_DELAY.getNode(), 5);
     }
 
-    public int getEOTSpeed(){
+    public int getEOTSpeed() {
         return this.file.getInteger(this.EOT_SPEED.getNode(), 2);
     }
 
-    public int getEntityTrackingLimit(){
+    public int getEntityTrackingLimit() {
         return this.file.getInteger(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode(), 75);
     }
 
-    public int getDefaultFinderStackDelay(){
+    public int getDefaultFinderStackDelay() {
         return this.file.getInteger(this.ADVANCED_BLOCKFINDER_STACK_DELAY.getNode(), 1);
     }
 
-    public TimeUnit getDefaultFinderStackDelayUnit(){
+    public TimeUnit getDefaultFinderStackDelayUnit() {
         return this.file.parse(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
-    public TimeUnit getDefaultMovementStackDelayUnit(){
+    public TimeUnit getDefaultMovementStackDelayUnit() {
         return this.file.parse(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
-    public boolean isStructureClickUpdating(){
+    public boolean isStructureClickUpdating() {
         return this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode(), false);
     }
 
-    public boolean isStructureAutoUpdating(){
+    public boolean isStructureAutoUpdating() {
         return this.file.getBoolean(this.STRUCTURE_UPDATE_AUTO.getNode(), true);
     }
 
-    public int getDefaultMovementStackLimit(){
+    public int getDefaultMovementStackLimit() {
         return this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode(), 7);
     }
 
-    public int getDefaultFinderStackLimit(){
+    public int getDefaultFinderStackLimit() {
         return this.file.getInteger(this.ADVANCED_BLOCKFINDER_STACK_LIMIT.getNode(), 2);
     }
 
-    public int getDefaultMovementStackDelay(){
+    public int getDefaultMovementStackDelay() {
         return this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_DELAY.getNode(), 1);
     }
 
-    public Optional<String> getDefaultLoginCommand(){
+    public Optional<String> getDefaultLoginCommand() {
         String command = this.file.getString(this.LOGIN_COMMAND.getNode(), "");
-        if(command.equals("")){
+        if (command.equals("")) {
             return Optional.empty();
         }
         return Optional.of(command);
     }
 
-    public BasicBlockFinder getDefaultFinder(){
+    public BasicBlockFinder getDefaultFinder() {
         return this.file.parse(this.ADVANCED_BLOCKFINDER.getNode(), BasicBlockFinder.SHIPS_FIVE).init();
     }
 
-    public BasicMovement getDefaultMovement(){
+    public BasicMovement getDefaultMovement() {
         return this.file.parse(this.ADVANCED_MOVEMENT.getNode(), BasicMovement.SHIPS_SIX);
     }
 
-    public boolean isBossBarVisible(){
+    public boolean isBossBarVisible() {
         return this.file.getBoolean(this.VISIBLE_BOSS_BAR.getNode(), true);
     }
 
-    public int getDefaultTrackSize(){
+    public int getDefaultTrackSize() {
         return this.file.getInteger(this.ADVANCED_TRACK_LIMIT.getNode(), 4000);
     }
 
@@ -238,9 +234,9 @@ public class ShipsConfig implements Config.KnownNodes {
         File file = this.getFile().getFile();
         file.delete();
         Optional<ConfigurationStream.ConfigurationFile> opConfig = ShipsPlugin.getPlugin().createConfig("Config.yml", file);
-        if(opConfig.isPresent()){
+        if (opConfig.isPresent()) {
             this.file = opConfig.get();
-        }else{
+        } else {
             throw new IllegalStateException("Failed to create the config. Something went wrong");
         }
     }

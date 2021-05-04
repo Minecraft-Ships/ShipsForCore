@@ -13,64 +13,51 @@ import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.AbstractMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class ShipsUpdateBlockLoader implements ShipsLoader {
+public class ShipsUpdateBlockLoader {
 
     protected SyncBlockPosition original;
 
-    public ShipsUpdateBlockLoader(SyncBlockPosition position){
+    public ShipsUpdateBlockLoader(SyncBlockPosition position) {
         this.original = position;
     }
 
-    @Override
-    public Vessel load() throws LoadVesselException {
-        Map.Entry<Byte, Vessel> entry = new AbstractMap.SimpleEntry<>((byte)0, null);
-        try {
-            ShipsPlugin
-                    .getPlugin()
-                    .getConfig()
-                    .getDefaultFinder()
-                    .init()
-                    .getConnectedBlocksOvertime(this.original, new OvertimeBlockFinderUpdate() {
-                        @Override
-                        public void onShipsStructureUpdated(PositionableShipsStructure structure) {
-                            try {
-                                entry.setValue(load(structure));
-                            } catch (LoadVesselException e) {
-                                throw new IllegalStateException(e);
-                            }
+    public void loadOvertime(Consumer<Vessel> consumer, Consumer<LoadVesselException> ex) {
+        ShipsPlugin
+                .getPlugin()
+                .getConfig()
+                .getDefaultFinder()
+                .init()
+                .getConnectedBlocksOvertime(this.original, new OvertimeBlockFinderUpdate() {
+                    @Override
+                    public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                        try {
+                            Vessel vessel = load(structure);
+                            consumer.accept(vessel);
+                        } catch (LoadVesselException e) {
+                            ex.accept(e);
                         }
+                    }
 
-                        @Override
-                        public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                            return true;
-                        }
-                    });
-        }catch (IllegalStateException e){
-            if (e.getCause() instanceof LoadVesselException){
-                throw (LoadVesselException) e.getCause();
-            }
-            throw e;
-        }
-        while(entry.getValue() == null){
-            continue;
-        }
-        return entry.getValue();
+                    @Override
+                    public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                        return BlockFindControl.USE;
+                    }
+                });
     }
 
-    private Vessel load(PositionableShipsStructure blocks) throws LoadVesselException{
+    private Vessel load(PositionableShipsStructure blocks) throws LoadVesselException {
         LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
         Optional<SyncBlockPosition> opBlock = blocks.getAll(SignTileEntity.class).stream().filter(b -> {
             LiveSignTileEntity lste = (LiveSignTileEntity) b.getTileEntity().get();
-            if (!ls.isSign(lste)){
+            if (!ls.isSign(lste)) {
                 return false;
             }
             return true;
         }).findAny();
-        if(!opBlock.isPresent()){
+        if (!opBlock.isPresent()) {
             throw new UnableToFindLicenceSign(blocks, "Failed to find licence sign");
         }
         SyncBlockPosition block = opBlock.get();

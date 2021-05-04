@@ -4,7 +4,6 @@ import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
-import org.ships.algorthum.blockfinder.exact.Ships5ExactBlockFinder;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
@@ -24,28 +23,33 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     private Vessel vessel;
     private BlockList list;
 
-    private void getNextBlock(OvertimeBlockFinderUpdate event, BlockPosition position, Direction... directions){
-        if(this.blockLimit != -1 && this.blockCount >= this.blockLimit){
+    private void getNextBlock(OvertimeBlockFinderUpdate event, BlockPosition position, Direction... directions) {
+        if (this.blockLimit != -1 && this.blockCount >= this.blockLimit) {
             return;
         }
         this.blockCount++;
-        for(Direction direction : directions){
+        for (Direction direction : directions) {
             BlockPosition block = position.getRelative(direction);
             BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
-            if(bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
-                if(event != null){
-                    if (!event.onBlockFind(this.shipsStructure, block)){
+            OvertimeBlockFinderUpdate.BlockFindControl blockFind = null;
+            if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
+                if (event != null) {
+                    blockFind = event.onBlockFind(this.shipsStructure, block);
+                    if (blockFind.equals(OvertimeBlockFinderUpdate.BlockFindControl.IGNORE)) {
                         getNextBlock(event, block, directions);
                     }
                 }
-                if (shipsStructure.addPosition(block)){
+                if (shipsStructure.addPosition(block)) {
+                    if (blockFind != null && blockFind.equals(OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH)) {
+                        return;
+                    }
                     getNextBlock(event, block, directions);
                 }
             }
         }
     }
 
-    private PositionableShipsStructure getConnectedBlocks(BlockPosition position, OvertimeBlockFinderUpdate update){
+    private PositionableShipsStructure getConnectedBlocks(BlockPosition position, OvertimeBlockFinderUpdate update) {
         this.blockCount = 0;
         this.shipsStructure = new AbstractPosititionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
@@ -68,7 +72,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
-        runAfterFullSearch.onShipsStructureUpdated(getConnectedBlocks(position));
+        runAfterFullSearch.onShipsStructureUpdated(getConnectedBlocks(position, runAfterFullSearch));
     }
 
     @Override
@@ -90,17 +94,12 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     @Override
     public BasicBlockFinder setConnectedVessel(Vessel vessel) {
         this.vessel = vessel;
-        if(this.vessel != null && this.vessel instanceof BlockListable){
-            this.list = ((BlockListable)this.vessel).getBlockList();
-        }else{
+        if (this.vessel != null && this.vessel instanceof BlockListable) {
+            this.list = ((BlockListable) this.vessel).getBlockList();
+        } else {
             this.list = ShipsPlugin.getPlugin().getBlockList();
         }
         return this;
-    }
-
-    @Override
-    public Ships5ExactBlockFinder getTypeFinder() {
-        return new Ships5ExactBlockFinder(this.list, this.blockLimit);
     }
 
     @Override

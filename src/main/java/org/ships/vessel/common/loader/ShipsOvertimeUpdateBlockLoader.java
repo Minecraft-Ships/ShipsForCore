@@ -18,19 +18,19 @@ import java.util.Optional;
 
 public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoader {
 
-    private class OvertimeRunnable implements OvertimeBlockFinderUpdate{
+    private class OvertimeRunnable implements OvertimeBlockFinderUpdate {
 
         @Override
         public void onShipsStructureUpdated(PositionableShipsStructure structure) {
             LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             Optional<SyncBlockPosition> opBlock = structure.getAll(SignTileEntity.class).stream().filter(b -> {
                 LiveSignTileEntity lste = (LiveSignTileEntity) b.getTileEntity().get();
-                if (!ls.isSign(lste)){
+                if (!ls.isSign(lste)) {
                     return false;
                 }
                 return true;
             }).findAny();
-            if(!opBlock.isPresent()){
+            if (!opBlock.isPresent()) {
                 ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(new UnableToFindLicenceSign(structure, "Failed to find licence sign"));
                 return;
             }
@@ -47,13 +47,15 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
         }
 
         @Override
-        public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+        public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
             return ShipsOvertimeUpdateBlockLoader.this.onBlockFind(currentStructure, block);
         }
     }
 
     protected abstract void onStructureUpdate(Vessel vessel);
-    protected abstract boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block);
+
+    protected abstract OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block);
+
     protected abstract void onExceptionThrown(LoadVesselException e);
 
     public ShipsOvertimeUpdateBlockLoader(SyncBlockPosition position) {

@@ -363,7 +363,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
         if (!player.hasPermission(Permissions.CMD_SHIP_TRACK)) {
             return false;
         }
-        vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.get().getDefaultBlockDetails(), (LivePlayer) source));
+        vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
         CorePlugin.createSchedulerBuilder()
                 .setDisplayName("ShipsTrack:" + vessel.getName())
                 .setDelay(10)

@@ -49,7 +49,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
     protected ConfigurationNode.KnownParser.CollectionKnown<BlockType, Collection<BlockType>> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
     protected ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
     protected ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    protected ConfigurationNode.KnownParser.CollectionKnown<ItemType, Set<ItemType>> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE,"Block", "Fuel", "Types");
+    protected ConfigurationNode.KnownParser.CollectionKnown<ItemType, Set<ItemType>> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     public Submarine(SubmarineType type, LiveSignTileEntity licence) {
         super(licence, type);
@@ -59,36 +59,36 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
         super(ste, position, type);
     }
 
-    public float getSpecialBlockPercent(){
-        if(this.specialBlockPercent == null){
+    public float getSpecialBlockPercent() {
+        if (this.specialBlockPercent == null) {
             return this.getType().getDefaultSpecialBlockPercent();
         }
         return this.specialBlockPercent;
     }
 
-    public int getFuelConsumption(){
-        if(this.fuelConsumption == null){
+    public int getFuelConsumption() {
+        if (this.fuelConsumption == null) {
             return this.getType().getDefaultFuelConsumption();
         }
         return this.fuelConsumption;
     }
 
-    public FuelSlot getFuelSlot(){
-        if(this.fuelSlot == null){
+    public FuelSlot getFuelSlot() {
+        if (this.fuelSlot == null) {
             return this.getType().getDefaultFuelSlot();
         }
         return this.fuelSlot;
     }
 
-    public Set<BlockType> getSpecialBlocks(){
-        if (this.specialBlocks.isEmpty()){
+    public Set<BlockType> getSpecialBlocks() {
+        if (this.specialBlocks.isEmpty()) {
             return this.getType().getDefaultSpecialBlockType();
         }
         return this.specialBlocks;
     }
 
-    public Set<ItemType> getFuelTypes(){
-        if(this.fuelTypes.isEmpty()){
+    public Set<ItemType> getFuelTypes() {
+        if (this.fuelTypes.isEmpty()) {
             return this.getType().getDefaultFuelTypes();
         }
         return this.fuelTypes;
@@ -96,7 +96,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
 
     @Override
     public SubmarineType getType() {
-        return (SubmarineType)super.getType();
+        return (SubmarineType) super.getType();
     }
 
     @Override
@@ -134,34 +134,34 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
     @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.meetsRequirements(context);
-        if(!context.isStrictMovement()){
+        if (!context.isStrictMovement()) {
             return;
         }
         Optional<Integer> opWaterLevel = getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
-        if(!opWaterLevel.isPresent()){
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER.get())));
+        if (!opWaterLevel.isPresent()) {
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }
         int specialBlocks = 0;
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for(MovingBlock block : context.getMovingStructure()){
+        for (MovingBlock block : context.getMovingStructure()) {
             BlockDetails details = block.getStoredBlockData();
-            if(this.getSpecialBlocks().stream().anyMatch(b -> b.equals(details.getType()))){
+            if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(details.getType()))) {
                 specialBlocks++;
             }
             Optional<TileEntitySnapshot<? extends TileEntity>> opTile = details.get(KeyedData.TILED_ENTITY);
-            if(!opTile.isPresent()){
+            if (!opTile.isPresent()) {
                 continue;
             }
-            if(!(opTile.get() instanceof FurnaceTileEntity)){
+            if (!(opTile.get() instanceof FurnaceTileEntity)) {
                 continue;
             }
-            furnaceInventories.add(((FurnaceTileEntity)opTile.get()).getInventory());
+            furnaceInventories.add(((FurnaceTileEntity) opTile.get()).getInventory());
         }
-        float specialBlockPercent = ((specialBlocks * 100.0f)/context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR.get())).count());
-        if((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()){
+        float specialBlockPercent = ((specialBlocks * 100.0f) / context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count());
+        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
-        if(this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())){
+        if (this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
                 Slot slot = this.getFuelSlot().equals(FuelSlot.BOTTOM) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
@@ -172,7 +172,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
                 Slot slot = this.getFuelSlot().equals(FuelSlot.BOTTOM) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
             }).collect(Collectors.toList());
-            if(acceptedSlots.isEmpty()){
+            if (acceptedSlots.isEmpty()) {
                 throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
         }
@@ -181,24 +181,24 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
     @Override
     public void processRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.processRequirements(context);
-        if(!context.isStrictMovement()){
+        if (!context.isStrictMovement()) {
             return;
         }
         Optional<Integer> opWaterLevel = getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
-        if(!opWaterLevel.isPresent()){
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER.get())));
+        if (!opWaterLevel.isPresent()) {
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }
         Set<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for(MovingBlock movingBlock : context.getMovingStructure()){
+        for (MovingBlock movingBlock : context.getMovingStructure()) {
             BlockDetails details = movingBlock.getStoredBlockData();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
-            if(opTiled.isPresent()){
-                if(opTiled.get() instanceof FurnaceTileEntitySnapshot){
+            if (opTiled.isPresent()) {
+                if (opTiled.get() instanceof FurnaceTileEntitySnapshot) {
                     furnaceInventories.add(((FurnaceTileEntitySnapshot) opTiled.get()).getInventory());
                 }
             }
         }
-        if(this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())){
+        if (this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
                 Slot slot = this.getFuelSlot().equals(FuelSlot.BOTTOM) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
@@ -209,14 +209,14 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
                 Slot slot = this.getFuelSlot().equals(FuelSlot.BOTTOM) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().get().getType().equals(type));
             }).collect(Collectors.toList());
-            if(acceptedSlots.isEmpty()){
+            if (acceptedSlots.isEmpty()) {
                 throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
             FurnaceInventory inv = acceptedSlots.get(0);
             Slot slot = this.getFuelSlot().equals(FuelSlot.BOTTOM) ? inv.getSmeltingSlot() : inv.getFuelSlot();
             ItemStack item = slot.getItem().get();
             item = item.copyWithQuantity(item.getQuantity() - this.getFuelConsumption());
-            if(item.getQuantity() == 0){
+            if (item.getQuantity() == 0) {
                 item = null;
             }
             slot.setItem(item);
@@ -224,7 +224,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
     }
 
     @Override
-    public void setStructure(PositionableShipsStructure structure){
+    public void setStructure(PositionableShipsStructure structure) {
         structure.addAir();
         super.setStructure(structure);
     }

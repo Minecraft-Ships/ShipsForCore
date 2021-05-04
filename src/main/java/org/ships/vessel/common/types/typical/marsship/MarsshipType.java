@@ -19,12 +19,12 @@ import java.util.Collections;
 
 public class MarsshipType extends AbstractShipType<Marsship> implements CloneableShipType<Marsship>, SpecialBlockShipType<Marsship> {
 
-    public MarsshipType(){
+    public MarsshipType() {
         this("Marsship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/MarsShip." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
-    public MarsshipType(String name, File file){
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR.get(), BlockTypes.WATER.get());
+    public MarsshipType(String name, File file) {
+        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
     }
 
     public MarsshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {
@@ -46,7 +46,7 @@ public class MarsshipType extends AbstractShipType<Marsship> implements Cloneabl
         this.file.set(MAX_SPEED, 10);
         this.file.set(ALTITUDE_SPEED, 5);
         this.file.set(SPECIAL_BLOCK_PERCENT, 15);
-        this.file.set(SPECIAL_BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE, Collections.singletonList(BlockTypes.DAYLIGHT_DETECTOR.get()));
+        this.file.set(SPECIAL_BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE, Collections.singletonList(BlockTypes.DAYLIGHT_DETECTOR));
     }
 
     @Override

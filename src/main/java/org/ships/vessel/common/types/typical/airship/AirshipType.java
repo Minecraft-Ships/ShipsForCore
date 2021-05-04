@@ -23,20 +23,20 @@ import java.io.File;
 
 public class AirshipType extends AbstractShipType<Airship> implements CloneableShipType<Airship>, SpecialBlockShipType<Airship>, FuelledShipType<Airship> {
 
-    public AirshipType(){
+    public AirshipType() {
         this("Airship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Airship." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
-    public AirshipType(String name, File file){
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR.get());
+    public AirshipType(String name, File file) {
+        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR);
     }
 
     public AirshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {
         super(plugin, displayName, file, types);
     }
 
-    public boolean isUsingBurner(){
-        return this.file.getBoolean(BURNER_BLOCK).get();
+    public boolean isUsingBurner() {
+        return this.file.getBoolean(BURNER_BLOCK).orElse(true);
     }
 
     @Override

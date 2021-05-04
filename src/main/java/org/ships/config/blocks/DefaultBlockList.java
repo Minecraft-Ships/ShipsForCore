@@ -24,11 +24,11 @@ public class DefaultBlockList implements BlockList {
     protected ConfigurationStream.ConfigurationFile file;
     protected Set<BlockInstruction> blocks = new HashSet<>();
 
-    public DefaultBlockList(){
+    public DefaultBlockList() {
         ConfigurationFormat format = CorePlugin.getPlatform().getConfigFormat();
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList." + format.getFileType()[0]);
         this.file = CorePlugin.createConfigurationFile(file, format);
-        if(!this.file.getFile().exists()){
+        if (!this.file.getFile().exists()) {
             recreateFile();
             reloadBlockList();
         }
@@ -37,7 +37,7 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public Set<BlockInstruction> getBlockList() {
-        if(blocks.isEmpty()){
+        if (blocks.isEmpty()) {
             return reloadBlockList();
         }
         return this.blocks;
@@ -50,7 +50,7 @@ public class DefaultBlockList implements BlockList {
         Collection<BlockType> mBlocks = CorePlugin.getPlatform().getBlockTypes();
         mBlocks.forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(DefaultBlockList.this, bt);
-            if(opBlock.isPresent()) {
+            if (opBlock.isPresent()) {
                 blocks.add(opBlock.get());
                 return;
             }
@@ -61,7 +61,7 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
-        BlockInstruction bi = this.blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny().get();
+        BlockInstruction bi = this.blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny().orElseThrow(() -> new IllegalArgumentException("Could not find Block instruction for " + blockInstruction.getType().getName()));
         bi.setCollideType(blockInstruction.getCollideType());
         bi.setBlockLimit(blockInstruction.getBlockLimit());
         return this;
@@ -87,88 +87,88 @@ public class DefaultBlockList implements BlockList {
         int[] mcVersion = CorePlugin.getPlatform().getMinecraftVersion();
         ConfigurationStream.ConfigurationFile file = getFile();
         Set<BlockType> completedBefore = new HashSet<>();
-        BlockTypes.OAK_SIGN.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.OAK_WALL_SIGN.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.PURPUR_BLOCK.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.ANVIL.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.BLACK_GLAZED_TERRACOTTA.get().getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_SIGN.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_WALL_SIGN.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.PURPUR_BLOCK.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ANVIL.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.BLACK_GLAZED_TERRACOTTA.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
         Stream.of(CommonBlockGroups.SHULKER_BOX.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
         Stream.of(CommonBlockGroups.FENCE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
         Stream.of(CommonBlockGroups.FENCE_GATE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
         Stream.of(CommonBlockGroups.DOOR.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
         Stream.of(CommonBlockGroups.PISTON.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
 
-        addToConfig(BlockTypes.JUKEBOX.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.LEVER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.LADDER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.CRAFTING_TABLE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.BRICKS.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.TNT.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.BOOKSHELF.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.GOLD_BLOCK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.IRON_BLOCK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.DIAMOND_BLOCK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.NOTE_BLOCK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.DISPENSER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.LAPIS_BLOCK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.GLASS.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.FURNACE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.CHEST.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.ENDER_CHEST.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.TRAPPED_CHEST.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.GLASS.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.GLASS_PANE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.FIRE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.NETHERRACK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.ENCHANTING_TABLE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.REDSTONE_LAMP.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.EMERALD_BLOCK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.BEACON.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.TRAPPED_CHEST.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.DAYLIGHT_DETECTOR.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.TRAPPED_CHEST.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.HOPPER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.DROPPER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.HAY_BLOCK.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.OBSERVER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.REDSTONE_WIRE.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.CAULDRON.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-        addToConfig(BlockTypes.CAVE_AIR.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
-        addToConfig(BlockTypes.TALL_GRASS.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes.JUKEBOX, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.LEVER, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.LADDER, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.CRAFTING_TABLE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.BRICKS, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.TNT, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.BOOKSHELF, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.GOLD_BLOCK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.IRON_BLOCK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.DIAMOND_BLOCK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.NOTE_BLOCK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.DISPENSER, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.LAPIS_BLOCK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.GLASS, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.FURNACE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.ENDER_CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.TRAPPED_CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.GLASS, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.GLASS_PANE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.FIRE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.NETHERRACK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.ENCHANTING_TABLE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.REDSTONE_LAMP, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.EMERALD_BLOCK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.BEACON, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.TRAPPED_CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.DAYLIGHT_DETECTOR, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.TRAPPED_CHEST, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.HOPPER, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.DROPPER, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.HAY_BLOCK, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.OBSERVER, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.REDSTONE_WIRE, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.CAULDRON, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.CAVE_AIR, BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes.TALL_GRASS, BlockInstruction.CollideType.IGNORE, completedBefore);
 
-        addToConfig(BlockTypes.REDSTONE_WIRE.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes.REDSTONE_WIRE, BlockInstruction.CollideType.IGNORE, completedBefore);
 
-            Stream.of(BlockGroups1V13.LOG.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.WOOD_PLANKS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.BANNER.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.CARPET.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.WOOL.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.BUTTON.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.BED.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.CONCRETE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.CONCRETE_POWDER.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.SLAB.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.STAIRS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.POTTED_SAPLING.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.TORCH.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.STAINED_GLASS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.STAINED_GLASS_PANE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.TERRACOTTA.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.PRESSURE_PLATE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-            Stream.of(BlockGroups1V13.TRAP_DOOR.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.LOG.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.WOOD_PLANKS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.BANNER.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.CARPET.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.WOOL.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.BUTTON.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.BED.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.CONCRETE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.CONCRETE_POWDER.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.SLAB.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.STAIRS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.POTTED_SAPLING.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.TORCH.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.STAINED_GLASS.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.STAINED_GLASS_PANE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.TERRACOTTA.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.PRESSURE_PLATE.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream.of(BlockGroups1V13.TRAP_DOOR.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
 
 
-            Stream.of(BlockGroups1V13.SAPLING.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.IGNORE, completedBefore));
-            addToConfig(BlockTypes1V13.DANDELION.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
-            addToConfig(BlockTypes1V13.KELP.get(), BlockInstruction.CollideType.IGNORE, completedBefore);
-            addToConfig(BlockTypes1V13.REPEATER.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
-            addToConfig(BlockTypes1V13.COMPARATOR.get(), BlockInstruction.CollideType.MATERIAL, completedBefore);
+        Stream.of(BlockGroups1V13.SAPLING.getGrouped()).forEach(t -> addToConfig(t, BlockInstruction.CollideType.IGNORE, completedBefore));
+        addToConfig(BlockTypes1V13.DANDELION, BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes1V13.KELP, BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes1V13.REPEATER, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes1V13.COMPARATOR, BlockInstruction.CollideType.MATERIAL, completedBefore);
         CorePlugin.getPlatform().getBlockTypes().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
         file.save();
     }
 
-    private void addToConfig(BlockType type, BlockInstruction.CollideType collide, Set<BlockType> current){
-        if(current.stream().anyMatch(c -> c.equals(type))){
+    private void addToConfig(BlockType type, BlockInstruction.CollideType collide, Set<BlockType> current) {
+        if (current.stream().anyMatch(c -> c.equals(type))) {
             return;
         }
         String[] idSplit = type.getId().split(":");

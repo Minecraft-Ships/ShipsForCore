@@ -2,7 +2,6 @@ package org.ships.event.listener;
 
 import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
-import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.Player;
 import org.core.entity.scene.droppeditem.DroppedItem;
@@ -47,6 +46,7 @@ import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.PlayerStatesFlag;
 import org.ships.vessel.common.loader.ShipsBlockFinder;
 import org.ships.vessel.common.loader.ShipsIDFinder;
+import org.ships.vessel.common.loader.ShipsOvertimeBlockFinder;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
@@ -62,13 +62,13 @@ import java.util.*;
 public class CoreEventListener implements EventListener {
 
     @HEvent
-    public void onPlayerCommand(EntityCommandEvent event){
+    public void onPlayerCommand(EntityCommandEvent event) {
         Optional<String> opLoginCommand = ShipsPlugin.getPlugin().getConfig().getDefaultLoginCommand();
-        if(!opLoginCommand.isPresent()){
+        if (!opLoginCommand.isPresent()) {
             return;
         }
-        if (!ArrayUtils.toString(", ", t -> t, event.getCommand()).toLowerCase().startsWith(opLoginCommand.get().toLowerCase())){
-    return;
+        if (!ArrayUtils.toString(", ", t -> t, event.getCommand()).toLowerCase().startsWith(opLoginCommand.get().toLowerCase())) {
+            return;
         }
         CorePlugin
                 .createSchedulerBuilder()
@@ -79,15 +79,15 @@ public class CoreEventListener implements EventListener {
     }
 
     @HEvent
-    public void onPlaceEvent(BlockChangeEvent.Place event){
+    public void onPlaceEvent(BlockChangeEvent.Place event) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         DefaultBlockList list = ShipsPlugin.getPlugin().getBlockList();
-        if(!config.isStructureClickUpdating()){
+        if (!config.isStructureClickUpdating()) {
             return;
         }
-        for(Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())){
+        for (Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())) {
             SyncBlockPosition position = event.getPosition().getRelative(direction);
-            if(!list.getBlockInstruction(position.getBlockType()).getCollideType().equals(BlockInstruction.CollideType.MATERIAL)){
+            if (!list.getBlockInstruction(position.getBlockType()).getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
                 continue;
             }
             try {
@@ -99,8 +99,8 @@ public class CoreEventListener implements EventListener {
     }
 
     @HEvent
-    public void onEntitySpawnEvent(EntitySpawnEvent event){
-        if(!(event.getEntity() instanceof DroppedItem)){
+    public void onEntitySpawnEvent(EntitySpawnEvent event) {
+        if (!(event.getEntity() instanceof DroppedItem)) {
             return;
         }
         boolean bool = ShipsPlugin.getPlugin().getVessels().stream().filter(e -> {
@@ -110,7 +110,7 @@ public class CoreEventListener implements EventListener {
             Optional<MovementContext> opSet = v.getValue(MovingFlag.class);
             return opSet.map(movementContext -> movementContext.getMovingStructure().stream().anyMatch(mb -> (mb.getBeforePosition().equals(event.getPosition().toBlockPosition())) || (mb.getAfterPosition().equals(event.getPosition().toBlockPosition())))).orElse(false);
         });
-        if(bool) {
+        if (bool) {
             event.setCancelled(true);
         }
     }
@@ -120,24 +120,24 @@ public class CoreEventListener implements EventListener {
         onPlayerJoin(event.getEntity());
     }
 
-    public void onPlayerJoin(Player<?> player){
+    public void onPlayerJoin(Player<?> player) {
         for (Vessel vessel : ShipsPlugin.getPlugin().getVessels()) {
             if (!(vessel instanceof ShipsVessel)) {
                 continue;
             }
             ShipsVessel shipsVessel = (ShipsVessel) vessel;
             Optional<PlayerStatesFlag> opFlag = shipsVessel.get(PlayerStatesFlag.class);
-            if(!opFlag.isPresent()){
+            if (!opFlag.isPresent()) {
                 continue;
             }
             Map<UUID, Vector3<Double>> map = opFlag.get().getValue().get();
             Vector3<Double> vector = map.get(player.getUniqueId());
-            if(vector == null){
+            if (vector == null) {
                 continue;
             }
             SyncBlockPosition sPos = vessel.getPosition();
             SyncExactPosition position = sPos.toExactPosition().getRelative(vector);
-            if(!position.equals(player.getPosition())) {
+            if (!position.equals(player.getPosition())) {
                 player.setPosition(position);
             }
             Optional<MovingFlag> opMovingFlag = shipsVessel.get(MovingFlag.class);
@@ -145,78 +145,77 @@ public class CoreEventListener implements EventListener {
         }
     }
 
-    public void onPlayerLeave(Player<?> player, ExactPosition position){
-        for (Vessel vessel : ShipsPlugin.getPlugin().getVessels()) {
-            if(!(vessel instanceof ShipsVessel)){
-                continue;
+    public void onPlayerLeave(Player<?> player, ExactPosition position) {
+        BlockPosition block = position.toBlockPosition().getRelative(FourFacingDirection.DOWN);
+        new ShipsOvertimeBlockFinder(block).loadOvertime(vessel -> {
+            if (!(vessel instanceof ShipsVessel)) {
+                return;
             }
-            ShipsVessel shipsVessel = (ShipsVessel)vessel;
+            ShipsVessel shipsVessel = (ShipsVessel) vessel;
             PlayerStatesFlag flag = shipsVessel.get(PlayerStatesFlag.class).orElse(new PlayerStatesFlag());
-            vessel.getEntitiesOvertime(ShipsPlugin.getPlugin().getConfig().getEntityTrackingLimit(), player::equals, s -> {}, c -> {
-                Map<UUID, Vector3<Double>> map = flag.getValue().get();
-                for(LiveEntity entity : c) {
-                    double x = entity.getPosition().getX() - vessel.getPosition().getX();
-                    double y = entity.getPosition().getY() - vessel.getPosition().getY();
-                    double z = entity.getPosition().getZ() - vessel.getPosition().getZ();
-                    map.put(((LivePlayer)entity).getUniqueId(), Vector3.valueOf(x, y, z));
-                }
-                if(c.isEmpty()){
-                    map.remove(player.getUniqueId());
-                }
-                flag.setValue(map);
-                vessel.set(flag);
-                vessel.save();
-            });
-        }
+            Map<UUID, Vector3<Double>> map = flag.getValue().orElse(new HashMap<>());
+            UUID uuid = player.getUniqueId();
+            Vector3<Double> vector = position.getPosition().minus(shipsVessel.getPosition().toExactPosition().getPosition());
+
+            if (map.containsKey(uuid)) {
+                map.replace(uuid, vector);
+            } else {
+                map.put(uuid, vector);
+            }
+            flag.setValue(map);
+            vessel.set(flag);
+            vessel.save();
+        }, (pss) -> {
+        });
     }
 
     @HEvent(priority = EventPriority.HIGHEST)
-    public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event){
-onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
+    public void onPlayerLeaveEvent(ClientConnectionEvent.Leave event) {
+        onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
     }
 
     @HEvent
-    public void onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer event){
+    public void onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer event) {
         SyncBlockPosition position = event.getInteractPosition();
         Optional<LiveTileEntity> opTE = position.getTileEntity();
-        if(!opTE.isPresent()){
+        if (!opTE.isPresent()) {
             return;
         }
-        if(!(opTE.get() instanceof LiveSignTileEntity)){
+        if (!(opTE.get() instanceof LiveSignTileEntity)) {
             return;
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
-            if(ShipsSign.LOCKED_SIGNS.stream().anyMatch(b -> b.equals(position))){
+            if (ShipsSign.LOCKED_SIGNS.stream().anyMatch(b -> b.equals(position))) {
                 event.getEntity().sendMessagePlain("Sign is moving ship already");
                 return;
             }
             boolean cancel = event.getClickAction() == EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position) : s.onSecondClick(event.getEntity(), position);
-            if(cancel){
+            if (cancel) {
                 event.setCancelled(true);
             }
         });
     }
 
     @HEvent
-    public void onSignChangeEvent(SignChangeEvent.ByPlayer event){
-        if(ShipsPlugin.getPlugin().getConfig().getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())){
+    public void onSignChangeEvent(SignChangeEvent.ByPlayer event) {
+        if (ShipsPlugin.getPlugin().getConfig().getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())) {
             return;
         }
         ShipsSign sign = null;
         boolean register = false;
         Optional<Text> opFirstLine = event.getFrom().getLine(0);
-        if(!opFirstLine.isPresent()){
+        if (!opFirstLine.isPresent()) {
             return;
         }
         Text line = opFirstLine.get();
-        if(line.equalsPlain("[Ships]", true)) {
+        if (line.equalsPlain("[Ships]", true)) {
             sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             register = true;
-        }else if(ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> s.getFirstLine().equalsPlain(line.toPlain(), true))){
+        } else if (ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> s.getFirstLine().equalsPlain(line.toPlain(), true))) {
             sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.getFirstLine().equalsPlain(line.toPlain(), true)).findAny().get();
         }
-        if(sign == null){
+        if (sign == null) {
             return;
         }
         SignTileEntitySnapshot stes;
@@ -227,11 +226,11 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
             event.getEntity().sendMessagePlain("Error: " + e.getMessage());
             return;
         }
-        if(register){
+        if (register) {
             Text typeText = stes.getLine(1).get();
             ShipType<? extends Vessel> type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> typeText.equalsPlain(t.getDisplayName(), true)).findAny().get();
             String permission = Permissions.getMakePermission(type);
-            if(!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))){
+            if (!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
                 event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission: " + permission));
                 event.setCancelled(true);
                 return;
@@ -244,7 +243,7 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
             } catch (LoadVesselException ignored) {
             }
             try {
-                for(Direction direction : FourFacingDirection.getFourFacingDirections()) {
+                for (Direction direction : FourFacingDirection.getFourFacingDirections()) {
                     new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
                     event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Can not create a new ship ontop of another ship"));
                 }
@@ -253,7 +252,7 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
             ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
             int trackSize = config.getDefaultTrackSize();
             ServerBossBar bar = null;
-            if(ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
+            if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
                 bar = CorePlugin.createBossBar().setMessage(CorePlugin.buildText("0 / " + trackSize)).register(event.getEntity());
             }
             final ServerBossBar finalBar = bar;
@@ -261,20 +260,20 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                 @Override
                 public void onShipsStructureUpdated(PositionableShipsStructure structure) {
-                    if(finalBar != null) {
+                    if (finalBar != null) {
                         finalBar.setMessage(CorePlugin.buildText("Complete"));
                     }
                     Vessel vessel = type.createNewVessel(stes, event.getPosition());
-                    if(vessel instanceof TeleportToVessel){
+                    if (vessel instanceof TeleportToVessel) {
                         ((TeleportToVessel) vessel).setTeleportPosition(bp);
                     }
                     vessel.setStructure(structure);
-                    if(vessel instanceof CrewStoredVessel){
-                        ((CrewStoredVessel)vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
+                    if (vessel instanceof CrewStoredVessel) {
+                        ((CrewStoredVessel) vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
                     }
                     VesselCreateEvent.Pre preEvent = new VesselCreateEvent.Pre.BySign(vessel, event.getEntity());
                     CorePlugin.getEventManager().callEvent(preEvent);
-                    if(preEvent.isCancelled()){
+                    if (preEvent.isCancelled()) {
                         if (finalBar != null) {
                             finalBar.deregisterPlayers();
                         }
@@ -292,13 +291,13 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
                 }
 
                 @Override
-                public boolean onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                    if(finalBar != null) {
+                public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                    if (finalBar != null) {
                         int blockAmount = (currentStructure.getPositions().size() + 1);
                         finalBar.setMessage(CorePlugin.buildText(blockAmount + " / " + trackSize));
                         finalBar.setValue(blockAmount, trackSize);
                     }
-                    return true;
+                    return BlockFindControl.USE;
                 }
             });
 
@@ -307,11 +306,11 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
     }
 
     @HEvent
-    public void onBlockExplode(BlockChangeEvent.Break.Pre.ByExplosion event){
+    public void onBlockExplode(BlockChangeEvent.Break.Pre.ByExplosion event) {
         SyncBlockPosition position = event.getPosition();
         List<Direction> directions = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
         directions.add(FourFacingDirection.NONE);
-        for(Direction direction : directions) {
+        for (Direction direction : directions) {
             if (!(position.getRelative(direction).getTileEntity().isPresent())) {
                 continue;
             }
@@ -324,12 +323,12 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
             if (!licenceSign.isSign(sign)) {
                 continue;
             }
-            if(!direction.equals(FourFacingDirection.NONE)){
+            if (!direction.equals(FourFacingDirection.NONE)) {
                 Optional<Direction> opAttachable = position.getRelative(direction).getBlockDetails().get(AttachableKeyedData.class);
-                if(!opAttachable.isPresent()){
+                if (!opAttachable.isPresent()) {
                     continue;
                 }
-                if(!opAttachable.get().getOpposite().equals(direction)){
+                if (!opAttachable.get().getOpposite().equals(direction)) {
                     continue;
                 }
             }
@@ -339,14 +338,14 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
     }
 
     @HEvent
-    public void onBlockBreak(BlockChangeEvent.Break.Pre event){
+    public void onBlockBreak(BlockChangeEvent.Break.Pre event) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         List<Direction> list = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
         list.add(FourFacingDirection.NONE);
         SyncBlockPosition position = event.getPosition();
-        for(Direction direction : list) {
+        for (Direction direction : list) {
             SyncBlockPosition pos = position.getRelative(direction);
-            if(config.isStructureClickUpdating()) {
+            if (config.isStructureClickUpdating()) {
                 try {
                     Vessel vessel = new ShipsBlockFinder(pos).load();
                     vessel.getStructure().removePosition(pos);
@@ -357,20 +356,20 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
                 continue;
             }
             LiveTileEntity lte = pos.getTileEntity().get();
-            if(!(lte instanceof LiveSignTileEntity)){
+            if (!(lte instanceof LiveSignTileEntity)) {
                 continue;
             }
-            LiveSignTileEntity lste = (LiveSignTileEntity)lte;
+            LiveSignTileEntity lste = (LiveSignTileEntity) lte;
             LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             if (!licenceSign.isSign(lste)) {
                 continue;
             }
-            if(!direction.equals(FourFacingDirection.NONE)){
+            if (!direction.equals(FourFacingDirection.NONE)) {
                 Optional<Direction> opAttachable = position.getRelative(direction).getBlockDetails().get(AttachableKeyedData.class);
-                if(!opAttachable.isPresent()){
+                if (!opAttachable.isPresent()) {
                     continue;
                 }
-                if(!opAttachable.get().getOpposite().equals(direction)){
+                if (!opAttachable.get().getOpposite().equals(direction)) {
                     continue;
                 }
             }
@@ -379,15 +378,15 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
                 continue;
             }
             Vessel vessel = opVessel.get();
-            if(vessel instanceof CrewStoredVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
+            if (vessel instanceof CrewStoredVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
                 LivePlayer player = ((BlockChangeEvent.Break.Pre.ByPlayer) event).getEntity();
-                if (!(((CrewStoredVessel)vessel).getPermission(player.getUniqueId()).canRemove() || (player.hasPermission(Permissions.ABSTRACT_SHIP_MOVE_OTHER)))) {
+                if (!(((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() || (player.hasPermission(Permissions.ABSTRACT_SHIP_MOVE_OTHER)))) {
                     event.setCancelled(true);
                     return;
                 }
             }
-            if(vessel instanceof FileBasedVessel) {
-                File file = ((FileBasedVessel)vessel).getFile();
+            if (vessel instanceof FileBasedVessel) {
+                File file = ((FileBasedVessel) vessel).getFile();
                 try {
                     Files.delete(file.toPath());
                 } catch (IOException e) {
@@ -396,7 +395,7 @@ onPlayerLeave(event.getEntity(), event.getEntity().getPosition());
                 }
             }
             ShipsPlugin.getPlugin().unregisterVessel(vessel);
-            if(event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
+            if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
                 ((BlockChangeEvent.Break.Pre.ByPlayer) event).getEntity().sendMessage(CorePlugin.buildText(TextColours.AQUA + vessel.getName() + " removed successfully"));
             }
             return;
