@@ -42,7 +42,6 @@ public class ShipsOvertimeBlockFinder {
                     exceptionRunner.accept(structure);
                     return;
                 }
-                System.out.println("Found: " + structure.getOriginalRelativePositions().size() + " | Structure: " + passed.getValue().getStructure().getOriginalRelativePositions().size());
                 consumer.accept(passed.getValue());
             }
 

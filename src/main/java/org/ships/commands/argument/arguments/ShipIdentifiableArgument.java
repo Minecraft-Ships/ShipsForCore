@@ -3,7 +3,7 @@ package org.ships.commands.argument.arguments;
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ShipIdentifiableArgument<T extends Identifable> implements CommandArgument<T> {
+public class ShipIdentifiableArgument<T extends Identifiable> implements CommandArgument<T> {
 
     private final String id;
     private final Class<T> type;
@@ -62,7 +62,7 @@ public class ShipIdentifiableArgument<T extends Identifable> implements CommandA
                 .parallelStream()
                 .filter(i -> i.getId().startsWith(arg.toLowerCase()) || i.getName().startsWith(arg.toLowerCase()))
                 .filter(this.predicate)
-                .map(Identifable::getId)
+                .map(Identifiable::getId)
                 .collect(Collectors.toList());
     }
 }

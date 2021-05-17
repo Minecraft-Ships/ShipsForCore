@@ -1,13 +1,14 @@
 package org.ships.plugin;
 
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.CommandRegister;
 import org.core.platform.Plugin;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
-import org.core.text.Text;
-import org.core.text.TextColours;
-import org.core.utils.Identifable;
+import org.core.source.command.ConsoleSource;
+import org.core.utils.Identifiable;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
@@ -17,6 +18,7 @@ import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.debug.DebugFile;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.config.messages.MessageConfig;
 import org.ships.event.listener.CoreEventListener;
 import org.ships.movement.BlockPriority;
@@ -29,8 +31,6 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.common.types.typical.ShipsVessel;
-import org.ships.vessel.converts.ShipsConverter;
 import org.ships.vessel.converts.vessel.VesselConverter;
 import org.ships.vessel.converts.vessel.shipsfive.Ships5VesselConverter;
 import org.ships.vessel.sign.*;
@@ -46,15 +46,17 @@ public abstract class ShipsPlugin implements Plugin {
 
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
-    private final Set<Identifable> identifable = new HashSet<>();
+    private final Set<Identifiable> identifable = new HashSet<>();
     private final Set<CrewPermission> defaultPermissions = new HashSet<>(Arrays.asList(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER));
     private final DefaultBlockList blockList;
-    private final MessageConfig messageConfig;
+    private final @Deprecated
+    MessageConfig messageConfig;
+    private final AdventureMessageConfig aMessageConfig;
     private final ShipsConfig config;
     private final DebugFile debugFile;
     private final Set<Vessel> vessels = new HashSet<>();
 
-    public static final double PRERELEASE_VERSION = 11.2;
+    public static final double PRERELEASE_VERSION = 11.3;
     public static final String PRERELEASE_TAG = "Beta";
 
     public ShipsPlugin() {
@@ -63,6 +65,7 @@ public abstract class ShipsPlugin implements Plugin {
         LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
         this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
         this.messageConfig = new MessageConfig();
+        this.aMessageConfig = new AdventureMessageConfig();
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
         CorePlugin.getEventManager().register(this, new CoreEventListener());
@@ -85,8 +88,13 @@ public abstract class ShipsPlugin implements Plugin {
 
     public abstract File getShipsConigFolder();
 
+    @Deprecated
     public MessageConfig getMessageConfig() {
         return this.messageConfig;
+    }
+
+    public AdventureMessageConfig getAdventureMessageConfig() {
+        return this.aMessageConfig;
     }
 
     public void loadCustomShipType() {
@@ -95,7 +103,9 @@ public abstract class ShipsPlugin implements Plugin {
             File folderType = new File(folder, type.getId().replace(":", ".") + "/");
             File[] files = folderType.listFiles();
             if (files == null) {
-                folderType.mkdirs();
+                if (!folderType.exists() && !folderType.mkdirs()) {
+                    System.err.println("Could not create folder at '" + folderType.getPath() + "'");
+                }
                 continue;
             }
             for (File file : files) {
@@ -109,28 +119,20 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public void loadConverts() {
-        getAll(ShipsConverter.class).forEach(c -> {
+        getAll(VesselConverter.class).forEach(c -> {
             File folder = c.getFolder();
             File[] files = folder.listFiles();
             if (files == null) {
                 return;
             }
             Stream.of(files).filter(f -> !f.isDirectory()).forEach(f -> {
-                if (c instanceof VesselConverter) {
-                    try {
-                        registerVessel((Vessel) c.convert(f));
-                    } catch (IOException e) {
-                        System.err.println("Error converting vessel with " + c.getId() + " at: " + f.getPath());
-                        e.printStackTrace();
-                    }
-                } else {
-                    try {
-                        System.err.println("Error converting file with " + c.getId() + " at: " + f.getPath());
-                        register(c.convert(f));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    registerVessel(c.convert(f));
+                } catch (IOException e) {
+                    System.err.println("Error converting vessel with " + c.getId() + " at: " + f.getPath());
+                    e.printStackTrace();
                 }
+
             });
         });
     }
@@ -169,24 +171,27 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public void getLoadedMessages() {
-        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.RED + "------[Ships Loaded Information][Start]------"));
+        ConsoleSource source = CorePlugin.getConsole();
+        source.sendMessage(AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
+
         displayMessage(BasicBlockFinder.class, "BlockFinders", bf -> "");
         displayMessage(BasicMovement.class, "MovementMethods", bm -> "");
         displayMessage(BlockPriority.class, "BlockPriorities", bp -> bp.getPriorityNumber() + "");
         displayMessage(ShipsSign.class, "Signs", sn -> "");
         displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + (st.getDisplayName().length() > 7 ? "\t" : "\t\t") + st.getFile().getFile().getPath());
-        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.AQUA + "Vessels: " + TextColours.YELLOW + this.vessels.size()));
-        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.RED + "------[Ships Loaded Information][End]------"));
+        source.sendMessage(AText.ofPlain("Vessels: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
+        source.sendMessage(AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
     }
 
-    private <I extends Identifable> void displayMessage(Class<I> class1, String name, Function<I, String> function) {
+    private <I extends Identifiable> void displayMessage(Class<I> class1, String name, Function<I, String> function) {
         Set<I> values = getAll(class1);
-        CorePlugin.getConsole().sendMessage(CorePlugin.buildText(TextColours.AQUA + "Found " + name + ": " + values.size()));
+        ConsoleSource source = CorePlugin.getConsole();
+        source.sendMessage(AText.ofPlain("Found " + name + ": " + values.size()).withColour(NamedTextColours.AQUA));
         values.forEach(v -> {
             String id = v.getId();
             String text = function.apply(v);
-            Text ret = CorePlugin.buildText(TextColours.YELLOW + "\t- " + id + (id.length() > 13 ? "\t" : "\t\t") + text);
-            CorePlugin.getConsole().sendMessage(ret);
+            AText ret = AText.ofPlain("\t- " + id + (id.length() > 13 ? "\t" : "\t\t") + text).withColour(NamedTextColours.YELLOW);
+            source.sendMessage(ret);
         });
     }
 
@@ -206,15 +211,12 @@ public abstract class ShipsPlugin implements Plugin {
         return this.vessels;
     }
 
-    public <T extends Identifable> Set<T> getAll(Class<T> class1) {
-        if (ShipsVessel.class.isAssignableFrom(class1)) {
-            return (Set<T>) (Set<? extends Vessel>) this.vessels.stream().filter(v -> v instanceof ShipsVessel).collect(Collectors.toSet());
-        }
-        return (Set<T>) identifable.stream().filter(class1::isInstance).collect(Collectors.toSet());
+    public <T extends Identifiable> Set<T> getAll(Class<T> class1) {
+        return identifable.stream().filter(class1::isInstance).map(t -> (T) t).collect(Collectors.toSet());
     }
 
-    public <T extends Identifable> Optional<T> get(Class<T> class1) {
-        return (Optional<T>) identifable.stream().filter(class1::isInstance).findAny();
+    public <T extends Identifiable> Optional<T> get(Class<T> class1) {
+        return identifable.stream().filter(class1::isInstance).map(t -> (T) t).findAny();
     }
 
     public Map<String, VesselFlag.Builder<?, ?>> getVesselFlags() {
@@ -225,16 +227,16 @@ public abstract class ShipsPlugin implements Plugin {
         this.vessels.add(vessel);
     }
 
-    public void unregisterVessel(Vessel... vessels) {
-        this.vessels.removeAll(Arrays.asList(vessels));
+    public void unregisterVessel(@NotNull Vessel vessel) {
+        this.vessels.remove(vessel);
     }
 
-    public void register(Identifable... identifables) {
-        this.identifable.addAll(Arrays.asList(identifables));
+    public void register(Identifiable... identifiables) {
+        this.identifable.addAll(Arrays.asList(identifiables));
     }
 
-    public void unregister(Identifable... identifables) {
-        this.identifable.removeAll(Arrays.asList(identifables));
+    public void unregister(Identifiable... identifiables) {
+        Arrays.asList(identifiables).forEach(this.identifable::remove);
     }
 
     public void register(CrewPermission... permissions) {

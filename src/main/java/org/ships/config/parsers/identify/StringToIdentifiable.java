@@ -1,7 +1,7 @@
 package org.ships.config.parsers.identify;
 
 import org.core.config.parser.StringParser;
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 import org.ships.plugin.ShipsPlugin;
 
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class StringToIdentifiable<T extends Identifable> implements StringParser.Suggestible<T> {
+public class StringToIdentifiable<T extends Identifiable> implements StringParser.Suggestible<T> {
 
     protected Class<T> class1;
 

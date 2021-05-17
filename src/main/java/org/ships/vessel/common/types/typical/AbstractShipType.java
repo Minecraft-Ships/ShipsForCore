@@ -8,6 +8,7 @@ import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.item.ItemType;
 import org.core.platform.Plugin;
 import org.core.world.position.block.BlockType;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.config.parsers.VesselFlagWrappedParser;
 import org.ships.plugin.ShipsPlugin;
@@ -21,18 +22,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public abstract class AbstractShipType<V extends Vessel> implements SerializableShipType<V> {
 
-    protected final String displayName;
-    protected final Plugin plugin;
-    protected final Set<VesselFlag<?>> flags = new HashSet<>();
-    protected final BlockType[] types;
-    protected final ExpandedBlockList blockList;
-    protected final ConfigurationStream.ConfigurationFile file;
+    protected final @NotNull String displayName;
+    protected final @NotNull Plugin plugin;
+    protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>();
+    protected final @NotNull BlockType[] types;
+    protected final @NotNull ExpandedBlockList blockList;
+    protected final @NotNull ConfigurationStream.ConfigurationFile file;
 
     public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
     public static final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
@@ -65,19 +65,10 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
                 }
             })), i -> i.getId().replaceAll(":", " "), "Meta", "Flags");
 
-    protected abstract void createDefault(ConfigurationStream.ConfigurationFile file);
+    protected abstract void createDefault(@NotNull ConfigurationStream.ConfigurationFile file);
 
-    public AbstractShipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types){
-        if(plugin == null){
-            throw new NullPointerException("ShipType constructor failed: Plugin cannot be null");
-        }
-        if(displayName == null){
-            throw new NullPointerException("ShipType constructor failed: DisplayName cannot be null");
-        }
-        if(file == null){
-            throw new NullPointerException("ShipType constructor failed: File cannot be null");
-        }
-        if(types.length == 0){
+    public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
+        if (types.length == 0) {
             throw new NullPointerException("ShipType constructor failed: Type cannot be empty");
         }
         this.plugin = plugin;
@@ -85,44 +76,44 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
         this.types = types;
         this.file = file;
         this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
-        if(!this.file.getFile().exists()){
+        if (!this.file.getFile().exists()) {
             this.createDefault(this.file);
             this.file.save();
         }
     }
 
     @Override
-    public String getDisplayName() {
+    public @NotNull String getDisplayName() {
         return this.displayName;
     }
 
     @Override
-    public Plugin getPlugin() {
+    public @NotNull Plugin getPlugin() {
         return this.plugin;
     }
 
     @Override
-    public ExpandedBlockList getDefaultBlockList() {
+    public @NotNull ExpandedBlockList getDefaultBlockList() {
         return this.blockList;
     }
 
     @Override
-    public ConfigurationStream.ConfigurationFile getFile() {
+    public @NotNull ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
     }
 
     @Override
     public int getDefaultMaxSpeed() {
-        return this.getFile().parse(MAX_SPEED, Parser.STRING_TO_INTEGER).get();
+        return this.getFile().parse(MAX_SPEED, Parser.STRING_TO_INTEGER).orElseThrow(() -> new IllegalStateException("Could not get max speed from " + this.displayName));
     }
 
     @Override
     public int getDefaultAltitudeSpeed() {
-        return this.getFile().parse(ALTITUDE_SPEED, Parser.STRING_TO_INTEGER).get();
+        return this.getFile().parse(ALTITUDE_SPEED, Parser.STRING_TO_INTEGER).orElseThrow(() -> new IllegalStateException("Could not get altitude speed from " + this.displayName));
     }
 
     @Override
-    public Optional<Integer> getDefaultMaxSize() {
+    public @NotNull Optional<Integer> getDefaultMaxSize() {
         return this.getFile().parse(MAX_SIZE, Parser.STRING_TO_INTEGER);
     }
 
@@ -137,7 +128,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     }
 
     @Override
-    public Set<VesselFlag<?>> getFlags() {
+    public @NotNull Set<VesselFlag<?>> getFlags() {
         return this.flags;
     }
 

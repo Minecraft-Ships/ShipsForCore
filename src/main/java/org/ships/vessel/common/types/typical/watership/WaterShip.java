@@ -11,7 +11,9 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.MoveException;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.result.AbstractFailedMovement;
@@ -35,7 +37,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     protected ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
     protected ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
 
-    public WaterShip(WaterShipType type, LiveSignTileEntity licence) {
+    public WaterShip(WaterShipType type, LiveSignTileEntity licence) throws NoLicencePresent {
         super(licence, type);
         this.flags.add(new AltitudeLockFlag(true));
     }
@@ -60,7 +62,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
-    public WaterShipType getType() {
+    public @NotNull WaterShipType getType() {
         return (WaterShipType) super.getType();
     }
 
@@ -108,7 +110,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
-    public Map<String, String> getExtraInformation() {
+    public @NotNull Map<String, String> getExtraInformation() {
         Map<String, String> map = new HashMap<>();
         map.put("Special Block", ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
         map.put("Required Percent", this.getSpecialBlockPercent() + "");
@@ -137,7 +139,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
-    public void setStructure(PositionableShipsStructure structure) {
+    public void setStructure(@NotNull PositionableShipsStructure structure) {
         structure.addAir();
         super.setStructure(structure);
     }

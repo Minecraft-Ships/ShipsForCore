@@ -7,7 +7,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
 import org.core.text.TextColours;
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -21,6 +21,7 @@ import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.loader.ShipsLicenceSignFinder;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
@@ -85,8 +86,8 @@ public class LicenceSign implements ShipsSign {
         try {
             Vessel s = new ShipsLicenceSignFinder(position).load();
             if (!player.isSneaking()) {
-                if (s instanceof Identifable) {
-                    player.sudo("ships", "ship", ((Identifable) s).getId(), "info");
+                if (s instanceof IdentifiableShip) {
+                    player.sudo("ships", "ship", ((IdentifiableShip) s).getId(), "info");
                 }
             } else {
                 int size = s.getStructure().getPositions().size();

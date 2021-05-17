@@ -2,6 +2,7 @@ package org.ships.event.listener;
 
 import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.Player;
 import org.core.entity.scene.droppeditem.DroppedItem;
@@ -17,6 +18,7 @@ import org.core.event.events.entity.EntitySpawnEvent;
 import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
 import org.core.text.TextColours;
+import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
@@ -34,6 +36,7 @@ import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.create.VesselCreateEvent;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.movement.MovementContext;
 import org.ships.permissions.Permissions;
@@ -396,7 +399,8 @@ public class CoreEventListener implements EventListener {
             }
             ShipsPlugin.getPlugin().unregisterVessel(vessel);
             if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
-                ((BlockChangeEvent.Break.Pre.ByPlayer) event).getEntity().sendMessage(CorePlugin.buildText(TextColours.AQUA + vessel.getName() + " removed successfully"));
+                LivePlayer player = ((BlockChangeEvent.Break.Pre.ByPlayer) event).getEntity();
+                player.sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " removed successfully"));
             }
             return;
         }

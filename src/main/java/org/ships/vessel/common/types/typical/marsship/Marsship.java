@@ -10,7 +10,10 @@ import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.MoveException;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
 import org.ships.movement.result.AbstractFailedMovement;
@@ -27,14 +30,14 @@ import java.util.Set;
 
 public class Marsship extends AbstractShipsVessel implements AirType, org.ships.vessel.common.assits.VesselRequirement {
 
-    protected Float specialBlockPercent;
-    protected Set<BlockType> specialBlocks = new HashSet<>();
+    protected @Nullable Float specialBlockPercent;
+    protected @NotNull Set<BlockType> specialBlocks = new HashSet<>();
 
     protected ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
     protected ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
 
 
-    public Marsship(MarsshipType type, LiveSignTileEntity licence) {
+    public Marsship(MarsshipType type, LiveSignTileEntity licence) throws NoLicencePresent {
         super(licence, type);
     }
 
@@ -56,12 +59,12 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
         return this.specialBlocks;
     }
 
-    public MarsshipType getType() {
+    public @NotNull MarsshipType getType() {
         return (MarsshipType) super.getType();
     }
 
     @Override
-    public Map<String, String> getExtraInformation() {
+    public @NotNull Map<String, String> getExtraInformation() {
         Map<String, String> map = new HashMap<>();
         map.put("Special Block", ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
         map.put("Required Percent", this.getSpecialBlockPercent() + "");
@@ -69,7 +72,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
     }
 
     @Override
-    public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
+    public @NotNull Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configSpecialBlockType, this.getSpecialBlocks());
         map.put(this.configSpecialBlockPercent, this.getSpecialBlockPercent());

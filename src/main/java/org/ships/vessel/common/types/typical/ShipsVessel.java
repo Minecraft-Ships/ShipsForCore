@@ -1,13 +1,14 @@
 package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
-import org.core.utils.Identifable;
+import org.core.text.Text;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.impl.sync.SyncPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.blocks.BlockListable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
@@ -24,31 +25,32 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, Identifable {
+public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, IdentifiableShip {
 
-    Map<String, String> getExtraInformation();
-    Collection<VesselFlag<?>> getFlags();
+    @NotNull Map<String, String> getExtraInformation();
+
+    @NotNull Collection<VesselFlag<?>> getFlags();
 
     @Override
-    default LiveSignTileEntity getSign() throws NoLicencePresent {
+    default @NotNull LiveSignTileEntity getSign() throws NoLicencePresent {
         Optional<LiveTileEntity> opTile = this.getPosition().getTileEntity();
-        if(!opTile.isPresent()){
+        if (!opTile.isPresent()) {
             throw new NoLicencePresent(this);
         }
         LiveTileEntity tile = opTile.get();
-        if(!(tile instanceof LiveSignTileEntity)){
+        if (!(tile instanceof LiveSignTileEntity)) {
             throw new NoLicencePresent(this);
         }
-        LiveSignTileEntity sign = (LiveSignTileEntity)tile;
-        LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
-        if(!licenceSign.isSign(sign)){
+        LiveSignTileEntity sign = (LiveSignTileEntity) tile;
+        LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Could not get licence sign builder"));
+        if (!licenceSign.isSign(sign)) {
             throw new NoLicencePresent(this);
         }
         return sign;
     }
 
     @Override
-    default ShipsVessel setName(String name) throws NoLicencePresent{
+    default @NotNull ShipsVessel setName(@NotNull String name) throws NoLicencePresent {
         getSign().setLine(2, CorePlugin.buildText(name));
         File file = getFile();
         String[] ext = file.getName().split(Pattern.quote("."));
@@ -57,45 +59,44 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     }
 
     @Override
-    default String getName() {
+    default @NotNull String getName() throws NoLicencePresent {
         try {
-            return getSign().getLine(2).get().toPlain();
+            return getSign().getLine(2).map(Text::toPlain).orElseThrow(() -> new IllegalStateException("Could not find name of ship"));
         } catch (NoLicencePresent e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
-        return null;
     }
 
     @Override
-    default void moveTowards(int x, int y, int z, MovementContext context, Consumer<Throwable> exception){
+    default void moveTowards(int x, int y, int z, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
         Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, context, exception);
     }
 
     @Override
-    default void moveTowards(Vector3<Integer> vector, MovementContext context, Consumer<Throwable> exception){
+    default void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
         Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context, exception);
     }
 
     @Override
-    default void moveTo(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
+    default void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context, exception);
     }
 
     @Override
-    default void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
+    default void rotateRightAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context, exception);
     }
 
     @Override
-    default void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception){
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition)location : ((SyncExactPosition)location).toBlockPosition();
+    default void rotateLeftAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context, exception);
     }
 
     @Override
-    default String getId(){
+    default @NotNull String getId() throws NoLicencePresent{
         return getType().getId() + "." + getName().toLowerCase();
     }
 }

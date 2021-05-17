@@ -8,6 +8,7 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
 import org.ships.vessel.common.types.typical.AbstractShipType;
@@ -30,7 +31,7 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
     }
 
     @Override
-    protected void createDefault(ConfigurationStream.ConfigurationFile file) {
+    protected void createDefault(ConfigurationStream.@NotNull ConfigurationFile file) {
         this.file.set(MAX_SPEED, 20);
         this.file.set(FUEL_CONSUMPTION, 1);
         this.file.set(FUEL_SLOT, "Bottom");
@@ -39,7 +40,7 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
     }
 
     @Override
-    public Plane createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
+    public @NotNull Plane createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
         return new Plane(ste, bPos, this);
     }
 }

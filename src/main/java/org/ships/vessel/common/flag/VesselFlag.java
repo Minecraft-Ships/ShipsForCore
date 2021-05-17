@@ -1,11 +1,11 @@
 package org.ships.vessel.common.flag;
 
 import org.core.config.parser.StringParser;
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 
 import java.util.Optional;
 
-public interface VesselFlag<T> extends Identifable {
+public interface VesselFlag<T> extends Identifiable {
 
     abstract class Builder<T, F extends VesselFlag<T>> {
 

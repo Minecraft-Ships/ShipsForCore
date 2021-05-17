@@ -1,8 +1,9 @@
 package org.ships.vessel.common.loader;
 
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Optional;
@@ -21,10 +22,10 @@ public class ShipsIDFinder implements ShipsLoader {
                 .getPlugin()
                 .getVessels()
                 .stream()
-                .filter(v -> v instanceof Identifable)
+                .filter(v -> v instanceof IdentifiableShip)
                 .filter(v -> {
             try {
-                String id = ((Identifable) v).getId();
+                String id = ((IdentifiableShip) v).getId();
                 if (id.equals(this.id)) {
                     return true;
                 }

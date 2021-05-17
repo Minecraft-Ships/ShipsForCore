@@ -17,7 +17,10 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.MovementContext;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -31,19 +34,19 @@ import java.util.stream.Collectors;
 
 public interface Vessel extends Positionable<BlockPosition> {
 
-    String getName();
+    @NotNull String getName() throws NoLicencePresent;
 
-    PositionableShipsStructure getStructure();
+    @NotNull PositionableShipsStructure getStructure();
 
-    void setStructure(PositionableShipsStructure pss);
+    void setStructure(@NotNull PositionableShipsStructure pss);
 
-    ShipType<? extends Vessel> getType();
+    @NotNull ShipType<? extends Vessel> getType();
 
-    <T extends VesselFlag<?>> Optional<T> get(Class<T> clazz);
+    <T extends VesselFlag<?>> @NotNull Optional<T> get(@NotNull Class<T> clazz);
 
-    <T> Vessel set(Class<? extends VesselFlag<T>> flag, T value);
+    <T> @NotNull Vessel set(@NotNull Class<? extends VesselFlag<T>> flag, T value);
 
-    Vessel set(VesselFlag<?> flag);
+    @NotNull Vessel set(@NotNull VesselFlag<?> flag);
 
     int getMaxSpeed();
 
@@ -53,19 +56,19 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     int getMinSize();
 
-    Vessel setMaxSize(Integer size);
+    @NotNull Vessel setMaxSize(@Nullable Integer size);
 
-    Vessel setMinSize(Integer size);
+    @NotNull Vessel setMinSize(@Nullable Integer size);
 
-    Vessel setMaxSpeed(int speed);
+    @NotNull Vessel setMaxSpeed(int speed);
 
-    Vessel setAltitudeSpeed(int speed);
+    @NotNull Vessel setAltitudeSpeed(int speed);
 
-    void moveTowards(int x, int y, int z, MovementContext context, Consumer<Throwable> exception);
+    void moveTowards(int x, int y, int z, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception);
 
-    void moveTowards(Vector3<Integer> vector, MovementContext context, Consumer<Throwable> exception);
+    void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception);
 
-    void moveTo(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
+    void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception);
 
     void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
 

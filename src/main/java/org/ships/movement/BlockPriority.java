@@ -1,8 +1,8 @@
 package org.ships.movement;
 
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 
-public interface BlockPriority extends Identifable {
+public interface BlockPriority extends Identifiable {
 
     BlockPriority ATTACHED = new PackagedBlockPriority("attached", 5);
     BlockPriority DIRECTIONAL = new PackagedBlockPriority("directional", 10);

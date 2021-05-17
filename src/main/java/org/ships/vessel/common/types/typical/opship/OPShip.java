@@ -5,6 +5,9 @@ import org.core.config.ConfigurationStream;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.autopilot.FlightPath;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.FlightPathType;
@@ -17,13 +20,13 @@ import java.util.Optional;
 @Deprecated
 public class OPShip extends AbstractShipsVessel implements AirType, FlightPathType {
 
-    protected FlightPath flightPath;
+    protected @Nullable FlightPath flightPath;
 
-    public OPShip(LiveSignTileEntity licence, OPShipType origin) {
+    public OPShip(LiveSignTileEntity licence, OPShipType origin) throws NoLicencePresent {
         super(licence, origin);
     }
 
-    public OPShip(SignTileEntity ste, SyncBlockPosition position, OPShipType origin){
+    public OPShip(SignTileEntity ste, SyncBlockPosition position, OPShipType origin) {
         super(ste, position, origin);
     }
 
@@ -38,7 +41,7 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
     }
 
     @Override
-    public Map<String, String> getExtraInformation() {
+    public @NotNull Map<String, String> getExtraInformation() {
         return new HashMap<>();
     }
 

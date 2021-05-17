@@ -11,6 +11,7 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
@@ -50,7 +51,7 @@ public class AirshipType extends AbstractShipType<Airship> implements CloneableS
     }
 
     @Override
-    protected void createDefault(ConfigurationStream.ConfigurationFile file) {
+    protected void createDefault(ConfigurationStream.@NotNull ConfigurationFile file) {
         this.file.set(BURNER_BLOCK, true);
         this.file.set(SPECIAL_BLOCK_PERCENT, 60.0f);
         this.file.set(SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
@@ -62,7 +63,7 @@ public class AirshipType extends AbstractShipType<Airship> implements CloneableS
     }
 
     @Override
-    public Airship createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
+    public @NotNull Airship createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
         return new Airship(this, ste, bPos);
     }
 }

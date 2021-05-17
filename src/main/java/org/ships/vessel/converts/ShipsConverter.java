@@ -1,12 +1,15 @@
 package org.ships.vessel.converts;
 
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
+import org.jetbrains.annotations.NotNull;
+import org.ships.vessel.common.assits.IdentifiableShip;
 
 import java.io.File;
 import java.io.IOException;
 
-public interface ShipsConverter<T extends Identifable> extends Identifable {
+public interface ShipsConverter<T extends IdentifiableShip> extends Identifiable {
 
-    File getFolder();
-    T convert(File file) throws IOException;
+    @NotNull File getFolder();
+
+    @NotNull T convert(@NotNull File file) throws IOException;
 }

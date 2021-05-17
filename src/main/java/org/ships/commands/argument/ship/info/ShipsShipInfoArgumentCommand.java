@@ -1,6 +1,8 @@
 package org.ships.commands.argument.ship.info;
 
 import org.array.utils.ArrayUtils;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -10,11 +12,14 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.utils.Identifable;
+import org.core.utils.Else;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
+import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
@@ -57,13 +62,20 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
         if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
+        AdventureMessageConfig messages = ShipsPlugin.getPlugin().getAdventureMessageConfig();
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        viewer.sendMessagePlain("Name: " + vessel.getName());
-        if (vessel instanceof Identifable) {
-            viewer.sendMessagePlain("ID: " + ((Identifable) vessel).getId());
+        viewer.sendMessage(
+                AdventureMessageConfig.INFO_NAME.parse(messages).append(
+                        AText
+                                .ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
+                                .withColour(NamedTextColours.GOLD)));
+        if (vessel instanceof IdentifiableShip) {
+            IdentifiableShip ship = (IdentifiableShip) vessel;
+            viewer.sendMessage(AdventureMessageConfig.INFO_ID.parse(messages).append(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown")).withColour(NamedTextColours.GOLD)));
         }
-        viewer.sendMessagePlain("Max Speed: " + vessel.getMaxSpeed());
+        viewer.sendMessage(AdventureMessageConfig.INFO_MAX_SPEED.parse(messages).append(AText.ofPlain(vessel.getMaxSpeed() + "").withColour(NamedTextColours.GOLD)));
+
         viewer.sendMessagePlain("Altitude Speed: " + vessel.getAltitudeSpeed());
         viewer.sendMessagePlain("Size: " + vessel.getStructure().getPositions().size());
         if (vessel instanceof CrewStoredVessel) {

@@ -8,6 +8,7 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
@@ -32,7 +33,7 @@ public class SubmarineType extends AbstractShipType<Submarine> implements Specia
     }
 
     @Override
-    protected void createDefault(ConfigurationStream.ConfigurationFile file) {
+    protected void createDefault(ConfigurationStream.@NotNull ConfigurationFile file) {
         this.file.set(SPECIAL_BLOCK_PERCENT, 75.0);
         this.file.set(SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes.IRON_BLOCK));
         this.file.set(FUEL_CONSUMPTION, 1);
@@ -43,7 +44,7 @@ public class SubmarineType extends AbstractShipType<Submarine> implements Specia
     }
 
     @Override
-    public Submarine createNewVessel(SignTileEntity ste, SyncBlockPosition bPos) {
+    public @NotNull Submarine createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
         return new Submarine(this, ste, bPos);
     }
 }

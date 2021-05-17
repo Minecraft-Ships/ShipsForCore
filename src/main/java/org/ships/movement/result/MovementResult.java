@@ -4,12 +4,14 @@ import org.array.utils.ArrayUtils;
 import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.*;
@@ -78,16 +80,16 @@ public interface MovementResult<E> {
         }
     }
 
-    class NoMovingToFound implements MovementResult<Collection<BlockType>>{
+    class NoMovingToFound implements MovementResult<Collection<BlockType>> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockType> value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getNotInMovingIn();
-            if(message.contains("%Block Names%")) {
-                message = message.replaceAll("%Block Names%", ArrayUtils.toString(",", Identifable::getName, value));
+            if (message.contains("%Block Names%")) {
+                message = message.replaceAll("%Block Names%", ArrayUtils.toString(",", Identifiable::getName, value));
             }
-            if(message.contains("%Block Ids%")) {
-                message = message.replaceAll("%Block Ids%", ArrayUtils.toString(",", Identifable::getId, value));
+            if (message.contains("%Block Ids%")) {
+                message = message.replaceAll("%Block Ids%", ArrayUtils.toString(",", Identifiable::getId, value));
             }
             viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
         }
@@ -162,7 +164,7 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<SyncBlockPosition> collection) {
             Set<String> blocks = new HashSet<>();
-            if(collection != null) {
+            if (collection != null) {
                 collection.forEach(s -> {
                     String value = s.getBlockType().getName();
                     if (blocks.contains(value)) {
@@ -172,13 +174,13 @@ public interface MovementResult<E> {
                 });
             }
             String value = ArrayUtils.toString(", ", b -> b, blocks);
-            if(value == null){
+            if (value == null) {
                 value = "Unknown position";
             }
             viewer.sendMessagePlain("Found the following blocks in the way: " + value);
             if (collection != null) {
                 List<SyncBlockPosition> list = new ArrayList<>(collection);
-                for(int A = 0; A < Math.min(collection.size(), 3); A++){
+                for (int A = 0; A < Math.min(collection.size(), 3); A++) {
                     SyncBlockPosition v = list.get(A);
                     viewer.sendMessagePlain(v.getX() + ", " + v.getY() + ", " + v.getZ());
                 }
@@ -195,16 +197,24 @@ public interface MovementResult<E> {
         }
     }
 
-    static String formatMessage(String message, Vessel vessel, CommandViewer viewer){
-        message = message.replaceAll("%Vessel Name%", vessel.getName());
-        if (vessel instanceof Identifable){
-            message = message.replaceAll("%Vessel Id%", ((Identifable)vessel).getId());
-        }else{
-            message = message.replaceAll("%Vessel Id%", vessel.getName().toLowerCase());
+    static String formatMessage(String message, Vessel vessel, CommandViewer viewer) {
+        try {
+            message = message.replaceAll("%Vessel Name%", vessel.getName());
+        }catch (NoLicencePresent e){
+            message = message.replaceAll("%Vessel Name%", "Unknown");
         }
-        if (viewer instanceof LivePlayer){
-            message = message.replaceAll("%Player Name%", ((LivePlayer)viewer).getName());
-        }else{
+        try {
+            if (vessel instanceof IdentifiableShip) {
+                message = message.replaceAll("%Vessel Id%", ((IdentifiableShip) vessel).getId());
+            } else {
+                message = message.replaceAll("%Vessel Id%", vessel.getName().toLowerCase());
+            }
+        }catch (NoLicencePresent e){
+            message = message.replaceAll("%Vessel Id%", "Unknown");
+        }
+        if (viewer instanceof LivePlayer) {
+            message = message.replaceAll("%Player Name%", ((LivePlayer) viewer).getName());
+        } else {
             message = message.replaceAll("%Player Name%", "_");
         }
         return message;

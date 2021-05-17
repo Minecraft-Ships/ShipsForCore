@@ -5,7 +5,7 @@ import org.core.CorePlugin;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.utils.Identifable;
+import org.core.utils.Identifiable;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
@@ -62,7 +62,7 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
                 viewer.sendMessagePlain(" |- ID: " + priority.getId());
                 viewer.sendMessagePlain(" |- Value: " + priority.getPriorityNumber());
                 viewer.sendMessagePlain("---[Like]---");
-                String like = ArrayUtils.toString("\n |- ", Identifable::getName, bt.getLike());
+                String like = ArrayUtils.toString("\n |- ", Identifiable::getName, bt.getLike());
                 viewer.sendMessagePlain("\n |- " + like);
             });
         });

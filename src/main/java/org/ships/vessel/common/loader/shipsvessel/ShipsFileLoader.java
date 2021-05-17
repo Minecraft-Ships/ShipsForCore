@@ -7,6 +7,7 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
+import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -16,6 +17,7 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.config.parsers.VesselFlagWrappedParser;
+import org.ships.exceptions.NoLicencePresent;
 import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.WrappedFileLoadVesselException;
@@ -90,7 +92,7 @@ public class ShipsFileLoader implements ShipsLoader {
                     public void onShipsStructureUpdated(PositionableShipsStructure structure) {
                         ship.setStructure(structure);
                         ship.setLoading(false);
-                        CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+                        CorePlugin.getConsole().sendMessagePlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " has loaded.");
                     }
 
                     @Override
@@ -102,7 +104,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 PositionableShipsStructure pss = ship.getStructure();
                 pss.setRaw(structureList);
                 ship.setLoading(false);
-                CorePlugin.getConsole().sendMessagePlain(ship.getId() + " has loaded.");
+                CorePlugin.getConsole().sendMessagePlain(Else.throwOr(NoLicencePresent.class, ship::getId, "") + " has loaded.");
             }
         }
     }
@@ -237,7 +239,7 @@ public class ShipsFileLoader implements ShipsLoader {
         });
         CorePlugin
                 .createSchedulerBuilder()
-                .setDisplayName(ship.getId() + " - Structure-Loader")
+                .setDisplayName(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " - Structure-Loader")
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(1)
                 .setExecutor(() -> new StructureLoad(ship).load(position, file.parseCollection(META_STRUCTURE, new ArrayList<>())))
