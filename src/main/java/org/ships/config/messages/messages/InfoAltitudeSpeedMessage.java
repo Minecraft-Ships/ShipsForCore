@@ -9,15 +9,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class InfoMaxSpeedMessage implements Message {
+public class InfoAltitudeSpeedMessage implements Message {
     @Override
     public String[] getPath() {
-        return new String[]{"Info", "Speed", "Max"};
+        return new String[]{"Info", "Speed", "Altitude"};
     }
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Max Speed: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.SPEED.adapterText() + "%").withColour(NamedTextColours.GOLD));
+        return AText.ofPlain("Max Altitude Speed: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.SPEED.adapterText() + "%").withColour(NamedTextColours.GOLD));
     }
 
     @Override

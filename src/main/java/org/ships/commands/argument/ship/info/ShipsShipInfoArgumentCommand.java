@@ -2,7 +2,6 @@ package org.ships.commands.argument.ship.info;
 
 import org.array.utils.ArrayUtils;
 import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -13,10 +12,13 @@ import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
+import org.jetbrains.annotations.NotNull;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Message;
 import org.ships.exceptions.NoLicencePresent;
+import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.assits.IdentifiableShip;
@@ -26,6 +28,7 @@ import org.ships.vessel.common.types.typical.ShipsVessel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
@@ -36,7 +39,7 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument(SHIP_ID_ARGUMENT), new ExactArgument(SHIP_INFO_ARGUMENT));
+        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT), new ExactArgument(SHIP_INFO_ARGUMENT));
     }
 
     @Override
@@ -46,10 +49,7 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if (source instanceof CommandViewer) {
-            return true;
-        }
-        return false;
+        return source instanceof CommandViewer;
     }
 
     @Override
@@ -65,24 +65,42 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
         AdventureMessageConfig messages = ShipsPlugin.getPlugin().getAdventureMessageConfig();
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        viewer.sendMessage(
-                AdventureMessageConfig.INFO_NAME.parse(messages).append(
-                        AText
-                                .ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
-                                .withColour(NamedTextColours.GOLD)));
+        AText infoName = AdventureMessageConfig
+                .INFO_NAME
+                .parse(messages)
+                .withAllAs(
+                        "%" + Message.VESSEL_NAME.adapterText() + "%",
+                        AText.ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown")));
         if (vessel instanceof IdentifiableShip) {
             IdentifiableShip ship = (IdentifiableShip) vessel;
-            viewer.sendMessage(AdventureMessageConfig.INFO_ID.parse(messages).append(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown")).withColour(NamedTextColours.GOLD)));
+            AText infoId = AdventureMessageConfig.INFO_ID.parse(messages).withAllAs("%" + Message.VESSEL_ID.adapterText() + "%", AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown")));
+            viewer.sendMessage(infoId);
         }
-        viewer.sendMessage(AdventureMessageConfig.INFO_MAX_SPEED.parse(messages).append(AText.ofPlain(vessel.getMaxSpeed() + "").withColour(NamedTextColours.GOLD)));
+        AText maxSpeed = AdventureMessageConfig.INFO_MAX_SPEED.parse(messages).withAllAs("%" + Message.SPEED.adapterText() + "%", AText.ofPlain(vessel.getMaxSpeed() + ""));
+        AText altitudeSpeed = AdventureMessageConfig.INFO_ALTITUDE_SPEED.parse(messages).withAllAs("%" + Message.SPEED.adapterText() + "%", AText.ofPlain(vessel.getAltitudeSpeed() + ""));
+        AText size = AdventureMessageConfig.INFO_SIZE.parse(messages).withAllAs("%" + Message.SIZE.adapterText() + "%", AText.ofPlain(vessel.getStructure().getOriginalRelativePositions().size() + ""));
 
-        viewer.sendMessagePlain("Altitude Speed: " + vessel.getAltitudeSpeed());
-        viewer.sendMessagePlain("Size: " + vessel.getStructure().getPositions().size());
+        viewer.sendMessage(infoName);
+        viewer.sendMessage(maxSpeed);
+        viewer.sendMessage(altitudeSpeed);
+        viewer.sendMessage(size);
+
         if (vessel instanceof CrewStoredVessel) {
-            viewer.sendMessagePlain("Default Permission: " + ((CrewStoredVessel) vessel).getDefaultPermission().getId());
+            CrewStoredVessel ship = (CrewStoredVessel) vessel;
+            CrewPermission perm = ship.getDefaultPermission();
+            AText permission = AdventureMessageConfig.INFO_DEFAULT_PERMISSION.parse(messages).withAllAs("%" + Message.CREW_ID.adapterText() + "%", AText.ofPlain(perm.getId()).withAllAs("%" + Message.CREW_NAME.adapterText() + "%", AText.ofPlain(perm.getName())));
+            viewer.sendMessage(permission);
         }
         if (vessel instanceof ShipsVessel) {
-            ((ShipsVessel) vessel).getExtraInformation().forEach((key, value) -> viewer.sendMessagePlain(key + ": " + value));
+            @NotNull Map<String, String> info = ((ShipsVessel) vessel).getExtraInformation();
+            info.forEach((key, value) -> {
+                AText built = AdventureMessageConfig.INFO_VESSEL_INFO.parse(messages).withAllAs(
+                        "%" + Message.VESSEL_INFO_KEY.adapterText() + "%", AText.ofPlain(key)
+                ).withAllAs(
+                        "%" + Message.VESSEL_INFO_VALUE.adapterText() + "%", AText.ofPlain(value)
+                );
+                viewer.sendMessage(built);
+            });
         }
         if (vessel instanceof ShipsVessel) {
             viewer.sendMessagePlain("Flags:");

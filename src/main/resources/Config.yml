@@ -40,9 +40,6 @@ Structure:
     Click: false
 Update:
   Enabled: true
-AlphaOnly:
-  Command:
-    UseLegacy: true
 Sign:
   Licence:
     Fourth: ''

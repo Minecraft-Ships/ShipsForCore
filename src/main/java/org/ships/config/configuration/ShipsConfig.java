@@ -55,7 +55,6 @@ public class ShipsConfig implements Config.KnownNodes {
     protected final CollectionDedicatedNode<WorldExtent, Set<WorldExtent>, ConfigurationNode.KnownParser.CollectionKnown<WorldExtent, Set<WorldExtent>>> DISABLED_WORLDS = new CollectionDedicatedNode<>(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_WORLD, "World", "Disabled"), "worlds.ignore");
     protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LOGIN_COMMAND = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Login", "Command"), "login.command");
 
-
     @Deprecated
     public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
 

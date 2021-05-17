@@ -9,19 +9,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class InfoMaxSpeedMessage implements Message {
+public class InfoSizeMessage implements Message {
     @Override
     public String[] getPath() {
-        return new String[]{"Info", "Speed", "Max"};
+        return new String[]{"Info", "Size"};
     }
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Max Speed: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.SPEED.adapterText() + "%").withColour(NamedTextColours.GOLD));
+        return AText.ofPlain("Current Size: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.SIZE.adapterText() + "%").withColour(NamedTextColours.GOLD));
     }
 
     @Override
     public Set<MessageAdapter> getAdapters() {
-        return new HashSet<>(Collections.singleton(Message.SPEED));
+        return new HashSet<>(Collections.singleton(Message.SIZE));
     }
 }
