@@ -6,7 +6,8 @@ import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.ships.config.Config;
-import org.ships.config.messages.messages.*;
+import org.ships.config.messages.messages.error.*;
+import org.ships.config.messages.messages.info.*;
 import org.ships.config.node.DedicatedNode;
 import org.ships.config.node.ObjectDedicatedNode;
 import org.ships.plugin.ShipsPlugin;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 public class AdventureMessageConfig implements Config.KnownNodes {
 
     private final ConfigurationStream.ConfigurationFile file;
-    private final Set<Message> messages = new HashSet<>();
+    private final Set<Message<?>> messages = new HashSet<>();
 
     public static final InfoNameMessage INFO_NAME = new InfoNameMessage();
     public static final InfoIdMessage INFO_ID = new InfoIdMessage();
@@ -28,6 +29,14 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final InfoSizeMessage INFO_SIZE = new InfoSizeMessage();
     public static final InfoDefaultPermissionMessage INFO_DEFAULT_PERMISSION = new InfoDefaultPermissionMessage();
     public static final InfoVesselInfoMessage INFO_VESSEL_INFO = new InfoVesselInfoMessage();
+    public static final InfoFlagMessage INFO_FLAG = new InfoFlagMessage();
+    public static final InfoEntitiesListMessage INFO_ENTITIES_LIST = new InfoEntitiesListMessage();
+    public static final InfoEntitiesLineMessage INFO_ENTITIES_LINE = new InfoEntitiesLineMessage();
+    public static final ErrorOversizedMessage ERROR_OVERSIZED = new ErrorOversizedMessage();
+    public static final ErrorUndersizedMessage ERROR_UNDERSIZED = new ErrorUndersizedMessage();
+    public static final ErrorTooManyOfBlockMessage ERROR_TOO_MANY_OF_BLOCK = new ErrorTooManyOfBlockMessage();
+    public static final ErrorAlreadyMovingMessage ERROR_ALREADY_MOVING = new ErrorAlreadyMovingMessage();
+    public static final ErrorVesselStillLoadingMessage ERROR_VESSEL_STILL_LOADING = new ErrorVesselStillLoadingMessage();
 
     public AdventureMessageConfig() {
         messages.add(INFO_NAME);
@@ -37,6 +46,14 @@ public class AdventureMessageConfig implements Config.KnownNodes {
         messages.add(INFO_SIZE);
         messages.add(INFO_DEFAULT_PERMISSION);
         messages.add(INFO_VESSEL_INFO);
+        messages.add(INFO_FLAG);
+        messages.add(INFO_ENTITIES_LIST);
+        messages.add(INFO_ENTITIES_LINE);
+        messages.add(ERROR_OVERSIZED);
+        messages.add(ERROR_UNDERSIZED);
+        messages.add(ERROR_TOO_MANY_OF_BLOCK);
+        messages.add(ERROR_ALREADY_MOVING);
+        messages.add(ERROR_VESSEL_STILL_LOADING);
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
         recreateFile();

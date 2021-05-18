@@ -1,12 +1,14 @@
 package org.ships.movement.result;
 
 import org.array.utils.ArrayUtils;
+import org.core.adventureText.AText;
 import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.movement.result.data.RequiredPercentMovementData;
@@ -41,7 +43,14 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Integer value) {
-            viewer.sendMessagePlain("Your vessel is over the max size by " + value + " blocks");
+            AText errorMessage = AdventureMessageConfig
+                    .ERROR_OVERSIZED
+                    .process(
+                            AdventureMessageConfig
+                                    .ERROR_OVERSIZED
+                                    .parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()),
+                            new AbstractMap.SimpleImmutableEntry<>(vessel, value));
+            viewer.sendMessage(errorMessage);
         }
     }
 
@@ -49,7 +58,8 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Integer value) {
-            viewer.sendMessagePlain("Your vessel is under the max size by " + value + " blocks");
+            AText errorMessage = AdventureMessageConfig.ERROR_UNDERSIZED.process(AdventureMessageConfig.ERROR_UNDERSIZED.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(vessel, value));
+            viewer.sendMessage(errorMessage);
         }
     }
 
@@ -57,10 +67,8 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, BlockType value) {
-            String message = ShipsPlugin.getPlugin().getMessageConfig().getTooManyBlocks();
-            message = message.replaceAll("%Block Name%", value.getName());
-            message = message.replaceAll("%Block Id%", value.getId());
-            viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
+            AText errorMessage = AdventureMessageConfig.ERROR_TOO_MANY_OF_BLOCK.process(AdventureMessageConfig.ERROR_TOO_MANY_OF_BLOCK.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(vessel, value));
+            viewer.sendMessage(errorMessage);
         }
     }
 
@@ -68,7 +76,8 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
-            viewer.sendMessagePlain("Your vessel is already moving. Please wait for it to finish");
+            AText errorMessage = AdventureMessageConfig.ERROR_ALREADY_MOVING.process(AdventureMessageConfig.ERROR_ALREADY_MOVING.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), vessel);
+            viewer.sendMessage(errorMessage);
         }
     }
 
@@ -76,8 +85,8 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
-            viewer.sendMessagePlain("Your vessel is loading. All movement controls are locked until it is loaded");
-        }
+            AText errorMessage = AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.process(AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), vessel);
+            viewer.sendMessage(errorMessage);        }
     }
 
     class NoMovingToFound implements MovementResult<Collection<BlockType>> {
@@ -200,7 +209,7 @@ public interface MovementResult<E> {
     static String formatMessage(String message, Vessel vessel, CommandViewer viewer) {
         try {
             message = message.replaceAll("%Vessel Name%", vessel.getName());
-        }catch (NoLicencePresent e){
+        } catch (NoLicencePresent e) {
             message = message.replaceAll("%Vessel Name%", "Unknown");
         }
         try {
@@ -209,7 +218,7 @@ public interface MovementResult<E> {
             } else {
                 message = message.replaceAll("%Vessel Id%", vessel.getName().toLowerCase());
             }
-        }catch (NoLicencePresent e){
+        } catch (NoLicencePresent e) {
             message = message.replaceAll("%Vessel Id%", "Unknown");
         }
         if (viewer instanceof LivePlayer) {

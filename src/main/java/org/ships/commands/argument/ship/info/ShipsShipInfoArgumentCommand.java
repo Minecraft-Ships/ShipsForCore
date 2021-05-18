@@ -6,7 +6,6 @@ import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
-import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
@@ -76,9 +75,9 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
             AText infoId = AdventureMessageConfig.INFO_ID.parse(messages).withAllAs("%" + Message.VESSEL_ID.adapterText() + "%", AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown")));
             viewer.sendMessage(infoId);
         }
-        AText maxSpeed = AdventureMessageConfig.INFO_MAX_SPEED.parse(messages).withAllAs("%" + Message.SPEED.adapterText() + "%", AText.ofPlain(vessel.getMaxSpeed() + ""));
-        AText altitudeSpeed = AdventureMessageConfig.INFO_ALTITUDE_SPEED.parse(messages).withAllAs("%" + Message.SPEED.adapterText() + "%", AText.ofPlain(vessel.getAltitudeSpeed() + ""));
-        AText size = AdventureMessageConfig.INFO_SIZE.parse(messages).withAllAs("%" + Message.SIZE.adapterText() + "%", AText.ofPlain(vessel.getStructure().getOriginalRelativePositions().size() + ""));
+        AText maxSpeed = AdventureMessageConfig.INFO_MAX_SPEED.parse(messages).withAllAs("%" + Message.VESSEL_SPEED.adapterText() + "%", AText.ofPlain(vessel.getMaxSpeed() + ""));
+        AText altitudeSpeed = AdventureMessageConfig.INFO_ALTITUDE_SPEED.parse(messages).withAllAs("%" + Message.VESSEL_SPEED.adapterText() + "%", AText.ofPlain(vessel.getAltitudeSpeed() + ""));
+        AText size = AdventureMessageConfig.INFO_SIZE.parse(messages).withAllAs("%" + Message.VESSEL_SIZE.adapterText() + "%", AText.ofPlain(vessel.getStructure().getOriginalRelativePositions().size() + ""));
 
         viewer.sendMessage(infoName);
         viewer.sendMessage(maxSpeed);
@@ -103,25 +102,37 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
             });
         }
         if (vessel instanceof ShipsVessel) {
-            viewer.sendMessagePlain("Flags:");
-            viewer.sendMessagePlain(" - " + ArrayUtils.toString("\n - ", f -> {
+            String flagIds = ArrayUtils.toString("\n - ", f -> {
                 if (f instanceof VesselFlag.Serializable) {
                     return f.getId() + ": " + ((VesselFlag.Serializable<?>) f).serialize();
                 }
                 return f.getId();
-            }, ((ShipsVessel) vessel).getFlags()));
+            }, ((ShipsVessel) vessel).getFlags());
+            String flagNames = ArrayUtils.toString("\n - ", f -> {
+                if (f instanceof VesselFlag.Serializable) {
+                    return f.getName() + ": " + ((VesselFlag.Serializable<?>) f).serialize();
+                }
+                return f.getName();
+            }, ((ShipsVessel) vessel).getFlags());
+
+            AText text = AdventureMessageConfig
+                    .INFO_FLAG
+                    .parse(messages)
+                    .withAllAs(
+                            "%" + Message.VESSEL_FLAG_ID.adapterText() + "%",
+                            AText.ofPlain(flagIds))
+                    .withAllAs(
+                            "%" + Message.VESSEL_FLAG_NAME.adapterText() + "%",
+                            AText.ofPlain(flagNames));
+            viewer.sendMessage(text);
         }
-        viewer.sendMessagePlain("Entities: ");
+
+        viewer.sendMessage(AdventureMessageConfig.INFO_ENTITIES_LINE.parse(messages));
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         vessel.getEntitiesOvertime(config.getEntityTrackingLimit(), e -> true, e -> {
-            String entity = null;
-            if (e instanceof LivePlayer) {
-                LivePlayer player = (LivePlayer) e;
-                entity = "player: " + player.getName();
-            } else {
-                entity = e.getType().getName();
-            }
-            viewer.sendMessagePlain("- " + entity);
+            AText entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.parse(messages);
+            entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.process(entitiesText, e);
+            viewer.sendMessage(entitiesText);
         }, e -> {
         });
         return true;

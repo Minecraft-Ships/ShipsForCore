@@ -115,7 +115,6 @@ public class MessageConfig implements Config.KnownNodes {
 
     @Override
     public void recreateFile() {
-        this.file.set(TOO_MANY, StringParser.STRING_TO_STRING_PARSER, "Too many of %Block Name% Found");
         this.file.set(NO_SPEED_SET, StringParser.STRING_TO_STRING_PARSER, "No Speed Set");
         this.file.set(FAILED_TO_FIND_LICENCE, StringParser.STRING_TO_STRING_PARSER, "Failed to Find Licence Sign");
         this.file.set(NO_SPECIAL_BLOCK_FOUND, StringParser.STRING_TO_STRING_PARSER, "Failed to find %Block Name%");
