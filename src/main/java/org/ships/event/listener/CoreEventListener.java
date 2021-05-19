@@ -3,6 +3,7 @@ package org.ships.event.listener;
 import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.Player;
 import org.core.entity.scene.droppeditem.DroppedItem;
@@ -16,8 +17,6 @@ import org.core.event.events.entity.EntityCommandEvent;
 import org.core.event.events.entity.EntityInteractEvent;
 import org.core.event.events.entity.EntitySpawnEvent;
 import org.core.schedule.unit.TimeUnit;
-import org.core.text.Text;
-import org.core.text.TextColours;
 import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
@@ -31,10 +30,12 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.event.vessel.create.VesselCreateEvent;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.exceptions.load.LoadVesselException;
@@ -133,7 +134,7 @@ public class CoreEventListener implements EventListener {
             if (!opFlag.isPresent()) {
                 continue;
             }
-            Map<UUID, Vector3<Double>> map = opFlag.get().getValue().get();
+            Map<UUID, Vector3<Double>> map = opFlag.get().getValue().orElse(new HashMap<>());
             Vector3<Double> vector = map.get(player.getUniqueId());
             if (vector == null) {
                 continue;
@@ -207,16 +208,16 @@ public class CoreEventListener implements EventListener {
         }
         ShipsSign sign = null;
         boolean register = false;
-        Optional<Text> opFirstLine = event.getFrom().getLine(0);
+        Optional<AText> opFirstLine = event.getFrom().getTextAt(0);
         if (!opFirstLine.isPresent()) {
             return;
         }
-        Text line = opFirstLine.get();
-        if (line.equalsPlain("[Ships]", true)) {
+        AText line = opFirstLine.get();
+        if (line.toPlain().equals("[Ships]")) {
             sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             register = true;
-        } else if (ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> s.getFirstLine().equalsPlain(line.toPlain(), true))) {
-            sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.getFirstLine().equalsPlain(line.toPlain(), true)).findAny().get();
+        } else if (ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> s.isSign(event.getFrom().getText()))) {
+            sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(event.getFrom().getText())).findAny().get();
         }
         if (sign == null) {
             return;
@@ -226,29 +227,54 @@ public class CoreEventListener implements EventListener {
             stes = sign.changeInto(event.getTo());
         } catch (IOException e) {
             event.setCancelled(true);
-            event.getEntity().sendMessagePlain("Error: " + e.getMessage());
+            event.getEntity().sendMessage(AText.ofPlain("Error: " + e.getMessage()).withColour(NamedTextColours.RED));
             return;
         }
         if (register) {
-            Text typeText = stes.getLine(1).get();
-            ShipType<? extends Vessel> type = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> typeText.equalsPlain(t.getDisplayName(), true)).findAny().get();
+            Optional<AText> opTypeText = stes.getTextAt(1);
+            if(!opTypeText.isPresent()){
+                event.setCancelled(true);
+                return;
+            }
+            String typeText = opTypeText.get().toPlain();
+            Optional<ShipType> opType = ShipsPlugin
+                    .getPlugin()
+                    .getAll(ShipType.class)
+                    .stream()
+                    .filter(t -> typeText.equals(t.getDisplayName()))
+                    .findAny();
+            if(!opType.isPresent()){
+                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));
+                event.setCancelled(true);
+                return;
+            }
+            ShipType<? extends Vessel> type = opType.get();
             String permission = Permissions.getMakePermission(type);
             if (!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
-                event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission: " + permission));
+                AText text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(event.getEntity(), permission));
+                event.getEntity().sendMessage(text);
                 event.setCancelled(true);
                 return;
             }
             try {
-                new ShipsIDFinder(type.getName().toLowerCase() + "." + stes.getLine(2).get().toPlain().toLowerCase()).load();
-                event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Name has already been taken"));
+                Optional<AText> opName = stes.getTextAt(2);
+                if(!opName.isPresent()){
+                    event.setCancelled(true);
+                    return;
+                }
+                String name = opName.get().toPlain();
+                new ShipsIDFinder(type.getName().toLowerCase() + "." + name.toLowerCase()).load();
+                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_NAME.process(name));
                 event.setCancelled(true);
                 return;
             } catch (LoadVesselException ignored) {
             }
             try {
                 for (Direction direction : FourFacingDirection.getFourFacingDirections()) {
-                    new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
-                    event.getEntity().sendMessage(CorePlugin.buildText(TextColours.RED + "Can not create a new ship ontop of another ship"));
+                    Vessel vessel = new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
+                    event.getEntity().sendMessage(AdventureMessageConfig.ERROR_CANNOT_CREATE_ONTOP.process(vessel));
+                    event.setCancelled(true);
+                    return;
                 }
             } catch (LoadVesselException ignored) {
             }
@@ -262,7 +288,7 @@ public class CoreEventListener implements EventListener {
             SyncExactPosition bp = event.getEntity().getPosition();
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                 @Override
-                public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                     if (finalBar != null) {
                         finalBar.setMessage(CorePlugin.buildText("Complete"));
                     }
@@ -294,7 +320,7 @@ public class CoreEventListener implements EventListener {
                 }
 
                 @Override
-                public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                     if (finalBar != null) {
                         int blockAmount = (currentStructure.getPositions().size() + 1);
                         finalBar.setMessage(CorePlugin.buildText(blockAmount + " / " + trackSize));

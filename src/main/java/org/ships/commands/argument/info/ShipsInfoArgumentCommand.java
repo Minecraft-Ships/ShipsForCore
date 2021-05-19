@@ -1,7 +1,8 @@
 package org.ships.commands.argument.info;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -11,9 +12,6 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.Text;
-import org.core.text.TextColours;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
@@ -22,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ShipsInfoArgumentCommand implements ArgumentCommand {
 
@@ -50,25 +49,16 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
             return true;
         }
         CommandViewer viewer = (CommandViewer) source;
-        viewer.sendMessage(CorePlugin.buildText(TextColours.YELLOW + "----[Ships]----"));
-        viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Version: " + TextColours.AQUA + ShipsPlugin.getPlugin().getPluginVersion()));
-        viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + ShipsPlugin.PRERELEASE_TAG + " Version: " + TextColours.AQUA + ShipsPlugin.PRERELEASE_VERSION));
-        viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Vessel Types: " + TextColours.AQUA + ShipsPlugin.getPlugin().getAll(ShipType.class).size()));
+        Set<ShipType> shipTypes = ShipsPlugin.getPlugin().getAll(ShipType.class);
+        viewer.sendMessage(AText.ofPlain("----[Ships]----").withColour(NamedTextColours.YELLOW));
+        viewer.sendMessage(AText.ofPlain("Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.getPlugin().getPluginVersion()).withColour(NamedTextColours.GOLD)));
+        viewer.sendMessage(AText.ofPlain(ShipsPlugin.PRERELEASE_TAG + " Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.PRERELEASE_VERSION + "").withColour(NamedTextColours.GOLD)));
+        viewer.sendMessage(AText.ofPlain("Vessel Types: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(shipTypes.size() + "").withColour(NamedTextColours.GOLD)));
         if (commandContext.getArgument(this, SHIP_TYPE_ARGUMENT) != null) {
-            viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + ArrayUtils.toString(TextColours.GREEN + " | " + TextColours.AQUA, ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class))));
+            List<AText> typeText = shipTypes.stream().map(s -> AText.ofPlain(s.getDisplayName()).withColour(NamedTextColours.GOLD)).collect(Collectors.toList());
+            AText text = ArrayUtils.collect(t -> t, (old, t) -> old.append(AText.ofPlain(" | ").withColour(NamedTextColours.GREEN).append(t)), typeText);
+            viewer.sendMessage(text);
         }
-        Set<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
-        Text blockListText = null;
-        for (BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()) {
-            if (blockListText == null) {
-                blockListText = CorePlugin.buildText(TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count());
-            } else {
-                blockListText = blockListText.append(CorePlugin.buildText(", " + TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count()));
-
-            }
-        }
-        viewer.sendMessage(blockListText);
-        //viewer.sendMessagePlain("Locked Sign: " + ArrayUtils.toString("| ", b -> "[" + b.getX() + "," + b.getY() + "," + b.getZ() + "]" , ShipsSign.LOCKED_SIGNS));
         return true;
     }
 }
