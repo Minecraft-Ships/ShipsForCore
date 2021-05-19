@@ -72,7 +72,7 @@ public interface MovingBlock {
         removeBeforePosition(p);
         Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
         if (waterLogged.isPresent() && waterLogged.get()) {
-            p.setBlock(BlockTypes.AIR.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+            p.setBlock(BlockTypes.AIR.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT.get());
         } else {
             p.setBlock(BlockTypes.AIR.getDefaultBlockDetails());
         }
@@ -84,7 +84,7 @@ public interface MovingBlock {
         removeBeforePosition(p);
         Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
         if (waterLogged.isPresent() && waterLogged.get()) {
-            p.setBlock(BlockTypes.WATER.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT);
+            p.setBlock(BlockTypes.WATER.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT.get());
         } else {
             p.setBlock(BlockTypes.WATER.getDefaultBlockDetails());
         }

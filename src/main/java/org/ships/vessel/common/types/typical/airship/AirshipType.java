@@ -57,7 +57,7 @@ public class AirshipType extends AbstractShipType<Airship> implements CloneableS
         this.file.set(SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
         this.file.set(FUEL_CONSUMPTION, 1);
         this.file.set(FUEL_SLOT, FuelSlot.BOTTOM);
-        this.file.set(FUEL_TYPES, ArrayUtils.ofSet(ItemTypes.COAL, ItemTypes1V13.CHARCOAL));
+        this.file.set(FUEL_TYPES, ArrayUtils.ofSet(ItemTypes.COAL.get(), ItemTypes1V13.CHARCOAL.get()));
         this.file.set(MAX_SPEED, 10);
         this.file.set(ALTITUDE_SPEED, 5);
     }

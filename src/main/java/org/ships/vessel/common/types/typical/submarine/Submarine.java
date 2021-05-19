@@ -225,7 +225,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
             ItemStack item = opItem.get();
             item = item.copyWithQuantity(item.getQuantity() - this.getFuelConsumption());
             if (item.getQuantity() == 0) {
-                item = ItemTypes.AIR.getDefaultItemStack();
+                item = ItemTypes.AIR.get().getDefaultItemStack();
             }
             slot.setItem(item);
         }

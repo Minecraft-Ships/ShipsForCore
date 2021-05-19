@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.argument.ShipsArgumentCommand;
-import org.ships.commands.legacy.LegacyShipsCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
 import org.ships.config.configuration.ShipsConfig;
@@ -44,23 +43,35 @@ import java.util.stream.Stream;
 
 public abstract class ShipsPlugin implements Plugin {
 
+    public static final double PRERELEASE_VERSION = 11.3;
+    public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
     private final Set<Identifiable> identifable = new HashSet<>();
     private final Set<CrewPermission> defaultPermissions = new HashSet<>(Arrays.asList(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER));
-    private final DefaultBlockList blockList;
-    private final @Deprecated
-    MessageConfig messageConfig;
-    private final AdventureMessageConfig aMessageConfig;
-    private final ShipsConfig config;
-    private final DebugFile debugFile;
     private final Set<Vessel> vessels = new HashSet<>();
-
-    public static final double PRERELEASE_VERSION = 11.3;
-    public static final String PRERELEASE_TAG = "Beta";
+    private DefaultBlockList blockList;
+    private @Deprecated
+    MessageConfig messageConfig;
+    private AdventureMessageConfig aMessageConfig;
+    private ShipsConfig config;
+    private DebugFile debugFile;
 
     public ShipsPlugin() {
         plugin = this;
+    }
+
+    public static ShipsPlugin getPlugin() {
+        return plugin;
+    }
+
+    @Override
+    public void registerPlugin() {
+
+    }
+
+    @Override
+    public void registerReady() {
         init();
         LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
         this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
@@ -79,11 +90,7 @@ public abstract class ShipsPlugin implements Plugin {
 
     @Override
     public void registerCommands(CommandRegister register) {
-        if (this.config.getFile().getBoolean(this.config.ALPHA_COMMAND_USE_LEGACY.getNode()).orElse(false)) {
-            register.register(new LegacyShipsCommand());
-        } else {
-            register.register(new ShipsArgumentCommand());
-        }
+        register.register(new ShipsArgumentCommand());
     }
 
     public abstract File getShipsConigFolder();
@@ -245,10 +252,6 @@ public abstract class ShipsPlugin implements Plugin {
 
     public void register(String id, VesselFlag.Builder<?, ?> flag) {
         this.vesselFlags.put(id, flag);
-    }
-
-    public static ShipsPlugin getPlugin() {
-        return plugin;
     }
 
     @Override

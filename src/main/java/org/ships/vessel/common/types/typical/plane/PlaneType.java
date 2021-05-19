@@ -36,7 +36,7 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
         this.file.set(FUEL_CONSUMPTION, 1);
         this.file.set(FUEL_SLOT, "Bottom");
         this.file.set(ALTITUDE_SPEED, 5);
-        this.file.set(FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK));
+        this.file.set(FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK.get()));
     }
 
     @Override

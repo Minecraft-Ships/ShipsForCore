@@ -38,7 +38,7 @@ public class SubmarineType extends AbstractShipType<Submarine> implements Specia
         this.file.set(SPECIAL_BLOCK_TYPE, Collections.singleton(BlockTypes.IRON_BLOCK));
         this.file.set(FUEL_CONSUMPTION, 1);
         this.file.set(FUEL_SLOT, FuelSlot.BOTTOM);
-        this.file.set(FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK));
+        this.file.set(FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK.get()));
         this.file.set(MAX_SPEED, 10);
         this.file.set(ALTITUDE_SPEED, 5);
     }
