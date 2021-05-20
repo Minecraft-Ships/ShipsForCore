@@ -1,58 +1,43 @@
 package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
-import org.core.entity.EntitySnapshot;
-import org.core.entity.LiveEntity;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.schedule.unit.TimeUnit;
-import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
 import org.core.text.TextColours;
-import org.core.world.boss.ServerBossBar;
-import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
-import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
-import org.ships.config.configuration.ShipsConfig;
-import org.ships.exceptions.MoveException;
-import org.ships.exceptions.load.LoadVesselException;
-import org.ships.exceptions.load.UnableToFindLicenceSign;
-import org.ships.movement.MovementContext;
-import org.ships.movement.result.FailedMovement;
-import org.ships.permissions.Permissions;
-import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.CrewStoredVessel;
-import org.ships.vessel.common.loader.ShipsBlockFinder;
-import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
-import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.List;
 
 public class WheelSign implements ShipsSign {
 
+    public final List<AText> SIGN = Arrays.asList(
+            AText.ofPlain("[Wheel]").withColour(NamedTextColours.YELLOW),
+            AText.ofPlain("\\\\||//").withColour(NamedTextColours.RED),
+            AText.ofPlain("==||==").withColour(NamedTextColours.RED),
+            AText.ofPlain("//||\\\\").withColour(NamedTextColours.RED)
+    );
+
     @Override
-    public boolean isSign(@NotNull SignTileEntity entity) {
-        Optional<Text> opValue = entity.getLine(0);
-        return opValue.isPresent() && opValue.get().equals(getFirstLine());
+    public boolean isSign(List<AText> lines) {
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
+
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setLine(0, CorePlugin.buildText(TextColours.YELLOW + "[Wheel]"));
-        stes.setLine(1, CorePlugin.buildText(TextColours.RED + "\\\\||//"));
-        stes.setLine(2, CorePlugin.buildText(TextColours.RED + "==||=="));
-        stes.setLine(3, CorePlugin.buildText(TextColours.RED + "//||\\\\"));
+        stes.setText(SIGN);
         return stes;
     }
 
     @Override
+    @Deprecated
     public Text getFirstLine() {
         return CorePlugin.buildText(TextColours.YELLOW + "[Wheel]");
     }
@@ -81,105 +66,13 @@ public class WheelSign implements ShipsSign {
         if (player.isSneaking()) {
             return false;
         }
-        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        int trackLimit = config.getDefaultTrackSize();
-        MovementContext context = new MovementContext();
-        context.setPostMovement(e -> ShipsSign.LOCKED_SIGNS.remove(position));
-        if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-            ServerBossBar bar = CorePlugin.createBossBar();
-            bar.setMessage(CorePlugin.buildText("0 / " + trackLimit)).register(player);
-            context.setBar(bar);
-        }
-        ShipsSign.LOCKED_SIGNS.add(position);
-        if (config.isStructureAutoUpdating()) {
-            new ShipsOvertimeUpdateBlockLoader(position) {
-                @Override
-                protected void onStructureUpdate(Vessel vessel) {
-                    onVesselRotate(player, context, vessel, position, left);
-                }
-
-                @Override
-                protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                    int foundBlocks = currentStructure.getPositions().size() + 1;
-                    context.getBar().ifPresent(bar -> {
-                        bar.setMessage(CorePlugin.buildText(foundBlocks + " / " + trackLimit));
-                        try {
-                            bar.setValue(foundBlocks, trackLimit);
-                        } catch (IllegalArgumentException ignore) {
-
-                        }
-
-                    });
-                    return OvertimeBlockFinderUpdate.BlockFindControl.USE;
-                }
-
-                @Override
-                protected void onExceptionThrown(LoadVesselException e) {
-                    ShipsSign.LOCKED_SIGNS.remove(position);
-                    context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-                    if (e instanceof UnableToFindLicenceSign) {
-                        UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
-                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
-                        e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                        CorePlugin.createSchedulerBuilder().setDelay(5).setDisplayName("Wheel bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
-                    } else {
-                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getReason()));
-                    }
-                }
-            }.loadOvertime();
-        } else {
-            try {
-                Vessel vessel = new ShipsBlockFinder(position).load();
-                onVesselRotate(player, context, vessel, position, left);
-            } catch (UnableToFindLicenceSign e1) {
-                player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
-                e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
-                ShipsSign.LOCKED_SIGNS.remove(position);
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-            } catch (LoadVesselException e) {
-                player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
-                ShipsSign.LOCKED_SIGNS.remove(position);
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+        SignUtil.onMovement(position, player, ((context, vessel, exception) -> {
+            if (left) {
+                vessel.rotateLeftAround(vessel.getPosition(), context, exception);
+            } else {
+                vessel.rotateRightAround(vessel.getPosition(), context, exception);
             }
-        }
+        }));
         return false;
-    }
-
-    private void onVesselRotate(@NotNull LivePlayer player, @NotNull MovementContext context, @NotNull Vessel vessel, @NotNull SyncBlockPosition position, boolean left) {
-        if (vessel instanceof CrewStoredVessel) {
-            CrewStoredVessel stored = (CrewStoredVessel) vessel;
-            if (!(stored.getPermission(player.getUniqueId()).canMove() || player.hasPermission(Permissions.getMovePermission(stored.getType())) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
-                player.sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission"));
-                ShipsSign.LOCKED_SIGNS.remove(position);
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-                return;
-            }
-        }
-        context.setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
-        context.setClicked(position);
-        Consumer<Throwable> exception = (exc) -> {
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-            ShipsSign.LOCKED_SIGNS.remove(position);
-            if (exc instanceof MoveException) {
-                MoveException e = (MoveException) exc;
-                sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
-            }
-            context.getEntities().keySet().forEach(s -> {
-                if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
-                    ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
-                }
-            });
-
-        };
-        if (left) {
-            vessel.rotateLeftAround(vessel.getPosition(), context, exception);
-        } else {
-            vessel.rotateRightAround(vessel.getPosition(), context, exception);
-        }
-    }
-
-    private <T> void sendErrorMessage(@NotNull CommandViewer viewer, @NotNull FailedMovement<T> movement, @Nullable Object value) {
-        movement.sendMessage(viewer, (T) value);
     }
 }

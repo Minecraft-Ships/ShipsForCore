@@ -2,12 +2,12 @@ package org.ships.vessel.sign;
 
 import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
 import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.text.Text;
 import org.core.text.TextColours;
-import org.core.utils.Identifiable;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -31,6 +31,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public class LicenceSign implements ShipsSign {
@@ -44,9 +45,9 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public boolean isSign(SignTileEntity entity) {
-        Optional<Text> opValue = entity.getLine(0);
-        return opValue.isPresent() && opValue.get().equalsPlain(getFirstLine().toPlain(), false);
+    public boolean isSign(List<AText> lines) {
+        return lines.size() >= 1 && lines.get(0).toPlain().equalsIgnoreCase("[Ships]");
+
     }
 
     @Override

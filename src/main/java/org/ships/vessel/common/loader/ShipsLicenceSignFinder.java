@@ -19,32 +19,32 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
 
     public ShipsLicenceSignFinder(SyncBlockPosition position) throws IOException {
         Optional<LiveTileEntity> opEntity = position.getTileEntity();
-        if(!opEntity.isPresent()){
+        if (!opEntity.isPresent()) {
             throw new IOException("Block is not a sign");
         }
-        if (!(opEntity.get() instanceof LiveSignTileEntity)){
+        if (!(opEntity.get() instanceof LiveSignTileEntity)) {
             throw new IOException("Block is not a sign");
         }
-        ste = (LiveSignTileEntity)opEntity.get();
+        ste = (LiveSignTileEntity) opEntity.get();
     }
 
-    public ShipsLicenceSignFinder(SignTileEntity ste){
+    public ShipsLicenceSignFinder(SignTileEntity ste) {
         this.ste = ste;
     }
 
     @Override
     public Vessel load() throws LoadVesselException {
         LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
-        if (!ls.isSign(ste)){
+        if (!ls.isSign(ste)) {
             throw new LoadVesselException("Unable to read sign");
         }
         String typeS = ste.getLine(1).get().toPlain();
         Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(st -> st.getDisplayName().equalsIgnoreCase(typeS)).findAny();
-        if(!opType.isPresent()){
+        if (!opType.isPresent()) {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }
         String name = ste.getLine(2).get().toPlain().toLowerCase();
-        String id = opType.get().getName().toLowerCase() + "." + name;
+        String id = "ships:" + opType.get().getName().toLowerCase() + "." + name;
         return new ShipsIDFinder(id).load();
     }
 }

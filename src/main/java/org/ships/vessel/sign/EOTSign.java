@@ -48,9 +48,8 @@ public class EOTSign implements ShipsSign {
     }
 
     @Override
-    public boolean isSign(SignTileEntity entity) {
-        Optional<AText> opText = entity.getTextAt(0);
-        return opText.map(text -> text.equals(SIGN.get(0))).orElse(false);
+    public boolean isSign(List<AText> lines) {
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
     }
 
     @Override

@@ -47,9 +47,8 @@ public class AltitudeSign implements ShipsSign {
     );
 
     @Override
-    public boolean isSign(SignTileEntity entity) {
-        Optional<AText> opValue = entity.getTextAt(0);
-        return opValue.isPresent() && opValue.get().equals(SIGN.get(0));
+    public boolean isSign(List<AText> lines) {
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
     }
 
     @Override
@@ -60,6 +59,7 @@ public class AltitudeSign implements ShipsSign {
     }
 
     @Override
+    @Deprecated
     public Text getFirstLine() {
         return CorePlugin.buildText(TextColours.YELLOW + "[Altitude]");
     }

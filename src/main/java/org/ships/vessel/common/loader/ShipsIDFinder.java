@@ -41,6 +41,6 @@ public class ShipsIDFinder implements ShipsLoader {
         if(opVessel.isPresent()){
             return opVessel.get();
         }
-        throw new LoadVesselException("Can not find " + this.id);
+        throw new LoadVesselException("Cannot find " + this.id);
     }
 }

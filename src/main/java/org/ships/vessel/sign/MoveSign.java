@@ -1,8 +1,8 @@
 package org.ships.vessel.sign;
 
 import org.core.CorePlugin;
-import org.core.entity.EntitySnapshot;
-import org.core.entity.LiveEntity;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
@@ -16,41 +16,42 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
-import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.exceptions.MoveException;
-import org.ships.exceptions.load.LoadVesselException;
-import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.MovementContext;
 import org.ships.movement.result.FailedMovement;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
-import org.ships.vessel.common.loader.ShipsBlockFinder;
 import org.ships.vessel.common.loader.ShipsOvertimeBlockFinder;
-import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class MoveSign implements ShipsSign {
 
+    public final List<AText> SIGN = Arrays.asList(
+            AText.ofPlain("[Move]").withColour(NamedTextColours.YELLOW),
+            AText.ofPlain("{Engine}}"),
+            AText.ofPlain(""),
+            AText.ofPlain(2 + "")
+    );
+
     @Override
-    public boolean isSign(SignTileEntity entity) {
-        Optional<Text> opValue = entity.getLine(0);
-        return opValue.isPresent() && opValue.get().equals(getFirstLine());
+    public boolean isSign(List<AText> lines) {
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setLine(0, CorePlugin.buildText(TextColours.YELLOW + "[Move]"));
-        stes.setLine(1, CorePlugin.buildText("{Engine}"));
+        stes.setText(SIGN);
         return stes;
     }
 
@@ -61,7 +62,7 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
-    public boolean onPrimaryClick(LivePlayer player, SyncBlockPosition position) {
+    public boolean onPrimaryClick(@NotNull LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!opTile.isPresent()) {
             return false;
@@ -71,7 +72,7 @@ public class MoveSign implements ShipsSign {
             return false;
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) lte;
-        String name = lste.getLine(3).get().toPlain();
+        String name = lste.getTextAt(3).get().toPlain();
         if (name.length() == 0) {
             name = "1";
         }
@@ -103,7 +104,7 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
-    public boolean onSecondClick(LivePlayer player, SyncBlockPosition position) {
+    public boolean onSecondClick(@NotNull LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!opTile.isPresent()) {
             return false;
@@ -113,73 +114,12 @@ public class MoveSign implements ShipsSign {
             return false;
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) lte;
-        String name = lste.getLine(3).get().toPlain();
-        if (name.length() == 0) {
-            name = "1";
-        }
-        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        int trackLimit = config.getDefaultTrackSize();
-        int speed = Integer.parseInt(name);
-        MovementContext context = new MovementContext();
-        context.setPostMovement(e -> ShipsSign.LOCKED_SIGNS.remove(position));
-        if (config.isBossBarVisible()) {
-            ServerBossBar bar = CorePlugin.createBossBar();
-            bar.register(player);
-            bar.setMessage(CorePlugin.buildText("0 / " + trackLimit));
-            context.setBar(bar);
-        }
-        ShipsSign.LOCKED_SIGNS.add(position);
-        if (config.isStructureAutoUpdating()) {
-            new ShipsOvertimeUpdateBlockLoader(position) {
-                @Override
-                protected void onStructureUpdate(Vessel vessel) {
-                    onVesselMove(player, position, speed, context, vessel);
-                }
-
-                @Override
-                protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                    int foundBlocks = currentStructure.getPositions().size() + 1;
-                    context.getBar().ifPresent(bar -> {
-                        bar.setMessage(CorePlugin.buildText(foundBlocks + " / " + trackLimit));
-                        try {
-                            bar.setValue(foundBlocks, trackLimit);
-                        } catch (IllegalArgumentException ignore) {
-
-                        }
-                    });
-                    return OvertimeBlockFinderUpdate.BlockFindControl.USE;
-                }
-
-                @Override
-                protected void onExceptionThrown(LoadVesselException e) {
-                    ShipsSign.LOCKED_SIGNS.remove(position);
-                    context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-                    if (e instanceof UnableToFindLicenceSign) {
-                        UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
-                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
-                        e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                        CorePlugin.createSchedulerBuilder().setDisplayName("UnableToFindLicenceSign reverse").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
-                    } else {
-                        player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
-                    }
-                }
-            }.loadOvertime();
-        } else {
-            try {
-                Vessel vessel = new ShipsBlockFinder(position).load();
-                onVesselMove(player, position, speed, context, vessel);
-            } catch (UnableToFindLicenceSign e1) {
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-                ShipsSign.LOCKED_SIGNS.remove(position);
-                player.sendMessage(CorePlugin.buildText(TextColours.RED + e1.getReason()));
-                e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
-            } catch (LoadVesselException e) {
-                ShipsSign.LOCKED_SIGNS.remove(position);
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-                player.sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
-            }
-        }
+        SignUtil.onMovement(position, player, (context, vessel, throwableConsumer) -> {
+            int speed = lste.getTextAt(3).map(text -> Integer.parseInt(text.toPlain())).orElse(1);
+            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+            int trackLimit = config.getDefaultTrackSize();
+            onVesselMove(player, position, speed, context, vessel, throwableConsumer);
+        });
         return true;
     }
 
@@ -213,7 +153,7 @@ public class MoveSign implements ShipsSign {
         }
     }
 
-    private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel) {
+    private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel, Consumer<Throwable> throwableConsumer) {
         if (speed > vessel.getMaxSpeed() || speed < -vessel.getMaxSpeed()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
             player.sendMessage(CorePlugin.buildText(TextColours.RED + "Speed error: Your ship cannot move that fast"));
@@ -240,22 +180,7 @@ public class MoveSign implements ShipsSign {
         BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
         context.setMovement(movement);
         context.setClicked(position);
-        vessel.moveTowards(direction, context, exc -> {
-            ShipsSign.LOCKED_SIGNS.remove(position);
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-            if (exc instanceof MoveException) {
-                MoveException e = (MoveException) exc;
-                sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
-            } else {
-                exc.printStackTrace();
-            }
-            context.getEntities().keySet().forEach(s -> {
-                if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
-                    ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
-                }
-            });
-
-        });
+        vessel.moveTowards(direction, context, throwableConsumer);
     }
 
     private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value) {

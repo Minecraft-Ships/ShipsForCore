@@ -231,8 +231,10 @@ public class CoreEventListener implements EventListener {
             return;
         }
         if (register) {
+            System.out.println("Register");
             Optional<AText> opTypeText = stes.getTextAt(1);
-            if(!opTypeText.isPresent()){
+            if (!opTypeText.isPresent()) {
+                System.out.println("Failed: Line 1 missing");
                 event.setCancelled(true);
                 return;
             }
@@ -243,7 +245,8 @@ public class CoreEventListener implements EventListener {
                     .stream()
                     .filter(t -> typeText.equals(t.getDisplayName()))
                     .findAny();
-            if(!opType.isPresent()){
+            if (!opType.isPresent()) {
+                System.out.println("Failed: Unknown shiptype");
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));
                 event.setCancelled(true);
                 return;
@@ -251,6 +254,7 @@ public class CoreEventListener implements EventListener {
             ShipType<? extends Vessel> type = opType.get();
             String permission = Permissions.getMakePermission(type);
             if (!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
+                System.out.println("Failed: Missing permission");
                 AText text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(event.getEntity(), permission));
                 event.getEntity().sendMessage(text);
                 event.setCancelled(true);
@@ -258,14 +262,16 @@ public class CoreEventListener implements EventListener {
             }
             try {
                 Optional<AText> opName = stes.getTextAt(2);
-                if(!opName.isPresent()){
+                if (!opName.isPresent()) {
                     event.setCancelled(true);
+                    System.out.println("Failed: Missing name");
                     return;
                 }
                 String name = opName.get().toPlain();
-                new ShipsIDFinder(type.getName().toLowerCase() + "." + name.toLowerCase()).load();
+                new ShipsIDFinder("ships:" + type.getName().toLowerCase() + "." + name.toLowerCase()).load();
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_NAME.process(name));
                 event.setCancelled(true);
+                System.out.println("Failed: Dupe name");
                 return;
             } catch (LoadVesselException ignored) {
             }
@@ -274,6 +280,7 @@ public class CoreEventListener implements EventListener {
                     Vessel vessel = new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
                     event.getEntity().sendMessage(AdventureMessageConfig.ERROR_CANNOT_CREATE_ONTOP.process(vessel));
                     event.setCancelled(true);
+                    System.out.println("Failed: Ontop");
                     return;
                 }
             } catch (LoadVesselException ignored) {
@@ -289,10 +296,12 @@ public class CoreEventListener implements EventListener {
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                 @Override
                 public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
+                    System.out.println("Found structure");
                     if (finalBar != null) {
                         finalBar.setMessage(CorePlugin.buildText("Complete"));
                     }
                     Vessel vessel = type.createNewVessel(stes, event.getPosition());
+                    System.out.println("Created Ship");
                     if (vessel instanceof TeleportToVessel) {
                         ((TeleportToVessel) vessel).setTeleportPosition(bp);
                     }
@@ -306,12 +315,15 @@ public class CoreEventListener implements EventListener {
                         if (finalBar != null) {
                             finalBar.deregisterPlayers();
                         }
+                        System.out.println("Failed: Plugin event");
                         event.setCancelled(true);
                         return;
                     }
                     vessel.setLoading(false);
+                    System.out.println("Saved");
                     vessel.save();
                     ShipsPlugin.getPlugin().registerVessel(vessel);
+                    System.out.println("Registered");
                     VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
                     CorePlugin.getEventManager().callEvent(postEvent);
                     if (finalBar != null) {
@@ -331,6 +343,7 @@ public class CoreEventListener implements EventListener {
             });
 
         }
+        System.out.println("Set sign colour");
         event.setTo(stes);
     }
 
