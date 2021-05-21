@@ -203,7 +203,8 @@ public class CoreEventListener implements EventListener {
 
     @HEvent
     public void onSignChangeEvent(SignChangeEvent.ByPlayer event) {
-        if (ShipsPlugin.getPlugin().getConfig().getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())) {
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        if (config.getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())) {
             return;
         }
         ShipsSign sign = null;
@@ -213,7 +214,7 @@ public class CoreEventListener implements EventListener {
             return;
         }
         AText line = opFirstLine.get();
-        if (line.toPlain().equals("[Ships]")) {
+        if (line.toPlain().equalsIgnoreCase("[Ships]")) {
             sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
             register = true;
         } else if (ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> s.isSign(event.getFrom().getText()))) {
@@ -231,10 +232,8 @@ public class CoreEventListener implements EventListener {
             return;
         }
         if (register) {
-            System.out.println("Register");
             Optional<AText> opTypeText = stes.getTextAt(1);
             if (!opTypeText.isPresent()) {
-                System.out.println("Failed: Line 1 missing");
                 event.setCancelled(true);
                 return;
             }
@@ -246,7 +245,6 @@ public class CoreEventListener implements EventListener {
                     .filter(t -> typeText.equals(t.getDisplayName()))
                     .findAny();
             if (!opType.isPresent()) {
-                System.out.println("Failed: Unknown shiptype");
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));
                 event.setCancelled(true);
                 return;
@@ -254,7 +252,6 @@ public class CoreEventListener implements EventListener {
             ShipType<? extends Vessel> type = opType.get();
             String permission = Permissions.getMakePermission(type);
             if (!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
-                System.out.println("Failed: Missing permission");
                 AText text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(event.getEntity(), permission));
                 event.getEntity().sendMessage(text);
                 event.setCancelled(true);
@@ -264,14 +261,12 @@ public class CoreEventListener implements EventListener {
                 Optional<AText> opName = stes.getTextAt(2);
                 if (!opName.isPresent()) {
                     event.setCancelled(true);
-                    System.out.println("Failed: Missing name");
                     return;
                 }
                 String name = opName.get().toPlain();
                 new ShipsIDFinder("ships:" + type.getName().toLowerCase() + "." + name.toLowerCase()).load();
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_NAME.process(name));
                 event.setCancelled(true);
-                System.out.println("Failed: Dupe name");
                 return;
             } catch (LoadVesselException ignored) {
             }
@@ -280,12 +275,10 @@ public class CoreEventListener implements EventListener {
                     Vessel vessel = new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
                     event.getEntity().sendMessage(AdventureMessageConfig.ERROR_CANNOT_CREATE_ONTOP.process(vessel));
                     event.setCancelled(true);
-                    System.out.println("Failed: Ontop");
                     return;
                 }
             } catch (LoadVesselException ignored) {
             }
-            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
             int trackSize = config.getDefaultTrackSize();
             ServerBossBar bar = null;
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
@@ -293,57 +286,54 @@ public class CoreEventListener implements EventListener {
             }
             final ServerBossBar finalBar = bar;
             SyncExactPosition bp = event.getEntity().getPosition();
-            ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
-                @Override
-                public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                    System.out.println("Found structure");
-                    if (finalBar != null) {
-                        finalBar.setMessage(CorePlugin.buildText("Complete"));
-                    }
-                    Vessel vessel = type.createNewVessel(stes, event.getPosition());
-                    System.out.println("Created Ship");
-                    if (vessel instanceof TeleportToVessel) {
-                        ((TeleportToVessel) vessel).setTeleportPosition(bp);
-                    }
-                    vessel.setStructure(structure);
-                    if (vessel instanceof CrewStoredVessel) {
-                        ((CrewStoredVessel) vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
-                    }
-                    VesselCreateEvent.Pre preEvent = new VesselCreateEvent.Pre.BySign(vessel, event.getEntity());
-                    CorePlugin.getEventManager().callEvent(preEvent);
-                    if (preEvent.isCancelled()) {
-                        if (finalBar != null) {
-                            finalBar.deregisterPlayers();
+
+
+            config
+                    .getDefaultFinder()
+                    .getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
+                        @Override
+                        public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
+                            if (finalBar != null) {
+                                finalBar.setMessage(CorePlugin.buildText("Complete"));
+                            }
+                            Vessel vessel = type.createNewVessel(stes, event.getPosition());
+                            if (vessel instanceof TeleportToVessel) {
+                                ((TeleportToVessel) vessel).setTeleportPosition(bp);
+                            }
+                            vessel.setStructure(structure);
+                            if (vessel instanceof CrewStoredVessel) {
+                                ((CrewStoredVessel) vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
+                            }
+                            VesselCreateEvent.Pre preEvent = new VesselCreateEvent.Pre.BySign(vessel, event.getEntity());
+                            CorePlugin.getEventManager().callEvent(preEvent);
+                            if (preEvent.isCancelled()) {
+                                if (finalBar != null) {
+                                    finalBar.deregisterPlayers();
+                                }
+                                event.setCancelled(true);
+                                return;
+                            }
+                            vessel.setLoading(false);
+                            vessel.save();
+                            ShipsPlugin.getPlugin().registerVessel(vessel);
+                            VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
+                            CorePlugin.getEventManager().callEvent(postEvent);
+                            if (finalBar != null) {
+                                finalBar.deregisterPlayers();
+                            }
                         }
-                        System.out.println("Failed: Plugin event");
-                        event.setCancelled(true);
-                        return;
-                    }
-                    vessel.setLoading(false);
-                    System.out.println("Saved");
-                    vessel.save();
-                    ShipsPlugin.getPlugin().registerVessel(vessel);
-                    System.out.println("Registered");
-                    VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
-                    CorePlugin.getEventManager().callEvent(postEvent);
-                    if (finalBar != null) {
-                        finalBar.deregisterPlayers();
-                    }
-                }
 
-                @Override
-                public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
-                    if (finalBar != null) {
-                        int blockAmount = (currentStructure.getPositions().size() + 1);
-                        finalBar.setMessage(CorePlugin.buildText(blockAmount + " / " + trackSize));
-                        finalBar.setValue(blockAmount, trackSize);
-                    }
-                    return BlockFindControl.USE;
-                }
-            });
-
+                        @Override
+                        public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
+                            if (finalBar != null) {
+                                int blockAmount = (currentStructure.getPositions().size() + 1);
+                                finalBar.setMessage(CorePlugin.buildText(blockAmount + " / " + trackSize));
+                                finalBar.setValue(blockAmount, trackSize);
+                            }
+                            return BlockFindControl.USE;
+                        }
+                    });
         }
-        System.out.println("Set sign colour");
         event.setTo(stes);
     }
 

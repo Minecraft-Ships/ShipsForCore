@@ -4,6 +4,7 @@ import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.BlockListable;
@@ -59,7 +60,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public Ships5BlockFinder init() {
+    public @NotNull Ships5BlockFinder init() {
         ShipsPlugin plugin = ShipsPlugin.getPlugin();
         ShipsConfig config = plugin.getConfig();
         this.blockLimit = config.getDefaultTrackSize();

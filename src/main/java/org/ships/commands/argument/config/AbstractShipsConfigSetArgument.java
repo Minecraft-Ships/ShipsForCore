@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class AbstractShipsConfigSetArgument implements ArgumentCommand {
 
@@ -28,10 +29,10 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
     private static final String CONFIG_KEY = "config_key";
     private static final String CONFIG_VALUE = "config_value";
 
-    private final Config.KnownNodes config;
+    private final Supplier<Config.KnownNodes> config;
     private final String[] configNames;
 
-    public AbstractShipsConfigSetArgument(Config.KnownNodes config, String... configNames) {
+    public AbstractShipsConfigSetArgument(Supplier<Config.KnownNodes> config, String... configNames) {
         if (configNames.length == 0) {
             throw new IllegalArgumentException("configNames must have at least one value");
         }
@@ -45,7 +46,7 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
                 new ExactArgument(COMMAND_NAME, false, "config"),
                 new ExactArgument("set"),
                 new ExactArgument(CONFIG_TYPE, false, this.configNames),
-                new ConfigKeyArgument<>(CONFIG_KEY, this.config),
+                new ConfigKeyArgument<>(CONFIG_KEY, this.config.get()),
                 new ConfigKeyValueArgument<>(CONFIG_VALUE, (context, argument) -> context.getArgument(this, CONFIG_KEY)));
     }
 
@@ -80,7 +81,8 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
         DedicatedNode<T, T, ? extends ConfigurationNode.KnownParser<String, T>> node = context.getArgument(this, CONFIG_KEY);
         T argument = context.getArgument(this, CONFIG_VALUE);
 
-        node.apply(this.config.getFile(), argument);
-        this.config.getFile().save();
+        Config.KnownNodes config = this.config.get();
+        node.apply(config.getFile(), argument);
+        config.getFile().save();
     }
 }

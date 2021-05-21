@@ -6,6 +6,7 @@ import org.core.command.argument.ArgumentCommand;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.platform.Plugin;
 import org.core.source.command.CommandSource;
+import org.core.utils.Singleton;
 import org.ships.commands.argument.blockinfo.ShipsBlockInfoArgumentCommand;
 import org.ships.commands.argument.blocklist.ShipsBlockListViewArgumentCommand;
 import org.ships.commands.argument.blocklist.ShipsBlockListViewBlockArgumentCommand;
@@ -51,10 +52,10 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
 
         COMMANDS.add(new NoGravityArgumentCommand());
 
-        COMMANDS.add(new AbstractShipsConfigViewArgument(ShipsPlugin.getPlugin().getConfig(), "config", "configuration"));
-        COMMANDS.add(new AbstractShipsConfigViewArgument(ShipsPlugin.getPlugin().getMessageConfig(), "messages"));
-        COMMANDS.add(new AbstractShipsConfigSetArgument(ShipsPlugin.getPlugin().getConfig(), "config", "configuration"));
-        COMMANDS.add(new AbstractShipsConfigSetArgument(ShipsPlugin.getPlugin().getMessageConfig(), "messages"));
+        COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config", "configuration"));
+        //COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
+        COMMANDS.add(new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config", "configuration"));
+        COMMANDS.add(new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
         COMMANDS.add(new ShipTypeViewSingleConfigArgument());
         COMMANDS.add(new ShipTypeSetSingleConfigArgument());
 

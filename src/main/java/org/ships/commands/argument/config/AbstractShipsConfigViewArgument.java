@@ -18,6 +18,7 @@ import org.ships.permissions.Permissions;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class AbstractShipsConfigViewArgument implements ArgumentCommand {
 
@@ -25,11 +26,11 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
     private static final String CONFIG_TYPE = "config_type";
     private static final String CONFIG_KEY = "config_key";
 
-    private final Config.KnownNodes config;
+    private final Supplier<Config.KnownNodes> config;
     private final String[] configNames;
 
-    public AbstractShipsConfigViewArgument(Config.KnownNodes config, String... configNames){
-        if(configNames.length == 0){
+    public AbstractShipsConfigViewArgument(Supplier<Config.KnownNodes> config, String... configNames) {
+        if (configNames.length == 0) {
             throw new IllegalArgumentException("configNames must have at least one value");
         }
         this.config = config;
@@ -38,7 +39,11 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(COMMAND_NAME, false, "config"), new ExactArgument("view"), new ExactArgument(CONFIG_TYPE, false, this.configNames), new ConfigKeyArgument<>(CONFIG_KEY, this.config));
+        return Arrays.asList(
+                new ExactArgument(COMMAND_NAME, false, "config"),
+                new ExactArgument("view"),
+                new ExactArgument(CONFIG_TYPE, false, this.configNames),
+                new ConfigKeyArgument<>(CONFIG_KEY, this.config.get()));
     }
 
     @Override
@@ -53,7 +58,7 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if(!(commandContext.getSource() instanceof CommandViewer)){
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
@@ -63,13 +68,13 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
         return true;
     }
 
-    private <T> String readUnknownNode(DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>> node){
+    private <T> String readUnknownNode(DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>> node) {
         return readNode((DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>>) node);
     }
 
-    private <T> String readNode(DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>> node){
-        Optional<T> opValue = this.config.getFile().parse(node.getNode());
-        if(!opValue.isPresent()){
+    private <T> String readNode(DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>> node) {
+        Optional<T> opValue = this.config.get().getFile().parse(node.getNode());
+        if (!opValue.isPresent()) {
             return "<no value>";
         }
         return node.getNode().getParser().unparse(opValue.get());
