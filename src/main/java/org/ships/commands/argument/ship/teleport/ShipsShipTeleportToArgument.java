@@ -1,5 +1,7 @@
 package org.ships.commands.argument.ship.teleport;
 
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -10,6 +12,7 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
+import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.arguments.ShipTeleportLocationArgument;
@@ -62,7 +65,11 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
         LivePlayer player = (LivePlayer) source;
         TeleportToVessel tVessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
         String telPos = commandContext.getArgument(this, SHIP_LOCATION);
-        SyncExactPosition position = tVessel.getTeleportPositions().get(telPos);
+        ExactPosition position = tVessel.getTeleportPositions().get(telPos);
+        if (position == null) {
+            player.sendMessage(AText.ofPlain("Unknown part of ship").withColour(NamedTextColours.RED));
+            return false;
+        }
         player.setPosition(position);
         return true;
     }

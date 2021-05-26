@@ -7,6 +7,7 @@ import org.core.config.parser.Parser;
 import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemType;
+import org.core.inventory.item.ItemTypes;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
 import org.core.world.position.block.details.BlockDetails;
@@ -85,9 +86,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         Map<String, String> map = new HashMap<>();
         map.put("Fuel", ArrayUtils.toString(", ", Parser.STRING_TO_ITEM_TYPE::unparse, this.getFuelTypes()));
         map.put("Fuel Consumption", this.getFuelConsumption() + "");
-        if (this.fuelSlot != null) {
-            map.put("Fuel Slot", this.fuelSlot.name());
-        }
+        map.put("Fuel Slot", this.getFuelSlot().name());
         return map;
     }
 
@@ -138,7 +137,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> type.equals(t.getType())).orElse(false));
         }).collect(Collectors.toList());
         if (acceptedSlots.isEmpty()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.fuelConsumption, this.fuelTypes)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
         }
     }
 
@@ -183,7 +182,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         ItemStack item = opItem.get();
         item = item.copyWithQuantity(item.getQuantity() - this.getFuelConsumption());
         if (item.getQuantity() == 0) {
-            item = null;
+            item = ItemTypes.AIR.get().getDefaultItemStack();
         }
         slot.setItem(item);
     }

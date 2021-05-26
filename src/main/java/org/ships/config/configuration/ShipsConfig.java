@@ -231,7 +231,10 @@ public class ShipsConfig implements Config.KnownNodes {
     @Override
     public void recreateFile() {
         File file = this.getFile().getFile();
-        file.delete();
+        boolean exist = file.exists();
+        if(!file.delete() && exist){
+            throw new IllegalStateException("Failed to create the config. Something went wrong");
+        }
         Optional<ConfigurationStream.ConfigurationFile> opConfig = ShipsPlugin.getPlugin().createConfig("Config.yml", file);
         if (opConfig.isPresent()) {
             this.file = opConfig.get();

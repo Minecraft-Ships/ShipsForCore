@@ -5,6 +5,7 @@ import org.core.adventureText.format.NamedTextColours;
 import org.core.world.position.block.BlockType;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.config.ConfigAdapter;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.HashSet;
@@ -27,11 +28,15 @@ public class ErrorTooManyOfBlockMessage implements Message<Map.Entry<Vessel, Blo
         Set<MessageAdapter<?>> set = new HashSet<>();
         set.addAll(Message.VESSEL_ADAPTERS);
         set.addAll(Message.BLOCK_TYPE_ADAPTERS);
+        set.addAll(Message.CONFIG_ADAPTERS);
         return set;
     }
 
     @Override
     public AText process(AText text, Map.Entry<Vessel, BlockType> obj) {
+        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+            text = adapter.process(text);
+        }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
             text = adapter.process(text, obj.getKey());
         }

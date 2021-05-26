@@ -4,9 +4,9 @@ import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.config.ConfigAdapter;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,19 +23,16 @@ public class InfoAltitudeSpeedMessage implements Message<Vessel> {
 
     @Override
     public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(getExactAdapters());
-    }
-
-    private Set<MessageAdapter<Vessel>> getExactAdapters(){
-        return new HashSet<>(Collections.singleton(Message.VESSEL_SPEED));
-
+        Set<MessageAdapter<?>> set = new HashSet<>(Message.CONFIG_ADAPTERS);
+        set.add(Message.VESSEL_SPEED);
+        return set;
     }
 
     @Override
     public AText process(AText text, Vessel obj) {
-        for (MessageAdapter<Vessel> adapter : getExactAdapters()){
-            text = adapter.process(text, obj);
+        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+            text = adapter.process(text);
         }
-        return text;
+        return Message.VESSEL_SIZE.process(text, obj);
     }
 }

@@ -2,11 +2,14 @@ package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
 import org.core.config.ConfigurationStream;
-import org.core.utils.Identifiable;
+import org.core.vector.type.Vector3;
+import org.core.world.direction.Direction;
+import org.core.world.direction.FourFacingDirection;
+import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.core.world.position.impl.sync.SyncExactPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.blocks.ExpandedBlockList;
@@ -15,6 +18,7 @@ import org.ships.exceptions.NoLicencePresent;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
+import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
@@ -33,7 +37,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected @NotNull Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
     protected @NotNull Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
     protected @NotNull CrewPermission defaultPermission = CrewPermission.DEFAULT;
-    protected @NotNull Map<String, SyncExactPosition> teleportPositions = new HashMap<>();
+    protected @NotNull Map<String, Vector3<Double>> teleportPositions = new HashMap<>();
     protected @NotNull File file;
     protected @NotNull ExpandedBlockList blockList;
     protected @NotNull ShipType<? extends AbstractShipsVessel> type;
@@ -119,8 +123,80 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
-    public @NotNull Map<String, SyncExactPosition> getTeleportPositions() {
+    public Map<String, Vector3<Double>> getTeleportVectors() {
         return this.teleportPositions;
+    }
+
+    @Override
+    public TeleportToVessel setTeleportVector(Vector3<Double> position, String id) {
+        this.teleportPositions.put(id, position);
+        return this;
+    }
+
+    @Override
+    public TeleportToVessel setTeleportPosition(ExactPosition tel, String id) {
+        ExactPosition position = this.getPosition().toExactPosition();
+        Optional<DirectionalData> opDirectionalData = position.getBlockDetails().getDirectionalData();
+        if (!opDirectionalData.isPresent()) {
+            return this;
+        }
+        Direction direction = opDirectionalData.get().getDirection();
+
+        double x = tel.getX() - position.getX();
+        double y = tel.getY() - position.getY();
+        double z = tel.getZ() - position.getZ();
+
+        Vector3<Double> vector = flip(direction, x, y, z);
+
+        if (this.teleportPositions.containsKey(id)) {
+            this.teleportPositions.replace(id, vector);
+            return this;
+        }
+        this.teleportPositions.put(id, vector);
+        return this;
+    }
+
+    private Vector3<Double> flip(Direction direction, double x, double y, double z) {
+        if (direction.equals(FourFacingDirection.SOUTH)) {
+            x = -x;
+            z = -z;
+        }
+        if (direction.equals(FourFacingDirection.EAST)) {
+            double temp = x;
+            x = -z;
+            z = temp;
+        }
+        if (direction.equals(FourFacingDirection.WEST)) {
+            double temp = x;
+            x = z;
+            z = -temp;
+        }
+        return Vector3.valueOf(x, y, z);
+    }
+
+    @Override
+    public @NotNull Map<String, ExactPosition> getTeleportPositions() {
+        ExactPosition position = this.getPosition().toExactPosition();
+        Optional<DirectionalData> opDirectionalData = position.getBlockDetails().getDirectionalData();
+        if (!opDirectionalData.isPresent()) {
+            return new HashMap<>();
+        }
+        Direction direction = opDirectionalData.get().getDirection();
+        return this
+                .teleportPositions
+                .entrySet()
+                .stream()
+                .map((entry) -> {
+                    double x = entry.getValue().getX();
+                    double y = entry.getValue().getY();
+                    double z = entry.getValue().getZ();
+
+                    Vector3<Double> vec = flip(direction, x, y, z);
+                    return new AbstractMap.SimpleImmutableEntry<>(
+                            entry.getKey(),
+                            position.getRelative(vec.getX(), vec.getY(), vec.getZ()));
+                })
+                .collect(Collectors.toMap(AbstractMap.SimpleImmutableEntry::getKey, AbstractMap.SimpleImmutableEntry::getValue));
     }
 
     @Override
@@ -203,12 +279,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof IdentifiableShip)){
-           return false;
+        if (!(obj instanceof IdentifiableShip)) {
+            return false;
         }
         try {
             return this.getId().equals(((IdentifiableShip) obj).getId());
-        }catch (NoLicencePresent e){
+        } catch (NoLicencePresent e) {
             return false;
         }
     }

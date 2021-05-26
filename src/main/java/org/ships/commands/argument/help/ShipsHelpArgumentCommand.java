@@ -1,7 +1,8 @@
 package org.ships.commands.argument.help;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -11,10 +12,8 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.ships.commands.argument.ShipsArgumentCommand;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -46,15 +45,21 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if(!(source instanceof CommandViewer)){
+        if (!(source instanceof CommandViewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer)source;
-        for(ArgumentCommand cmd : ShipsArgumentCommand.COMMANDS){
-            if(!cmd.hasPermission(viewer)){
+        CommandViewer viewer = (CommandViewer) source;
+        for (ArgumentCommand cmd : ShipsArgumentCommand.COMMANDS) {
+            if (!cmd.hasPermission(viewer)) {
                 continue;
             }
-            viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + ArrayUtils.toString(" ", CommandArgument::getUsage, cmd.getArguments()) + ": " + TextColours.YELLOW + cmd.getDescription()));
+            viewer.sendMessage(
+                    AText.ofPlain(ArrayUtils.toString(" ", CommandArgument::getUsage, cmd.getArguments()) + ":")
+                            .withColour(NamedTextColours.AQUA)
+                            .append(
+                                    AText
+                                            .ofPlain(cmd.getDescription())
+                                            .withColour(NamedTextColours.YELLOW)));
         }
         return true;
     }

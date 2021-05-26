@@ -6,6 +6,7 @@ import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.ships.config.Config;
+import org.ships.config.messages.messages.bar.BlockFinderBarMessage;
 import org.ships.config.messages.messages.error.*;
 import org.ships.config.messages.messages.info.*;
 import org.ships.config.node.DedicatedNode;
@@ -38,6 +39,8 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final ErrorInvalidShipTypeMessage ERROR_INVALID_SHIP_TYPE = new ErrorInvalidShipTypeMessage();
     public static final ErrorInvalidShipNameMessage ERROR_INVALID_SHIP_NAME = new ErrorInvalidShipNameMessage();
     public static final ErrorCannotCreateOntopMessage ERROR_CANNOT_CREATE_ONTOP = new ErrorCannotCreateOntopMessage();
+    public static final ErrorShipsSignIsMoving ERROR_SHIPS_SIGN_IS_MOVING = new ErrorShipsSignIsMoving();
+    public static final BlockFinderBarMessage BAR_BLOCK_FINDER_ON_FIND = new BlockFinderBarMessage();
 
     private final ConfigurationStream.ConfigurationFile file;
     private final Set<Message<?>> messages = new HashSet<>();
@@ -62,6 +65,7 @@ public class AdventureMessageConfig implements Config.KnownNodes {
         messages.add(ERROR_INVALID_SHIP_TYPE);
         messages.add(ERROR_INVALID_SHIP_NAME);
         messages.add(ERROR_CANNOT_CREATE_ONTOP);
+        messages.add(ERROR_SHIPS_SIGN_IS_MOVING);
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
         recreateFile();

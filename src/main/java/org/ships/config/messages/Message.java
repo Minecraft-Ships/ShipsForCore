@@ -8,11 +8,15 @@ import org.core.world.position.block.BlockType;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.block.BlockTypeIdAdapter;
 import org.ships.config.messages.adapter.block.BlockTypeNameAdapter;
+import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.config.TrackLimitAdapter;
 import org.ships.config.messages.adapter.entity.EntityNameAdapter;
 import org.ships.config.messages.adapter.entity.EntityTypeIdAdapter;
 import org.ships.config.messages.adapter.entity.EntityTypeNameAdapter;
 import org.ships.config.messages.adapter.misc.InvalidNameAdapter;
 import org.ships.config.messages.adapter.permission.PermissionNodeAdapter;
+import org.ships.config.messages.adapter.structure.StructureChunkSizeAdapter;
+import org.ships.config.messages.adapter.structure.StructureSizeAdapter;
 import org.ships.config.messages.adapter.vessel.VesselIdAdapter;
 import org.ships.config.messages.adapter.vessel.VesselNameAdapter;
 import org.ships.config.messages.adapter.vessel.VesselSizeAdapter;
@@ -26,6 +30,7 @@ import org.ships.config.messages.adapter.vessel.info.VesselInfoKeyAdapter;
 import org.ships.config.messages.adapter.vessel.info.VesselInfoValueAdapter;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.structure.ShipsStructure;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +64,13 @@ public interface Message<R> {
 
     InvalidNameAdapter INVALID_NAME = new InvalidNameAdapter();
 
+    StructureChunkSizeAdapter STRUCTURE_CHUNK_SIZE = new StructureChunkSizeAdapter();
+    StructureSizeAdapter STRUCTURE_SIZE = new StructureSizeAdapter();
+
+    TrackLimitAdapter CONFIG_TRACK_LIMIT = new TrackLimitAdapter();
+
+    List<ConfigAdapter> CONFIG_ADAPTERS = Arrays.asList(CONFIG_TRACK_LIMIT);
+    List<MessageAdapter<ShipsStructure>> STRUCTURE_ADAPTERS = Arrays.asList(STRUCTURE_SIZE, STRUCTURE_CHUNK_SIZE);
     List<MessageAdapter<Vessel>> VESSEL_ADAPTERS = Arrays.asList(VESSEL_SPEED, VESSEL_SIZE, VESSEL_NAME, VESSEL_ID);
     List<MessageAdapter<BlockType>> BLOCK_TYPE_ADAPTERS = Arrays.asList(BLOCK_TYPE_ID, BLOCK_TYPE_NAME);
     List<MessageAdapter<Entity<?>>> ENTITY_ADAPTERS = Arrays.asList(ENTITY_TYPE_ID, ENTITY_TYPE_NAME, ENTITY_NAME);

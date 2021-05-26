@@ -54,7 +54,7 @@ public class ShipsShipTeleportSetArgument implements ArgumentCommand {
         }
         LivePlayer player = (LivePlayer) source;
         TeleportToVessel tVessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        tVessel.getTeleportPositions().put(commandContext.getArgument(this, SHIP_LOCATION), player.getPosition());
+        tVessel.setTeleportPosition(player.getPosition(), commandContext.getArgument(this, SHIP_LOCATION));
         tVessel.save();
         return true;
     }

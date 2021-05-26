@@ -5,36 +5,36 @@ import org.core.adventureText.format.NamedTextColours;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
-import org.ships.vessel.common.types.Vessel;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class ErrorVesselStillLoadingMessage implements Message<Vessel> {
+public class ErrorShipsSignIsMoving implements Message<Object> {
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "StillLoading"};
+        return new String[]{"Error", "ShipSignIsMoving"};
     }
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_NAME.adapterTextFormat() + " is loading. All movement controls are locked until it is loaded").withColour(NamedTextColours.RED);
+        return AText.ofPlain("Ships sign is already moving ship").withColour(NamedTextColours.RED);
     }
 
     @Override
     public Set<MessageAdapter<?>> getAdapters() {
-        Set<MessageAdapter<?>> set = new HashSet<>(Message.VESSEL_ADAPTERS);
-        set.addAll(Message.CONFIG_ADAPTERS);
-        return set;
+        return new HashSet<>(Message.CONFIG_ADAPTERS);
     }
 
     @Override
-    public AText process(AText text, Vessel obj) {
+    public AText process(Object obj) {
+        return Message.super.process(obj);
+    }
+
+    @Override
+    @Deprecated
+    public AText process(AText text, Object obj) {
         for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
-        }
-        for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(text, obj);
         }
         return text;
     }

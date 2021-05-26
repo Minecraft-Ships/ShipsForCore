@@ -47,8 +47,7 @@ public abstract class ShipsPlugin implements Plugin {
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
-    private final Set<Identifiable> identifable = new HashSet<>();
-    private final Set<CrewPermission> defaultPermissions = new HashSet<>(Arrays.asList(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER));
+    private final Set<Identifiable> identifiables = new HashSet<>();
     private final Set<Vessel> vessels = new HashSet<>();
     private DefaultBlockList blockList;
     private @Deprecated
@@ -116,7 +115,7 @@ public abstract class ShipsPlugin implements Plugin {
                 continue;
             }
             for (File file : files) {
-                this.identifable.add(type.cloneWithName(file));
+                this.identifiables.add(type.cloneWithName(file));
             }
         }
     }
@@ -145,32 +144,33 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     private void init() {
-        this.identifable.add(BasicMovement.SHIPS_FIVE);
-        this.identifable.add(BasicMovement.SHIPS_SIX);
-        this.identifable.add(BasicBlockFinder.SHIPS_FIVE);
-        this.identifable.add(BasicBlockFinder.SHIPS_FIVE_ASYNC);
-        this.identifable.add(BasicBlockFinder.SHIPS_SIX);
-        this.identifable.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_ASYNC);
-        this.identifable.add(BlockPriority.AIR);
-        this.identifable.add(BlockPriority.DIRECTIONAL);
-        this.identifable.add(BlockPriority.ATTACHED);
-        this.identifable.add(BlockPriority.NORMAL);
-        this.identifable.add(new Ships5VesselConverter());
-        this.identifable.add(new LicenceSign());
-        this.identifable.add(new AltitudeSign());
-        this.identifable.add(new WheelSign());
-        this.identifable.add(new MoveSign());
-        this.identifable.add(new EOTSign());
+        this.identifiables.add(BasicMovement.SHIPS_FIVE);
+        this.identifiables.add(BasicMovement.SHIPS_SIX);
+        this.identifiables.add(BasicBlockFinder.SHIPS_FIVE);
+        this.identifiables.add(BasicBlockFinder.SHIPS_FIVE_ASYNC);
+        this.identifiables.add(BasicBlockFinder.SHIPS_SIX);
+        this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_ASYNC);
+        this.identifiables.add(BlockPriority.AIR);
+        this.identifiables.add(BlockPriority.DIRECTIONAL);
+        this.identifiables.add(BlockPriority.ATTACHED);
+        this.identifiables.add(BlockPriority.NORMAL);
+        this.identifiables.add(new Ships5VesselConverter());
+        this.identifiables.add(new LicenceSign());
+        this.identifiables.add(new AltitudeSign());
+        this.identifiables.add(new WheelSign());
+        this.identifiables.add(new MoveSign());
+        this.identifiables.add(new EOTSign());
+        this.register(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER, CrewPermission.DEFAULT);
         this.vesselFlags.put("ships:player_states", new PlayerStatesFlag.Builder());
     }
 
     private void init2() {
-        this.identifable.add(ShipType.OVERPOWERED_SHIP);
-        this.identifable.add(ShipType.AIRSHIP);
-        this.identifable.add(ShipType.WATERSHIP);
-        this.identifable.add(ShipType.SUBMARINE);
-        this.identifable.add(ShipType.MARSSHIP);
-        this.identifable.add(ShipType.PLANE);
+        this.identifiables.add(ShipType.OVERPOWERED_SHIP);
+        this.identifiables.add(ShipType.AIRSHIP);
+        this.identifiables.add(ShipType.WATERSHIP);
+        this.identifiables.add(ShipType.SUBMARINE);
+        this.identifiables.add(ShipType.MARSSHIP);
+        this.identifiables.add(ShipType.PLANE);
     }
 
     public ShipsConfig getConfig() {
@@ -210,8 +210,9 @@ public abstract class ShipsPlugin implements Plugin {
         return this.blockList;
     }
 
+    @Deprecated
     public Set<CrewPermission> getDefaultPermissions() {
-        return this.defaultPermissions;
+        return this.getAll(CrewPermission.class);
     }
 
     public Set<Vessel> getVessels() {
@@ -219,11 +220,11 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public <T extends Identifiable> Set<T> getAll(Class<T> class1) {
-        return identifable.stream().filter(class1::isInstance).map(t -> (T) t).collect(Collectors.toSet());
+        return identifiables.stream().filter(class1::isInstance).map(t -> (T) t).collect(Collectors.toSet());
     }
 
     public <T extends Identifiable> Optional<T> get(Class<T> class1) {
-        return identifable.stream().filter(class1::isInstance).map(t -> (T) t).findAny();
+        return identifiables.stream().filter(class1::isInstance).map(t -> (T) t).findAny();
     }
 
     public Map<String, VesselFlag.Builder<?, ?>> getVesselFlags() {
@@ -239,16 +240,16 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public void register(Identifiable... identifiables) {
-        this.identifable.addAll(Arrays.asList(identifiables));
+        this.identifiables.addAll(Arrays.asList(identifiables));
     }
 
     public void unregister(Identifiable... identifiables) {
-        Arrays.asList(identifiables).forEach(this.identifable::remove);
+        Arrays.asList(identifiables).forEach(this.identifiables::remove);
     }
 
-    public void register(CrewPermission... permissions) {
+    /*public void register(CrewPermission... permissions) {
         this.defaultPermissions.addAll(Arrays.asList(permissions));
-    }
+    }*/
 
     public void register(String id, VesselFlag.Builder<?, ?> flag) {
         this.vesselFlags.put(id, flag);

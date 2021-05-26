@@ -10,8 +10,8 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
-import org.ships.commands.argument.arguments.ShipIdentifiableArgument;
-import org.ships.commands.argument.arguments.config.ShipTypeSingleKeyArgument;
+import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
+import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleKeyArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.types.ShipType;
 

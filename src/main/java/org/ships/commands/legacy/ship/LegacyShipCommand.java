@@ -16,8 +16,8 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.core.world.position.impl.sync.SyncExactPosition;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
@@ -334,20 +334,20 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
         LivePlayer player = (LivePlayer) source;
         TeleportToVessel tVessel = (TeleportToVessel) vessel;
         if (args.length == 3) {
-            SyncExactPosition pos = tVessel.getTeleportPositions().getOrDefault("Default", tVessel.getPosition().toExactPosition());
+            ExactPosition pos = tVessel.getTeleportPositions().getOrDefault("Default", tVessel.getPosition().toExactPosition());
             player.setPosition(pos);
             return true;
         }
         if (args.length >= 5 && args[3].equalsIgnoreCase("set")) {
-            tVessel.getTeleportPositions().put(args[4], player.getPosition());
+            tVessel.setTeleportPosition(player.getPosition(), args[4]);
             tVessel.save();
             return true;
         } else if (args[3].equalsIgnoreCase("set")) {
-            tVessel.getTeleportPositions().put("Default", player.getPosition());
+            tVessel.setTeleportPosition(player.getPosition());
             tVessel.save();
             return true;
         }
-        SyncExactPosition position = tVessel.getTeleportPositions().get(args[3]);
+        ExactPosition position = tVessel.getTeleportPositions().get(args[3]);
         if (position == null) {
             player.sendMessagePlain("Unknown position on the ship");
             return true;

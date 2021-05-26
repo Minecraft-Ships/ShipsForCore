@@ -3,9 +3,13 @@ package org.ships.config.messages.messages.error;
 import org.core.adventureText.AText;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.config.ConfigAdapter;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer>> {
     @Override
@@ -21,7 +25,8 @@ public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer
     @Override
     public Set<MessageAdapter<?>> getAdapters() {
         Set<MessageAdapter<?>> set = new HashSet<>();
-        set.addAll(this.getVesselAdapters());
+        set.addAll(Message.VESSEL_ADAPTERS);
+        set.addAll(Message.CONFIG_ADAPTERS);
         set.addAll(this.getErrorAdapters());
         return set;
     }
@@ -30,13 +35,12 @@ public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer
         return Collections.singleton(Message.VESSEL_SIZE_ERROR);
     }
 
-    private Set<MessageAdapter<Vessel>> getVesselAdapters() {
-        return new HashSet<>(Arrays.asList(Message.VESSEL_ID, Message.VESSEL_NAME, Message.VESSEL_SIZE, Message.VESSEL_SPEED));
-    }
-
     @Override
     public AText process(AText text, Map.Entry<Vessel, Integer> obj) {
-        for (MessageAdapter<Vessel> adapter : this.getVesselAdapters()) {
+        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+            text = adapter.process(text);
+        }
+        for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
             text = adapter.process(text, obj.getKey());
         }
         for (MessageAdapter<Integer> adapter : this.getErrorAdapters()) {

@@ -1,4 +1,4 @@
-package org.ships.commands.argument.arguments.config;
+package org.ships.commands.argument.arguments.identifiable.shiptype;
 
 import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.context.CommandArgumentContext;

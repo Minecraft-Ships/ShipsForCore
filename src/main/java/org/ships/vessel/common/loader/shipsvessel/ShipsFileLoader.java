@@ -2,11 +2,11 @@ package org.ships.vessel.common.loader.shipsvessel;
 
 import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.schedule.unit.TimeUnit;
-import org.core.text.Text;
 import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
@@ -14,6 +14,7 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.config.parsers.VesselFlagWrappedParser;
@@ -50,14 +51,6 @@ public class ShipsFileLoader implements ShipsLoader {
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Y = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Meta", "Location", "Y");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Z = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Meta", "Location", "Z");
     public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_WORLD = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_WORLD, "Meta", "Location", "World");
-    @Deprecated //USED FOR BACKWARDS COMPATIBILITY - WILL REMOVE IN FULL RELEASE
-    public static final ConfigurationNode.KnownParser.SingleKnown<Double> META_LOCATION_TELEPORT_X = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Meta", "Location", "Teleport", "X");
-    @Deprecated //USED FOR BACKWARDS COMPATIBILITY - WILL REMOVE IN FULL RELEASE
-    public static final ConfigurationNode.KnownParser.SingleKnown<Double> META_LOCATION_TELEPORT_Y = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Meta", "Location", "Teleport", "Y");
-    @Deprecated //USED FOR BACKWARDS COMPATIBILITY - WILL REMOVE IN FULL RELEASE
-    public static final ConfigurationNode.KnownParser.SingleKnown<Double> META_LOCATION_TELEPORT_Z = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Meta", "Location", "Teleport", "Z");
-    @Deprecated //USED FOR BACKWARDS COMPATIBILITY - WILL REMOVE IN FULL RELEASE
-    public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_TELEPORT_WORLD = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_WORLD, "Meta", "Location", "Teleport", "World");
     public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>, Set<Vector3<Integer>>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
     public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(() -> ShipsPlugin
             .getPlugin()
@@ -89,14 +82,14 @@ public class ShipsFileLoader implements ShipsLoader {
             if (structureList.isEmpty()) {
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
                     @Override
-                    public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                    public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                         ship.setStructure(structure);
                         ship.setLoading(false);
-                        CorePlugin.getConsole().sendMessagePlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " has loaded.");
+                        CorePlugin.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " has loaded."));
                     }
 
                     @Override
-                    public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                    public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                         return BlockFindControl.USE;
                     }
                 });
@@ -104,7 +97,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 PositionableShipsStructure pss = ship.getStructure();
                 pss.setRaw(structureList);
                 ship.setLoading(false);
-                CorePlugin.getConsole().sendMessagePlain(Else.throwOr(NoLicencePresent.class, ship::getId, "") + " has loaded.");
+                CorePlugin.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "") + " has loaded."));
             }
         }
     }
@@ -150,11 +143,10 @@ public class ShipsFileLoader implements ShipsLoader {
         file.set(META_LOCATION_Z, vessel.getPosition().getZ());
         vessel.getMaxSize().ifPresent((size) -> file.set(SIZE_MAX, size));
         file.set(SIZE_MIN, vessel.getMinSize());
-        vessel.getTeleportPositions().forEach((key, value) -> {
-            file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "X"), (vessel.getPosition().getX() - value.getX()));
-            file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "Y"), (vessel.getPosition().getY() - value.getY()));
-            file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "Z"), (vessel.getPosition().getZ() - value.getZ()));
-            file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "World"), Parser.STRING_TO_WORLD, value.getWorld());
+        vessel.getTeleportVectors().forEach((key, value) -> {
+            file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "X"), value.getX());
+            file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "Y"), value.getY());
+            file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "Z"), value.getZ());
         });
         uuidList.forEach((key, value) -> file.set(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_STRING_PARSER, "Meta", "Permission", key.getId()), value));
         file.set(META_STRUCTURE, vessel.getStructure().getRelativePositions());
@@ -183,7 +175,7 @@ public class ShipsFileLoader implements ShipsLoader {
             throw new FileLoadVesselException(this.file, "Unknown Z value");
         }
         SyncBlockPosition position = opWorld.get().getPosition(opX.get(), opY.get(), opZ.get());
-        LicenceSign sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+        LicenceSign sign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Could not get licence sign from register. Something is really wrong"));
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
@@ -193,7 +185,7 @@ public class ShipsFileLoader implements ShipsLoader {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
-        Optional<Text> opShipTypeS = lste.getLine(1);
+        Optional<AText> opShipTypeS = lste.getTextAt(1);
         if (!opShipTypeS.isPresent()) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
@@ -214,27 +206,17 @@ public class ShipsFileLoader implements ShipsLoader {
 
         file.getInteger(SIZE_MAX).ifPresent(ship::setMaxSize);
         file.getInteger(SIZE_MIN).ifPresent(ship::setMinSize);
-
-        Optional<Double> opTelX = file.getDouble(META_LOCATION_TELEPORT_X);
-        Optional<Double> opTelY = file.getDouble(META_LOCATION_TELEPORT_Y);
-        Optional<Double> opTelZ = file.getDouble(META_LOCATION_TELEPORT_Z);
-        Optional<WorldExtent> opTelWorld = file.parse(META_LOCATION_TELEPORT_WORLD);
-        if (opTelWorld.isPresent() && opTelX.isPresent() && opTelY.isPresent() && opTelZ.isPresent()) {
-            ship.setTeleportPosition(opTelWorld.get().getPosition(opTelX.get(), opTelY.get(), opTelZ.get()));
-        }
         file.getChildren(new ConfigurationNode("Meta", "Location", "Teleport")).forEach(c -> {
             String[] path = c.getPath();
             String id = path[path.length - 1];
             Optional<Double> opTelX2 = file.getDouble(new ConfigurationNode(ArrayUtils.join(String.class, c.getPath(), new String[]{"X"})));
             Optional<Double> opTelY2 = file.getDouble(new ConfigurationNode(ArrayUtils.join(String.class, c.getPath(), new String[]{"Y"})));
             Optional<Double> opTelZ2 = file.getDouble(new ConfigurationNode(ArrayUtils.join(String.class, c.getPath(), new String[]{"Z"})));
-            Optional<WorldExtent> opTelWorld2 = file.parse(new ConfigurationNode(ArrayUtils.join(String.class, c.getPath(), new String[]{"World"})), Parser.STRING_TO_WORLD);
-            if (opTelWorld2.isPresent() && opTelX2.isPresent() && opTelY2.isPresent() && opTelZ2.isPresent()) {
-                double pX = opTelX2.get() + opX.get();
-                double pY = opTelY2.get() + opY.get();
-                double pZ = opTelZ2.get() + opZ.get();
-                WorldExtent sWorld = opTelWorld2.get();
-                ((ShipsVessel) vessel).getTeleportPositions().put(id, sWorld.getPosition(pX, pY, pZ));
+            if (opTelX2.isPresent() && opTelY2.isPresent() && opTelZ2.isPresent()) {
+                double pX = opTelX2.get();
+                double pY = opTelY2.get();
+                double pZ = opTelZ2.get();
+                ((ShipsVessel) vessel).setTeleportVector(Vector3.valueOf(pX, pY, pZ), id);
             }
         });
         CorePlugin
@@ -247,7 +229,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 .run();
 
         ShipsPlugin.getPlugin()
-                .getDefaultPermissions()
+                .getAll(CrewPermission.class)
                 .forEach(p -> file.parseCollection(
                         new ConfigurationNode("Meta", "Permission", p.getId()),
                         Parser.STRING_TO_UNIQUIE_ID,

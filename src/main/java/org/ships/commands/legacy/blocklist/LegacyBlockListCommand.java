@@ -1,6 +1,7 @@
 package org.ships.commands.legacy.blocklist;
 
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
@@ -9,6 +10,7 @@ import org.core.world.position.block.BlockType;
 import org.ships.commands.legacy.LegacyArgumentCommand;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
@@ -39,7 +41,10 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
             list.addAll(CorePlugin.getPlatform().getBlockTypes());
         }else if(args[1].equalsIgnoreCase("set")) {
             if (source instanceof LivePlayer && !((LivePlayer)source).hasPermission(Permissions.CMD_BLOCKLIST_SET)){
-                ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
+                LivePlayer player = (LivePlayer)source;
+                AdventureMessageConfig messageConfig = ShipsPlugin.getPlugin().getAdventureMessageConfig();
+                AText text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, Permissions.CMD_BLOCKLIST_SET.getPermissionValue()));
+                player.sendMessage(text);
                 return false;
             }
             if(args.length >= 3){

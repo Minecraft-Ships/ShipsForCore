@@ -191,7 +191,9 @@ public class CoreEventListener implements EventListener {
         LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
             if (ShipsSign.LOCKED_SIGNS.stream().anyMatch(b -> b.equals(position))) {
-                event.getEntity().sendMessagePlain("Sign is moving ship already");
+                LivePlayer player = event.getEntity();
+                AText text = AdventureMessageConfig.ERROR_SHIPS_SIGN_IS_MOVING.parse();
+                player.sendMessage(text);
                 return;
             }
             boolean cancel = event.getClickAction() == EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position) : s.onSecondClick(event.getEntity(), position);
@@ -207,21 +209,18 @@ public class CoreEventListener implements EventListener {
         if (config.getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())) {
             return;
         }
-        ShipsSign sign = null;
         boolean register = false;
         Optional<AText> opFirstLine = event.getFrom().getTextAt(0);
         if (!opFirstLine.isPresent()) {
             return;
         }
         AText line = opFirstLine.get();
-        if (line.toPlain().equalsIgnoreCase("[Ships]")) {
-            sign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
-            register = true;
-        } else if (ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().anyMatch(s -> s.isSign(event.getFrom().getText()))) {
-            sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(event.getFrom().getText())).findAny().get();
-        }
+        ShipsSign sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(event.getFrom().getText())).findFirst().orElse(null);
         if (sign == null) {
             return;
+        }
+        if (sign instanceof LicenceSign) {
+            register = true;
         }
         SignTileEntitySnapshot stes;
         try {
@@ -282,19 +281,17 @@ public class CoreEventListener implements EventListener {
             int trackSize = config.getDefaultTrackSize();
             ServerBossBar bar = null;
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-                bar = CorePlugin.createBossBar().setMessage(CorePlugin.buildText("0 / " + trackSize)).register(event.getEntity());
+                bar = CorePlugin.createBossBar().register(event.getEntity());
             }
             final ServerBossBar finalBar = bar;
             SyncExactPosition bp = event.getEntity().getPosition();
-
-
             config
                     .getDefaultFinder()
                     .getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                         @Override
                         public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                             if (finalBar != null) {
-                                finalBar.setMessage(CorePlugin.buildText("Complete"));
+                                finalBar.setTitle(AText.ofPlain("Complete"));
                             }
                             Vessel vessel = type.createNewVessel(stes, event.getPosition());
                             if (vessel instanceof TeleportToVessel) {
@@ -326,8 +323,9 @@ public class CoreEventListener implements EventListener {
                         @Override
                         public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                             if (finalBar != null) {
+                                AText text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.process(currentStructure);
                                 int blockAmount = (currentStructure.getPositions().size() + 1);
-                                finalBar.setMessage(CorePlugin.buildText(blockAmount + " / " + trackSize));
+                                finalBar.setTitle(text);
                                 finalBar.setValue(blockAmount, trackSize);
                             }
                             return BlockFindControl.USE;
@@ -351,7 +349,7 @@ public class CoreEventListener implements EventListener {
                 continue;
             }
             LiveSignTileEntity sign = (LiveSignTileEntity) lte;
-            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Could not get Licence sign from register. Something is really wrong"));
             if (!licenceSign.isSign(sign)) {
                 continue;
             }
@@ -392,7 +390,7 @@ public class CoreEventListener implements EventListener {
                 continue;
             }
             LiveSignTileEntity lste = (LiveSignTileEntity) lte;
-            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Licence sign could not be found from register. Something is really wrong."));
             if (!licenceSign.isSign(lste)) {
                 continue;
             }
