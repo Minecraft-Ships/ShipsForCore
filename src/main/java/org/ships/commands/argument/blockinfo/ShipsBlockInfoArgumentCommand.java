@@ -4,6 +4,7 @@ import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.arguments.ParseCommandArgument;
 import org.core.command.argument.arguments.id.BlockTypeArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
@@ -20,33 +21,30 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.Position;
 import org.ships.movement.BlockPriority;
 import org.ships.movement.SetMovingBlock;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     private static final String BLOCK_INFO_ARGUMENT = "blockinfo";
     private static final String BLOCK_TYPE = "blocktype";
+
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(BLOCK_INFO_ARGUMENT), new OptionalArgument<>(new BlockTypeArgument(BLOCK_TYPE), new OptionalArgument.Parser<BlockType>() {
+        return Arrays.asList(new ExactArgument(BLOCK_INFO_ARGUMENT), new OptionalArgument<>(new BlockTypeArgument(BLOCK_TYPE), new ParseCommandArgument<BlockType>() {
 
             @Override
-            public BlockType parse(CommandContext context, CommandArgumentContext<BlockType> argument) {
+            public Map.Entry<BlockType, Integer> parse(CommandContext context, CommandArgumentContext<BlockType> argument) {
                 if (!(context.getSource() instanceof LivePlayer)) {
                     return null;
                 }
-                LivePlayer player = (LivePlayer)context.getSource();
+                LivePlayer player = (LivePlayer) context.getSource();
                 Optional<BlockPosition> opBlockType = player.getBlockLookingAt();
-                return opBlockType.map(Position::getBlockType).orElse(null);
+                return opBlockType.map(pos -> new AbstractMap.SimpleImmutableEntry<>(pos.getBlockType(), 0)).orElse(null);
             }
         }));
     }
@@ -63,12 +61,12 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if(!(commandContext.getSource() instanceof CommandViewer)){
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         BlockType bt = commandContext.getArgument(this, BLOCK_TYPE);
-        if(bt == null){
+        if (bt == null) {
             viewer.sendMessage(CorePlugin.buildText(TextColours.RED + "BlockType id isn't valid"));
             return false;
         }
@@ -78,12 +76,12 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
         viewer.sendMessagePlain(" |- ID: " + details.getType().getId());
         viewer.sendMessagePlain(" |- BlockList-CollideType: " + ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(details.getType()).getCollideType().name());
         viewer.sendMessagePlain("---[Keyed Data]---");
-        for(Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()){
-            if (details.getUnspecified(dataClass.getValue()).isPresent()){
+        for (Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()) {
+            if (details.getUnspecified(dataClass.getValue()).isPresent()) {
                 viewer.sendMessagePlain(" |- " + dataClass.getKey());
             }
         }
-        if(details.getDirectionalData().isPresent()){
+        if (details.getDirectionalData().isPresent()) {
             viewer.sendMessagePlain(" |- Directional");
         }
         viewer.sendMessagePlain("---[Priority]---");

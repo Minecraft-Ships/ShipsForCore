@@ -13,6 +13,7 @@ import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.arguments.ShipTeleportLocationArgument;
 import org.ships.permissions.Permissions;
+import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.assits.TeleportToVessel;
 
 import java.util.Arrays;
@@ -29,7 +30,19 @@ public class ShipsShipTeleportSetArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT, v -> v instanceof TeleportToVessel, v -> "Ship is not teleport capable"), new ExactArgument(SHIP_TELEPORT_ARGUMENT), new ExactArgument(SHIP_SET), new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(SHIP_LOCATION, new ShipIdArgument<>(SHIP_ID_ARGUMENT, v -> v instanceof TeleportToVessel, v -> "Ship is not teleport capable"), 1), "Default"));
+        return Arrays.asList(
+                new ExactArgument(SHIP_ARGUMENT),
+                new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
+            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
+                CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
+                LivePlayer player = (LivePlayer) source;
+                return crewVessel.getPermission(player.getUniqueId()).canCommand();
+            }
+            return vessel instanceof TeleportToVessel;
+        }, v -> "Ship is not teleport capable"),
+                new ExactArgument(SHIP_TELEPORT_ARGUMENT),
+                new ExactArgument(SHIP_SET),
+                new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(SHIP_LOCATION, new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, v) -> v instanceof TeleportToVessel, v -> "Ship is not teleport capable"), 1), "Default"));
 
     }
 

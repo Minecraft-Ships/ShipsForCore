@@ -4,6 +4,7 @@ import org.core.command.argument.arguments.CommandArgument;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.source.command.CommandSource;
 import org.core.utils.Else;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.permissions.vessel.CrewPermission;
@@ -17,21 +18,28 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
 
     private final String id;
-    private final Predicate<Vessel> predicate;
+    private final BiPredicate<CommandSource, Vessel> predicate;
     private final Function<Vessel, String> failMessage;
 
     public ShipIdArgument(String id) {
-        this(id, v -> true, v -> "You Broke Logic...");
+        this(id, (source, vessel) -> {
+            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
+                CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
+                LivePlayer player = (LivePlayer) source;
+                return crewVessel.getPermission(player.getUniqueId()).canCommand();
+            }
+            return true;
+        }, v -> "Your crew permission does not allow for commands");
     }
 
-    public ShipIdArgument(String id, Predicate<Vessel> predicate, Function<Vessel, String> failMessage) {
+    public ShipIdArgument(String id, BiPredicate<CommandSource, Vessel> predicate, Function<Vessel, String> failMessage) {
         this.id = id;
         this.predicate = predicate;
         this.failMessage = failMessage;
@@ -55,7 +63,7 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
         if (!(opVessel.isPresent())) {
             throw new IOException("No Vessel by that name");
         }
-        if (!this.predicate.test(opVessel.get())) {
+        if (!this.predicate.test(context.getSource(), opVessel.get())) {
             throw new IOException(this.failMessage.apply(opVessel.get()));
         }
         return new AbstractMap.SimpleImmutableEntry<>((V) opVessel.get(), argument.getFirstArgument() + 1);
@@ -64,7 +72,10 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
     @Override
     public List<String> suggest(CommandContext commandContext, CommandArgumentContext<V> argument) {
         String peek = commandContext.getCommand()[argument.getFirstArgument()];
-        return ShipsPlugin.getPlugin().getVessels().stream()
+        return ShipsPlugin
+                .getPlugin()
+                .getVessels()
+                .stream()
                 .filter(v -> v instanceof IdentifiableShip)
                 .map(v -> (IdentifiableShip) v)
                 .filter(v -> {
@@ -84,7 +95,9 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
                     } catch (NoLicencePresent e) {
                         return false;
                     }
-                }).filter(this.predicate).sorted((o1, o2) -> {
+                })
+                .filter(v -> this.predicate.test(commandContext.getSource(), v))
+                .sorted((o1, o2) -> {
                     if (!(commandContext.getSource() instanceof LivePlayer)) {
                         return 0;
                     }
@@ -102,7 +115,8 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
                         }
                     }
                     return 0;
-                }).filter(v -> Else.throwOr(NoLicencePresent.class, () -> {
+                })
+                .filter(v -> Else.throwOr(NoLicencePresent.class, () -> {
                     v.getId();
                     return true;
                 }, false)).map(v -> {
@@ -112,6 +126,7 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
                         noLicencePresent.printStackTrace();
                         return null;
                     }
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
     }
 }

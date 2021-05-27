@@ -37,7 +37,6 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
     private final String SHIP_ADDITION_ARGUMENT = "add";
     private final String SHIP_VECTOR_ARGUMENT = "vector";
 
-
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(

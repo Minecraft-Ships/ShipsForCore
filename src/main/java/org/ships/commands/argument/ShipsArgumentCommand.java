@@ -19,6 +19,7 @@ import org.ships.commands.argument.config.shiptype.ShipTypeViewSingleConfigArgum
 import org.ships.commands.argument.fix.NoGravityArgumentCommand;
 import org.ships.commands.argument.help.ShipsHelpArgumentCommand;
 import org.ships.commands.argument.info.ShipsInfoArgumentCommand;
+import org.ships.commands.argument.ship.crew.ShipAddCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipViewCrewArgumentCommand;
 import org.ships.commands.argument.ship.eot.ShipsShipEOTEnableArgumentCommand;
 import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
@@ -67,6 +68,7 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new ShipsShipUnlockArgumentCommand());
         COMMANDS.add(new ShipsShipEOTEnableArgumentCommand());
         COMMANDS.add(new ShipViewCrewArgumentCommand());
+        COMMANDS.add(new ShipAddCrewArgumentCommand());
 
         COMMANDS.add(new ShipsCreateShipTypeArgument());
         COMMANDS.add(new ShipsViewShipTypeArgument());

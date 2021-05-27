@@ -8,6 +8,7 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.arguments.operation.RemainingArgument;
 import org.core.command.argument.context.CommandContext;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
@@ -30,7 +31,14 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
                 new ExactArgument(SHIP_ARGUMENT),
-                new ShipIdArgument<>(SHIP_ID_ARGUMENT, v -> v instanceof CrewStoredVessel, v -> "Vessel does not accept crew"),
+                new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
+                    if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
+                        CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
+                        LivePlayer player = (LivePlayer) source;
+                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                    }
+                    return vessel instanceof CrewStoredVessel;
+                }, v -> "Vessel does not accept crew"),
                 new ExactArgument(SHIP_CREW_ARGUMENT),
                 new ExactArgument(SHIP_VIEW_ARGUMENT),
                 new OptionalArgument<>(
