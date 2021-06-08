@@ -3,8 +3,9 @@ package org.ships.commands.argument.blockinfo;
 import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
 import org.core.command.argument.ArgumentCommand;
-import org.core.command.argument.arguments.CommandArgument;
-import org.core.command.argument.arguments.ParseCommandArgument;
+import org.core.command.argument.CommandArgument;
+import org.core.command.argument.CommandArgumentResult;
+import org.core.command.argument.ParseCommandArgument;
 import org.core.command.argument.arguments.id.BlockTypeArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
@@ -26,27 +27,29 @@ import org.ships.movement.SetMovingBlock;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
-    private static final String BLOCK_INFO_ARGUMENT = "blockinfo";
-    private static final String BLOCK_TYPE = "blocktype";
+    private static final ExactArgument BLOCK_INFO_ARGUMENT = new ExactArgument("blockinfo");
+    private static final OptionalArgument<BlockType> BLOCK_TYPE = new OptionalArgument<BlockType>(new BlockTypeArgument("blocktype"), new ParseCommandArgument<BlockType>() {
+        @Override
+        public CommandArgumentResult<BlockType> parse(CommandContext context, CommandArgumentContext<BlockType> argument) {
+            if (!(context.getSource() instanceof LivePlayer)) {
+                return null;
+            }
+            LivePlayer player = (LivePlayer) context.getSource();
+            Optional<BlockPosition> opBlockType = player.getBlockLookingAt();
+            return opBlockType.map(pos -> new CommandArgumentResult<>(0, pos.getBlockType())).orElse(null);
+        }
+    });
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(BLOCK_INFO_ARGUMENT), new OptionalArgument<>(new BlockTypeArgument(BLOCK_TYPE), new ParseCommandArgument<BlockType>() {
-
-            @Override
-            public Map.Entry<BlockType, Integer> parse(CommandContext context, CommandArgumentContext<BlockType> argument) {
-                if (!(context.getSource() instanceof LivePlayer)) {
-                    return null;
-                }
-                LivePlayer player = (LivePlayer) context.getSource();
-                Optional<BlockPosition> opBlockType = player.getBlockLookingAt();
-                return opBlockType.map(pos -> new AbstractMap.SimpleImmutableEntry<>(pos.getBlockType(), 0)).orElse(null);
-            }
-        }));
+        return Arrays.asList(BLOCK_INFO_ARGUMENT, BLOCK_TYPE);
     }
 
     @Override

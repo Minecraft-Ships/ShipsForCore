@@ -2,7 +2,7 @@ package org.ships.commands.argument.ship.moveto;
 
 import org.core.CorePlugin;
 import org.core.command.argument.ArgumentCommand;
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.SuggestionArgument;
 import org.core.command.argument.arguments.position.vector.Vector3IntegerArgument;

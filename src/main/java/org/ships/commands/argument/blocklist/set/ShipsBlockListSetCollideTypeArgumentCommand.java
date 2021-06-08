@@ -2,7 +2,7 @@ package org.ships.commands.argument.blocklist.set;
 
 import org.core.CorePlugin;
 import org.core.command.argument.ArgumentCommand;
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypesArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.simple.EnumArgument;

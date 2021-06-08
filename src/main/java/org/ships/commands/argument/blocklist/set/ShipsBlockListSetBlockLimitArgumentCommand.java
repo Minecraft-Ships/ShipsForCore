@@ -2,10 +2,9 @@ package org.ships.commands.argument.blocklist.set;
 
 import org.core.CorePlugin;
 import org.core.command.argument.ArgumentCommand;
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypesArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
-import org.core.command.argument.arguments.simple.EnumArgument;
 import org.core.command.argument.arguments.simple.number.IntegerArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
@@ -13,7 +12,6 @@ import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.TextColours;
 import org.core.world.position.block.BlockType;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
@@ -27,7 +25,7 @@ public class ShipsBlockListSetBlockLimitArgumentCommand implements ArgumentComma
     private static final String SHIP_BLOCK_LIST_ARGUMENT = "blocklist";
     private static final String SHIP_SET_ARGUMENT = "set";
     private static final String SHIP_BLOCK_LIMIT_ARGUMENT = "blocklimit";
-    private static final String SHIP_LIMIT_VALUE_ARGUMENT = "limit_value";
+    private static final String SHIP_LIMIT_VALUE_ARGUMENT = "limit value";
     private static final String SHIP_BLOCK_TYPE_ARGUMENT = "blocktype";
 
     @Override

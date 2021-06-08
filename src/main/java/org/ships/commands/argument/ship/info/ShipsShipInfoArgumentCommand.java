@@ -3,7 +3,7 @@ package org.ships.commands.argument.ship.info;
 import org.array.utils.ArrayUtils;
 import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;

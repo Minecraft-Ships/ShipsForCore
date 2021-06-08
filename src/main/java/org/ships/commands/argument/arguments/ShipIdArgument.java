@@ -1,6 +1,7 @@
 package org.ships.commands.argument.arguments;
 
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
+import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
@@ -16,7 +17,6 @@ import org.ships.vessel.common.types.Vessel;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -51,7 +51,7 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
     }
 
     @Override
-    public Map.Entry<V, Integer> parse(CommandContext context, CommandArgumentContext<V> argument) throws IOException {
+    public CommandArgumentResult<V> parse(CommandContext context, CommandArgumentContext<V> argument) throws IOException {
         String id = context.getCommand()[argument.getFirstArgument()];
         Optional<IdentifiableShip> opVessel = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v instanceof IdentifiableShip).map(v -> (IdentifiableShip) v).filter(v -> {
             try {
@@ -66,7 +66,7 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
         if (!this.predicate.test(context.getSource(), opVessel.get())) {
             throw new IOException(this.failMessage.apply(opVessel.get()));
         }
-        return new AbstractMap.SimpleImmutableEntry<>((V) opVessel.get(), argument.getFirstArgument() + 1);
+        return CommandArgumentResult.from(argument, (V) opVessel.get());
     }
 
     @Override

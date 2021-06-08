@@ -1,6 +1,7 @@
 package org.ships.commands.argument.arguments.config;
 
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
+import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.config.ConfigurationNode;
@@ -9,9 +10,7 @@ import org.ships.config.Config;
 import org.ships.config.node.DedicatedNode;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,9 +20,6 @@ public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, 
     private final @NotNull String id;
 
     public ConfigKeyArgument(@NotNull String id, @NotNull Config.KnownNodes nodes) {
-        if (id == null || nodes == null) {
-            throw new IllegalArgumentException("Either Id or Nodes is null");
-        }
         this.config = nodes;
         this.id = id;
     }
@@ -34,7 +30,7 @@ public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, 
     }
 
     @Override
-    public Map.Entry<DedicatedNode<A, V, N>, Integer> parse(CommandContext context, CommandArgumentContext<DedicatedNode<A, V, N>> argument) throws IOException {
+    public CommandArgumentResult<DedicatedNode<A, V, N>> parse(CommandContext context, CommandArgumentContext<DedicatedNode<A, V, N>> argument) throws IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
         int number = argument.getFirstArgument() + 1;
         Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<?, Object>>> opNode = this
@@ -44,7 +40,7 @@ public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, 
                 .filter(n -> n.getKeyName().equalsIgnoreCase(arg))
                 .findAny();
         if (opNode.isPresent()) {
-            return new AbstractMap.SimpleImmutableEntry<>((DedicatedNode<A, V, N>) opNode.get(), number);
+            return CommandArgumentResult.from(argument, (DedicatedNode<A, V, N>) opNode.get());
         }
         throw new IOException("No known node of " + arg);
     }

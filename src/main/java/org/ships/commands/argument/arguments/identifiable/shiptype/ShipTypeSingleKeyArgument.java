@@ -1,7 +1,8 @@
 package org.ships.commands.argument.arguments.identifiable.shiptype;
 
 import org.array.utils.ArrayUtils;
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
+import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.config.ConfigurationNode;
@@ -25,10 +26,10 @@ public class ShipTypeSingleKeyArgument implements CommandArgument<ConfigurationN
             AbstractShipType.BURNER_BLOCK,
             AbstractShipType.FUEL_SLOT,
             AbstractShipType.SPECIAL_BLOCK_PERCENT
-            ));
+    ));
 
 
-    public ShipTypeSingleKeyArgument(String id){
+    public ShipTypeSingleKeyArgument(String id) {
         this.id = id;
     }
 
@@ -38,12 +39,12 @@ public class ShipTypeSingleKeyArgument implements CommandArgument<ConfigurationN
     }
 
     @Override
-    public Map.Entry<ConfigurationNode.KnownParser.SingleKnown<Object>, Integer> parse(CommandContext context, CommandArgumentContext<ConfigurationNode.KnownParser.SingleKnown<Object>> argument) throws IOException {
+    public CommandArgumentResult<ConfigurationNode.KnownParser.SingleKnown<Object>> parse(CommandContext context, CommandArgumentContext<ConfigurationNode.KnownParser.SingleKnown<Object>> argument) throws IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
         int number = argument.getFirstArgument() + 1;
         Optional<ConfigurationNode.KnownParser.SingleKnown<?>> opNode = PARSE_FUNCTIONS.parallelStream().filter(f -> ArrayUtils.toString(".", t -> t, f.getPath()).equalsIgnoreCase(arg)).findAny();
-        if(opNode.isPresent()){
-            return new AbstractMap.SimpleImmutableEntry<>((ConfigurationNode.KnownParser.SingleKnown<Object>) opNode.get(), number);
+        if (opNode.isPresent()) {
+            return CommandArgumentResult.from(argument, (ConfigurationNode.KnownParser.SingleKnown<Object>) opNode.get());
         }
         throw new IOException("Unknown node of " + arg);
     }

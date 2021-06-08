@@ -1,15 +1,14 @@
 package org.ships.commands.argument.arguments.identifiable;
 
-import org.core.command.argument.arguments.CommandArgument;
+import org.core.command.argument.CommandArgument;
+import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.utils.Identifiable;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -36,7 +35,7 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
     }
 
     @Override
-    public Map.Entry<T, Integer> parse(CommandContext context, CommandArgumentContext<T> argument) throws IOException {
+    public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
         int number = argument.getFirstArgument() + 1;
         Optional<T> opValue = ShipsPlugin
@@ -47,7 +46,7 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
                 .filter(this.predicate)
                 .findAny();
         if (opValue.isPresent()) {
-            return new AbstractMap.SimpleImmutableEntry<>(opValue.get(), number);
+            return CommandArgumentResult.from(argument, opValue.get());
         }
         throw new IOException("Unknown value of '" + arg + "'");
     }
