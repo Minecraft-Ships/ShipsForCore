@@ -1,20 +1,26 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+
 }
 
 jar {
-    dependsOn(':ShipsCore:jar')
+    //dependsOn(':ShipsCore:jar')
 }
 
 repositories {
     mavenLocal()
-    maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
-    }
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    api project(":ShipsCore")
+    try {
+        api project(":ShipsCore")
+    } catch (UnknownProjectException e) {
+        System.out.println("Could not find subModule of ShipsCore, using jit instead")
+        api 'com.github.Minecraft-Ships:ShipsCore:Test3'
+    }
     compileOnly 'org.jetbrains:annotations:20.1.0'
 }
 
@@ -22,3 +28,15 @@ group = 'org.ships'
 version = '1.0-SNAPSHOT'
 description = 'ShipsForCore'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
+        }
+    }
+}
