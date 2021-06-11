@@ -20,8 +20,8 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Build with Maven
-      run: mvn javadoc:javadoc --file pom.xml
+    - name: Build with Gradlew
+      run: gradlew javadoc
 
     - name: Check GitHub Pages status
       uses: crazy-max/ghaction-github-status@v2
@@ -32,6 +32,6 @@ jobs:
       uses: crazy-max/ghaction-github-pages@v2.5.0
       with:
         target_branch: gh-pages
-        build_dir: target/site/apidocs
+        build_dir: build/docs/javadoc
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
