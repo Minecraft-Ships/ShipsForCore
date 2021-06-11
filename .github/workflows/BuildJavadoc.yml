@@ -20,8 +20,11 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
     - name: Build with Gradlew
-      run: gradlew javadoc
+      run: ./gradlew javadoc
 
     - name: Check GitHub Pages status
       uses: crazy-max/ghaction-github-status@v2
