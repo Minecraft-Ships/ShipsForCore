@@ -33,6 +33,8 @@ import org.ships.commands.argument.ship.unlock.ShipsShipUnlockArgumentCommand;
 import org.ships.commands.argument.type.ShipsCreateShipTypeArgument;
 import org.ships.commands.argument.type.ShipsDeleteShipTypeArgument;
 import org.ships.commands.argument.type.ShipsViewShipTypeArgument;
+import org.ships.commands.argument.type.flag.ModifyShipTypeFlagArgument;
+import org.ships.commands.argument.type.flag.ViewShipTypeFlagArgument;
 import org.ships.plugin.ShipsPlugin;
 
 import java.util.HashSet;
@@ -60,6 +62,8 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
         COMMANDS.add(new ShipTypeViewSingleConfigArgument());
         COMMANDS.add(new ShipTypeSetSingleConfigArgument());
+        COMMANDS.add(new ViewShipTypeFlagArgument());
+        COMMANDS.add(new ModifyShipTypeFlagArgument());
 
         COMMANDS.add(new ShipsShipInfoArgumentCommand());
         COMMANDS.add(new ShipsShipTrackArgumentCommand());

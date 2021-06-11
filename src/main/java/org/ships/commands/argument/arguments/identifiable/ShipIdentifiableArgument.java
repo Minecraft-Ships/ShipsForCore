@@ -5,6 +5,7 @@ import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.utils.Identifiable;
+import org.core.utils.lamda.tri.TriPredicate;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.IOException;
@@ -17,13 +18,18 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
 
     private final String id;
     private final Class<T> type;
-    private final Predicate<T> predicate;
+    private final TriPredicate<CommandContext, CommandArgumentContext<T>, T> predicate;
 
     public ShipIdentifiableArgument(String id, Class<T> type) {
-        this(id, type, (v) -> true);
+        this(id, type, (c, a, v) -> true);
     }
 
+    @Deprecated
     public ShipIdentifiableArgument(String id, Class<T> type, Predicate<T> predicate) {
+        this(id, type, (c, a, v) -> predicate.test(v));
+    }
+
+    public ShipIdentifiableArgument(String id, Class<T> type, TriPredicate<CommandContext, CommandArgumentContext<T>, T> predicate) {
         this.id = id;
         this.type = type;
         this.predicate = predicate;
@@ -43,7 +49,7 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
                 .getAll(this.type)
                 .parallelStream()
                 .filter(i -> i.getId().equalsIgnoreCase(arg))
-                .filter(this.predicate)
+                .filter(v -> this.predicate.apply(context, argument, v))
                 .findAny();
         if (opValue.isPresent()) {
             return CommandArgumentResult.from(argument, opValue.get());
@@ -60,7 +66,7 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
                 .getAll(this.type)
                 .parallelStream()
                 .filter(i -> i.getId().startsWith(arg.toLowerCase()) || i.getName().startsWith(arg.toLowerCase()))
-                .filter(this.predicate)
+                .filter(v -> this.predicate.apply(context, argument, v))
                 .map(Identifiable::getId)
                 .collect(Collectors.toList());
     }

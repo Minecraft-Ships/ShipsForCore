@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     api project(":ShipsCore")
-    implementation 'org.jetbrains:annotations:20.1.0'
+    compileOnly 'org.jetbrains:annotations:20.1.0'
 }
 
 group = 'org.ships'

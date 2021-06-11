@@ -13,6 +13,9 @@ public interface Permissions {
     Permission CMD_INFO = CorePlugin.getPlatform().register("ships.cmd.info");
     Permission CMD_BLOCK_INFO = CorePlugin.getPlatform().register("ships.cmd.blockinfo");
     Permission CMD_SHIPTYPE_CREATE = CorePlugin.getPlatform().register("ships.cmd.shiptype.create");
+    Permission CMD_SHIPTYPE_VIEW_FLAG = CorePlugin.getPlatform().register("ships.cmd.shiptype.flags.view");
+    Permission CMD_SHIPTYPE_MODIFY_FLAG = CorePlugin.getPlatform().register("ships.cmd.shiptype.flags.modify");
+
     Permission CMD_CONFIG_SET = CorePlugin.getPlatform().register("ships.cmd.config.set");
     Permission CMD_CONFIG_VIEW = CorePlugin.getPlatform().register("ships.cmd.config.view");
     Permission CMD_AUTOPILOT = CorePlugin.getPlatform().register("ships.cmd.autopilot");
