@@ -10,7 +10,6 @@ import org.core.platform.Plugin;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.blocks.ExpandedBlockList;
-import org.ships.config.parsers.VesselFlagWrappedParser;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.SerializableShipType;
@@ -18,54 +17,28 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public abstract class AbstractShipType<V extends Vessel> implements SerializableShipType<V> {
 
+    public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> FUEL_CONSUMPTION = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    public static final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> FUEL_SLOT = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<ItemType, Set<ItemType>> FUEL_TYPES = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Altitude");
     protected final @NotNull String displayName;
     protected final @NotNull Plugin plugin;
     protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>();
     protected final @NotNull BlockType[] types;
     protected final @NotNull ExpandedBlockList blockList;
     protected final @NotNull ConfigurationStream.ConfigurationFile file;
-
-    public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
-
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> FUEL_CONSUMPTION = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    public static final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> FUEL_SLOT = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<ItemType, Set<ItemType>> FUEL_TYPES = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
-
-    public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
-
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Altitude");
-    public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(() -> ShipsPlugin
-            .getPlugin()
-            .getVesselFlags()
-            .entrySet()
-            .stream()
-            .collect(Collectors.<Map.Entry<String, VesselFlag.Builder<?, ?>>, String, Parser<String, VesselFlag<?>>>toMap(e -> e.getKey().replaceAll(":", " "), new Function<Map.Entry<String, VesselFlag.Builder<?, ?>>, VesselFlagWrappedParser<?>>() {
-
-
-                @Override
-                public VesselFlagWrappedParser<?> apply(Map.Entry<String, VesselFlag.Builder<?, ?>> stringVesselFlagEntry) {
-                    return build(stringVesselFlagEntry.getValue());
-                }
-
-                private <T> VesselFlagWrappedParser<?> build(VesselFlag.Builder<?, ?> builder) {
-                    return new VesselFlagWrappedParser<>((VesselFlag.Builder<T, VesselFlag<T>>) builder);
-                }
-            })), i -> i.getId().replaceAll(":", " "), "Meta", "Flags");
-
-    protected abstract void createDefault(@NotNull ConfigurationStream.ConfigurationFile file);
 
     public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
         if (types.length == 0) {
@@ -81,6 +54,8 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
             this.file.save();
         }
     }
+
+    protected abstract void createDefault(@NotNull ConfigurationStream.ConfigurationFile file);
 
     @Override
     public @NotNull String getDisplayName() {
@@ -158,9 +133,32 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
 
     @Override
     public void save() {
-        this.getFile().set(META_FLAGS, this.flags);
-        this.getDefaultMaxSize().ifPresent((size -> this.getFile().set(MAX_SIZE, size)));
-        this.getFile().set(MIN_SIZE, this.getDefaultMinSize());
-        this.getFile().save();
+        ConfigurationStream.ConfigurationFile file = this.getFile();
+        this.getDefaultMaxSize().ifPresent((size -> file.set(MAX_SIZE, size)));
+        file.set(MIN_SIZE, this.getDefaultMinSize());
+
+        this.getFlags().stream().filter(v -> v instanceof VesselFlag.Serializable).forEach(vf -> {
+            String value = ((VesselFlag.Serializable<?>) vf).serialize();
+            String[] id = vf.getId().split(Pattern.quote(":"));
+            file.set(new ConfigurationNode("flags", id[0], id[1]), value);
+        });
+
+        file.save();
+    }
+
+    public void initFlags() {
+        ConfigurationStream.ConfigurationFile file = this.getFile();
+        this.getFlags().stream().filter(v -> v instanceof VesselFlag.Serializable).forEach(vf -> {
+            VesselFlag.Serializable<?> vesselFlag = (VesselFlag.Serializable<?>) vf;
+            String[] id = vf.getId().split(Pattern.quote(":"));
+            Optional<String> opValue = file.getString(new ConfigurationNode("flags", id[0], id[1]));
+            if (!opValue.isPresent()) {
+                return;
+            }
+            if (!vesselFlag.isDeserializable(opValue.get())) {
+                return;
+            }
+            vesselFlag.deserialize(opValue.get());
+        });
     }
 }

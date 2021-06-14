@@ -19,7 +19,7 @@ dependencies {
         api project(":ShipsCore")
     } catch (UnknownProjectException e) {
         System.out.println("Could not find subModule of ShipsCore, using jit instead")
-        api 'com.github.Minecraft-Ships:ShipsCore:Test3'
+        api 'com.github.Minecraft-Ships:ShipsCore:master-SNAPSHOT'
     }
     compileOnly 'org.jetbrains:annotations:20.1.0'
 }

@@ -30,6 +30,7 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.AbstractShipType;
 import org.ships.vessel.converts.vessel.VesselConverter;
 import org.ships.vessel.converts.vessel.shipsfive.Ships5VesselConverter;
 import org.ships.vessel.sign.*;
@@ -43,7 +44,7 @@ import java.util.stream.Stream;
 
 public abstract class ShipsPlugin implements Plugin {
 
-    public static final double PRERELEASE_VERSION = 12.1;
+    public static final double PRERELEASE_VERSION = 12.2;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
@@ -180,7 +181,6 @@ public abstract class ShipsPlugin implements Plugin {
     public void getLoadedMessages() {
         ConsoleSource source = CorePlugin.getConsole();
         source.sendMessage(AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
-
         displayMessage(BasicBlockFinder.class, "BlockFinders", bf -> "");
         displayMessage(BasicMovement.class, "MovementMethods", bm -> "");
         displayMessage(BlockPriority.class, "BlockPriorities", bp -> bp.getPriorityNumber() + "");
@@ -188,6 +188,13 @@ public abstract class ShipsPlugin implements Plugin {
         displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + (st.getDisplayName().length() > 7 ? "\t" : "\t\t") + st.getFile().getFile().getPath());
         source.sendMessage(AText.ofPlain("Vessels: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
         source.sendMessage(AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
+    }
+
+    public void loadVesselTypeFlagData() {
+        this.getAll(AbstractShipType.class).forEach(vt -> {
+            vt.initFlags();
+            vt.save();
+        });
     }
 
     private <I extends Identifiable> void displayMessage(Class<I> class1, String name, Function<I, String> function) {
