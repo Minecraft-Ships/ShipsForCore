@@ -232,7 +232,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 .getAll(CrewPermission.class)
                 .forEach(p -> file.parseCollection(
                         new ConfigurationNode("Meta", "Permission", p.getId()),
-                        Parser.STRING_TO_UNIQUIE_ID,
+                        Parser.STRING_TO_UNIQUE_ID,
                         new ArrayList<>()
                 ).forEach(u -> ship.getCrew().put(u, p)));
         file.parseCollection(META_FLAGS, new HashSet<>()).forEach(ship::set);

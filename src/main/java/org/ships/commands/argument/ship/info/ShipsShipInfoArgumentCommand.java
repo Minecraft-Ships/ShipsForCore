@@ -11,6 +11,7 @@ import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
+import org.core.utils.Identifiable;
 import org.jetbrains.annotations.NotNull;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
@@ -102,18 +104,8 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
             });
         }
         if (vessel instanceof ShipsVessel) {
-            String flagIds = ArrayUtils.toString("\n - ", f -> {
-                if (f instanceof VesselFlag.Serializable) {
-                    return f.getId() + ": " + ((VesselFlag.Serializable<?>) f).serialize();
-                }
-                return f.getId();
-            }, ((ShipsVessel) vessel).getFlags());
-            String flagNames = ArrayUtils.toString("\n - ", f -> {
-                if (f instanceof VesselFlag.Serializable) {
-                    return f.getName() + ": " + ((VesselFlag.Serializable<?>) f).serialize();
-                }
-                return f.getName();
-            }, ((ShipsVessel) vessel).getFlags());
+            String flagIds = ArrayUtils.toString("\n - ", vf -> flagToString(Identifiable::getId, vf), ((ShipsVessel) vessel).getFlags());
+            String flagNames = ArrayUtils.toString("\n - ", vf -> flagToString(Identifiable::getName, vf), ((ShipsVessel) vessel).getFlags());
 
             AText text = AdventureMessageConfig
                     .INFO_FLAG
@@ -136,5 +128,9 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
         }, e -> {
         });
         return true;
+    }
+
+    private <T> String flagToString(Function<VesselFlag<T>, String> to, VesselFlag<T> flag) {
+        return to.apply(flag) + flag.getValue().map(v -> ": " + flag.getParser().unparse(v)).orElse("");
     }
 }

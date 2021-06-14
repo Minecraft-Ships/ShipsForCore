@@ -39,7 +39,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
         int maxBlocks = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Block", "Max")).get();
         int minBlocks = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Block", "Min")).get();
         int engineSpeed = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Speed", "Engine")).get();
-        UUID owner = config.parse(new ConfigurationNode("ShipsData", "Player", "Name"), Parser.STRING_TO_UNIQUIE_ID).get();
+        UUID owner = config.parse(new ConfigurationNode("ShipsData", "Player", "Name"), Parser.STRING_TO_UNIQUE_ID).get();
         SyncBlockPosition blockPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Sign"), Parser.STRING_TO_BLOCK_POSITION).get();
         SyncExactPosition teleportPosition = config.parse(new ConfigurationNode("ShipsData", "Location", "Teleport"), Parser.STRING_TO_EXACT_POSITION).get();
 

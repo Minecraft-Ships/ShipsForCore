@@ -273,11 +273,11 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
             }
         }
         if (this.isUsingBurner() && !burnerFound) {
-            return false;
+            return true;
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / getStructure().getPositions().size());
         if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
-            return false;
+            return true;
         }
         if (this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
@@ -290,8 +290,8 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
                 Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
             }).collect(Collectors.toList());
-            return !acceptedSlots.isEmpty();
+            return acceptedSlots.isEmpty();
         }
-        return true;
+        return false;
     }
 }

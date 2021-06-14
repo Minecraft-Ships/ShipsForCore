@@ -132,10 +132,10 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
             }
         }
         if (!inWater) {
-            return false;
+            return true;
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getPositions().size());
-        return (this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent());
+        return (!(this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
     }
 
     @Override
