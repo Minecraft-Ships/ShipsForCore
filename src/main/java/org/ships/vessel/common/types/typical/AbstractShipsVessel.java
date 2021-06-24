@@ -55,7 +55,28 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     public AbstractShipsVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition position, @NotNull ShipType<? extends AbstractShipsVessel> type) {
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> ste.getLine(1).orElseThrow(() -> new IllegalStateException("Could not get line 1 of sign")).equalsPlain(t.getDisplayName(), true)).findFirst().orElseThrow(() -> new IllegalStateException("Could not find the shiptype")).getId().replaceAll(":", ".") + "/" + ste.getLine(2).orElseThrow(() -> new IllegalArgumentException("Could not get name of ship")).toPlain() + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = new File(
+                ShipsPlugin.getPlugin().getShipsConigFolder(),
+                "VesselData/" + ShipsPlugin
+                        .getPlugin()
+                        .getAll(ShipType.class)
+                        .stream()
+                        .filter(t -> ste.getTextAt(1)
+                                .orElseThrow(() -> new IllegalStateException("Could not get line 1 of sign"))
+                                .toPlain().equalsIgnoreCase(t.getDisplayName()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Could not find the shiptype"))
+                        .getId()
+                        .replaceAll(":", ".")
+                        + "/"
+                        + ste.getTextAt(2)
+                        .orElseThrow(() -> new IllegalArgumentException("Could not get name of ship"))
+                        .toPlain()
+                        + "."
+                        + CorePlugin
+                        .getPlatform()
+                        .getConfigFormat()
+                        .getFileType()[0]);
         init(type);
     }
 

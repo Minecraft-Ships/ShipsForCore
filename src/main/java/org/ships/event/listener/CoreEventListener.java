@@ -215,7 +215,13 @@ public class CoreEventListener implements EventListener {
             return;
         }
         AText line = opFirstLine.get();
-        ShipsSign sign = ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(event.getFrom().getText())).findFirst().orElse(null);
+        ShipsSign sign = ShipsPlugin
+                .getPlugin()
+                .getAll(ShipsSign.class)
+                .stream()
+                .filter(s -> s.isSign(event.getFrom().getText()))
+                .findFirst()
+                .orElse(null);
         if (sign == null) {
             return;
         }
@@ -241,7 +247,7 @@ public class CoreEventListener implements EventListener {
                     .getPlugin()
                     .getAll(ShipType.class)
                     .stream()
-                    .filter(t -> typeText.equals(t.getDisplayName()))
+                    .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
                     .findAny();
             if (!opType.isPresent()) {
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));
