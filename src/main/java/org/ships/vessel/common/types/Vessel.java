@@ -80,6 +80,8 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     void save();
 
+    Optional<String> getCachedName();
+
     @Override
     default SyncBlockPosition getPosition() {
         return getStructure().getPosition();

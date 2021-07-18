@@ -16,7 +16,7 @@ public class ErrorInvalidShipNameMessage implements Message<String> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("The name of '" + Message.INVALID_NAME + "' has already been taken");
+        return AText.ofPlain("The name of '" + Message.INVALID_NAME.adapterTextFormat() + "' has already been taken");
     }
 
     @Override

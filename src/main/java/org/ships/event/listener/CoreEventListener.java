@@ -225,6 +225,7 @@ public class CoreEventListener implements EventListener {
         if (sign == null) {
             return;
         }
+
         if (sign instanceof LicenceSign) {
             register = true;
         }
@@ -243,11 +244,15 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             String typeText = opTypeText.get().toPlain();
+            System.out.println("TypedText: " + typeText);
             Optional<ShipType> opType = ShipsPlugin
                     .getPlugin()
                     .getAll(ShipType.class)
                     .stream()
-                    .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
+                    .filter(t -> {
+                        System.out.println("DisplayName: " + t.getDisplayName() + " | " + typeText);
+                        return typeText.equalsIgnoreCase(t.getDisplayName());
+                    })
                     .findAny();
             if (!opType.isPresent()) {
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));

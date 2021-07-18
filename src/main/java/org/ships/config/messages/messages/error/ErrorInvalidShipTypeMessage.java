@@ -16,7 +16,7 @@ public class ErrorInvalidShipTypeMessage implements Message<String> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Invalid Shiptype of '" + Message.INVALID_NAME + "'");
+        return AText.ofPlain("Invalid Shiptype of '" + Message.INVALID_NAME.adapterTextFormat() + "'");
     }
 
     @Override

@@ -8,7 +8,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.utils.Else;
 import org.ships.exceptions.NoLicencePresent;
-import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.assits.IdentifiableShip;
@@ -16,8 +15,9 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
 import java.util.AbstractMap;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,13 +53,20 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
     @Override
     public CommandArgumentResult<V> parse(CommandContext context, CommandArgumentContext<V> argument) throws IOException {
         String id = context.getCommand()[argument.getFirstArgument()];
-        Optional<IdentifiableShip> opVessel = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v instanceof IdentifiableShip).map(v -> (IdentifiableShip) v).filter(v -> {
-            try {
-                return v.getId().equalsIgnoreCase(id);
-            } catch (NoLicencePresent noLicencePresent) {
-                return false;
-            }
-        }).findAny();
+        Optional<IdentifiableShip> opVessel = ShipsPlugin
+                .getPlugin()
+                .getVessels()
+                .stream()
+                .filter(v -> v instanceof IdentifiableShip)
+                .map(v -> (IdentifiableShip) v)
+                .filter(v -> {
+                    try {
+                        return v.getId().equalsIgnoreCase(id);
+                    } catch (NoLicencePresent noLicencePresent) {
+                        return false;
+                    }
+                })
+                .findAny();
         if (!(opVessel.isPresent())) {
             throw new IOException("No Vessel by that name");
         }
@@ -70,63 +77,21 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
     }
 
     @Override
-    public List<String> suggest(CommandContext commandContext, CommandArgumentContext<V> argument) {
+    public Set<String> suggest(CommandContext commandContext, CommandArgumentContext<V> argument) {
         String peek = commandContext.getCommand()[argument.getFirstArgument()];
         return ShipsPlugin
                 .getPlugin()
                 .getVessels()
                 .stream()
                 .filter(v -> v instanceof IdentifiableShip)
-                .map(v -> (IdentifiableShip) v)
-                .filter(v -> {
-                    try {
-                        v.getId();
-                        return true;
-                    } catch (NoLicencePresent noLicencePresent) {
-                        return false;
-                    }
-                })
-                .filter(v -> {
-                    try {
-                        if (v.getId().startsWith(peek.toLowerCase())) {
-                            return true;
-                        }
-                        return v.getName().startsWith(peek.toLowerCase());
-                    } catch (NoLicencePresent e) {
-                        return false;
-                    }
-                })
-                .filter(v -> this.predicate.test(commandContext.getSource(), v))
-                .sorted((o1, o2) -> {
-                    if (!(commandContext.getSource() instanceof LivePlayer)) {
-                        return 0;
-                    }
-                    LivePlayer player = (LivePlayer) commandContext.getSource();
-                    if (o1 instanceof CrewStoredVessel) {
-                        CrewPermission permission = ((CrewStoredVessel) o1).getCrew().get(player.getUniqueId());
-                        if (permission != null && !permission.equals(CrewPermission.DEFAULT)) {
-                            return 1;
-                        }
-                    }
-                    if (o2 instanceof CrewStoredVessel) {
-                        CrewPermission permission = ((CrewStoredVessel) o2).getCrew().get(player.getUniqueId());
-                        if (permission != null && !permission.equals(CrewPermission.DEFAULT)) {
-                            return -1;
-                        }
-                    }
-                    return 0;
-                })
-                .filter(v -> Else.throwOr(NoLicencePresent.class, () -> {
-                    v.getId();
-                    return true;
-                }, false)).map(v -> {
-                    try {
-                        return v.getId();
-                    } catch (NoLicencePresent noLicencePresent) {
-                        noLicencePresent.printStackTrace();
-                        return null;
-                    }
-                })
-                .collect(Collectors.toList());
+                .map(v -> Else.throwOr(NoLicencePresent.class, () -> {
+                    IdentifiableShip ship = (IdentifiableShip) v;
+                    return new AbstractMap.SimpleImmutableEntry<>(ship.getId(), ship);
+                }, null))
+                .filter(Objects::nonNull)
+                .filter(v -> this.predicate.test(commandContext.getSource(), v.getValue()))
+                .map(AbstractMap.SimpleImmutableEntry::getKey)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 }

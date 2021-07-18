@@ -1,6 +1,7 @@
 package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
 import org.core.config.ConfigurationStream;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
@@ -46,6 +47,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected @Nullable Integer maxSize;
     protected @Nullable Integer minSize;
     protected boolean isLoading = true;
+    protected String cachedName;
 
     public AbstractShipsVessel(@NotNull LiveSignTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
@@ -87,6 +89,17 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this.type = type;
         this.maxSpeed = this.type.getDefaultMaxSpeed();
         this.altitudeSpeed = this.type.getDefaultAltitudeSpeed();
+    }
+
+    @Override
+    public @NotNull String getName() throws NoLicencePresent {
+        this.cachedName = getSign().getTextAt(2).map(AText::toPlain).orElseThrow(() -> new IllegalStateException("Could not find name of ship"));
+        return cachedName;
+    }
+
+    @Override
+    public Optional<String> getCachedName() {
+        return Optional.ofNullable(this.cachedName);
     }
 
     @Override

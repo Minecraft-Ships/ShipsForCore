@@ -63,9 +63,18 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
         if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
-        AdventureMessageConfig messages = ShipsPlugin.getPlugin().getAdventureMessageConfig();
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        displayInfo(viewer, vessel);
+        return true;
+    }
+
+    private static <T> String flagToString(Function<VesselFlag<T>, String> to, VesselFlag<T> flag) {
+        return to.apply(flag) + flag.getValue().map(v -> ": " + flag.getParser().unparse(v)).orElse("");
+    }
+
+    public static void displayInfo(CommandViewer viewer, Vessel vessel) {
+        AdventureMessageConfig messages = ShipsPlugin.getPlugin().getAdventureMessageConfig();
         AText infoName = AdventureMessageConfig
                 .INFO_NAME
                 .parse(messages)
@@ -127,10 +136,5 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
             viewer.sendMessage(entitiesText);
         }, e -> {
         });
-        return true;
-    }
-
-    private <T> String flagToString(Function<VesselFlag<T>, String> to, VesselFlag<T> flag) {
-        return to.apply(flag) + flag.getValue().map(v -> ": " + flag.getParser().unparse(v)).orElse("");
     }
 }

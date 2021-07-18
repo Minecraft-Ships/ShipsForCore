@@ -19,6 +19,7 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
+import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
@@ -49,14 +50,13 @@ public class LicenceSign implements ShipsSign {
     @Override
     public boolean isSign(List<AText> lines) {
         return lines.size() >= 1 && lines.get(0).toPlain().equalsIgnoreCase("[Ships]");
-
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot snapshot = sign.getSnapshot();
         List<AText> lines = snapshot.getText();
-        Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> lines.get(1).toPlain().equals(t.getDisplayName())).findFirst();
+        Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> lines.get(1).toPlain().equalsIgnoreCase(t.getDisplayName())).findFirst();
         if (!opType.isPresent()) {
             throw new IOException("Unknown Ship Type: Ship Types: " + ArrayUtils.toString(", ", ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class)));
         }
@@ -80,6 +80,7 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
+    @Deprecated
     public Text getFirstLine() {
         return CorePlugin.buildText(TextColours.YELLOW + "[Ships]");
     }
@@ -90,7 +91,7 @@ public class LicenceSign implements ShipsSign {
             Vessel s = new ShipsLicenceSignFinder(position).load();
             if (!player.isSneaking()) {
                 if (s instanceof IdentifiableShip) {
-                    player.sudo("ships", "ship", ((IdentifiableShip) s).getId(), "info");
+                    ShipsShipInfoArgumentCommand.displayInfo(player, s);
                 }
             } else {
                 int size = s.getStructure().getPositions().size();

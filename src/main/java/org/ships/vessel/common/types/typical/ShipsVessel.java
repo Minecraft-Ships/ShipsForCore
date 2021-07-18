@@ -2,7 +2,6 @@ package org.ships.vessel.common.types.typical;
 
 import org.core.CorePlugin;
 import org.core.adventureText.AText;
-import org.core.text.Text;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -51,12 +50,6 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     }
 
     @Override
-    default @NotNull String getName() throws NoLicencePresent {
-        return getSign().getTextAt(2).map(AText::toPlain).orElseThrow(() -> new IllegalStateException("Could not find name of ship"));
-
-    }
-
-    @Override
     default @NotNull ShipsVessel setName(@NotNull String name) throws NoLicencePresent {
         getSign().setLine(2, CorePlugin.buildText(name));
         File file = getFile();
@@ -95,6 +88,10 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
 
     @Override
     default @NotNull String getId() throws NoLicencePresent {
+        Optional<String> opCachedName = this.getCachedName();
+        if (opCachedName.isPresent()) {
+            return this.getType().getId() + "." + opCachedName.get().toLowerCase();
+        }
         return getType().getId() + "." + getName().toLowerCase();
     }
 }
