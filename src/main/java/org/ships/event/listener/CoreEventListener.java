@@ -244,15 +244,11 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             String typeText = opTypeText.get().toPlain();
-            System.out.println("TypedText: " + typeText);
             Optional<ShipType> opType = ShipsPlugin
                     .getPlugin()
                     .getAll(ShipType.class)
                     .stream()
-                    .filter(t -> {
-                        System.out.println("DisplayName: " + t.getDisplayName() + " | " + typeText);
-                        return typeText.equalsIgnoreCase(t.getDisplayName());
-                    })
+                    .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
                     .findAny();
             if (!opType.isPresent()) {
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));
@@ -334,10 +330,19 @@ public class CoreEventListener implements EventListener {
                         @Override
                         public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                             if (finalBar != null) {
-                                AText text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.process(currentStructure);
-                                int blockAmount = (currentStructure.getPositions().size() + 1);
-                                finalBar.setTitle(text);
-                                finalBar.setValue(blockAmount, trackSize);
+                                CorePlugin
+                                        .createSchedulerBuilder()
+                                        .setDisplayName("OnBlockFind Message")
+                                        .setExecutor(() -> {
+                                            if (finalBar.getValue() > trackSize) {
+                                                return;
+                                            }
+                                            AText text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.process(currentStructure);
+                                            int blockAmount = (currentStructure.getPositions().size() + 1);
+                                            finalBar.setTitle(text);
+                                            finalBar.setValue(blockAmount, trackSize);
+                                        })
+                                        .build(ShipsPlugin.getPlugin());
                             }
                             return BlockFindControl.USE;
                         }
