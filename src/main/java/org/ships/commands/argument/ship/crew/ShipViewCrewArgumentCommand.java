@@ -9,9 +9,11 @@ import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.arguments.operation.RemainingArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
+import org.core.utils.Else;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.vessel.CrewPermission;
@@ -79,9 +81,10 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
             vessel
                     .getCrew(crewPermission)
                     .stream()
-                    .map(uuid -> CorePlugin
+                    .map(uuid -> Else.throwOr(Exception.class, () -> CorePlugin
                             .getServer()
-                            .getOfflineUser(uuid))
+                            .getOfflineUser(uuid).get(), Optional.<User>empty()))
+
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .forEach(user -> viewer.sendMessage(AText.ofPlain("- " + user.getName())));

@@ -22,9 +22,7 @@ import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.movement.MovementContext;
 import org.ships.movement.result.FailedMovement;
-import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.loader.ShipsOvertimeBlockFinder;
 import org.ships.vessel.common.types.Vessel;
 
@@ -166,15 +164,6 @@ public class MoveSign implements ShipsSign {
             player.sendMessage(CorePlugin.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             return;
-        }
-        if (vessel instanceof CrewStoredVessel) {
-            CrewStoredVessel stored = (CrewStoredVessel) vessel;
-            if (!(stored.getPermission(player.getUniqueId()).canMove() || player.hasPermission(Permissions.getMovePermission(stored.getType())) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
-                player.sendMessage(CorePlugin.buildText(TextColours.RED + "Missing permission"));
-                ShipsSign.LOCKED_SIGNS.remove(position);
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-                return;
-            }
         }
         Vector3<Integer> direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
         BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();

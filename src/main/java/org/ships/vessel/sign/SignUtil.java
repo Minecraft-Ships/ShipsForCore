@@ -95,9 +95,9 @@ public interface SignUtil {
             if (!((stored.getPermission(player.getUniqueId()).canMove() && player.hasPermission(Permissions.getMovePermission(stored.getType()))) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
                 if (!stored.getPermission(player.getUniqueId()).canMove()) {
                     AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, "Vessel crew rank"));
-                } else if (player.hasPermission(Permissions.getMovePermission(stored.getType()))) {
+                } else if (!player.hasPermission(Permissions.getMovePermission(stored.getType()))) {
                     AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, Permissions.getMovePermission(stored.getType())));
-                } else if (player.hasPermission(Permissions.getOtherMovePermission(stored.getType()))) {
+                } else if (!player.hasPermission(Permissions.getOtherMovePermission(stored.getType()))) {
                     AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, Permissions.getOtherMovePermission(stored.getType())));
                 }
                 ShipsSign.LOCKED_SIGNS.remove(position);
