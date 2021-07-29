@@ -190,7 +190,8 @@ public class ShipsFileLoader implements ShipsLoader {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
         String shipTypeS = opShipTypeS.get().toPlain();
-        Optional<ShipType> opShipType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(s -> s.getDisplayName().equals(shipTypeS)).findAny();
+        Set<ShipType> types = ShipsPlugin.getPlugin().getAll(ShipType.class);
+        Optional<ShipType> opShipType = types.parallelStream().filter(s -> s.getDisplayName().equalsIgnoreCase(shipTypeS)).findAny();
         if (!opShipType.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown ShipType");
         }
@@ -250,7 +251,8 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public static Set<ShipsVessel> loadAll(Consumer<LoadVesselException> function) {
         Set<ShipsVessel> set = new HashSet<>();
-        ShipsPlugin.getPlugin().getAll(ShipType.class).forEach(st -> {
+        Set<ShipType> types = ShipsPlugin.getPlugin().getAll(ShipType.class);
+        types.forEach(st -> {
             try {
                 File vesselDataFolder = getVesselDataFolder();
                 File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));

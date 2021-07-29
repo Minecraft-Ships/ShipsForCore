@@ -16,7 +16,6 @@ import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
-import org.ships.config.blocks.BlockListable;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.MoveException;
@@ -32,6 +31,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Movement {
 
@@ -112,12 +112,7 @@ public class Movement {
 
             context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Checking requirements:")));
 
-            BlockList blockList;
-            if (vessel instanceof BlockListable) {
-                blockList = ((BlockListable) vessel).getBlockList();
-            } else {
-                blockList = ShipsPlugin.getPlugin().getBlockList();
-            }
+            BlockList blockList = ShipsPlugin.getPlugin().getBlockList();
 
             if (config.isMovementRequirementsCheckMaxBlockType()) {
                 context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Checking requirements: Block limit check")));
@@ -159,25 +154,27 @@ public class Movement {
                     return;
                 }
             }
-            Set<SyncBlockPosition> collided = new HashSet<>();
             context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Checking requirements: Collide")));
-            context.getMovingStructure().forEach(mb -> {
-                if (context.getMovingStructure().stream().anyMatch(mb1 -> mb.getAfterPosition().equals(mb1.getBeforePosition()))) {
-                    return;
-                }
-                for (BlockType type : vessel.getType().getIgnoredTypes()) {
-                    SyncBlockPosition block = mb.getAfterPosition();
-                    if (type.equals(block.getBlockType())) {
-                        return;
-                    }
-                }
-                BlockList list = vessel instanceof BlockListable ? ((BlockListable) vessel).getBlockList() : ShipsPlugin.getPlugin().getBlockList();
-                SyncBlockPosition after = mb.getAfterPosition();
-                BlockInstruction bi = list.getBlockInstruction(after.getBlockType());
-                if (!bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE)) {
-                    collided.add(after);
-                }
-            });
+            Set<SyncBlockPosition> collided = context
+                    .getMovingStructure()
+                    .stream()
+                    .filter(mb -> {
+                        SyncBlockPosition after = mb.getAfterPosition();
+                        if (context.getMovingStructure().stream().anyMatch(mb1 -> after.equals(mb1.getBeforePosition()))) {
+                            return false;
+                        }
+                        for (BlockType type : vessel.getType().getIgnoredTypes()) {
+                            if (type.equals(after.getBlockType())) {
+                                return false;
+                            }
+                        }
+                        BlockList list = ShipsPlugin.getPlugin().getBlockList();
+                        BlockInstruction bi = list.getBlockInstruction(after.getBlockType());
+                        return !bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE);
+                    })
+                    .map(MovingBlock::getAfterPosition)
+                    .collect(Collectors.toSet());
+
             if (!collided.isEmpty()) {
                 vessel.set(MovingFlag.class, null);
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
@@ -185,7 +182,7 @@ public class Movement {
                 VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, context, collided);
                 CorePlugin.getPlatform().callEvent(collideEvent);
 
-                exception.accept(new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.COLLIDE_DETECTED, collideEvent.getCollisions())));
+                exception.accept(new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.COLLIDE_DETECTED, new HashSet<>(collideEvent.getCollisions()))));
                 return;
             }
             context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing requirements:")));

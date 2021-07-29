@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
-import org.ships.config.blocks.BlockListable;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -210,11 +209,8 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     @Override
     public @NotNull BasicBlockFinder setConnectedVessel(@Nullable Vessel vessel) {
         this.vessel = vessel;
-        if (this.vessel != null && (this.vessel instanceof BlockListable)) {
-            this.list = ((BlockListable) this.vessel).getBlockList();
-        } else {
-            this.list = ShipsPlugin.getPlugin().getBlockList();
-        }
+        this.list = ShipsPlugin.getPlugin().getBlockList();
+
         return this;
     }
 

@@ -10,7 +10,6 @@ import org.core.platform.Plugin;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.blocks.ExpandedBlockList;
-import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.SerializableShipType;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -37,7 +36,6 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     protected final @NotNull Plugin plugin;
     protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>();
     protected final @NotNull BlockType[] types;
-    protected final @NotNull ExpandedBlockList blockList;
     protected final @NotNull ConfigurationStream.ConfigurationFile file;
 
     public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
@@ -48,7 +46,6 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
         this.displayName = displayName;
         this.types = types;
         this.file = file;
-        this.blockList = new ExpandedBlockList(getFile(), ShipsPlugin.getPlugin().getBlockList());
         if (!this.file.getFile().exists()) {
             this.createDefault(this.file);
             this.file.save();
@@ -68,8 +65,9 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     }
 
     @Override
+    @Deprecated
     public @NotNull ExpandedBlockList getDefaultBlockList() {
-        return this.blockList;
+        throw new RuntimeException("Use normal blockList now");
     }
 
     @Override

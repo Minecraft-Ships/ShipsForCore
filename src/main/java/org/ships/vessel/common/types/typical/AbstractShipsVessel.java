@@ -40,7 +40,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected @NotNull CrewPermission defaultPermission = CrewPermission.DEFAULT;
     protected @NotNull Map<String, Vector3<Double>> teleportPositions = new HashMap<>();
     protected @NotNull File file;
-    protected @NotNull ExpandedBlockList blockList;
     protected @NotNull ShipType<? extends AbstractShipsVessel> type;
     protected int maxSpeed = 10;
     protected int altitudeSpeed = 2;
@@ -84,7 +83,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     private void init(ShipType<? extends AbstractShipsVessel> type) {
         ConfigurationStream.ConfigurationFile configuration = CorePlugin.createConfigurationFile(this.file, CorePlugin.getPlatform().getConfigFormat());
-        this.blockList = new ExpandedBlockList(configuration, type.getDefaultBlockList());
         this.file = configuration.getFile();
         this.type = type;
         this.maxSpeed = this.type.getDefaultMaxSpeed();
@@ -250,8 +248,9 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
+    @Deprecated
     public @NotNull ExpandedBlockList getBlockList() {
-        return this.blockList;
+        throw new RuntimeException("Use default BlockList now");
     }
 
     @Override

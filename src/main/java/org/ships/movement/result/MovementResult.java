@@ -7,6 +7,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
+import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.NoLicencePresent;
@@ -168,32 +169,12 @@ public interface MovementResult<E> {
         }
     }
 
-    class CollideDetected implements MovementResult<Collection<SyncBlockPosition>> {
+    class CollideDetected implements MovementResult<Collection<BlockPosition>> {
 
         @Override
-        public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<SyncBlockPosition> collection) {
-            Set<String> blocks = new HashSet<>();
-            if (collection != null) {
-                collection.forEach(s -> {
-                    String value = s.getBlockType().getName();
-                    if (blocks.contains(value)) {
-                        return;
-                    }
-                    blocks.add(value);
-                });
-            }
-            String value = ArrayUtils.toString(", ", b -> b, blocks);
-            if (value == null) {
-                value = "Unknown position";
-            }
-            viewer.sendMessagePlain("Found the following blocks in the way: " + value);
-            if (collection != null) {
-                List<SyncBlockPosition> list = new ArrayList<>(collection);
-                for (int A = 0; A < Math.min(collection.size(), 3); A++) {
-                    SyncBlockPosition v = list.get(A);
-                    viewer.sendMessagePlain(v.getX() + ", " + v.getY() + ", " + v.getZ());
-                }
-            }
+        public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockPosition> collection) {
+            AText text = AdventureMessageConfig.ERROR_BLOCK_IN_WAY.process(new AbstractMap.SimpleImmutableEntry<>(vessel, collection));
+            viewer.sendMessage(text);
         }
     }
 

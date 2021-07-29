@@ -34,6 +34,7 @@ public interface ShipType<T extends Vessel> extends Identifiable {
 
     @NotNull Plugin getPlugin();
 
+    @Deprecated
     @NotNull ExpandedBlockList getDefaultBlockList();
 
     int getDefaultMaxSpeed();

@@ -155,7 +155,12 @@ public class AltitudeSign implements ShipsSign {
         }
 
         String line1 = opLine1.get();
-        int altitude = Integer.parseInt(opLine3.get());
+        int altitude = 1;
+        try {
+            altitude = Integer.parseInt(opLine3.get());
+        } catch (NumberFormatException ignored) {
+
+        }
         boolean updateSpeed = player.isSneaking();
         if (updateSpeed) {
             int newSpeed = altitude - 1;
@@ -171,12 +176,13 @@ public class AltitudeSign implements ShipsSign {
             bar = CorePlugin.createBossBar().setTitle(AText.ofPlain("0 / " + blockLimit)).register(player);
         }
         final ServerBossBar finalBar = bar;
+        final int finalAltitude = altitude;
         ShipsSign.LOCKED_SIGNS.add(position);
         if (config.isStructureAutoUpdating()) {
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
-                    onVesselMove(player, position, finalBar, altitude, line1, vessel);
+                    onVesselMove(player, position, finalBar, finalAltitude, line1, vessel);
                 }
 
                 @Override

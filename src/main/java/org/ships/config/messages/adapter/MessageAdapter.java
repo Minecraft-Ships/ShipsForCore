@@ -16,4 +16,12 @@ public interface MessageAdapter<T> {
         return "%" + adapterText() + "%";
     }
 
+    default boolean containsAdapter(String plain) {
+        return plain.contains(this.adapterTextFormat());
+    }
+
+    default boolean containsAdapter(AText text) {
+        return text.contains(AText.ofPlain(this.adapterTextFormat()));
+    }
+
 }

@@ -7,7 +7,6 @@ import org.core.world.position.impl.Position;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
-import org.ships.config.blocks.BlockListable;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -95,11 +94,8 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     @Override
     public BasicBlockFinder setConnectedVessel(Vessel vessel) {
         this.vessel = vessel;
-        if (this.vessel != null && this.vessel instanceof BlockListable) {
-            this.list = ((BlockListable) this.vessel).getBlockList();
-        } else {
-            this.list = ShipsPlugin.getPlugin().getBlockList();
-        }
+        this.list = ShipsPlugin.getPlugin().getBlockList();
+
         return this;
     }
 

@@ -41,6 +41,7 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final ErrorCannotCreateOntopMessage ERROR_CANNOT_CREATE_ONTOP = new ErrorCannotCreateOntopMessage();
     public static final ErrorShipsSignIsMoving ERROR_SHIPS_SIGN_IS_MOVING = new ErrorShipsSignIsMoving();
     public static final BlockFinderBarMessage BAR_BLOCK_FINDER_ON_FIND = new BlockFinderBarMessage();
+    public static final ErrorBlockInWayMessage ERROR_BLOCK_IN_WAY = new ErrorBlockInWayMessage();
 
     private final ConfigurationStream.ConfigurationFile file;
     private final Set<Message<?>> messages = new HashSet<>();

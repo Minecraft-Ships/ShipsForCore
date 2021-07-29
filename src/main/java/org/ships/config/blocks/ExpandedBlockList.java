@@ -9,28 +9,29 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class ExpandedBlockList implements BlockList{
+@Deprecated
+public class ExpandedBlockList implements BlockList {
 
     private final ConfigurationStream.ConfigurationFile file;
     private final BlockList expandedOn;
     private Set<BlockInstruction> originalBlocks = new HashSet<>();
     private Set<BlockInstruction> fullBlocks = new HashSet<>();
 
-    public ExpandedBlockList(ConfigurationStream.ConfigurationFile file, BlockList expandedOn){
+    public ExpandedBlockList(ConfigurationStream.ConfigurationFile file, BlockList expandedOn) {
         this.file = file;
-        if(expandedOn != null){
+        if (expandedOn != null) {
             expandedOn.reloadBlockList();
         }
         this.expandedOn = expandedOn;
     }
 
-    public Set<BlockInstruction> getRawBlockList(){
+    public Set<BlockInstruction> getRawBlockList() {
         return this.originalBlocks;
     }
 
     @Override
     public Set<BlockInstruction> getBlockList() {
-        if(this.fullBlocks.size() == 0){
+        if (this.fullBlocks.size() == 0) {
             this.file.reload();
             this.originalBlocks = reloadBlockList();
             this.fullBlocks = new HashSet<>(this.expandedOn.getBlockList());
@@ -47,7 +48,7 @@ public class ExpandedBlockList implements BlockList{
         Collection<BlockType> blocks = CorePlugin.getPlatform().getBlockTypes();
         blocks.forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(ExpandedBlockList.this, bt);
-            if (opBlock.isPresent()){
+            if (opBlock.isPresent()) {
                 this.originalBlocks.add(opBlock.get());
                 bins.add(opBlock.get());
             }
@@ -58,9 +59,9 @@ public class ExpandedBlockList implements BlockList{
     @Override
     public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
         Optional<BlockInstruction> opBi = this.originalBlocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny();
-        if(opBi.isPresent()){
+        if (opBi.isPresent()) {
             opBi.get().setCollideType(blockInstruction.getCollideType());
-        }else if(this.expandedOn != null){
+        } else if (this.expandedOn != null) {
             this.expandedOn.replaceBlockInstruction(blockInstruction);
         }
         return this;
@@ -82,11 +83,11 @@ public class ExpandedBlockList implements BlockList{
     }
 
     @Override
-    public boolean equals(Object obj){
-        if(!(obj instanceof BlockList)){
+    public boolean equals(Object obj) {
+        if (!(obj instanceof BlockList)) {
             return false;
         }
-        BlockList list = (BlockList)obj;
+        BlockList list = (BlockList) obj;
         return list.getFile().getFile().equals(this.getFile().getFile());
     }
 }

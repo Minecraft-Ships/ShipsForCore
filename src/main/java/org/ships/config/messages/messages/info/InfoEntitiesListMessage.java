@@ -6,7 +6,6 @@ import org.core.entity.Entity;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +35,6 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
     }
 
     private Set<MessageAdapter<Entity<?>>> getExactAdapters() {
-        return new HashSet<>(Arrays.asList(Message.ENTITY_TYPE_ID, Message.ENTITY_TYPE_NAME, Message.ENTITY_NAME));
+        return new HashSet<>(Message.ENTITY_ADAPTERS);
     }
 }
