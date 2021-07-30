@@ -1,6 +1,7 @@
 package org.ships.algorthum.movement;
 
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
 import org.core.schedule.Scheduler;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.move.VesselMoveEvent;
@@ -21,10 +22,10 @@ public class Ships6Movement implements BasicMovement {
 
     private static class RemoveBlocks implements Runnable {
 
-        private List<MovingBlock> toProcess;
-        private int waterLevel;
-        private int attempt;
-        private MovementContext context;
+        private final List<MovingBlock> toProcess;
+        private final int waterLevel;
+        private final int attempt;
+        private final MovementContext context;
 
         public RemoveBlocks(int level, int attempt, MovementContext context, List<MovingBlock> blocks) {
             this.toProcess = blocks;
@@ -40,7 +41,7 @@ public class Ships6Movement implements BasicMovement {
                 context.getBar().ifPresent(bar -> {
                     try {
                         bar.setValue((attempt - 1) + B, context.getMovingStructure().size());
-                    } catch (IllegalArgumentException e) {
+                    } catch (IllegalArgumentException ignore) {
                     }
                 });
                 MovingBlock m = this.toProcess.get(A);
@@ -55,10 +56,10 @@ public class Ships6Movement implements BasicMovement {
 
     private static class SetBlocks implements Runnable {
 
-        private List<MovingBlock> toProcess;
-        private int attempt;
-        private MovementContext context;
-        private int totalBlocks;
+        private final List<MovingBlock> toProcess;
+        private final int attempt;
+        private final MovementContext context;
+        private final int totalBlocks;
 
 
         public SetBlocks(int attempt, int totalBlocks, MovementContext context, List<MovingBlock> blocks) {
@@ -76,7 +77,7 @@ public class Ships6Movement implements BasicMovement {
                 context.getBar().ifPresent(bar -> {
                     try {
                         bar.setValue(attempt * B, (totalBlocks * 2) + 1);
-                    } catch (IllegalArgumentException e) {
+                    } catch (IllegalArgumentException ignore) {
                     }
                 });
                 Stream.of(context.getMidMovementProcess()).forEach(mid -> mid.move(m));
@@ -113,7 +114,7 @@ public class Ships6Movement implements BasicMovement {
         }
         final int total = blocks.size();
         Scheduler scheduler = CorePlugin.createSchedulerBuilder().setDisplayName("Post Movement").setExecutor(() -> {
-            context.getBar().ifPresent(bar -> bar.setMessage(CorePlugin.buildText("Processing: Post movement")));
+            context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing: Post movement")));
             for (Movement.PostMovement movement : context.getPostMovementProcess()) {
                 movement.postMove(vessel);
             }

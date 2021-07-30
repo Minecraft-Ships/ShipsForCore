@@ -8,7 +8,6 @@ import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.result.data.RequiredFuelMovementData;
@@ -17,7 +16,8 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collection;
 
 public interface MovementResult<E> {
 
@@ -87,7 +87,8 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
             AText errorMessage = AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.process(AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), vessel);
-            viewer.sendMessage(errorMessage);        }
+            viewer.sendMessage(errorMessage);
+        }
     }
 
     class NoMovingToFound implements MovementResult<Collection<BlockType>> {
@@ -117,7 +118,8 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredPercentMovementData value) {
-            viewer.sendMessagePlain("Your ship has " + value.getHas() + "% of " + value.getBlockType().getName() + ". You need " + value.getRequired() + "% or more.");
+            AText text = AText.ofPlain("Your ship has " + value.getHas() + "% of " + value.getBlockType().getName() + ". You need " + value.getRequired() + "% or more.");
+            viewer.sendMessage(text);
         }
     }
 

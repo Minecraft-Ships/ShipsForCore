@@ -157,17 +157,13 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, o
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
         if (!(this.getFuelConsumption() == 0 || this.getFuelTypes().isEmpty())) {
-            List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
-                return slot.getItem().isPresent();
-            }).filter(i -> {
-                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
-                return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
-            }).filter(i -> {
-                Slot slot = this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot();
-                return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false));
-            }).collect(Collectors.toList());
-            if (acceptedSlots.isEmpty()) {
+            boolean acceptedSlots = furnaceInventories
+                    .stream()
+                    .map(i -> this.getFuelSlot().equals(FuelSlot.TOP) ? i.getSmeltingSlot() : i.getFuelSlot())
+                    .filter(slot -> slot.getItem().isPresent())
+                    .filter(slot -> slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption())
+                    .anyMatch(slot -> this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false)));
+            if (!acceptedSlots) {
                 throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
         }
