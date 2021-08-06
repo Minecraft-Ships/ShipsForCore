@@ -11,7 +11,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
     private final Collection<MessageAdapter<T>> adapters;
 
     public CollectionSingleAdapter(Collection<MessageAdapter<T>> collection) {
-        if(collection.isEmpty()){
+        if (collection.isEmpty()) {
             throw new IllegalArgumentException("Collection Single Adapter must have adapters, not a empty list");
         }
         this.adapters = collection;
@@ -23,8 +23,8 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         return "[0]";
     }
 
-    public String adapterText(MessageAdapter<T> adapter, int index){
-        return adapter.adapterTextFormat() + "[" + index + "]";
+    public String adapterText(MessageAdapter<T> adapter, int index) {
+        return adapter.adapterText() + "[" + index + "]";
     }
 
     @Override
@@ -33,7 +33,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         return "!!" + adapterText() + "!!";
     }
 
-    public String adapterTextFormat(MessageAdapter<T> adapter, int index){
+    public String adapterTextFormat(MessageAdapter<T> adapter, int index) {
         return "!!" + adapterText(adapter, index) + "!!";
     }
 
@@ -75,7 +75,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         if (before == null || target == plain.length() && !plain.endsWith("!!")) {
             return false;
         }
-        String adaptingWithFormat = plain.substring(before, target);
+        String adaptingWithFormat = plain.substring(before, target + 1);
         String adapting = adaptingWithFormat.substring(2, adaptingWithFormat.length() - 2);
         if (!adapting.endsWith("]")) {
             return false;
@@ -131,7 +131,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         if (before == null || target == plain.length() && !plain.endsWith("!!")) {
             return message;
         }
-        String adaptingWithFormat = plain.substring(before, target);
+        String adaptingWithFormat = plain.substring(before, target + 1);
         String adapting = adaptingWithFormat.substring(2, adaptingWithFormat.length() - 2);
         if (!adapting.endsWith("]")) {
             return message;
@@ -153,18 +153,35 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         }
         List<T> list = new ArrayList<>(obj);
         String adapterText = adapting.substring(0, startAt);
-        int finalIndex = index;
-
-        Optional<AText> opReplacement = this
+        T indexedValue = list.get(index);
+        /*Optional<AText> opReplacement = this
                 .adapters
                 .parallelStream()
-                .filter(ma -> ma.containsAdapter(adapterText))
-                .map(ma -> ma.process(AText.ofPlain(adapterText), list.get(finalIndex)))
-                .findAny();
+                .filter(ma -> {
+                    boolean check = ma.containsAdapter("%" + adapterText + "%");
+                    System.out.println("MA: " + ma.adapterText() + ": Check:  " + check);
+                    return check;
+                })
+                .map(ma -> {
+                    AText process = ma.process(AText.ofPlain("%" + adapterText + "%"), indexedValue);
+                    System.out.println("MA: " + ma.adapterText() + ": Value: " + process.toPlain());
+                    return process;
+                })
+                .findAny();*/
+        Optional<AText> opReplacement = Optional.empty();
 
-        return opReplacement
-                .map(text -> message.withAllAs("!!" + adaptingWithFormat + "[" + finalIndex + "]!!", text))
+        int finalIndex = index;
+
+        System.out.println("Message: " + message.toPlain());
+        System.out.println("Found: " + opReplacement.map(text -> text.toPlain()));
+        System.out.println("Changing: " + adaptingWithFormat);
+
+
+        AText result = opReplacement
+                .map(text -> message.withAllAs(adaptingWithFormat, text))
                 .orElse(message);
+        System.out.println("Result: " + result.toPlain());
+        return result;
 
     }
 }
