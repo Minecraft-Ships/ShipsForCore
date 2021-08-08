@@ -154,7 +154,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         List<T> list = new ArrayList<>(obj);
         String adapterText = adapting.substring(0, startAt);
         T indexedValue = list.get(index);
-        /*Optional<AText> opReplacement = this
+        Optional<AText> opReplacement = this
                 .adapters
                 .parallelStream()
                 .filter(ma -> {
@@ -167,16 +167,13 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
                     System.out.println("MA: " + ma.adapterText() + ": Value: " + process.toPlain());
                     return process;
                 })
-                .findAny();*/
-        Optional<AText> opReplacement = Optional.empty();
+                .findAny();
 
         int finalIndex = index;
 
         System.out.println("Message: " + message.toPlain());
         System.out.println("Found: " + opReplacement.map(text -> text.toPlain()));
         System.out.println("Changing: " + adaptingWithFormat);
-
-
         AText result = opReplacement
                 .map(text -> message.withAllAs(adaptingWithFormat, text))
                 .orElse(message);

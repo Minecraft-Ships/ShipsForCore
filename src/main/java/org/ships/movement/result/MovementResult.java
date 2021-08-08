@@ -1,13 +1,19 @@
 package org.ships.movement.result;
 
 import org.array.utils.ArrayUtils;
+import org.core.CorePlugin;
 import org.core.adventureText.AText;
 import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.schedule.Scheduler;
+import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.result.data.RequiredFuelMovementData;
@@ -18,6 +24,8 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public interface MovementResult<E> {
 
@@ -175,8 +183,53 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockPosition> collection) {
-            AText text = AdventureMessageConfig.ERROR_BLOCK_IN_WAY.process(new AbstractMap.SimpleImmutableEntry<>(vessel, collection));
+            /*AText text = AdventureMessageConfig.ERROR_BLOCK_IN_WAY.process(new AbstractMap.SimpleImmutableEntry<>(vessel, collection));
+            viewer.sendMessage(text);*/
+
+            AText text;
+            if (collection.size() == 1) {
+                text = AText.ofPlain("Found a single block in the way of " + collection.iterator().next().getBlockType().getName());
+            } else {
+                text = AText.ofPlain("Found " + collection.size() + " blocks in the way including " + collection.iterator().next().getBlockType().getName());
+            }
             viewer.sendMessage(text);
+
+            if (!(viewer instanceof LivePlayer)) {
+                return;
+            }
+
+            LivePlayer player = (LivePlayer) viewer;
+
+            Scheduler scheduler = CorePlugin
+                    .createSchedulerBuilder()
+                    .setDisplayName("init display collide")
+                    .setExecutor(() -> {
+                    })
+                    .setDelay(0)
+                    .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                    .build(ShipsPlugin.getPlugin());
+
+            List<SyncBlockPosition> list = collection.stream().map(Position::toSync).collect(Collectors.toList());
+
+            boolean toBedrock = false;
+            for (int A = 0; A < 5; A++) {
+                final boolean finalToBedrock = toBedrock;
+                scheduler = CorePlugin.createSchedulerBuilder()
+                        .setToRunAfter(scheduler)
+                        .setDelay(6)
+                        .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                        .setDisplayName("Display Block: " + A)
+                        .setExecutor(() -> list.forEach(bp -> {
+                            if (finalToBedrock) {
+                                bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player);
+                            } else {
+                                bp.resetBlock(player);
+                            }
+                        }))
+                        .build(ShipsPlugin.getPlugin());
+                toBedrock = !toBedrock;
+            }
+            scheduler.run();
         }
     }
 

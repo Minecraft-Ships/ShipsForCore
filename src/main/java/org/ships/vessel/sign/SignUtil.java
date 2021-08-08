@@ -65,7 +65,6 @@ public interface SignUtil {
             if (context.getBar().isPresent()) {
                 ServerBossBar bar = context.getBar().get();
                 int foundBlocks = currentStructure.getPositions().size() + 1;
-                //TODO - set bar message
                 try {
                     bar.setValue(foundBlocks, trackLimit);
                 } catch (IllegalArgumentException ignore) {
@@ -91,6 +90,7 @@ public interface SignUtil {
 
     static void postMovementReady(MovementContext context, Vessel vessel, LivePlayer player, SyncBlockPosition position, MovementReady ready) {
         if (vessel instanceof CrewStoredVessel) {
+            context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Checking permissions")));
             CrewStoredVessel stored = (CrewStoredVessel) vessel;
             if (!((stored.getPermission(player.getUniqueId()).canMove() && player.hasPermission(Permissions.getMovePermission(stored.getType()))) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
                 if (!stored.getPermission(player.getUniqueId()).canMove()) {
@@ -136,6 +136,7 @@ public interface SignUtil {
         if (config.isBossBarVisible()) {
             ServerBossBar bar = CorePlugin.createBossBar();
             //TODO - Set bar message
+            bar.setTitle(AText.ofPlain("Starting block getter"));
             bar.register(player);
             context.setBar(bar);
         }
