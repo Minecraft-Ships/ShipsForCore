@@ -114,7 +114,7 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
             } else {
                 list.addAll(blockTypes);
             }
-            Set<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
+            Collection<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
             Set<BlockType> material = new HashSet<>();
             Set<BlockType> ignore = new HashSet<>();
             Set<BlockType> collide = new HashSet<>();

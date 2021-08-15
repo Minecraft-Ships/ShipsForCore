@@ -2,6 +2,8 @@ package org.ships.commands.argument.blockinfo;
 
 import org.array.utils.ArrayUtils;
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.CommandArgumentResult;
@@ -15,7 +17,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.core.utils.Identifiable;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.BlockType;
@@ -31,11 +32,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     private static final ExactArgument BLOCK_INFO_ARGUMENT = new ExactArgument("blockinfo");
-    private static final OptionalArgument<BlockType> BLOCK_TYPE = new OptionalArgument<BlockType>(new BlockTypeArgument("blocktype"), new ParseCommandArgument<BlockType>() {
+    private static final OptionalArgument<BlockType> BLOCK_TYPE = new OptionalArgument<>(new BlockTypeArgument("blocktype"), new ParseCommandArgument<BlockType>() {
         @Override
         public CommandArgumentResult<BlockType> parse(CommandContext context, CommandArgumentContext<BlockType> argument) {
             if (!(context.getSource() instanceof LivePlayer)) {
@@ -70,31 +72,31 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         BlockType bt = commandContext.getArgument(this, BLOCK_TYPE);
         if (bt == null) {
-            viewer.sendMessage(CorePlugin.buildText(TextColours.RED + "BlockType id isn't valid"));
+            viewer.sendMessage(AText.ofPlain("BlockType id isn't valid").withColour(NamedTextColours.RED));
             return false;
         }
-        viewer.sendMessagePlain("--[" + bt.getName() + "]--");
+        viewer.sendMessage(AText.ofPlain("--[" + bt.getName() + "]--"));
         BlockDetails details = bt.getDefaultBlockDetails();
-        viewer.sendMessagePlain("---[ID]---");
-        viewer.sendMessagePlain(" |- ID: " + details.getType().getId());
-        viewer.sendMessagePlain(" |- BlockList-CollideType: " + ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(details.getType()).getCollideType().name());
-        viewer.sendMessagePlain("---[Keyed Data]---");
+        viewer.sendMessage(AText.ofPlain("---[ID]---"));
+        viewer.sendMessage(AText.ofPlain(" |- ID: " + details.getType().getId()));
+        viewer.sendMessage(AText.ofPlain(" |- BlockList-CollideType: " + ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(details.getType()).getCollideType().name()));
+        viewer.sendMessage(AText.ofPlain("---[Keyed Data]---"));
         for (Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()) {
             if (details.getUnspecified(dataClass.getValue()).isPresent()) {
-                viewer.sendMessagePlain(" |- " + dataClass.getKey());
+                viewer.sendMessage(AText.ofPlain(" |- " + dataClass.getKey()));
             }
         }
         if (details.getDirectionalData().isPresent()) {
-            viewer.sendMessagePlain(" |- Directional");
+            viewer.sendMessage(AText.ofPlain(" |- Directional"));
         }
-        viewer.sendMessagePlain("---[Priority]---");
+        viewer.sendMessage(AText.ofPlain("---[Priority]---"));
         WorldExtent world = CorePlugin.getServer().getWorlds().iterator().next();
         BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0), details).getBlockPriority();
-        viewer.sendMessagePlain(" |- ID: " + priority.getId());
-        viewer.sendMessagePlain(" |- Value: " + priority.getPriorityNumber());
-        viewer.sendMessagePlain("---[Like]---");
-        String like = ArrayUtils.toString("\n |- ", Identifiable::getName, bt.getLike());
-        viewer.sendMessagePlain("\n |- " + like);
+        viewer.sendMessage(AText.ofPlain(" |- ID: " + priority.getId()));
+        viewer.sendMessage(AText.ofPlain(" |- Value: " + priority.getPriorityNumber()));
+        viewer.sendMessage(AText.ofPlain("---[Like]---"));
+        String like = ArrayUtils.toString("\n |- ", Identifiable::getName, bt.getLike().parallelStream().limit(5).collect(Collectors.toList()));
+        viewer.sendMessage(AText.ofPlain("\n |- " + like));
         return true;
     }
 }

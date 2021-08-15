@@ -6,21 +6,24 @@ import org.core.world.position.block.BlockType;
 import org.ships.config.Config;
 import org.ships.config.parsers.ShipsParsers;
 
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 public interface BlockList extends Config {
 
-    Set<BlockInstruction> getBlockList();
-    Set<BlockInstruction> reloadBlockList();
+    Collection<BlockInstruction> getBlockList();
+
+    Collection<BlockInstruction> reloadBlockList();
+
     BlockList replaceBlockInstruction(BlockInstruction blockInstruction);
+
     BlockList saveChanges();
 
-    default BlockInstruction getBlockInstruction(BlockType type){
-        return getBlockList().stream().filter(b -> b.getType().equals(type)).findFirst().get();
+    default BlockInstruction getBlockInstruction(BlockType type) {
+        return getBlockList().parallelStream().filter(b -> b.getType().equals(type)).findFirst().orElseThrow(() -> new RuntimeException("BlockType of " + type.getId() + " was not registered at runtime."));
     }
 
-    static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes){
+    static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes) {
         String[] idSplit = type.getId().split(":");
         ConfigurationNode.KnownParser.ChildKnown<BlockInstruction> node = new ConfigurationNode.KnownParser.ChildKnown<>(ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, ArrayUtils.join(String.class, extraNodes, new String[]{"BlockList", idSplit[0], idSplit[1]}));
         return list.getFile().parse(node);

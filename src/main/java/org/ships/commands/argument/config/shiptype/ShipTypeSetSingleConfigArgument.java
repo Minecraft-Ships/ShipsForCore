@@ -1,6 +1,8 @@
 package org.ships.commands.argument.config.shiptype;
 
 import org.core.CorePlugin;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -67,7 +69,8 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
             return true;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + "Value has been set"));
+        AText text = AText.ofPlain("Value has been set").withColour(NamedTextColours.AQUA);
+        viewer.sendMessage(text);
         return true;
     }
 }

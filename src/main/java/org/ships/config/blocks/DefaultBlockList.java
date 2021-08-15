@@ -13,10 +13,7 @@ import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class DefaultBlockList implements BlockList {
@@ -36,15 +33,15 @@ public class DefaultBlockList implements BlockList {
     }
 
     @Override
-    public Set<BlockInstruction> getBlockList() {
+    public Collection<BlockInstruction> getBlockList() {
         if (blocks.isEmpty()) {
             return reloadBlockList();
         }
-        return this.blocks;
+        return Collections.unmodifiableCollection(this.blocks);
     }
 
     @Override
-    public Set<BlockInstruction> reloadBlockList() {
+    public Collection<BlockInstruction> reloadBlockList() {
         this.file.reload();
         blocks.clear();
         Collection<BlockType> mBlocks = CorePlugin.getPlatform().getBlockTypes();

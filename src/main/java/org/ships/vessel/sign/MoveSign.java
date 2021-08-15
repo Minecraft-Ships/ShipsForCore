@@ -86,6 +86,7 @@ public class MoveSign implements ShipsSign {
             onSignSpeedUpdate(player, vessel, lste, finalSpeed);
             ShipsSign.LOCKED_SIGNS.remove(position);
         }, (pss) -> {
+
             player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find [Ships] sign"));
             ShipsSign.LOCKED_SIGNS.remove(position);
             Collection<SyncBlockPosition> positions = pss.getPositions();

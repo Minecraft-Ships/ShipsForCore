@@ -12,9 +12,9 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 @Deprecated
@@ -31,23 +31,23 @@ public class LegacyInfoCommand implements LegacyArgumentCommand {
 
     @Override
     public boolean run(CommandSource source, String... args) {
-        if(!(source instanceof CommandViewer)){
+        if (!(source instanceof CommandViewer)) {
             return true;
         }
-        CommandViewer viewer = (CommandViewer)source;
+        CommandViewer viewer = (CommandViewer) source;
         viewer.sendMessage(CorePlugin.buildText(TextColours.YELLOW + "----[Ships]----"));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Version: " + TextColours.AQUA + ShipsPlugin.getPlugin().getPluginVersion()));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + ShipsPlugin.PRERELEASE_TAG + " Version: " + TextColours.AQUA + ShipsPlugin.PRERELEASE_VERSION));
         viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Vessel Types: " + TextColours.AQUA + ShipsPlugin.getPlugin().getAll(ShipType.class).size()));
-        if(contains("shipstype", args) || contains("stype", args)){
+        if (contains("shipstype", args) || contains("stype", args)) {
             viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + ArrayUtils.toString(TextColours.GREEN + " | " + TextColours.AQUA, st -> st.getDisplayName(), ShipsPlugin.getPlugin().getAll(ShipType.class))));
         }
-        Set<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
+        Collection<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
         Text blockListText = null;
-        for(BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()){
-            if(blockListText == null){
+        for (BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()) {
+            if (blockListText == null) {
                 blockListText = CorePlugin.buildText(TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count());
-            }else{
+            } else {
                 blockListText = blockListText.append(CorePlugin.buildText(", " + TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count()));
 
             }
@@ -61,13 +61,13 @@ public class LegacyInfoCommand implements LegacyArgumentCommand {
     public List<String> tab(CommandSource source, String... args) {
         List<String> args2 = new ArrayList<>();
         String compare = args[args.length - 1];
-        if(("shipstype".startsWith(compare) || "stype".startsWith(compare)) && (contains("shipstype", args) || contains("stype", args))){
+        if (("shipstype".startsWith(compare) || "stype".startsWith(compare)) && (contains("shipstype", args) || contains("stype", args))) {
             args2.add("shipstype");
         }
         return args2;
     }
 
-    private boolean contains(String arg1, String... args){
+    private boolean contains(String arg1, String... args) {
         return Stream.of(args).anyMatch(a -> a.equalsIgnoreCase(arg1));
     }
 }

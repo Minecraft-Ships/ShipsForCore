@@ -39,7 +39,7 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if(source instanceof LivePlayer){
+        if (source instanceof LivePlayer) {
             return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
         }
         return source instanceof CommandViewer;
@@ -47,17 +47,17 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if(!(commandContext.getSource() instanceof CommandViewer)){
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer)commandContext.getSource();
+        CommandViewer viewer = (CommandViewer) commandContext.getSource();
         CommandSource source = commandContext.getSource();
-        Set<BlockInstruction> bl = ShipsPlugin.getPlugin().getBlockList().getBlockList();
+        Collection<BlockInstruction> bl = ShipsPlugin.getPlugin().getBlockList().getBlockList();
         Map<BlockInstruction.CollideType, Integer> values = new HashMap<>();
-        for(BlockInstruction.CollideType type : BlockInstruction.CollideType.values()){
+        for (BlockInstruction.CollideType type : BlockInstruction.CollideType.values()) {
             values.put(type, 0);
         }
-        for(BlockInstruction bi : bl){
+        for (BlockInstruction bi : bl) {
             values.replace(bi.getCollideType(), values.get(bi.getCollideType()) + 1);
         }
         values.forEach((c, a) -> viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + c.name() + ": " + TextColours.YELLOW + a)));
