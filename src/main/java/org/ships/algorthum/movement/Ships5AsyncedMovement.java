@@ -42,7 +42,19 @@ public class Ships5AsyncedMovement implements BasicMovement {
             waterLevel = opWaterLevel.get();
         }
         final int finalWaterLevel = waterLevel;
-        List<BlockSnapshot.AsyncBlockSnapshot> removeBlocks = blocks
+        /*List<MovingBlock> asyncedBlocks = new ArrayList<>();
+        List<MovingBlock> syncedBlocks = new ArrayList<>();
+        blocks.forEach(mb -> {
+            SyncBlockPosition position = mb.getBeforePosition();
+            if (position.getTileEntity().isPresent()) {
+                syncedBlocks.add(mb);
+                return;
+            }
+            asyncedBlocks.add(mb);
+        });*/
+
+
+        List<BlockSnapshot.AsyncBlockSnapshot> removeBlocksAsynced = blocks
                 .stream()
                 .map(mb -> {
                     BlockPosition after = mb.getBeforePosition();
@@ -54,6 +66,19 @@ public class Ships5AsyncedMovement implements BasicMovement {
                 })
                 .collect(Collectors.toList());
 
+        /*List<BlockSnapshot.SyncBlockSnapshot> removeBlocksSynced = syncedBlocks
+                .stream()
+                .map(mb -> {
+                    BlockPosition after = mb.getBeforePosition();
+                    BlockType type = BlockTypes.AIR;
+                    if (finalWaterLevel >= after.getY()) {
+                        type = BlockTypes.WATER;
+                    }
+                    return type.getDefaultBlockDetails().createSnapshot(Position.toSync(after));
+                })
+                .collect(Collectors.toList());*/
+
+
         List<BlockSnapshot.AsyncBlockSnapshot> applyBlocks = blocks
                 .stream()
                 .map(mb -> {
@@ -61,10 +86,12 @@ public class Ships5AsyncedMovement implements BasicMovement {
                     return details.createSnapshot(Position.toASync(mb.getAfterPosition()));
                 }).collect(Collectors.toList());
 
+        //CorePlugin.getServer().applyBlockSnapshots(removeBlocksSynced);
+
         CorePlugin
                 .getServer()
                 .applyBlockSnapshots(
-                        removeBlocks,
+                        removeBlocksAsynced,
                         ShipsPlugin.getPlugin(),
                         () -> CorePlugin
                                 .getServer()
