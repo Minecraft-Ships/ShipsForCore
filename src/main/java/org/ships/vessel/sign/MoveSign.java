@@ -36,9 +36,9 @@ public class MoveSign implements ShipsSign {
 
     public final List<AText> SIGN = Arrays.asList(
             AText.ofPlain("[Move]").withColour(NamedTextColours.YELLOW),
-            AText.ofPlain("{Engine}}"),
             AText.ofPlain(""),
-            AText.ofPlain(2 + "")
+            AText.ofPlain("Speed"),
+            AText.ofPlain(1 + "")
     );
 
     @Override

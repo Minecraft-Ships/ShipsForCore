@@ -131,7 +131,6 @@ public class AltitudeSign implements ShipsSign {
             return false;
         }
 
-
         if (stes.getTextAt(1).isPresent() && stes.getTextAt(1).get().toPlain().contains("{")) {
             stes.setTextAt(1, AText.ofPlain("Increase"));
             stes.setTextAt(2, AText.ofPlain("{decrease}"));
