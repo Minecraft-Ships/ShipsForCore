@@ -71,7 +71,7 @@ public class Movement {
         vessel.getEntitiesOvertime(config.getEntityTrackingLimit(), e -> true, e -> {
             ShipsPlugin.getPlugin().getDebugFile().addMessage("Movement.71 > Found entity " + e.getType().getId());
             EntitySnapshot<? extends LiveEntity> snapshot = e.createSnapshot();
-            if (snapshot == null) {
+            if (snapshot==null) {
                 ShipsPlugin.getPlugin().getDebugFile().addMessage("\tMovement.74 > Failed to create snapshot");
                 return;
             }
@@ -127,7 +127,7 @@ public class Movement {
                 }
                 for (Map.Entry<BlockType, Integer> entry : map.entrySet()) {
                     int limit = blockList.getBlockInstruction(entry.getKey()).getBlockLimit();
-                    if (limit != -1 && entry.getValue() > limit) {
+                    if (limit!=-1 && entry.getValue() > limit) {
                         vessel.set(MovingFlag.class, null);
                         context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                         exception.accept(new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.TOO_MANY_OF_BLOCK, entry.getKey())));
@@ -246,7 +246,7 @@ public class Movement {
                 Direction direction = directionalData.getDirection().getRightAngleLeft();
                 try {
                     directionalData.setDirection(direction);
-                } catch (DirectionNotSupported directionNotSupported) {
+                } catch (Exception directionNotSupported) {
                     directionNotSupported.printStackTrace();
                 }
             });
@@ -334,7 +334,7 @@ public class Movement {
                 set.add(new SetMovingBlock(vp, vp2));
             });
             context.setMovingStructure(set);
-            if (!(addTo.getX() == 0 && addTo.getY() < 0 && addTo.getZ() == 0)) {
+            if (!(addTo.getX()==0 && addTo.getY() < 0 && addTo.getZ()==0)) {
                 context.setStrictMovement(true);
             }
             move(vessel, context, exception);
