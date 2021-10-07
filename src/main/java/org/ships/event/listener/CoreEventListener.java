@@ -136,7 +136,7 @@ public class CoreEventListener implements EventListener {
             }
             Map<UUID, Vector3<Double>> map = opFlag.get().getValue().orElse(new HashMap<>());
             Vector3<Double> vector = map.get(player.getUniqueId());
-            if (vector == null) {
+            if (vector==null) {
                 continue;
             }
             SyncBlockPosition sPos = vessel.getPosition();
@@ -151,26 +151,45 @@ public class CoreEventListener implements EventListener {
 
     public void onPlayerLeave(Player<?> player, ExactPosition position) {
         BlockPosition block = position.toBlockPosition().getRelative(FourFacingDirection.DOWN);
-        new ShipsOvertimeBlockFinder(block).loadOvertime(vessel -> {
-            if (!(vessel instanceof ShipsVessel)) {
-                return;
-            }
-            ShipsVessel shipsVessel = (ShipsVessel) vessel;
-            PlayerStatesFlag flag = shipsVessel.get(PlayerStatesFlag.class).orElse(new PlayerStatesFlag());
-            Map<UUID, Vector3<Double>> map = flag.getValue().orElse(new HashMap<>());
-            UUID uuid = player.getUniqueId();
-            Vector3<Double> vector = position.getPosition().minus(shipsVessel.getPosition().toExactPosition().getPosition());
+        ShipsPlugin
+                .getPlugin()
+                .getVessels()
+                .stream()
+                .filter(vessel -> vessel.getValue(PlayerStatesFlag.class).isPresent())
+                .map(vessel -> vessel
+                        .getValue(PlayerStatesFlag.class)
+                        .orElse(new HashMap<>())
+                )
+                .forEach(map -> map.remove(player.getUniqueId()));
 
-            if (map.containsKey(uuid)) {
-                map.replace(uuid, vector);
-            } else {
-                map.put(uuid, vector);
-            }
-            flag.setValue(map);
-            vessel.set(flag);
-            vessel.save();
-        }, (pss) -> {
-        });
+
+        new ShipsOvertimeBlockFinder(block)
+                .loadOvertime(vessel -> {
+                    if (!(vessel instanceof ShipsVessel)) {
+                        return;
+                    }
+                    ShipsVessel shipsVessel = (ShipsVessel) vessel;
+                    PlayerStatesFlag flag = shipsVessel
+                            .get(PlayerStatesFlag.class)
+                            .orElse(new PlayerStatesFlag());
+                    Map<UUID, Vector3<Double>> map = flag
+                            .getValue()
+                            .orElse(new HashMap<>());
+                    UUID uuid = player.getUniqueId();
+                    Vector3<Double> vector = position
+                            .getPosition()
+                            .minus(shipsVessel.getPosition().toExactPosition().getPosition());
+
+                    if (map.containsKey(uuid)) {
+                        map.replace(uuid, vector);
+                    } else {
+                        map.put(uuid, vector);
+                    }
+                    flag.setValue(map);
+                    vessel.set(flag);
+                    vessel.save();
+                }, (pss) -> {
+                });
     }
 
     @HEvent(priority = EventPriority.HIGHEST)
@@ -196,7 +215,7 @@ public class CoreEventListener implements EventListener {
                 player.sendMessage(text);
                 return;
             }
-            boolean cancel = event.getClickAction() == EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position) : s.onSecondClick(event.getEntity(), position);
+            boolean cancel = event.getClickAction()==EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position):s.onSecondClick(event.getEntity(), position);
             if (cancel) {
                 event.setCancelled(true);
             }
@@ -222,7 +241,7 @@ public class CoreEventListener implements EventListener {
                 .filter(s -> s.isSign(event.getFrom().getText()))
                 .findFirst()
                 .orElse(null);
-        if (sign == null) {
+        if (sign==null) {
             return;
         }
 
@@ -297,7 +316,7 @@ public class CoreEventListener implements EventListener {
                     .getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                         @Override
                         public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                            if (finalBar != null) {
+                            if (finalBar!=null) {
                                 finalBar.setTitle(AText.ofPlain("Complete"));
                             }
                             Vessel vessel = type.createNewVessel(stes, event.getPosition());
@@ -311,7 +330,7 @@ public class CoreEventListener implements EventListener {
                             VesselCreateEvent.Pre preEvent = new VesselCreateEvent.Pre.BySign(vessel, event.getEntity());
                             CorePlugin.getEventManager().callEvent(preEvent);
                             if (preEvent.isCancelled()) {
-                                if (finalBar != null) {
+                                if (finalBar!=null) {
                                     finalBar.deregisterPlayers();
                                 }
                                 event.setCancelled(true);
@@ -322,14 +341,14 @@ public class CoreEventListener implements EventListener {
                             ShipsPlugin.getPlugin().registerVessel(vessel);
                             VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
                             CorePlugin.getEventManager().callEvent(postEvent);
-                            if (finalBar != null) {
+                            if (finalBar!=null) {
                                 finalBar.deregisterPlayers();
                             }
                         }
 
                         @Override
                         public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
-                            if (finalBar != null) {
+                            if (finalBar!=null) {
                                 CorePlugin
                                         .createSchedulerBuilder()
                                         .setDisplayName("OnBlockFind Message")
