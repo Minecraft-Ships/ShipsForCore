@@ -1,7 +1,7 @@
 package org.ships.commands.legacy.info;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.text.Text;
@@ -35,20 +35,20 @@ public class LegacyInfoCommand implements LegacyArgumentCommand {
             return true;
         }
         CommandViewer viewer = (CommandViewer) source;
-        viewer.sendMessage(CorePlugin.buildText(TextColours.YELLOW + "----[Ships]----"));
-        viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Version: " + TextColours.AQUA + ShipsPlugin.getPlugin().getPluginVersion()));
-        viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + ShipsPlugin.PRERELEASE_TAG + " Version: " + TextColours.AQUA + ShipsPlugin.PRERELEASE_VERSION));
-        viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Vessel Types: " + TextColours.AQUA + ShipsPlugin.getPlugin().getAll(ShipType.class).size()));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.YELLOW + "----[Ships]----"));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.GREEN + "Version: " + TextColours.AQUA + ShipsPlugin.getPlugin().getPluginVersion()));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.GREEN + ShipsPlugin.PRERELEASE_TAG + " Version: " + TextColours.AQUA + ShipsPlugin.PRERELEASE_VERSION));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.GREEN + "Vessel Types: " + TextColours.AQUA + ShipsPlugin.getPlugin().getAll(ShipType.class).size()));
         if (contains("shipstype", args) || contains("stype", args)) {
-            viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + ArrayUtils.toString(TextColours.GREEN + " | " + TextColours.AQUA, st -> st.getDisplayName(), ShipsPlugin.getPlugin().getAll(ShipType.class))));
+            viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + ArrayUtils.toString(TextColours.GREEN + " | " + TextColours.AQUA, st -> st.getDisplayName(), ShipsPlugin.getPlugin().getAll(ShipType.class))));
         }
         Collection<BlockInstruction> blockList = ShipsPlugin.getPlugin().getBlockList().getBlockList();
         Text blockListText = null;
         for (BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()) {
             if (blockListText == null) {
-                blockListText = CorePlugin.buildText(TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count());
+                blockListText = TranslateCore.buildText(TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count());
             } else {
-                blockListText = blockListText.append(CorePlugin.buildText(", " + TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count()));
+                blockListText = blockListText.append(TranslateCore.buildText(", " + TextColours.GREEN + collideType.name() + ": " + TextColours.AQUA + blockList.stream().filter(b -> b.getCollideType().equals(collideType)).count()));
 
             }
         }

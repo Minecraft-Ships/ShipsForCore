@@ -1,6 +1,6 @@
 package org.ships.vessel.sign;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.EntitySnapshot;
@@ -61,7 +61,7 @@ public class AltitudeSign implements ShipsSign {
     @Override
     @Deprecated
     public Text getFirstLine() {
-        return CorePlugin.buildText(TextColours.YELLOW + "[Altitude]");
+        return TranslateCore.buildText(TextColours.YELLOW + "[Altitude]");
     }
 
     @Override
@@ -103,7 +103,7 @@ public class AltitudeSign implements ShipsSign {
                             UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                             player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                             e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                            CorePlugin.createSchedulerBuilder().setDisplayName("Unable to find ships sign").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                            TranslateCore.createSchedulerBuilder().setDisplayName("Unable to find ships sign").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
                         } else {
                             player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));
                         }
@@ -122,7 +122,7 @@ public class AltitudeSign implements ShipsSign {
                     ShipsSign.LOCKED_SIGNS.remove(position);
                     player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                     e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                    CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setDisplayName("Unable to find ships sign").setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                    TranslateCore.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setDisplayName("Unable to find ships sign").setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
                 } catch (LoadVesselException e) {
                     ShipsSign.LOCKED_SIGNS.remove(position);
                     player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));
@@ -174,7 +174,7 @@ public class AltitudeSign implements ShipsSign {
         int blockLimit = config.getDefaultTrackSize();
         ServerBossBar bar = null;
         if (config.isBossBarVisible()) {
-            bar = CorePlugin.createBossBar().setTitle(AText.ofPlain("0 / " + blockLimit)).register(player);
+            bar = TranslateCore.createBossBar().setTitle(AText.ofPlain("0 / " + blockLimit)).register(player);
         }
         final ServerBossBar finalBar = bar;
         final int finalAltitude = altitude;
@@ -210,7 +210,7 @@ public class AltitudeSign implements ShipsSign {
                         UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                         player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                         e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                        CorePlugin.createSchedulerBuilder().setDisplayName("Unable to find ships sign").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                        TranslateCore.createSchedulerBuilder().setDisplayName("Unable to find ships sign").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
                     } else {
                         player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));
                     }
@@ -224,7 +224,7 @@ public class AltitudeSign implements ShipsSign {
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                CorePlugin.createSchedulerBuilder().setDisplayName("Unable to find ships sign").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                TranslateCore.createSchedulerBuilder().setDisplayName("Unable to find ships sign").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
             } catch (LoadVesselException e) {
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));

@@ -1,7 +1,7 @@
 package org.ships.vessel.sign;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationStream;
@@ -82,7 +82,7 @@ public class LicenceSign implements ShipsSign {
     @Override
     @Deprecated
     public Text getFirstLine() {
-        return CorePlugin.buildText(TextColours.YELLOW + "[Ships]");
+        return TranslateCore.buildText(TextColours.YELLOW + "[Ships]");
     }
 
     @Override
@@ -99,7 +99,7 @@ public class LicenceSign implements ShipsSign {
                 ServerBossBar bar = null;
                 int totalCount = config.getDefaultTrackSize();
                 if (config.isBossBarVisible()) {
-                    bar = CorePlugin.createBossBar().register(player).setTitle(AText.ofPlain("0 / " + totalCount));
+                    bar = TranslateCore.createBossBar().register(player).setTitle(AText.ofPlain("0 / " + totalCount));
                 }
                 final ServerBossBar finalBar = bar;
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(s).getConnectedBlocksOvertime(s.getPosition(), new OvertimeBlockFinderUpdate() {
@@ -130,7 +130,7 @@ public class LicenceSign implements ShipsSign {
             }
         } catch (UnableToFindLicenceSign e1) {
             e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-            CorePlugin.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+            TranslateCore.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
         } catch (IOException e) {
             Optional<LiveTileEntity> opTile = position.getTileEntity();
             if (opTile.isPresent()) {
@@ -143,12 +143,12 @@ public class LicenceSign implements ShipsSign {
                         player.sendMessage(AText.ofPlain("Could not find ShipType with display name of " + type).withColour(NamedTextColours.RED));
                         return false;
                     }
-                    File file = new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
+                    File file = new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
                     if (!file.exists()) {
                         player.sendMessage(AText.ofPlain("Could not find the file associated with the ship").withColour(NamedTextColours.RED));
                         return false;
                     }
-                    ConfigurationStream.ConfigurationFile config = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
+                    ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
                     config.set(ShipsFileLoader.META_LOCATION_X, position.getX());
                     config.set(ShipsFileLoader.META_LOCATION_Y, position.getY());
                     config.set(ShipsFileLoader.META_LOCATION_Z, position.getZ());

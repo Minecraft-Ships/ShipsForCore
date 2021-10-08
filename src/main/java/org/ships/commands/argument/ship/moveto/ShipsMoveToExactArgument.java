@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.moveto;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -91,11 +91,11 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
         int trackLimit = config.getDefaultTrackSize();
 
         if (config.isBossBarVisible()) {
-            ServerBossBar bar = CorePlugin.createBossBar();
+            ServerBossBar bar = TranslateCore.createBossBar();
             if (commandContext.getSource() instanceof LivePlayer) {
                 bar.register((LivePlayer) commandContext.getSource());
             }
-            bar.setMessage(CorePlugin.buildText("0 / " + trackLimit));
+            bar.setMessage(TranslateCore.buildText("0 / " + trackLimit));
             context.setBar(bar);
         }
 

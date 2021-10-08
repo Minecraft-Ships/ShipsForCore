@@ -1,6 +1,6 @@
 package org.ships.commands.argument.blocklist;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypeArgument;
@@ -59,8 +59,8 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
         BlockType type = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
         CommandSource source = commandContext.getSource();
         BlockInstruction bi = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(type);
-        viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + "CollideType: " + TextColours.YELLOW + bi.getCollideType().name()));
-        viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + "BlockLimit: " + TextColours.YELLOW + bi.getBlockLimit()));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "CollideType: " + TextColours.YELLOW + bi.getCollideType().name()));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "BlockLimit: " + TextColours.YELLOW + bi.getBlockLimit()));
         return true;
     }
 }

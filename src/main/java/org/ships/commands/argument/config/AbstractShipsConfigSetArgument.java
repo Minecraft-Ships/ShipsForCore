@@ -1,6 +1,6 @@
 package org.ships.commands.argument.config;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -70,9 +70,9 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
         Object argument = context.getArgument(this, CONFIG_VALUE);
         try {
             setNode(context);
-            viewer.sendMessage(CorePlugin.buildText("Set " + TextColours.AQUA + "\"" + node.getKeyName() + "\"" + TextColours.RESET + " as \"" + argument + "\""));
+            viewer.sendMessage(TranslateCore.buildText("Set " + TextColours.AQUA + "\"" + node.getKeyName() + "\"" + TextColours.RESET + " as \"" + argument + "\""));
         } catch (IOException e) {
-            viewer.sendMessage(CorePlugin.buildText("Failed to set value: " + e.getMessage()));
+            viewer.sendMessage(TranslateCore.buildText("Failed to set value: " + e.getMessage()));
         }
         return true;
     }

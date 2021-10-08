@@ -1,6 +1,6 @@
 package org.ships.movement;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.vector.type.Vector3;
@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class Result extends ArrayList<Result.Run> {
 
@@ -109,7 +108,7 @@ public class Result extends ArrayList<Result.Run> {
     public void run(Vessel vessel, MovementContext context){
         this.forEach(e -> {
             ResultEvent.PreRun event = new ResultEvent.PreRun(vessel, this, e, context);
-            CorePlugin.getEventManager().callEvent(event);
+            TranslateCore.getEventManager().callEvent(event);
             if(event.isCancelled()){
                 return;
             }

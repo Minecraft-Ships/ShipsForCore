@@ -1,6 +1,6 @@
 package org.ships.vessel.sign;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.EntitySnapshot;
@@ -81,7 +81,7 @@ public interface SignUtil {
                 UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                 this.player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                 e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                CorePlugin.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                TranslateCore.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
             } else {
                 this.player.sendMessage(AText.ofPlain(e.getReason()).withColour(NamedTextColours.RED));
             }
@@ -134,7 +134,7 @@ public interface SignUtil {
         MovementContext context = new MovementContext();
         context.setPostMovement(e -> ShipsSign.LOCKED_SIGNS.remove(sign));
         if (config.isBossBarVisible()) {
-            ServerBossBar bar = CorePlugin.createBossBar();
+            ServerBossBar bar = TranslateCore.createBossBar();
             //TODO - Set bar message
             bar.setTitle(AText.ofPlain("Starting block getter"));
             bar.register(player);
@@ -151,7 +151,7 @@ public interface SignUtil {
         } catch (UnableToFindLicenceSign e1) {
             player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
             e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-            CorePlugin.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+            TranslateCore.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
         } catch (LoadVesselException e) {
             player.sendMessage(AText.ofPlain(e.getReason()).withColour(NamedTextColours.RED));
         } finally {

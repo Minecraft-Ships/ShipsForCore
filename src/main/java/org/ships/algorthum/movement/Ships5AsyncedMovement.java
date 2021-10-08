@@ -1,6 +1,6 @@
 package org.ships.algorthum.movement;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
@@ -88,12 +88,12 @@ public class Ships5AsyncedMovement implements BasicMovement {
 
         //CorePlugin.getServer().applyBlockSnapshots(removeBlocksSynced);
 
-        CorePlugin
+        TranslateCore
                 .getServer()
                 .applyBlockSnapshots(
                         removeBlocksAsynced,
                         ShipsPlugin.getPlugin(),
-                        () -> CorePlugin
+                        () -> TranslateCore
                                 .getServer()
                                 .applyBlockSnapshots(
                                         applyBlocks,
@@ -102,7 +102,7 @@ public class Ships5AsyncedMovement implements BasicMovement {
                                             Stream.of(context.getPostMovementProcess()).forEach(movement -> movement.postMove(vessel));
                                             vessel.set(MovingFlag.class, null);
                                             VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
-                                            CorePlugin.getPlatform().callEvent(eventPost);
+                                            TranslateCore.getPlatform().callEvent(eventPost);
                                             context.getPostMovement().accept(eventPost);
                                             Result.DEFAULT_RESULT.run(vessel, context);
                                         }));

@@ -1,6 +1,6 @@
 package org.ships.commands.argument.blocklist;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -60,7 +60,7 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
         for (BlockInstruction bi : bl) {
             values.replace(bi.getCollideType(), values.get(bi.getCollideType()) + 1);
         }
-        values.forEach((c, a) -> viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + c.name() + ": " + TextColours.YELLOW + a)));
+        values.forEach((c, a) -> viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + c.name() + ": " + TextColours.YELLOW + a)));
         return true;
     }
 }

@@ -1,6 +1,6 @@
 package org.ships.movement.autopilot.scheduler;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
 import org.core.utils.time.TimeRange;
@@ -26,7 +26,7 @@ import java.util.Optional;
 public class FallExecutor implements Runnable {
 
     public static Scheduler createScheduler() {
-        return CorePlugin.createSchedulerBuilder()
+        return TranslateCore.createSchedulerBuilder()
                 .setExecutor(new FallExecutor())
                 .setDelayUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
                 .setDelay(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
@@ -57,7 +57,7 @@ public class FallExecutor implements Runnable {
                 }
                 MovementContext context = new MovementContext().setMovement(config.getDefaultMovement());
                 if (config.isBossBarVisible()) {
-                    ServerBossBar bar = CorePlugin.createBossBar().setMessage(CorePlugin.buildText("Falling"));
+                    ServerBossBar bar = TranslateCore.createBossBar().setMessage(TranslateCore.buildText("Falling"));
                     v.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
                     context.setBar(bar);
                 }

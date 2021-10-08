@@ -1,6 +1,6 @@
 package org.ships.commands.argument.config.shiptype;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -63,7 +63,7 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
             viewer.sendMessagePlain("No value found at node. Is it for this ShipType?");
             return true;
         }
-        viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + "Value is '" + parser.getParser().unparse(opResult.get()) + "'"));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "Value is '" + parser.getParser().unparse(opResult.get()) + "'"));
         return true;
     }
 }

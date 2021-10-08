@@ -6,7 +6,7 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.item.ItemType;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.blocks.ExpandedBlockList;

@@ -1,6 +1,6 @@
 package org.ships.algorthum.movement;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.schedule.Scheduler;
 import org.ships.config.configuration.ShipsConfig;
@@ -113,20 +113,20 @@ public class Ships6Movement implements BasicMovement {
             waterLevel = opWaterLevel.get();
         }
         final int total = blocks.size();
-        Scheduler scheduler = CorePlugin.createSchedulerBuilder().setDisplayName("Post Movement").setExecutor(() -> {
+        Scheduler scheduler = TranslateCore.createSchedulerBuilder().setDisplayName("Post Movement").setExecutor(() -> {
             context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing: Post movement")));
             for (Movement.PostMovement movement : context.getPostMovementProcess()) {
                 movement.postMove(vessel);
             }
             VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
-            CorePlugin.getPlatform().callEvent(eventPost);
+            TranslateCore.getPlatform().callEvent(eventPost);
             context.getPostMovement().accept(eventPost);
             Result.DEFAULT_RESULT.run(vessel, context);
             vessel.set(MovingFlag.class, null);
         }).build(ShipsPlugin.getPlugin());
         for (int A = 0; A < blocksToProcess.size(); A++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
-            scheduler = CorePlugin
+            scheduler = TranslateCore
                     .createSchedulerBuilder()
                     .setDisplayName("Set Block")
                     .setExecutor(new SetBlocks(A, total, context, blocks2))
@@ -137,7 +137,7 @@ public class Ships6Movement implements BasicMovement {
         }
         for (int A = 0; A < blocksToProcess.size(); A++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
-            scheduler = CorePlugin
+            scheduler = TranslateCore
                     .createSchedulerBuilder()
                     .setDisplayName("Remove Block")
                     .setExecutor(new RemoveBlocks(waterLevel, A, context, blocks2))

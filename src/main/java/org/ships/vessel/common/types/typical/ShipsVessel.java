@@ -1,7 +1,6 @@
 package org.ships.vessel.common.types.typical;
 
-import org.core.CorePlugin;
-import org.core.adventureText.AText;
+import org.core.TranslateCore;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -51,7 +50,7 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
 
     @Override
     default @NotNull ShipsVessel setName(@NotNull String name) throws NoLicencePresent {
-        getSign().setLine(2, CorePlugin.buildText(name));
+        getSign().setLine(2, TranslateCore.buildText(name));
         File file = getFile();
         String[] ext = file.getName().split(Pattern.quote("."));
         file.renameTo(new File(file.getParentFile(), name + "." + ext[ext.length - 1]));

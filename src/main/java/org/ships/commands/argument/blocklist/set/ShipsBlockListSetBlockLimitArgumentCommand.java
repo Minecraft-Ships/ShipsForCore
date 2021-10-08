@@ -1,6 +1,6 @@
 package org.ships.commands.argument.blocklist.set;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypesArgument;
@@ -53,7 +53,7 @@ public class ShipsBlockListSetBlockLimitArgumentCommand implements ArgumentComma
         });
         blocklist.saveChanges();
         if(commandContext.getSource() instanceof CommandViewer){
-            ((CommandViewer)commandContext.getSource()).sendMessage(CorePlugin.buildText(TextColours.AQUA + "" + blocks.size() + " have been set to have a block limit of " + limit));
+            ((CommandViewer)commandContext.getSource()).sendMessage(TranslateCore.buildText(TextColours.AQUA + "" + blocks.size() + " have been set to have a block limit of " + limit));
         }
         return true;
     }

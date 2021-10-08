@@ -1,7 +1,7 @@
 package org.ships.commands.legacy.shiptype;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.parser.StringParser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
@@ -96,12 +96,12 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
         if(args[1].equalsIgnoreCase("create")){
             if(source instanceof LivePlayer){
                 if (!((LivePlayer) source).hasPermission(Permissions.CMD_SHIPTYPE_CREATE)){
-                    ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
+                    ((LivePlayer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "You do not have permission for that command"));
                 }
             }
             if(args.length != 4){
                 if(source instanceof CommandViewer){
-                    ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "/ships shiptype create <cloneable ship type> <name of new ship type>"));
+                    ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "/ships shiptype create <cloneable ship type> <name of new ship type>"));
                 }
                 return false;
             }
@@ -113,8 +113,8 @@ public class LegacyShipTypeCommand implements LegacyArgumentCommand {
                 return true;
             }
             for(int A = 3; A < args.length; A++) {
-                File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/ShipType/Custom/" + opType.get().getOriginType().getId().replace(":", ".") + "/" + args[A] + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
-                file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()).getFile();
+                File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/ShipType/Custom/" + opType.get().getOriginType().getId().replace(":", ".") + "/" + args[A] + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+                file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
                 if(file.exists()){
                     if(source instanceof CommandViewer){
                         ((CommandViewer) source).sendMessagePlain("Custom ShipType " + args[A] + " has already been created");

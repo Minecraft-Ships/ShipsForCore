@@ -1,7 +1,7 @@
 package org.ships.commands.legacy.blockinfo;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
@@ -41,7 +41,7 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
             ((LivePlayer)source).getBlockLookingAt().ifPresent(p -> ids.add(p.getBlockDetails().getType().getId()));
         }
         ids.forEach(id -> {
-            CorePlugin.getPlatform().getBlockType(id).ifPresent(bt -> {
+            TranslateCore.getPlatform().getBlockType(id).ifPresent(bt -> {
                 viewer.sendMessagePlain("--[" + bt.getName() + "]--");
                 BlockDetails details = bt.getDefaultBlockDetails();
                 viewer.sendMessagePlain("---[ID]---");
@@ -57,7 +57,7 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
                     viewer.sendMessagePlain(" |- Directional");
                 }
                 viewer.sendMessagePlain("---[Priority]---");
-                WorldExtent world = CorePlugin.getServer().getWorlds().iterator().next();
+                WorldExtent world = TranslateCore.getServer().getWorlds().iterator().next();
                 BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0), details).getBlockPriority();
                 viewer.sendMessagePlain(" |- ID: " + priority.getId());
                 viewer.sendMessagePlain(" |- Value: " + priority.getPriorityNumber());
@@ -73,14 +73,14 @@ public class LegacyBlockInfoCommand implements LegacyArgumentCommand {
     public List<String> tab(CommandSource source, String... args) {
         List<String> list = new ArrayList<>();
         String compare = args[args.length - 1];
-        CorePlugin.getPlatform().getBlockTypes().stream().filter(b -> {
+        TranslateCore.getPlatform().getBlockTypes().stream().filter(b -> {
             if (b.getId().startsWith(compare)) {
                 return true;
             }
             return b.getId().split(":", 2)[1].startsWith(compare);
         }).forEach(b -> list.add(b.getId()));
         if (list.isEmpty()) {
-            CorePlugin.getPlatform().getBlockTypes().forEach(b -> list.add(b.getId()));
+            TranslateCore.getPlatform().getBlockTypes().forEach(b -> list.add(b.getId()));
         }
         return list;
     }

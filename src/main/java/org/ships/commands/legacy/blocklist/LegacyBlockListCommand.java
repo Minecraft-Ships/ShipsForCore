@@ -1,6 +1,6 @@
 package org.ships.commands.legacy.blocklist;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
@@ -38,7 +38,7 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
         CommandViewer viewer = (CommandViewer)source;
         List<BlockType> list = new ArrayList<>();
         if(args.length == 1) {
-            list.addAll(CorePlugin.getPlatform().getBlockTypes());
+            list.addAll(TranslateCore.getPlatform().getBlockTypes());
         }else if(args[1].equalsIgnoreCase("set")) {
             if (source instanceof LivePlayer && !((LivePlayer)source).hasPermission(Permissions.CMD_BLOCKLIST_SET)){
                 LivePlayer player = (LivePlayer)source;
@@ -59,7 +59,7 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
                             viewer.sendMessagePlain("Number must be greater then -1");
                             return false;
                         }
-                        Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
+                        Collection<BlockType> blockTypes = TranslateCore.getPlatform().getBlockTypes();
                         for(int A = 3; A < args.length; A++){
                             int B = A;
                             Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().startsWith(args[B]) || b.getId().split(":", 2)[1].startsWith(args[B])).findAny();
@@ -68,7 +68,7 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
                         DefaultBlockList dbl = ShipsPlugin.getPlugin().getBlockList();
                         list.forEach(b -> dbl.replaceBlockInstruction(dbl.getBlockInstruction(b).setBlockLimit(limit)));
                         dbl.saveChanges();
-                        viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
+                        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
                         return true;
                     }catch (NumberFormatException e){
                         viewer.sendMessagePlain("Unknown number of " + args[3]);
@@ -85,7 +85,7 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
                         viewer.sendMessagePlain("Unknown collide type of " + args[3]);
                         return false;
                     }
-                    Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
+                    Collection<BlockType> blockTypes = TranslateCore.getPlatform().getBlockTypes();
                     for(int A = 3; A < args.length; A++){
                         int B = A;
                         Optional<BlockType> opType = blockTypes.stream().filter(b -> b.getId().equalsIgnoreCase(args[B]) || b.getId().split(":", 2)[1].equalsIgnoreCase(args[B])).findAny();
@@ -94,17 +94,17 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
                     DefaultBlockList dbl = ShipsPlugin.getPlugin().getBlockList();
                     list.forEach(b -> dbl.replaceBlockInstruction(dbl.getBlockInstruction(b).setCollideType(type)));
                     dbl.saveChanges();
-                    viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
+                    viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA.toString() + list.size() + " materials changed"));
                     return true;
                 }
             }
 
         }else if(args[1].equalsIgnoreCase("view")) {
             if (source instanceof LivePlayer && !((LivePlayer)source).hasPermission(Permissions.CMD_BLOCKLIST_VIEW)){
-                ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
+                ((LivePlayer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "You do not have permission for that command"));
                 return false;
             }
-            Collection<BlockType> blockTypes = CorePlugin.getPlatform().getBlockTypes();
+            Collection<BlockType> blockTypes = TranslateCore.getPlatform().getBlockTypes();
             if (args.length > 2) {
                 for (int A = 2; A < args.length; A++) {
                     int B = A;
@@ -132,10 +132,10 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
                         break;
                 }
             });
-            viewer.sendMessage(CorePlugin.buildText(TextColours.RED + "|----{Blocks}----|"));
-            viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Material: " + TextColours.AQUA + material.size()));
-            viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Ignore: " + TextColours.AQUA + ignore.size()));
-            viewer.sendMessage(CorePlugin.buildText(TextColours.GREEN + "Detect Collide: " + TextColours.AQUA + collide.size()));
+            viewer.sendMessage(TranslateCore.buildText(TextColours.RED + "|----{Blocks}----|"));
+            viewer.sendMessage(TranslateCore.buildText(TextColours.GREEN + "Material: " + TextColours.AQUA + material.size()));
+            viewer.sendMessage(TranslateCore.buildText(TextColours.GREEN + "Ignore: " + TextColours.AQUA + ignore.size()));
+            viewer.sendMessage(TranslateCore.buildText(TextColours.GREEN + "Detect Collide: " + TextColours.AQUA + collide.size()));
         }
         return true;
     }
@@ -186,14 +186,14 @@ public class LegacyBlockListCommand implements LegacyArgumentCommand {
             }
         } else {
             String compare = args[args.length - 1];
-            CorePlugin.getPlatform().getBlockTypes().stream().filter(b -> {
+            TranslateCore.getPlatform().getBlockTypes().stream().filter(b -> {
                 if (b.getId().startsWith(compare)) {
                     return true;
                 }
                 return b.getId().split(":", 2)[1].startsWith(compare);
             }).forEach(b -> list.add(b.getId()));
             if (list.isEmpty()) {
-                CorePlugin.getPlatform().getBlockTypes().forEach(b -> list.add(b.getId()));
+                TranslateCore.getPlatform().getBlockTypes().forEach(b -> list.add(b.getId()));
             }
         }
         return list;

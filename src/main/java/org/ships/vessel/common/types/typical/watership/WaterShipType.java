@@ -1,9 +1,9 @@
 package org.ships.vessel.common.types.typical.watership;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -21,11 +21,11 @@ import java.io.File;
 public class WaterShipType extends AbstractShipType<WaterShip> implements CloneableShipType<WaterShip>, SpecialBlockShipType<WaterShip> {
 
     public WaterShipType() {
-        this("Ship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Watership." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Ship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Watership." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public WaterShipType(@NotNull String name, @NotNull File file) {
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
+        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
     }
 
     public WaterShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {

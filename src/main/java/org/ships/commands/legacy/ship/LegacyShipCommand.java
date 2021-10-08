@@ -1,7 +1,7 @@
 package org.ships.commands.legacy.ship;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
@@ -60,7 +60,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
     public boolean run(CommandSource source, String... args) {
         if (args.length < 3) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "/ships ship <ship type>"));
+                ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "/ships ship <ship type>"));
             }
             return true;
         }
@@ -85,7 +85,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             }
         } catch (IOException e) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + e.getMessage()));
+                ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + e.getMessage()));
             }
             return true;
         }
@@ -156,13 +156,13 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                 z = Integer.parseInt(args[6]);
             } catch (NumberFormatException e) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "x y z are not whole numbers"));
+                    ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "x y z are not whole numbers"));
                 }
                 return false;
             }
             if (!(vessel instanceof FlightPathType)) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + vessel.getType().getId() + " is not allowed to be auto piloted"));
+                    ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + vessel.getType().getId() + " is not allowed to be auto piloted"));
                 }
                 return false;
             }
@@ -173,7 +173,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                 bfp.setViewer((CommandViewer) source);
             }
             flightVessel.setFlightPath(bfp);
-            CorePlugin
+            TranslateCore
                     .createSchedulerBuilder()
                     .setIteration(5)
                     .setIterationUnit(TimeUnit.SECONDS)
@@ -184,7 +184,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
         } else if (args[3].equalsIgnoreCase("cancel")) {
             if (!(vessel instanceof FlightPathType)) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + vessel.getType().getId() + " is not allowed to be auto piloted"));
+                    ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + vessel.getType().getId() + " is not allowed to be auto piloted"));
                 }
                 return false;
             }
@@ -290,8 +290,8 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
                                 return;
                             }
                             LiveSignTileEntity lste = (LiveSignTileEntity) opTileEntity.get();
-                            lste.setLine(1, CorePlugin.buildText("Ahead"));
-                            lste.setLine(2, CorePlugin.buildText("{Stop}"));
+                            lste.setLine(1, TranslateCore.buildText("Ahead"));
+                            lste.setLine(2, TranslateCore.buildText("{Stop}"));
                         });
                         s.cancel();
                     });
@@ -359,7 +359,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
     private boolean runTrack(CommandSource source, Vessel vessel) {
         if (!(source instanceof LivePlayer)) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "Player only command"));
+                ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "Player only command"));
             }
             return true;
         }
@@ -368,7 +368,7 @@ public class LegacyShipCommand implements LegacyArgumentCommand {
             return false;
         }
         vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
-        CorePlugin.createSchedulerBuilder()
+        TranslateCore.createSchedulerBuilder()
                 .setDisplayName("ShipsTrack:" + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                 .setDelay(10)
                 .setDelayUnit(TimeUnit.SECONDS)

@@ -1,9 +1,9 @@
 package org.ships.commands.legacy;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.CommandLauncher;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.source.command.CommandSource;
 import org.core.text.TextColours;
 import org.ships.commands.legacy.blockinfo.LegacyBlockInfoCommand;
@@ -68,7 +68,7 @@ public class LegacyShipsCommand implements CommandLauncher {
             if(opCommand.isPresent()){
                 LegacyArgumentCommand command = opCommand.get();
                 if(command.getPermission().isPresent() && source instanceof LivePlayer && !((LivePlayer)source).hasPermission(command.getPermission().get())){
-                    ((LivePlayer)source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
+                    ((LivePlayer)source).sendMessage(TranslateCore.buildText(TextColours.RED + "You do not have permission for that command"));
                     return false;
                 }
                 command.run(source, args);
@@ -91,7 +91,7 @@ public class LegacyShipsCommand implements CommandLauncher {
             if(opCommand.isPresent()){
                 LegacyArgumentCommand command = opCommand.get();
                 if(command.getPermission().isPresent() && source instanceof LivePlayer && !((LivePlayer)source).hasPermission(command.getPermission().get())){
-                    ((LivePlayer)source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
+                    ((LivePlayer)source).sendMessage(TranslateCore.buildText(TextColours.RED + "You do not have permission for that command"));
                     return new ArrayList<>();
                 }
                 return command.tab(source, args);

@@ -1,7 +1,6 @@
 package org.ships.commands.legacy.fix;
 
-import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
@@ -33,7 +32,7 @@ public class FixLegacyCommand implements LegacyArgumentCommand {
             return true;
         }
         if(source instanceof CommandViewer){
-            ((CommandViewer)source).sendMessage(CorePlugin.buildText("/Ships fix noGravity"));
+            ((CommandViewer)source).sendMessage(TranslateCore.buildText("/Ships fix noGravity"));
         }
         return false;
     }

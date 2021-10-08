@@ -1,6 +1,6 @@
 package org.ships.config.configuration;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationFormat;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
@@ -25,7 +25,7 @@ public class LegacyShipsConfig implements Config {
 
     public LegacyShipsConfig() {
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.yml");
-        this.configuration = CorePlugin.createConfigurationFile(file, ConfigurationFormat.FORMAT_YAML);
+        this.configuration = TranslateCore.createConfigurationFile(file, ConfigurationFormat.FORMAT_YAML);
     }
 
     @Override

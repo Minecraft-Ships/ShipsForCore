@@ -1,7 +1,7 @@
 package org.ships.vessel.common.loader.shipsvessel;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
@@ -85,7 +85,7 @@ public class ShipsFileLoader implements ShipsLoader {
                     public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                         ship.setStructure(structure);
                         ship.setLoading(false);
-                        CorePlugin.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " has loaded."));
+                        TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " has loaded."));
                     }
 
                     @Override
@@ -97,7 +97,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 PositionableShipsStructure pss = ship.getStructure();
                 pss.setRaw(structureList);
                 ship.setLoading(false);
-                CorePlugin.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "") + " has loaded."));
+                TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "") + " has loaded."));
             }
         }
     }
@@ -109,7 +109,7 @@ public class ShipsFileLoader implements ShipsLoader {
     }
 
     public void save(AbstractShipsVessel vessel) {
-        ConfigurationStream.ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, CorePlugin.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile file = TranslateCore.createConfigurationFile(this.file, TranslateCore.getPlatform().getConfigFormat());
         Map<CrewPermission, List<String>> uuidList = new HashMap<>();
         vessel.getCrew().forEach((key, value) -> {
             List<String> list = uuidList.get(value);
@@ -157,7 +157,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     @Override
     public ShipsVessel load() throws LoadVesselException {
-        ConfigurationStream.ConfigurationFile file = CorePlugin.createConfigurationFile(this.file, CorePlugin.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile file = TranslateCore.createConfigurationFile(this.file, TranslateCore.getPlatform().getConfigFormat());
         Optional<WorldExtent> opWorld = file.parse(META_LOCATION_WORLD);
         if (!opWorld.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown World of " + file.getString(META_LOCATION_WORLD).orElse("'No value found'"));
@@ -220,7 +220,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 ((ShipsVessel) vessel).setTeleportVector(Vector3.valueOf(pX, pY, pZ), id);
             }
         });
-        CorePlugin
+        TranslateCore
                 .createSchedulerBuilder()
                 .setDisplayName(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " - Structure-Loader")
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)

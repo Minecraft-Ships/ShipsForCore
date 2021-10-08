@@ -1,6 +1,6 @@
 package org.ships.movement;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
@@ -103,7 +103,7 @@ public class Movement {
                 bar.setTitle(AText.ofPlain("Processing: Pre"));
             });
             VesselMoveEvent.Pre preEvent = new VesselMoveEvent.Pre(vessel, context);
-            if (CorePlugin.getPlatform().callEvent(preEvent).isCancelled()) {
+            if (TranslateCore.getPlatform().callEvent(preEvent).isCancelled()) {
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 context.getClicked().ifPresent(ShipsSign.LOCKED_SIGNS::remove);
                 vessel.set(MovingFlag.class, null);
@@ -180,7 +180,7 @@ public class Movement {
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
 
                 VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, context, collided);
-                CorePlugin.getPlatform().callEvent(collideEvent);
+                TranslateCore.getPlatform().callEvent(collideEvent);
 
                 exception.accept(new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.COLLIDE_DETECTED, new HashSet<>(collideEvent.getCollisions()))));
                 return;
@@ -197,7 +197,7 @@ public class Movement {
             }
             try {
                 VesselMoveEvent.Main eventMain = new VesselMoveEvent.Main(vessel, context);
-                if (CorePlugin.getPlatform().callEvent(eventMain).isCancelled()) {
+                if (TranslateCore.getPlatform().callEvent(eventMain).isCancelled()) {
                     return;
                 }
                 context.getEntities().keySet().forEach(e -> e.getCreatedFrom().get().setGravity(false));

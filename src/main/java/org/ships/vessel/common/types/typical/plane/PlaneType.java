@@ -1,9 +1,9 @@
 package org.ships.vessel.common.types.typical.plane;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.inventory.item.ItemTypes;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -19,11 +19,11 @@ import java.util.Collections;
 public class PlaneType extends AbstractShipType<Plane> implements FuelledShipType<Plane> {
 
     public PlaneType() {
-        this("Plane", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Plane." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Plane", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Plane." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public PlaneType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR);
+        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR);
     }
 
     public PlaneType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {

@@ -1,9 +1,9 @@
 package org.ships.vessel.common.types.typical.submarine;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.inventory.item.ItemTypes;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -21,11 +21,11 @@ import java.util.Collections;
 public class SubmarineType extends AbstractShipType<Submarine> implements SpecialBlockShipType<Submarine>, FuelledShipType<Submarine> {
 
     public SubmarineType() {
-        this("Submarine", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Submarine." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Submarine", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Submarine." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public SubmarineType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
+        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
     }
 
     public SubmarineType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {

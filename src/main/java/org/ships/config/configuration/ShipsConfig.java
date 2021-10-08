@@ -1,7 +1,7 @@
 package org.ships.config.configuration;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
@@ -59,8 +59,8 @@ public class ShipsConfig implements Config.KnownNodes {
     public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
 
     public ShipsConfig() {
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
-        this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modified = false;
         if (!this.file.getFile().exists()) {
             recreateFile();

@@ -1,6 +1,6 @@
 package org.ships.movement.autopilot.scheduler;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.utils.time.TimeRange;
 import org.core.world.boss.ServerBossBar;
@@ -92,7 +92,7 @@ public class EOTExecutor implements Runnable {
         }
         MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
         if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-            ServerBossBar bar2 = CorePlugin.createBossBar();
+            ServerBossBar bar2 = TranslateCore.createBossBar();
             vessel.getEntities(LivePlayer.class).forEach(bar2::register);
             context.setBar(bar2);
         }

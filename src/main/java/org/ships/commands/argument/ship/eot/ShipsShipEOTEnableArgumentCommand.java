@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.eot;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -67,8 +67,8 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
                         return;
                     }
                     LiveSignTileEntity lste = (LiveSignTileEntity) opTileEntity.get();
-                    lste.setLine(1, CorePlugin.buildText("Ahead"));
-                    lste.setLine(2, CorePlugin.buildText("{Stop}"));
+                    lste.setLine(1, TranslateCore.buildText("Ahead"));
+                    lste.setLine(2, TranslateCore.buildText("{Stop}"));
                 });
                 s.cancel();
             });

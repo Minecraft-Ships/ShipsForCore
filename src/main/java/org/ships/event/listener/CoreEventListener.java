@@ -1,7 +1,7 @@
 package org.ships.event.listener;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
@@ -74,7 +74,7 @@ public class CoreEventListener implements EventListener {
         if (!ArrayUtils.toString(", ", t -> t, event.getCommand()).toLowerCase().startsWith(opLoginCommand.get().toLowerCase())) {
             return;
         }
-        CorePlugin
+        TranslateCore
                 .createSchedulerBuilder()
                 .setDelay(2)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
@@ -307,7 +307,7 @@ public class CoreEventListener implements EventListener {
             int trackSize = config.getDefaultTrackSize();
             ServerBossBar bar = null;
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-                bar = CorePlugin.createBossBar().register(event.getEntity());
+                bar = TranslateCore.createBossBar().register(event.getEntity());
             }
             final ServerBossBar finalBar = bar;
             SyncExactPosition bp = event.getEntity().getPosition();
@@ -328,7 +328,7 @@ public class CoreEventListener implements EventListener {
                                 ((CrewStoredVessel) vessel).getCrew().put(event.getEntity().getUniqueId(), CrewPermission.CAPTAIN);
                             }
                             VesselCreateEvent.Pre preEvent = new VesselCreateEvent.Pre.BySign(vessel, event.getEntity());
-                            CorePlugin.getEventManager().callEvent(preEvent);
+                            TranslateCore.getEventManager().callEvent(preEvent);
                             if (preEvent.isCancelled()) {
                                 if (finalBar!=null) {
                                     finalBar.deregisterPlayers();
@@ -340,7 +340,7 @@ public class CoreEventListener implements EventListener {
                             vessel.save();
                             ShipsPlugin.getPlugin().registerVessel(vessel);
                             VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
-                            CorePlugin.getEventManager().callEvent(postEvent);
+                            TranslateCore.getEventManager().callEvent(postEvent);
                             if (finalBar!=null) {
                                 finalBar.deregisterPlayers();
                             }
@@ -349,7 +349,7 @@ public class CoreEventListener implements EventListener {
                         @Override
                         public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                             if (finalBar!=null) {
-                                CorePlugin
+                                TranslateCore
                                         .createSchedulerBuilder()
                                         .setDisplayName("OnBlockFind Message")
                                         .setExecutor(() -> {

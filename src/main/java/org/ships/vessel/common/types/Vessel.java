@@ -1,6 +1,6 @@
 package org.ships.vessel.common.types;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
@@ -131,7 +131,7 @@ public interface Vessel extends Positionable<BlockPosition> {
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
         chunks.forEach(c -> entities2.addAll(c.getEntities()));
 
-        Scheduler sched = CorePlugin.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
+        Scheduler sched = TranslateCore.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
         }).build(ShipsPlugin.getPlugin());
         double fin = entities2.size() / (double) limit;
         if (fin != ((int) fin)) {
@@ -144,7 +144,7 @@ public interface Vessel extends Positionable<BlockPosition> {
         Collection<SyncBlockPosition> pss = getStructure().getPositions();
         for (int A = 0; A < fin; A++) {
             final int B = A;
-            sched = CorePlugin.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
+            sched = TranslateCore.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
                 int c = (B * limit);
                 for (int to = 0; to < limit; to++) {
                     if ((c + to) >= entities2.size()) {

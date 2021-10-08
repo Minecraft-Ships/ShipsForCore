@@ -1,7 +1,7 @@
 package org.ships.vessel.common.types;
 
 import org.core.config.ConfigurationStream;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;

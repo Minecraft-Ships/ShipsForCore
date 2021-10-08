@@ -1,6 +1,6 @@
 package org.ships.vessel.converts.vessel.shipsfive;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
@@ -31,7 +31,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
 
     @Override
     public ShipsVessel convert(File file) throws IOException {
-        ConfigurationStream.ConfigurationFile config = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
 
         String type = config.getString(new ConfigurationNode("ShipsData", "Type")).get();
         Integer percent = config.getInteger(new ConfigurationNode("ShipsData", "Config", "Block", "Percent")).orElse(null);

@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.entity;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.entity.Entity;
 import org.core.entity.living.human.AbstractHuman;
@@ -22,7 +22,7 @@ public class EntityNameAdapter implements MessageAdapter<Entity<?>> {
 
     @Override
     public Set<String> examples() {
-        Collection<LivePlayer> collection = CorePlugin.getServer().getOnlinePlayers();
+        Collection<LivePlayer> collection = TranslateCore.getServer().getOnlinePlayers();
         if (collection.isEmpty()) {
             return Collections.singleton("Creeper");
         }

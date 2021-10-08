@@ -1,6 +1,6 @@
 package org.ships.commands.argument.type;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -65,11 +65,11 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
                             + "/"
                             + name
                             + "."
-                            + CorePlugin
+                            + TranslateCore
                             .getPlatform()
                             .getConfigFormat()
                             .getFileType()[0]);
-            file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()).getFile();
+            file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
             if (file.exists()) {
                 if (source instanceof CommandViewer) {
                     ((CommandViewer) source).sendMessagePlain("Custom ShipType " + name + " has already been created");

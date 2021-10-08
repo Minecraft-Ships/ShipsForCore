@@ -1,6 +1,6 @@
 package org.ships.config.messages;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
@@ -32,8 +32,8 @@ public class MessageConfig implements Config.KnownNodes {
     private static final ConfigurationNode.KnownParser.SingleKnown<AText> ALTITUDE_SECOND_LINE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_TEXT, "Sign", "Altitude", "First");
 
     public MessageConfig() {
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
-        this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modifications = false;
         if (!this.file.getString(TOO_MANY).isPresent()) {
             modifications = true;

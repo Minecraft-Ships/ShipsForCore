@@ -1,6 +1,6 @@
 package org.ships.vessel.sign;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
@@ -39,7 +39,7 @@ public class WheelSign implements ShipsSign {
     @Override
     @Deprecated
     public Text getFirstLine() {
-        return CorePlugin.buildText(TextColours.YELLOW + "[Wheel]");
+        return TranslateCore.buildText(TextColours.YELLOW + "[Wheel]");
     }
 
     @Override

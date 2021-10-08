@@ -1,6 +1,6 @@
 package org.ships.vessel.common.assits;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.living.human.player.User;
 import org.core.utils.Else;
 import org.ships.permissions.vessel.CrewPermission;
@@ -52,7 +52,7 @@ public interface CrewStoredVessel extends Vessel {
     default Set<User> getUserCrew(CrewPermission permission) {
         return getCrew(permission)
                 .stream()
-                .map(uuid -> Else.throwOr(Exception.class, () -> CorePlugin.getServer().getOfflineUser(uuid).get(), null))
+                .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(), null))
                 .filter(Objects::nonNull)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -67,7 +67,7 @@ public interface CrewStoredVessel extends Vessel {
     default Set<User> getUserCrew(String permissionId) {
         return getCrew(permissionId)
                 .stream()
-                .map(uuid -> Else.throwOr(Exception.class, () -> CorePlugin.getServer().getOfflineUser(uuid).get(), null))
+                .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(), null))
                 .filter(Objects::nonNull)
                 .map(Optional::get)
                 .collect(Collectors.toSet());

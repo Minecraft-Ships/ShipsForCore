@@ -1,7 +1,7 @@
 package org.ships.config.messages;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
@@ -67,8 +67,8 @@ public class AdventureMessageConfig implements Config.KnownNodes {
         messages.add(ERROR_INVALID_SHIP_NAME);
         messages.add(ERROR_CANNOT_CREATE_ONTOP);
         messages.add(ERROR_SHIPS_SIGN_IS_MOVING);
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
-        this.file = CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat());
+        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         recreateFile();
     }
 

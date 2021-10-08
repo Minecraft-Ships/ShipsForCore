@@ -1,11 +1,11 @@
 package org.ships.vessel.common.types.typical.airship;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.inventory.item.ItemTypes;
 import org.core.inventory.item.type.post.ItemTypes1V13;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -25,11 +25,11 @@ import java.io.File;
 public class AirshipType extends AbstractShipType<Airship> implements CloneableShipType<Airship>, SpecialBlockShipType<Airship>, FuelledShipType<Airship> {
 
     public AirshipType() {
-        this("Airship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Airship." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Airship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Airship." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public AirshipType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR);
+        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR);
     }
 
     public AirshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {

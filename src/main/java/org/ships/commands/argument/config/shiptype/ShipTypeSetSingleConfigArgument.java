@@ -1,6 +1,5 @@
 package org.ships.commands.argument.config.shiptype;
 
-import org.core.CorePlugin;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
@@ -12,7 +11,6 @@ import org.core.config.ConfigurationStream;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleKeyArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleValueArgument;

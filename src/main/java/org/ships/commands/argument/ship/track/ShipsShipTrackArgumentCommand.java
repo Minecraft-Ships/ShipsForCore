@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.track;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -59,13 +59,13 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
         CommandSource source = commandContext.getSource();
         if (!(source instanceof LivePlayer)) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "Player only command"));
+                ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "Player only command"));
             }
             return true;
         }
         LivePlayer player = (LivePlayer) source;
         vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
-        CorePlugin.createSchedulerBuilder()
+        TranslateCore.createSchedulerBuilder()
                 .setDisplayName("ShipsTrack:" + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                 .setDelay(10)
                 .setDelayUnit(TimeUnit.SECONDS)

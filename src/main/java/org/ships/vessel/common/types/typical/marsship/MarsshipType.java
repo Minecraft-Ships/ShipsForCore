@@ -1,9 +1,9 @@
 package org.ships.vessel.common.types.typical.marsship;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -21,11 +21,11 @@ import java.util.Collections;
 public class MarsshipType extends AbstractShipType<Marsship> implements CloneableShipType<Marsship>, SpecialBlockShipType<Marsship> {
 
     public MarsshipType() {
-        this("Marsship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/MarsShip." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Marsship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/MarsShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public MarsshipType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name, CorePlugin.createConfigurationFile(file, CorePlugin.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
+        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
     }
 
     public MarsshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {

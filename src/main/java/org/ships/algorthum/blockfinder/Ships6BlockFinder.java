@@ -1,6 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.schedule.Scheduler;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -75,7 +75,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             }
             collections.add(current);
 
-            Scheduler scheduler = CorePlugin
+            Scheduler scheduler = TranslateCore
                     .createSchedulerBuilder()
                     .setDelay(config.getDefaultFinderStackDelay())
                     .setDelayUnit(config.getDefaultFinderStackDelayUnit())
@@ -84,7 +84,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                             this.process = this.ret;
                             this.ret = new ArrayList<>();
 
-                            CorePlugin.createSchedulerBuilder().
+                            TranslateCore.createSchedulerBuilder().
                                     setDelay(config.getDefaultFinderStackDelay()).
                                     setDelayUnit(config.getDefaultFinderStackDelayUnit()).
                                     setExecutor(this.runnable).
@@ -98,7 +98,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                     .build(ShipsPlugin.getPlugin());
 
             for (List<SyncBlockPosition> list : collections) {
-                scheduler = CorePlugin.createSchedulerBuilder()
+                scheduler = TranslateCore.createSchedulerBuilder()
                         .setDelay(config.getDefaultFinderStackDelay())
                         .setDelayUnit(config.getDefaultFinderStackDelayUnit())
                         .setExecutor(() -> {
@@ -180,7 +180,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch);
-        CorePlugin.createSchedulerBuilder().
+        TranslateCore.createSchedulerBuilder().
                 setDelay(config.getDefaultFinderStackDelay()).
                 setDelayUnit(config.getDefaultFinderStackDelayUnit()).
                 setExecutor(overtime.runnable).

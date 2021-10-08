@@ -1,6 +1,6 @@
 package org.ships.config.blocks;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationFormat;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
@@ -22,9 +22,9 @@ public class DefaultBlockList implements BlockList {
     protected Set<BlockInstruction> blocks = new HashSet<>();
 
     public DefaultBlockList() {
-        ConfigurationFormat format = CorePlugin.getPlatform().getConfigFormat();
+        ConfigurationFormat format = TranslateCore.getPlatform().getConfigFormat();
         File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList." + format.getFileType()[0]);
-        this.file = CorePlugin.createConfigurationFile(file, format);
+        this.file = TranslateCore.createConfigurationFile(file, format);
         if (!this.file.getFile().exists()) {
             recreateFile();
             reloadBlockList();
@@ -44,7 +44,7 @@ public class DefaultBlockList implements BlockList {
     public Collection<BlockInstruction> reloadBlockList() {
         this.file.reload();
         blocks.clear();
-        Collection<BlockType> mBlocks = CorePlugin.getPlatform().getBlockTypes();
+        Collection<BlockType> mBlocks = TranslateCore.getPlatform().getBlockTypes();
         mBlocks.forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(DefaultBlockList.this, bt);
             if (opBlock.isPresent()) {
@@ -81,7 +81,7 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public void recreateFile() {
-        int[] mcVersion = CorePlugin.getPlatform().getMinecraftVersion();
+        int[] mcVersion = TranslateCore.getPlatform().getMinecraftVersion();
         ConfigurationStream.ConfigurationFile file = getFile();
         Set<BlockType> completedBefore = new HashSet<>();
         BlockTypes.OAK_SIGN.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
@@ -160,7 +160,7 @@ public class DefaultBlockList implements BlockList {
         addToConfig(BlockTypes1V13.KELP, BlockInstruction.CollideType.IGNORE, completedBefore);
         addToConfig(BlockTypes1V13.REPEATER, BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes1V13.COMPARATOR, BlockInstruction.CollideType.MATERIAL, completedBefore);
-        CorePlugin.getPlatform().getBlockTypes().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
+        TranslateCore.getPlatform().getBlockTypes().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
         file.save();
     }
 

@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.autopilot;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -65,7 +65,7 @@ public class DeployAutopilotCommand implements ArgumentCommand {
             bfp.setViewer((CommandViewer) commandContext.getSource());
         }
         vessel.setFlightPath(bfp);
-        CorePlugin
+        TranslateCore
                 .createSchedulerBuilder()
                 .setIteration(5)
                 .setIterationUnit(TimeUnit.SECONDS)

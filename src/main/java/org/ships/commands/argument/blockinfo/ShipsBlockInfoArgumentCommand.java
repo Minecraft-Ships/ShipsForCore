@@ -1,7 +1,7 @@
 package org.ships.commands.argument.blockinfo;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
@@ -90,7 +90,7 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
             viewer.sendMessage(AText.ofPlain(" |- Directional"));
         }
         viewer.sendMessage(AText.ofPlain("---[Priority]---"));
-        WorldExtent world = CorePlugin.getServer().getWorlds().iterator().next();
+        WorldExtent world = TranslateCore.getServer().getWorlds().iterator().next();
         BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0), details).getBlockPriority();
         viewer.sendMessage(AText.ofPlain(" |- ID: " + priority.getId()));
         viewer.sendMessage(AText.ofPlain(" |- Value: " + priority.getPriorityNumber()));

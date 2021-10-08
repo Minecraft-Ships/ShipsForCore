@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.block;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
@@ -17,7 +17,7 @@ public class BlockTypeIdAdapter implements MessageAdapter<BlockType> {
 
     @Override
     public Set<String> examples() {
-        return CorePlugin.getPlatform().getBlockTypes().stream().map(Identifiable::getId).collect(Collectors.toSet());
+        return TranslateCore.getPlatform().getBlockTypes().stream().map(Identifiable::getId).collect(Collectors.toSet());
     }
 
     @Override

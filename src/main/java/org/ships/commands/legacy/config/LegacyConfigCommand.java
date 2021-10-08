@@ -1,7 +1,7 @@
 package org.ships.commands.legacy.config;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationNode;
 import org.core.config.parser.StringParser;
 import org.core.entity.living.human.player.LivePlayer;
@@ -53,7 +53,7 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
             }
             if(tag.equalsIgnoreCase("set") && args.length >= 5) {
                 if (source instanceof LivePlayer && !((LivePlayer)source).hasPermission(Permissions.CMD_CONFIG_SET)){
-                    ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
+                    ((LivePlayer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "You do not have permission for that command"));
                     return false;
                 }
                 String remaining = ArrayUtils.toString(" ", t -> t, ArrayUtils.filter(4, args.length, args));
@@ -67,7 +67,7 @@ public class LegacyConfigCommand implements LegacyArgumentCommand {
                 }
             }else if(tag.equalsIgnoreCase("view")){
                 if (source instanceof LivePlayer && !((LivePlayer)source).hasPermission(Permissions.CMD_CONFIG_VIEW)){
-                    ((LivePlayer) source).sendMessage(CorePlugin.buildText(TextColours.RED + "You do not have permission for that command"));
+                    ((LivePlayer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "You do not have permission for that command"));
                     return false;
                 }
                 Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> opNode = config.getNode(args[3]);

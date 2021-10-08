@@ -1,6 +1,6 @@
 package org.ships.movement.autopilot.scheduler;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
@@ -54,7 +54,7 @@ public class FlightPathExecutor implements Runnable {
             }
             MovementContext context = new MovementContext().setMovement(config.getDefaultMovement());
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-                ServerBossBar bar = CorePlugin.createBossBar();
+                ServerBossBar bar = TranslateCore.createBossBar();
                 final ServerBossBar finalBar = bar;
                 vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> finalBar.register((LivePlayer) e));
                 context.setBar(bar);
@@ -69,7 +69,7 @@ public class FlightPathExecutor implements Runnable {
                     if (this.viewer == null && this.vessel instanceof CrewStoredVessel) {
                         CrewStoredVessel vessel = (CrewStoredVessel) this.vessel;
                         vessel.getCrew(CrewPermission.CAPTAIN).forEach(p -> {
-                            LivePlayer player = CorePlugin.getServer().getOnlinePlayers().stream().filter(play -> play.getUniqueId().equals(p)).findAny().get();
+                            LivePlayer player = TranslateCore.getServer().getOnlinePlayers().stream().filter(play -> play.getUniqueId().equals(p)).findAny().get();
                             e.getMovement().sendMessage(player);
                         });
                     } else {

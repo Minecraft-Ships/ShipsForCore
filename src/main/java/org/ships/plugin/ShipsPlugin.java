@@ -1,10 +1,11 @@
 package org.ships.plugin;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.command.CommandRegister;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.CorePlugin;
+import org.core.platform.plugin.details.CorePluginVersion;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.ConsoleSource;
@@ -42,7 +43,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class ShipsPlugin implements Plugin {
+public class ShipsPlugin implements CorePlugin {
 
     public static final double PRERELEASE_VERSION = 13.2;
     public static final String PRERELEASE_TAG = "Beta";
@@ -56,6 +57,7 @@ public abstract class ShipsPlugin implements Plugin {
     private AdventureMessageConfig aMessageConfig;
     private ShipsConfig config;
     private DebugFile debugFile;
+    private Object launcher;
 
     public ShipsPlugin() {
         plugin = this;
@@ -66,25 +68,20 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     @Override
-    public void registerPlugin() {
-
-    }
-
-    @Override
-    public void registerReady() {
+    public void onCoreReady() {
         init();
         LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
-        this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
+        this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew():new ShipsConfig();
         this.messageConfig = new MessageConfig();
         this.aMessageConfig = new AdventureMessageConfig();
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
-        CorePlugin.getEventManager().register(this, new CoreEventListener());
+        TranslateCore.getEventManager().register(this, new CoreEventListener());
         if (this.config.isFallingEnabled()) {
             Scheduler fallScheduler = FallExecutor.createScheduler();
             fallScheduler.run();
         }
-        CorePlugin
+        TranslateCore
                 .createSchedulerBuilder()
                 .setDisplayName("Ships no gravity fix")
                 .setIteration(1)
@@ -95,11 +92,14 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     @Override
-    public void registerCommands(CommandRegister register) {
-        register.register(new ShipsArgumentCommand());
+    public @NotNull Object getPlatformLauncher() {
+        return this.launcher;
     }
 
-    public abstract File getShipsConigFolder();
+    @Override
+    public void onRegisterCommands(CommandRegister register) {
+        register.register(new ShipsArgumentCommand());
+    }
 
     @Deprecated
     public MessageConfig getMessageConfig() {
@@ -111,11 +111,11 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public void loadCustomShipType() {
-        File folder = new File(getShipsConigFolder(), "Configuration/ShipType/Custom");
+        File folder = new File(getConfigFolder(), "Configuration/ShipType/Custom");
         for (CloneableShipType<?> type : getAll(CloneableShipType.class)) {
             File folderType = new File(folder, type.getId().replace(":", ".") + "/");
             File[] files = folderType.listFiles();
-            if (files == null) {
+            if (files==null) {
                 if (!folderType.exists() && !folderType.mkdirs()) {
                     System.err.println("Could not create folder at '" + folderType.getPath() + "'");
                 }
@@ -135,7 +135,7 @@ public abstract class ShipsPlugin implements Plugin {
         getAll(VesselConverter.class).forEach(c -> {
             File folder = c.getFolder();
             File[] files = folder.listFiles();
-            if (files == null) {
+            if (files==null) {
                 return;
             }
             Stream.of(files).filter(f -> !f.isDirectory()).forEach(f -> {
@@ -187,13 +187,13 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     public void getLoadedMessages() {
-        ConsoleSource source = CorePlugin.getConsole();
+        ConsoleSource source = TranslateCore.getConsole();
         source.sendMessage(AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
         displayMessage(BasicBlockFinder.class, "BlockFinders", bf -> "");
         displayMessage(BasicMovement.class, "MovementMethods", bm -> "");
         displayMessage(BlockPriority.class, "BlockPriorities", bp -> bp.getPriorityNumber() + "");
         displayMessage(ShipsSign.class, "Signs", sn -> "");
-        displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + (st.getDisplayName().length() > 7 ? "\t" : "\t\t") + st.getFile().getFile().getPath());
+        displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + (st.getDisplayName().length() > 7 ? "\t":"\t\t") + st.getFile().getFile().getPath());
         source.sendMessage(AText.ofPlain("Vessels: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
         source.sendMessage(AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
     }
@@ -207,12 +207,12 @@ public abstract class ShipsPlugin implements Plugin {
 
     private <I extends Identifiable> void displayMessage(Class<I> class1, String name, Function<I, String> function) {
         Set<I> values = getAll(class1);
-        ConsoleSource source = CorePlugin.getConsole();
+        ConsoleSource source = TranslateCore.getConsole();
         source.sendMessage(AText.ofPlain("Found " + name + ": " + values.size()).withColour(NamedTextColours.AQUA));
         values.forEach(v -> {
             String id = v.getId();
             String text = function.apply(v);
-            AText ret = AText.ofPlain("\t- " + id + (id.length() > 13 ? "\t" : "\t\t") + text).withColour(NamedTextColours.YELLOW);
+            AText ret = AText.ofPlain("\t- " + id + (id.length() > 13 ? "\t":"\t\t") + text).withColour(NamedTextColours.YELLOW);
             source.sendMessage(ret);
         });
     }
@@ -271,17 +271,27 @@ public abstract class ShipsPlugin implements Plugin {
     }
 
     @Override
-    public String getPluginName() {
+    public @NotNull String getPluginName() {
         return "Ships";
     }
 
     @Override
-    public String getPluginId() {
+    public @NotNull String getPluginId() {
         return "ships";
     }
 
     @Override
-    public String getPluginVersion() {
-        return "6.0.0.0";
+    public void onConstruct(@NotNull Object pluginLauncher) {
+        this.launcher = pluginLauncher;
+    }
+
+    @Override
+    public @NotNull CorePluginVersion getPluginVersion() {
+        return new CorePluginVersion(6, 0, 0);
+    }
+
+    @Override
+    public @NotNull String getLicence() {
+        return "All Rights Reserved";
     }
 }

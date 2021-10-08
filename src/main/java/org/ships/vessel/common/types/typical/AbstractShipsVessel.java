@@ -1,6 +1,6 @@
 package org.ships.vessel.common.types.typical;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.ConfigurationStream;
 import org.core.vector.type.Vector3;
@@ -50,7 +50,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     public AbstractShipsVessel(@NotNull LiveSignTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + "." + CorePlugin.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         init(type);
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                         .orElseThrow(() -> new IllegalArgumentException("Could not get name of ship"))
                         .toPlain()
                         + "."
-                        + CorePlugin
+                        + TranslateCore
                         .getPlatform()
                         .getConfigFormat()
                         .getFileType()[0]);
@@ -82,7 +82,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     private void init(ShipType<? extends AbstractShipsVessel> type) {
-        ConfigurationStream.ConfigurationFile configuration = CorePlugin.createConfigurationFile(this.file, CorePlugin.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile configuration = TranslateCore.createConfigurationFile(this.file, TranslateCore.getPlatform().getConfigFormat());
         this.file = configuration.getFile();
         this.type = type;
         this.maxSpeed = this.type.getDefaultMaxSpeed();
@@ -260,7 +260,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public void setStructure(@NotNull PositionableShipsStructure pss) {
-        if (CorePlugin.getPlatform().callEvent(new VesselStructureUpdate(pss, this)).isCancelled()) {
+        if (TranslateCore.getPlatform().callEvent(new VesselStructureUpdate(pss, this)).isCancelled()) {
             return;
         }
         this.positionableShipsStructure = pss;

@@ -1,6 +1,6 @@
 package org.ships.commands.argument.fix;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -47,7 +47,7 @@ public class NoGravityArgumentCommand implements ArgumentCommand {
         }
         LivePlayer player = (LivePlayer) source;
         player.setGravity(true);
-        player.sendMessage(CorePlugin.buildText(TextColours.AQUA + "Other plugins maybe disrupted by this fix"));
+        player.sendMessage(TranslateCore.buildText(TextColours.AQUA + "Other plugins maybe disrupted by this fix"));
         return true;
     }
 }

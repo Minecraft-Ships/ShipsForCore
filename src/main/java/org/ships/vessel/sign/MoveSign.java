@@ -1,6 +1,6 @@
 package org.ships.vessel.sign;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
@@ -56,7 +56,7 @@ public class MoveSign implements ShipsSign {
     @Override
     @Deprecated
     public Text getFirstLine() {
-        return CorePlugin.buildText(TextColours.YELLOW + "[Move]");
+        return TranslateCore.buildText(TextColours.YELLOW + "[Move]");
     }
 
     @Override
@@ -87,11 +87,11 @@ public class MoveSign implements ShipsSign {
             ShipsSign.LOCKED_SIGNS.remove(position);
         }, (pss) -> {
 
-            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Could not find [Ships] sign"));
+            player.sendMessage(TranslateCore.buildText(TextColours.RED + "Could not find [Ships] sign"));
             ShipsSign.LOCKED_SIGNS.remove(position);
             Collection<SyncBlockPosition> positions = pss.getPositions();
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-            CorePlugin
+            TranslateCore
                     .createSchedulerBuilder()
                     .setDelay(5)
                     .setDelayUnit(TimeUnit.SECONDS)
@@ -144,25 +144,25 @@ public class MoveSign implements ShipsSign {
         }
         int max = ship.getMaxSpeed();
         if (finalSpeed > max && originalSpeed < finalSpeed) {
-            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Speed error: Your speed cannot go higher"));
+            player.sendMessage(TranslateCore.buildText(TextColours.RED + "Speed error: Your speed cannot go higher"));
         } else if (finalSpeed < -max && originalSpeed > finalSpeed) {
-            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Speed error: Your speed cannot go lower"));
+            player.sendMessage(TranslateCore.buildText(TextColours.RED + "Speed error: Your speed cannot go lower"));
         } else {
-            lste.setLine(3, CorePlugin.buildText("" + finalSpeed));
+            lste.setLine(3, TranslateCore.buildText("" + finalSpeed));
         }
     }
 
     private void onVesselMove(LivePlayer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel, Consumer<Throwable> throwableConsumer) {
         if (speed > vessel.getMaxSpeed() || speed < -vessel.getMaxSpeed()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
-            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Speed error: Your ship cannot move that fast"));
+            player.sendMessage(TranslateCore.buildText(TextColours.RED + "Speed error: Your ship cannot move that fast"));
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             return;
         }
         Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
         if (!opDirectional.isPresent()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
-            player.sendMessage(CorePlugin.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
+            player.sendMessage(TranslateCore.buildText(TextColours.RED + "Unknown error: " + position.getBlockType().getId() + " is not directional"));
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             return;
         }

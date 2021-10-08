@@ -1,6 +1,6 @@
 package org.ships.config.blocks;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.world.position.block.BlockType;
 
@@ -45,7 +45,7 @@ public class ExpandedBlockList implements BlockList {
         this.originalBlocks.clear();
         this.fullBlocks.clear();
         Set<BlockInstruction> bins = new HashSet<>();
-        Collection<BlockType> blocks = CorePlugin.getPlatform().getBlockTypes();
+        Collection<BlockType> blocks = TranslateCore.getPlatform().getBlockTypes();
         blocks.forEach(bt -> {
             Optional<BlockInstruction> opBlock = BlockList.getBlockInstruction(ExpandedBlockList.this, bt);
             if (opBlock.isPresent()) {

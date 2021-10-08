@@ -1,6 +1,6 @@
 package org.ships.commands.argument.config;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -64,7 +64,7 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>> node = commandContext.getArgument(this, CONFIG_KEY);
         String value = readUnknownNode(node);
-        viewer.sendMessage(CorePlugin.buildText(TextColours.AQUA + "\"" + node.getKeyName() + "\": " + TextColours.RESET + value));
+        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "\"" + node.getKeyName() + "\": " + TextColours.RESET + value));
         return true;
     }
 

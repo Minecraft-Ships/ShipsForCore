@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.crew;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
@@ -81,7 +81,7 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
             vessel
                     .getCrew(crewPermission)
                     .stream()
-                    .map(uuid -> Else.throwOr(Exception.class, () -> CorePlugin
+                    .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore
                             .getServer()
                             .getOfflineUser(uuid).get(), Optional.<User>empty()))
 

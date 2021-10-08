@@ -1,7 +1,7 @@
 package org.ships.movement.result;
 
 import org.array.utils.ArrayUtils;
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.parser.Parser;
 import org.core.entity.living.human.player.LivePlayer;
@@ -200,7 +200,7 @@ public interface MovementResult<E> {
 
             LivePlayer player = (LivePlayer) viewer;
 
-            Scheduler scheduler = CorePlugin
+            Scheduler scheduler = TranslateCore
                     .createSchedulerBuilder()
                     .setDisplayName("init display collide")
                     .setExecutor(() -> {
@@ -214,7 +214,7 @@ public interface MovementResult<E> {
             boolean toBedrock = false;
             for (int A = 0; A < 5; A++) {
                 final boolean finalToBedrock = toBedrock;
-                scheduler = CorePlugin.createSchedulerBuilder()
+                scheduler = TranslateCore.createSchedulerBuilder()
                         .setToRunAfter(scheduler)
                         .setDelay(6)
                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)

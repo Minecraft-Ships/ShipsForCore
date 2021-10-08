@@ -1,6 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
-import org.core.CorePlugin;
+import org.core.TranslateCore;
 import org.core.schedule.unit.TimeUnit;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -77,7 +77,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
-        CorePlugin
+        TranslateCore
                 .createSchedulerBuilder()
                 .setAsync(true)
                 .setDelay(0)
@@ -85,7 +85,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
                 .setDisplayName("async5blockfinder")
                 .setExecutor(() -> {
                     PositionableShipsStructure positions = getConnectedBlocks(position);
-                    CorePlugin
+                    TranslateCore
                             .createSchedulerBuilder()
                             .setDelay(0)
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)

@@ -4,7 +4,7 @@ import org.core.command.ArgumentLauncher;
 import org.core.command.CommandLauncher;
 import org.core.command.argument.ArgumentCommand;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.platform.Plugin;
+import org.core.platform.plugin.Plugin;
 import org.core.source.command.CommandSource;
 import org.core.utils.Singleton;
 import org.ships.commands.argument.blockinfo.ShipsBlockInfoArgumentCommand;
