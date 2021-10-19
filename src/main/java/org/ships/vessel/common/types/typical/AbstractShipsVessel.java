@@ -50,14 +50,14 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     public AbstractShipsVessel(@NotNull LiveSignTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
-        this.file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         init(type);
     }
 
     public AbstractShipsVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition position, @NotNull ShipType<? extends AbstractShipsVessel> type) {
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
         this.file = new File(
-                ShipsPlugin.getPlugin().getShipsConigFolder(),
+                ShipsPlugin.getPlugin().getConfigFolder(),
                 "VesselData/" + ShipsPlugin
                         .getPlugin()
                         .getAll(ShipType.class)
@@ -290,12 +290,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public Optional<Integer> getMaxSize() {
-        return (this.maxSize == null) ? this.getType().getDefaultMaxSize() : Optional.of(this.maxSize);
+        return (this.maxSize==null) ? this.getType().getDefaultMaxSize():Optional.of(this.maxSize);
     }
 
     @Override
     public int getMinSize() {
-        return (this.minSize == null) ? this.getType().getDefaultMinSize() : this.minSize;
+        return (this.minSize==null) ? this.getType().getDefaultMinSize():this.minSize;
     }
 
     @Override

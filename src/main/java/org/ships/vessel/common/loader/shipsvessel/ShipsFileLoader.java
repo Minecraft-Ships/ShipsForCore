@@ -114,7 +114,7 @@ public class ShipsFileLoader implements ShipsLoader {
         vessel.getCrew().forEach((key, value) -> {
             List<String> list = uuidList.get(value);
             boolean override = false;
-            if (list == null) {
+            if (list==null) {
                 override = true;
                 list = new ArrayList<>();
             }
@@ -246,7 +246,7 @@ public class ShipsFileLoader implements ShipsLoader {
     }
 
     public static File getVesselDataFolder() {
-        return new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData");
+        return new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData");
     }
 
     public static Set<ShipsVessel> loadAll(Consumer<LoadVesselException> function) {
@@ -257,13 +257,13 @@ public class ShipsFileLoader implements ShipsLoader {
                 File vesselDataFolder = getVesselDataFolder();
                 File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
                 File[] files = typeFolder.listFiles();
-                if (files == null) {
+                if (files==null) {
                     return;
                 }
                 for (File file : files) {
                     try {
                         ShipsVessel vessel = new ShipsFileLoader(file).load();
-                        if (vessel == null) {
+                        if (vessel==null) {
                             continue;
                         }
                         set.add(vessel);

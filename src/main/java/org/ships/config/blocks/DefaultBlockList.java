@@ -4,6 +4,7 @@ import org.core.TranslateCore;
 import org.core.config.ConfigurationFormat;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
+import org.core.platform.plugin.details.CorePluginVersion;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.blocktypes.post.BlockTypes1V13;
@@ -23,7 +24,7 @@ public class DefaultBlockList implements BlockList {
 
     public DefaultBlockList() {
         ConfigurationFormat format = TranslateCore.getPlatform().getConfigFormat();
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/BlockList." + format.getFileType()[0]);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "/Configuration/BlockList." + format.getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, format);
         if (!this.file.getFile().exists()) {
             recreateFile();
@@ -81,7 +82,7 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public void recreateFile() {
-        int[] mcVersion = TranslateCore.getPlatform().getMinecraftVersion();
+        CorePluginVersion mcVersion = TranslateCore.getPlatform().getMinecraftVersion();
         ConfigurationStream.ConfigurationFile file = getFile();
         Set<BlockType> completedBefore = new HashSet<>();
         BlockTypes.OAK_SIGN.getLike().forEach(w -> addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));

@@ -32,7 +32,7 @@ public class MessageConfig implements Config.KnownNodes {
     private static final ConfigurationNode.KnownParser.SingleKnown<AText> ALTITUDE_SECOND_LINE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_TEXT, "Sign", "Altitude", "First");
 
     public MessageConfig() {
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modifications = false;
         if (!this.file.getString(TOO_MANY).isPresent()) {

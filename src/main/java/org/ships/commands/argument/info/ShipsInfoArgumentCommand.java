@@ -51,7 +51,7 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
         CommandViewer viewer = (CommandViewer) source;
         Set<ShipType> shipTypes = ShipsPlugin.getPlugin().getAll(ShipType.class);
         viewer.sendMessage(AText.ofPlain("----[Ships]----").withColour(NamedTextColours.YELLOW));
-        viewer.sendMessage(AText.ofPlain("Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.getPlugin().getPluginVersion()).withColour(NamedTextColours.GOLD)));
+        viewer.sendMessage(AText.ofPlain("Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.getPlugin().getPluginVersion().asString()).withColour(NamedTextColours.GOLD)));
         viewer.sendMessage(AText.ofPlain(ShipsPlugin.PRERELEASE_TAG + " Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.PRERELEASE_VERSION + "").withColour(NamedTextColours.GOLD)));
         viewer.sendMessage(AText.ofPlain("Vessel Types: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(shipTypes.size() + "").withColour(NamedTextColours.GOLD)));
         if (commandContext.getArgument(this, SHIP_TYPE_ARGUMENT) != null) {

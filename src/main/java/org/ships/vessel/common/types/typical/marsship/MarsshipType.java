@@ -21,7 +21,7 @@ import java.util.Collections;
 public class MarsshipType extends AbstractShipType<Marsship> implements CloneableShipType<Marsship>, SpecialBlockShipType<Marsship> {
 
     public MarsshipType() {
-        this("Marsship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/MarsShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Marsship", new File(ShipsPlugin.getPlugin().getConfigFolder(), "/Configuration/ShipType/MarsShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public MarsshipType(String name, File file) {

@@ -25,7 +25,7 @@ import java.io.File;
 public class AirshipType extends AbstractShipType<Airship> implements CloneableShipType<Airship>, SpecialBlockShipType<Airship>, FuelledShipType<Airship> {
 
     public AirshipType() {
-        this("Airship", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Airship." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Airship", new File(ShipsPlugin.getPlugin().getConfigFolder(), "/Configuration/ShipType/Airship." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public AirshipType(String name, File file) {

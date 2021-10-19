@@ -26,7 +26,7 @@ import java.util.UUID;
 public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
     @Override
     public File getFolder() {
-        return new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "VesselData");
+        return new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData");
     }
 
     @Override
@@ -56,17 +56,17 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
         switch (type) {
             case "Airship":
                 vessel = ShipType.AIRSHIP.createNewVessel(lste);
-                if (consumption != null) {
+                if (consumption!=null) {
                     ((Airship) vessel).setFuelConsumption(consumption);
                 }
-                if (percent != null) {
+                if (percent!=null) {
                     ((Airship) vessel).setSpecialBlockPercent(percent.floatValue());
                 }
                 break;
             default:
                 throw new IOException("Unknown ships 5 type of " + type);
         }
-        if (vessel != null) {
+        if (vessel!=null) {
             vessel.setTeleportPosition(teleportPosition);
             vessel.setMaxSpeed(engineSpeed);
             vessel.getCrew().put(owner, CrewPermission.CAPTAIN);

@@ -57,7 +57,7 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
         names.forEach(name -> {
             File file = new File(ShipsPlugin
                     .getPlugin()
-                    .getShipsConigFolder(),
+                    .getConfigFolder(),
                     "Configuration/ShipType/Custom/"
                             + type
                             .getId()

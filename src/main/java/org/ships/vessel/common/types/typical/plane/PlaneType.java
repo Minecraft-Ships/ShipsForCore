@@ -19,7 +19,7 @@ import java.util.Collections;
 public class PlaneType extends AbstractShipType<Plane> implements FuelledShipType<Plane> {
 
     public PlaneType() {
-        this("Plane", new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "/Configuration/ShipType/Plane." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+        this("Plane", new File(ShipsPlugin.getPlugin().getConfigFolder(), "/Configuration/ShipType/Plane." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public PlaneType(String name, File file) {

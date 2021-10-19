@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     try {
-        api project(":ShipsCore")
+        api project(":TranslateCore")
     } catch (UnknownProjectException e) {
         System.out.println("Could not find subModule of ShipsCore, using jit instead")
         api 'com.github.Minecraft-Ships:ShipsCore:master-SNAPSHOT'

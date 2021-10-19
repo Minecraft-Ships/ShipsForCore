@@ -59,7 +59,7 @@ public class ShipsConfig implements Config.KnownNodes {
     public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
 
     public ShipsConfig() {
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Config." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modified = false;
         if (!this.file.getFile().exists()) {
@@ -232,7 +232,7 @@ public class ShipsConfig implements Config.KnownNodes {
     public void recreateFile() {
         File file = this.getFile().getFile();
         boolean exist = file.exists();
-        if(!file.delete() && exist){
+        if (!file.delete() && exist) {
             throw new IllegalStateException("Failed to create the config. Something went wrong");
         }
         Optional<ConfigurationStream.ConfigurationFile> opConfig = ShipsPlugin.getPlugin().createConfig("Config.yml", file);

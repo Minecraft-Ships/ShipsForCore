@@ -24,7 +24,7 @@ public class LegacyShipsConfig implements Config {
     public final ConfigurationNode.KnownParser.SingleKnown<Boolean> LEGACY_INVENTORY_KEEP_INVENTORY_OPEN = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Signs", "keepInventorysOpen");
 
     public LegacyShipsConfig() {
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Config.yml");
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Config.yml");
         this.configuration = TranslateCore.createConfigurationFile(file, ConfigurationFormat.FORMAT_YAML);
     }
 
@@ -38,24 +38,24 @@ public class LegacyShipsConfig implements Config {
 
     }
 
-    public boolean isLegacy(){
+    public boolean isLegacy() {
         return getFile().getInteger(this.LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT).isPresent();
     }
 
-    public ShipsConfig convertToNew(){
+    public ShipsConfig convertToNew() {
         Optional<Boolean> opForceUsername = getFile().getBoolean(LEGACY_SIGN_FORCE_USER_NAME_ON_SIGN);
         Optional<Integer> opEOTRepeat = getFile().getInteger(LEGACY_SIGN_EOT_REPEAT);
         Optional<Boolean> opEOTEnabled = getFile().getBoolean(LEGACY_SIGN_EOT_ENABLED);
         Optional<Integer> opTrack = getFile().getInteger(LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT);
         this.configuration.getFile().delete();
         ShipsConfig config = new ShipsConfig();
-        opForceUsername.ifPresent(b -> config.file.set(config.LICENCE_SIGN_TEXT_4TH.getNode(), Parser.STRING_TO_STRING_PARSER, b ? "%PlayerN%" : ""));
+        opForceUsername.ifPresent(b -> config.file.set(config.LICENCE_SIGN_TEXT_4TH.getNode(), Parser.STRING_TO_STRING_PARSER, b ? "%PlayerN%":""));
         opEOTRepeat.ifPresent(t -> {
             config.file.set(config.EOT_DELAY.getNode(), t);
             config.file.set(config.EOT_DELAY_UNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
         });
         opEOTEnabled.ifPresent(b -> {
-            if(b){
+            if (b) {
                 config.file.set(config.EOT_SPEED.getNode(), 0);
             }
         });

@@ -67,7 +67,7 @@ public class AdventureMessageConfig implements Config.KnownNodes {
         messages.add(ERROR_INVALID_SHIP_NAME);
         messages.add(ERROR_CANNOT_CREATE_ONTOP);
         messages.add(ERROR_SHIPS_SIGN_IS_MOVING);
-        File file = new File(ShipsPlugin.getPlugin().getShipsConigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         recreateFile();
     }
