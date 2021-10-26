@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 13.2;
+    public static final double PRERELEASE_VERSION = 14.0;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
@@ -87,7 +87,8 @@ public class ShipsPlugin implements CorePlugin {
                 .setIteration(1)
                 .setIterationUnit(TimeUnit.SECONDS)
                 .setExecutor(AutoRunPatches.NO_GRAVITY_FIX)
-                .build(this);
+                .build(this)
+                .run();
         init2();
     }
 
@@ -99,6 +100,19 @@ public class ShipsPlugin implements CorePlugin {
     @Override
     public void onRegisterCommands(CommandRegister register) {
         register.register(new ShipsArgumentCommand());
+    }
+
+    @Override
+    public void onCoreFinishedInit() {
+        this.loadCustomShipType();
+        this.loadVesselTypeFlagData();
+        this.loadVessels();
+        this.getLoadedMessages();
+
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        if (config.isUpdateEnabled()) {
+            System.err.println("Updating has been disabled");
+        }
     }
 
     @Deprecated
