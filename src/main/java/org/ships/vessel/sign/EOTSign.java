@@ -82,7 +82,7 @@ public class EOTSign implements ShipsSign {
         }
         LiveSignTileEntity stes = (LiveSignTileEntity) lte;
         new ShipsUpdateBlockLoader(position).loadOvertime(vessel -> {
-            if (stes.getTextAt(1).isPresent() && stes.getTextAt(1).get().contains(AText.ofPlain("{"))) {
+            if (stes.getTextAt(1).isPresent() && stes.getTextAt(1).get().toPlain().contains("{")) {
                 stes.setText(SIGN);
                 this.eot_scheduler.stream().filter(e -> {
                     Runnable runnable = e.getExecutor();
