@@ -34,22 +34,24 @@ import java.util.function.Consumer;
 
 public class MoveSign implements ShipsSign {
 
-    public final List<AText> SIGN = Arrays.asList(
-            AText.ofPlain("[Move]").withColour(NamedTextColours.YELLOW),
-            AText.ofPlain(""),
-            AText.ofPlain("Speed"),
-            AText.ofPlain(1 + "")
-    );
+    public List<AText> getSignText() {
+        return Arrays.asList(
+                AText.ofPlain("[Move]").withColour(NamedTextColours.YELLOW),
+                AText.ofPlain(""),
+                AText.ofPlain("Speed"),
+                AText.ofPlain(ShipsPlugin.getPlugin().getConfig().getDefaultMoveSpeed() + "")
+        );
+    }
 
     @Override
     public boolean isSign(List<AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(getSignText().get(0));
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(SIGN);
+        stes.setText(getSignText());
         return stes;
     }
 
@@ -71,7 +73,7 @@ public class MoveSign implements ShipsSign {
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) lte;
         String name = lste.getTextAt(3).get().toPlain();
-        if (name.length() == 0) {
+        if (name.length()==0) {
             name = "1";
         }
         int speed = Integer.parseInt(name);
