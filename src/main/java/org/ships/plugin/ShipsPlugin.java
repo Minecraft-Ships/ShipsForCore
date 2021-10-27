@@ -98,7 +98,7 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     @Override
-    public void onRegisterCommands(CommandRegister register) {
+    public void onRegisterCommands(@NotNull CommandRegister register) {
         register.register(new ShipsArgumentCommand());
     }
 
