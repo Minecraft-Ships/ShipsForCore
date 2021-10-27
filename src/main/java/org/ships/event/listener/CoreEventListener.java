@@ -208,6 +208,10 @@ public class CoreEventListener implements EventListener {
             return;
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
+        BlockInstruction.CollideType collideType = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(position.getBlockType()).getCollideType();
+        if (collideType!=BlockInstruction.CollideType.MATERIAL) {
+            return;
+        }
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
             if (ShipsSign.LOCKED_SIGNS.stream().anyMatch(b -> b.equals(position))) {
                 LivePlayer player = event.getEntity();
@@ -228,12 +232,15 @@ public class CoreEventListener implements EventListener {
         if (config.getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())) {
             return;
         }
+        BlockInstruction.CollideType collideType = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(event.getPosition().getBlockType()).getCollideType();
+        if (collideType!=BlockInstruction.CollideType.MATERIAL) {
+            return;
+        }
         boolean register = false;
         Optional<AText> opFirstLine = event.getFrom().getTextAt(0);
         if (!opFirstLine.isPresent()) {
             return;
         }
-        AText line = opFirstLine.get();
         ShipsSign sign = ShipsPlugin
                 .getPlugin()
                 .getAll(ShipsSign.class)

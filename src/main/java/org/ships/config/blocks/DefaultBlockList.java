@@ -161,6 +161,11 @@ public class DefaultBlockList implements BlockList {
         addToConfig(BlockTypes1V13.KELP, BlockInstruction.CollideType.IGNORE, completedBefore);
         addToConfig(BlockTypes1V13.REPEATER, BlockInstruction.CollideType.MATERIAL, completedBefore);
         addToConfig(BlockTypes1V13.COMPARATOR, BlockInstruction.CollideType.MATERIAL, completedBefore);
+        addToConfig(BlockTypes.CAVE_AIR, BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes.TALL_GRASS, BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes.TALL_SEAGRASS, BlockInstruction.CollideType.IGNORE, completedBefore);
+        addToConfig(BlockTypes.SEAGRASS, BlockInstruction.CollideType.IGNORE, completedBefore);
+
         TranslateCore.getPlatform().getBlockTypes().forEach(bt -> addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
         file.save();
     }
