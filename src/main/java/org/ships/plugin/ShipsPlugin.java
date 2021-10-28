@@ -297,6 +297,10 @@ public class ShipsPlugin implements CorePlugin {
     @Override
     public void onConstruct(@NotNull Object pluginLauncher) {
         this.launcher = pluginLauncher;
+        File file = new File(this.getConfigFolder().getParentFile(), "Ships");
+        if (file.exists()) {
+            file.renameTo(this.getConfigFolder());
+        }
     }
 
     @Override
