@@ -1,6 +1,5 @@
 package org.ships.commands.argument.help;
 
-import org.array.utils.ArrayUtils;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
@@ -14,9 +13,7 @@ import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.ShipsArgumentCommand;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ShipsHelpArgumentCommand implements ArgumentCommand {
 
@@ -49,12 +46,52 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) source;
+        SortedSet<ArgumentCommand> commands = new TreeSet<>((o1, o2) -> {
+            List<CommandArgument<?>> a1 = o1.getArguments();
+            List<CommandArgument<?>> a2 = o2.getArguments();
+            if (a1.size()==0 && a2.size()==0) {
+                return 0;
+            }
+            if (a1.size()==0) {
+                return 1;
+            }
+            if (a2.size()==0) {
+                return -1;
+            }
+            CommandArgument<?> arg1 = a1.get(0);
+            CommandArgument<?> arg2 = a2.get(0);
+            return arg1.getUsage().compareTo(arg2.getUsage());
+        });
         for (ArgumentCommand cmd : ShipsArgumentCommand.COMMANDS) {
             if (!cmd.hasPermission(viewer)) {
                 continue;
             }
+            List<CommandArgument<?>> arguments = cmd.getArguments();
+            if (arguments.size()==0) {
+                commands.add(cmd);
+                continue;
+            }
+            String usage = arguments.get(0).getUsage();
+            boolean result = commands.parallelStream().anyMatch(argCmd -> {
+                List<CommandArgument<?>> commandArgs = argCmd.getArguments();
+                if (commandArgs.size()==0) {
+                    return false;
+                }
+                return usage.equals(commandArgs.get(0).getUsage());
+            });
+            if (result) {
+                continue;
+            }
+            commands.add(cmd);
+        }
+        for (ArgumentCommand cmd : commands) {
+            List<CommandArgument<?>> arguments = cmd.getArguments();
+            if (arguments.size()==0) {
+                viewer.sendMessage(AText.ofPlain(cmd.getDescription()).withColour(NamedTextColours.YELLOW));
+                continue;
+            }
             viewer.sendMessage(
-                    AText.ofPlain(ArrayUtils.toString(" ", CommandArgument::getUsage, cmd.getArguments()) + ":")
+                    AText.ofPlain(arguments.get(0).getUsage() + ":")
                             .withColour(NamedTextColours.AQUA)
                             .append(
                                     AText
