@@ -5,8 +5,6 @@ import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
-import org.core.text.Text;
-import org.core.text.TextColours;
 import org.core.utils.Else;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class EOTSign implements ShipsSign {
 
-    private final Set<Scheduler> eot_scheduler = new HashSet<>();
+    private final Collection<Scheduler> eot_scheduler = new HashSet<>();
 
     private final List<AText> SIGN = Arrays.asList(
             AText.ofPlain("[EOT]").withColour(NamedTextColours.YELLOW),
@@ -48,21 +46,15 @@ public class EOTSign implements ShipsSign {
     }
 
     @Override
-    public boolean isSign(List<AText> lines) {
+    public boolean isSign(List<? extends AText> lines) {
         return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(SIGN);
+        stes.setText(this.SIGN);
         return stes;
-    }
-
-    @Override
-    @Deprecated
-    public Text getFirstLine() {
-        return TranslateCore.buildText(TextColours.YELLOW + "[EOT]");
     }
 
     @Override
@@ -80,10 +72,10 @@ public class EOTSign implements ShipsSign {
         if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
-        LiveSignTileEntity stes = (LiveSignTileEntity) lte;
+        SignTileEntity stes = (SignTileEntity) lte;
         new ShipsUpdateBlockLoader(position).loadOvertime(vessel -> {
             if (stes.getTextAt(1).isPresent() && stes.getTextAt(1).get().toPlain().contains("{")) {
-                stes.setText(SIGN);
+                stes.setText(this.SIGN);
                 this.eot_scheduler.stream().filter(e -> {
                     Runnable runnable = e.getExecutor();
                     if (!(runnable instanceof EOTExecutor)) {

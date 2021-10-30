@@ -1,6 +1,7 @@
 package org.ships.commands.argument.ship.moveto;
 
 import org.core.TranslateCore;
+import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -48,21 +49,24 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
-                new ExactArgument(SHIP_ARGUMENT),
-                new ShipIdArgument<>(SHIP_ID_ARGUMENT),
-                new ExactArgument(SHIP_MOVE_TO_ARGUMENT),
-                new ExactArgument(SHIP_EXACT_ARGUMENT),
-                new Vector3IntegerArgument(SHIP_VECTOR_ARGUMENT, createSuggestion(p -> p.getX().intValue()), createSuggestion(p -> p.getY().intValue()), createSuggestion(p -> p.getZ().intValue()))
+                new ExactArgument(this.SHIP_ARGUMENT),
+                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
+                new ExactArgument(this.SHIP_EXACT_ARGUMENT),
+                new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT, this.createSuggestion(p -> p.getX().intValue()),
+                        this.createSuggestion(p -> p.getY().intValue()),
+                        this.createSuggestion(p -> p.getZ().intValue()))
         );
     }
 
-    private SuggestionArgument<Integer> createSuggestion(Function<Position<? extends Number>, Integer> function) {
-        return new SuggestionArgument<Integer>(new IntegerArgument(SHIP_VECTOR_ARGUMENT)) {
+    private SuggestionArgument<Integer> createSuggestion(Function<? super Position<? extends Number>, Integer> function) {
+        return new SuggestionArgument<Integer>(new IntegerArgument(this.SHIP_VECTOR_ARGUMENT)) {
             @Override
             public List<String> suggest(CommandContext commandContext, CommandArgumentContext<Integer> argument) {
                 if (commandContext.getSource() instanceof Positionable) {
                     Positionable<? extends Number> source = (Positionable<? extends Number>) commandContext.getSource();
-                    return Collections.singletonList("" + function.apply(source.getPosition()));
+                    Position<?> pos = source.getPosition();
+                    return Collections.singletonList("" + function.apply(pos));
                 }
                 return Collections.emptyList();
             }
@@ -95,7 +99,7 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
             if (commandContext.getSource() instanceof LivePlayer) {
                 bar.register((LivePlayer) commandContext.getSource());
             }
-            bar.setMessage(TranslateCore.buildText("0 / " + trackLimit));
+            bar.setTitle(AText.ofPlain("0 / " + trackLimit));
             context.setBar(bar);
         }
 

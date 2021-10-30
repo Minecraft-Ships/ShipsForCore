@@ -1,6 +1,7 @@
 package org.ships.commands.argument.config;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -9,7 +10,6 @@ import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.ships.commands.argument.arguments.config.ConfigKeyArgument;
 import org.ships.commands.argument.arguments.config.ConfigKeyValueArgument;
 import org.ships.config.Config;
@@ -29,11 +29,11 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
     private static final String CONFIG_KEY = "config_key";
     private static final String CONFIG_VALUE = "config_value";
 
-    private final Supplier<Config.KnownNodes> config;
+    private final Supplier<? extends Config.KnownNodes> config;
     private final String[] configNames;
 
-    public AbstractShipsConfigSetArgument(Supplier<Config.KnownNodes> config, String... configNames) {
-        if (configNames.length == 0) {
+    public AbstractShipsConfigSetArgument(Supplier<? extends Config.KnownNodes> config, String... configNames) {
+        if (configNames.length==0) {
             throw new IllegalArgumentException("configNames must have at least one value");
         }
         this.config = config;
@@ -69,10 +69,10 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
         DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<String, ?>> node = context.getArgument(this, CONFIG_KEY);
         Object argument = context.getArgument(this, CONFIG_VALUE);
         try {
-            setNode(context);
-            viewer.sendMessage(TranslateCore.buildText("Set " + TextColours.AQUA + "\"" + node.getKeyName() + "\"" + TextColours.RESET + " as \"" + argument + "\""));
+            this.setNode(context);
+            viewer.sendMessage(AText.ofPlain("Set ").append(AText.ofPlain(node.getKeyName()).withColour(NamedTextColours.AQUA)).append(AText.ofPlain(" as \"" + argument + "\"")));
         } catch (IOException e) {
-            viewer.sendMessage(TranslateCore.buildText("Failed to set value: " + e.getMessage()));
+            viewer.sendMessage(AText.ofPlain("Failed to set value: " + e.getMessage()));
         }
         return true;
     }

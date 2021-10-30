@@ -1,6 +1,7 @@
 package org.ships.commands.argument.type;
 
 import org.core.TranslateCore;
+import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -72,7 +73,8 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
             file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
             if (file.exists()) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessagePlain("Custom ShipType " + name + " has already been created");
+                    ((CommandViewer) source).sendMessage(AText.ofPlain("Custom ShipType " + name + " has already been " +
+                            "created"));
                 }
                 return;
             }
@@ -81,14 +83,14 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
                 Files.copy(type.getFile().getFile().toPath(), file.toPath());
             } catch (IOException e) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessagePlain(name + " failed to created file. " + e.getMessage());
+                    ((CommandViewer) source).sendMessage(AText.ofPlain(name + " failed to created file. " + e.getMessage()));
                 }
                 e.printStackTrace();
             }
             CloneableShipType<?> newType = type.cloneWithName(file, name);
             ShipsPlugin.getPlugin().register(newType);
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessagePlain(name + " created. ");
+                ((CommandViewer) source).sendMessage(AText.ofPlain(name + " created. "));
             }
         });
 

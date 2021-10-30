@@ -7,13 +7,12 @@ import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.details.data.DirectionalData;
-import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.event.vessel.VesselStructureUpdate;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.permissions.vessel.CrewPermission;
@@ -48,17 +47,19 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected boolean isLoading = true;
     protected String cachedName;
 
-    public AbstractShipsVessel(@NotNull LiveSignTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
+    public AbstractShipsVessel(@NotNull LiveTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
-        this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData/" + getType().getId().replaceAll(":", ".") + "/" + getName() + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
-        init(type);
+        this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                "VesselData" + File.pathSeparatorChar + this.getType().getId().replaceAll(":", ".") + File.pathSeparatorChar + this.getName() +
+                        "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        this.init(type);
     }
 
     public AbstractShipsVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition position, @NotNull ShipType<? extends AbstractShipsVessel> type) {
         this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
         this.file = new File(
                 ShipsPlugin.getPlugin().getConfigFolder(),
-                "VesselData/" + ShipsPlugin
+                "VesselData" + File.pathSeparatorChar + ShipsPlugin
                         .getPlugin()
                         .getAll(ShipType.class)
                         .stream()
@@ -69,7 +70,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                         .orElseThrow(() -> new IllegalStateException("Could not find the shiptype"))
                         .getId()
                         .replaceAll(":", ".")
-                        + "/"
+                        + File.pathSeparatorChar
                         + ste.getTextAt(2)
                         .orElseThrow(() -> new IllegalArgumentException("Could not get name of ship"))
                         .toPlain()
@@ -78,7 +79,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                         .getPlatform()
                         .getConfigFormat()
                         .getFileType()[0]);
-        init(type);
+        this.init(type);
     }
 
     private void init(ShipType<? extends AbstractShipsVessel> type) {
@@ -91,8 +92,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public @NotNull String getName() throws NoLicencePresent {
-        this.cachedName = getSign().getTextAt(2).map(AText::toPlain).orElseThrow(() -> new IllegalStateException("Could not find name of ship"));
-        return cachedName;
+        this.cachedName = this
+                .getSign()
+                .getTextAt(2)
+                .map(AText::toPlain)
+                .orElseThrow(() -> new IllegalStateException("Could not find name of ship"));
+        return this.cachedName;
     }
 
     @Override
@@ -117,7 +122,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public <T extends VesselFlag<?>> @NotNull Optional<T> get(@NotNull Class<T> clazz) {
-        return getFlags().stream().filter(clazz::isInstance).map(v -> (T) v).findAny();
+        return this.getFlags().stream().filter(clazz::isInstance).map(v -> (T) v).findAny();
     }
 
     @Override
@@ -126,10 +131,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         if (!opFlag.isPresent()) {
             Optional<? extends VesselFlag<T>> opNewFlag = ShipsPlugin.getPlugin().get(clazz);
             if (!opNewFlag.isPresent()) {
+                AText error = AText.ofPlain("Class of " + clazz.getName() + " is not registered in ShipsPlugin. " +
+                        "Failed to set for ");
                 try {
-                    System.err.println("Class of " + clazz.getName() + " is not registered in ShipsPlugin. Failing to set for " + getId());
+                    TranslateCore.getConsole().sendMessage(error.append(AText.ofPlain(this.getId())));
                 } catch (NoLicencePresent noLicencePresent) {
-                    System.err.println("Class of " + clazz.getName() + " is not registered in ShipsPlugin. Failing to set for Unknown");
+                    TranslateCore.getConsole().sendMessage(error.append(AText.ofPlain("unknown")));
                 }
                 return this;
             }
@@ -178,7 +185,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         double y = tel.getY() - position.getY();
         double z = tel.getZ() - position.getZ();
 
-        Vector3<Double> vector = flip(direction, x, y, z);
+        Vector3<Double> vector = this.flip(direction, x, y, z);
 
         if (this.teleportPositions.containsKey(id)) {
             this.teleportPositions.replace(id, vector);
@@ -233,7 +240,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public @NotNull ShipType<? extends AbstractShipsVessel> getType() {
-        return type;
+        return this.type;
     }
 
     @Override
@@ -245,12 +252,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public void save() {
         ShipsFileLoader fl = new ShipsFileLoader(this.getFile());
         fl.save(this);
-    }
-
-    @Override
-    @Deprecated
-    public @NotNull ExpandedBlockList getBlockList() {
-        throw new RuntimeException("Use default BlockList now");
     }
 
     @Override

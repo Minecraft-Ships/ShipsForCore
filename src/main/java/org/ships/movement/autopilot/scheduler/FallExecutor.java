@@ -1,6 +1,7 @@
 package org.ships.movement.autopilot.scheduler;
 
 import org.core.TranslateCore;
+import org.core.adventureText.AText;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
 import org.core.utils.time.TimeRange;
@@ -57,7 +58,8 @@ public class FallExecutor implements Runnable {
                 }
                 MovementContext context = new MovementContext().setMovement(config.getDefaultMovement());
                 if (config.isBossBarVisible()) {
-                    ServerBossBar bar = TranslateCore.createBossBar().setMessage(TranslateCore.buildText("Falling"));
+                    ServerBossBar bar =
+                            TranslateCore.createBossBar().setTitle(AText.ofPlain("Failling"));
                     v.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> bar.register((LivePlayer) e));
                     context.setBar(bar);
                 }

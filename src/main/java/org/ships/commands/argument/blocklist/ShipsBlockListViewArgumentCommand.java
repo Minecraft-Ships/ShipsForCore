@@ -1,6 +1,7 @@
 package org.ships.commands.argument.blocklist;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -10,7 +11,6 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
@@ -51,16 +51,21 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        CommandSource source = commandContext.getSource();
         Collection<BlockInstruction> bl = ShipsPlugin.getPlugin().getBlockList().getBlockList();
-        Map<BlockInstruction.CollideType, Integer> values = new HashMap<>();
+        Map<BlockInstruction.CollideType, Integer> values = new EnumMap<>(BlockInstruction.CollideType.class);
         for (BlockInstruction.CollideType type : BlockInstruction.CollideType.values()) {
             values.put(type, 0);
         }
         for (BlockInstruction bi : bl) {
             values.replace(bi.getCollideType(), values.get(bi.getCollideType()) + 1);
         }
-        values.forEach((c, a) -> viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + c.name() + ": " + TextColours.YELLOW + a)));
+        values.forEach((c, a) -> viewer
+                .sendMessage(AText
+                        .ofPlain(c.name() + ": ")
+                        .withColour(NamedTextColours.AQUA)
+                        .append(AText
+                                .ofPlain(a.toString())
+                                .withColour(NamedTextColours.YELLOW))));
         return true;
     }
 }

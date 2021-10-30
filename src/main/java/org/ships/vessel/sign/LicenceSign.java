@@ -1,14 +1,11 @@
 package org.ships.vessel.sign;
 
-import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
-import org.core.text.Text;
-import org.core.text.TextColours;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -36,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class LicenceSign implements ShipsSign {
 
@@ -48,7 +46,7 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public boolean isSign(List<AText> lines) {
+    public boolean isSign(List<? extends AText> lines) {
         return lines.size() >= 1 && lines.get(0).toPlain().equalsIgnoreCase("[Ships]");
     }
 
@@ -56,13 +54,24 @@ public class LicenceSign implements ShipsSign {
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot snapshot = sign.getSnapshot();
         List<AText> lines = snapshot.getText();
-        Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> lines.get(1).toPlain().equalsIgnoreCase(t.getDisplayName())).findFirst();
+        Optional<ShipType> opType = ShipsPlugin
+                .getPlugin()
+                .getAll(ShipType.class)
+                .stream()
+                .filter(t -> lines.get(1).toPlain().equalsIgnoreCase(t.getDisplayName()))
+                .findFirst();
         if (!opType.isPresent()) {
-            throw new IOException("Unknown Ship Type: Ship Types: " + ArrayUtils.toString(", ", ShipType::getDisplayName, ShipsPlugin.getPlugin().getAll(ShipType.class)));
+            throw new IOException("Unknown Ship Type: Ship Types: " +
+                    ShipsPlugin
+                            .getPlugin()
+                            .getAll(ShipType.class)
+                            .stream()
+                            .map(ShipType::getDisplayName)
+                            .collect(Collectors.joining(", ")));
         }
 
         String name = lines.get(2).toPlain();
-        if (name.replaceAll(" ", "").length() == 0) {
+        if (name.replaceAll(" ", "").isEmpty()) {
             throw new IOException("Invalid name: Change 3rd line");
         }
         if (name.contains(":")) {
@@ -77,12 +86,6 @@ public class LicenceSign implements ShipsSign {
         snapshot.setTextAt(2, AText.ofPlain(name).withColour(NamedTextColours.GREEN));
         snapshot.setTextAt(3, lines.get(3).withColour(NamedTextColours.GREEN));
         return snapshot;
-    }
-
-    @Override
-    @Deprecated
-    public Text getFirstLine() {
-        return TranslateCore.buildText(TextColours.YELLOW + "[Ships]");
     }
 
     @Override
@@ -108,14 +111,14 @@ public class LicenceSign implements ShipsSign {
                         s.setStructure(structure);
                         s.save();
                         player.sendMessage(AText.ofPlain("Vessel structure has updated by " + (structure.getPositions().size() - size)));
-                        if (finalBar != null) {
+                        if (finalBar!=null) {
                             finalBar.deregisterPlayers();
                         }
                     }
 
                     @Override
                     public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
-                        if (finalBar != null) {
+                        if (finalBar!=null) {
                             int blockCount = currentStructure.getPositions().size() + 1;
                             finalBar.setTitle(AText.ofPlain(blockCount + "/" + totalCount));
                             try {
@@ -138,12 +141,22 @@ public class LicenceSign implements ShipsSign {
                     LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
                     String type = lste.getTextAt(1).map(AText::toPlain).orElse("");
                     String name = lste.getTextAt(2).map(AText::toPlain).orElse("");
-                    Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(t -> t.getDisplayName().equalsIgnoreCase(type)).findAny();
+                    Optional<ShipType> opType = ShipsPlugin
+                            .getPlugin()
+                            .getAll(ShipType.class)
+                            .stream()
+                            .filter(t -> t.getDisplayName().equalsIgnoreCase(type))
+                            .findAny();
                     if (!opType.isPresent()) {
-                        player.sendMessage(AText.ofPlain("Could not find ShipType with display name of " + type).withColour(NamedTextColours.RED));
+                        player.sendMessage(AText
+                                .ofPlain("Could not find ShipType with display name of " + type)
+                                .withColour(NamedTextColours.RED));
                         return false;
                     }
-                    File file = new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+                    File file =
+                            new File("plugins" + File.pathSeparatorChar + "Ships" + File.pathSeparatorChar +
+                                    "VesselData" + File.pathSeparatorChar + opType.get().getId().replaceAll(":",
+                                    ".") + File.pathSeparatorChar + name + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
                     if (!file.exists()) {
                         player.sendMessage(AText.ofPlain("Could not find the file associated with the ship").withColour(NamedTextColours.RED));
                         return false;
@@ -173,7 +186,7 @@ public class LicenceSign implements ShipsSign {
     @Override
     public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         if (player.isSneaking()) {
-            return onPrimaryClick(player, position);
+            return this.onPrimaryClick(player, position);
         }
         return false;
     }

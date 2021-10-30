@@ -1,6 +1,6 @@
 package org.ships.vessel.common.types.typical;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -8,7 +8,6 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
-import org.ships.config.blocks.BlockListable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
 import org.ships.movement.MovementContext;
@@ -24,7 +23,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStoredVessel, WritableNameVessel, BlockListable, FileBasedVessel, IdentifiableShip {
+public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStoredVessel, WritableNameVessel, FileBasedVessel, IdentifiableShip {
 
     @NotNull Map<String, String> getExtraInformation();
 
@@ -50,8 +49,8 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
 
     @Override
     default @NotNull ShipsVessel setName(@NotNull String name) throws NoLicencePresent {
-        getSign().setLine(2, TranslateCore.buildText(name));
-        File file = getFile();
+        this.getSign().setTextAt(2, AText.ofPlain(name));
+        File file = this.getFile();
         String[] ext = file.getName().split(Pattern.quote("."));
         file.renameTo(new File(file.getParentFile(), name + "." + ext[ext.length - 1]));
         return this;
@@ -69,19 +68,19 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
 
     @Override
     default void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context, exception);
     }
 
     @Override
     default void rotateRightAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context, exception);
     }
 
     @Override
     default void rotateLeftAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context, exception);
     }
 
@@ -91,6 +90,6 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
         if (opCachedName.isPresent()) {
             return this.getType().getId() + "." + opCachedName.get().toLowerCase();
         }
-        return getType().getId() + "." + getName().toLowerCase();
+        return this.getType().getId() + "." + this.getName().toLowerCase();
     }
 }

@@ -4,6 +4,8 @@ import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.parser.Parser;
+import org.core.entity.LiveEntity;
+import org.core.entity.living.human.AbstractHuman;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
@@ -110,7 +112,7 @@ public interface MovementResult<E> {
             if (message.contains("%Block Ids%")) {
                 message = message.replaceAll("%Block Ids%", ArrayUtils.toString(",", Identifiable::getId, value));
             }
-            viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
+            viewer.sendMessage(formatMessage(message, vessel, viewer));
         }
     }
 
@@ -118,7 +120,7 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredFuelMovementData value) {
-            viewer.sendMessagePlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " + ArrayUtils.toString(", ", t -> t, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) + " in a single furnace");
+            viewer.sendMessage(AText.ofPlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " + ArrayUtils.toString(", ", t -> t, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) + " in a single furnace"));
         }
     }
 
@@ -138,7 +140,7 @@ public interface MovementResult<E> {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getFailedToFindSpecialBlock();
             message = message.replaceAll("%Block Name%", value.getName());
             message = message.replaceAll("%Block Id%", value.getId());
-            viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
+            viewer.sendMessage(formatMessage(message, vessel, viewer));
         }
     }
 
@@ -148,7 +150,7 @@ public interface MovementResult<E> {
         public void sendMessage(Vessel vessel, CommandViewer viewer, String value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getFailedToFindSpecialBlock();
             message = message.replaceAll("%Block Name%", value);
-            viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
+            viewer.sendMessage(formatMessage(message, vessel, viewer));
         }
     }
 
@@ -157,7 +159,7 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
-            viewer.sendMessagePlain("Failed to find burner on ship");
+            viewer.sendMessage(AText.ofPlain("Failed to find burner on ship"));
         }
     }
 
@@ -165,7 +167,7 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer player, Boolean value) {
-            player.sendMessagePlain("A Unknown Error Occurred");
+            player.sendMessage(AText.ofPlain("A Unknown Error Occurred"));
 
         }
     }
@@ -175,7 +177,7 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getFailedToFindLicenceSign();
-            viewer.sendMessagePlain(formatMessage(message, vessel, viewer));
+            viewer.sendMessage(formatMessage(message, vessel, viewer));
         }
     }
 
@@ -183,11 +185,8 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockPosition> collection) {
-            /*AText text = AdventureMessageConfig.ERROR_BLOCK_IN_WAY.process(new AbstractMap.SimpleImmutableEntry<>(vessel, collection));
-            viewer.sendMessage(text);*/
-
             AText text;
-            if (collection.size() == 1) {
+            if (collection.size()==1) {
                 text = AText.ofPlain("Found a single block in the way of " + collection.iterator().next().getBlockType().getName());
             } else {
                 text = AText.ofPlain("Found " + collection.size() + " blocks in the way including " + collection.iterator().next().getBlockType().getName());
@@ -238,11 +237,11 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer player, Integer value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getNoSpeedSet();
-            player.sendMessagePlain(formatMessage(message, vessel, player));
+            player.sendMessage(formatMessage(message, vessel, player));
         }
     }
 
-    static String formatMessage(String message, Vessel vessel, CommandViewer viewer) {
+    static AText formatMessage(String message, Vessel vessel, CommandViewer viewer) {
         try {
             message = message.replaceAll("%Vessel Name%", vessel.getName());
         } catch (NoLicencePresent e) {
@@ -258,11 +257,11 @@ public interface MovementResult<E> {
             message = message.replaceAll("%Vessel Id%", "Unknown");
         }
         if (viewer instanceof LivePlayer) {
-            message = message.replaceAll("%Player Name%", ((LivePlayer) viewer).getName());
+            message = message.replaceAll("%Player Name%", ((AbstractHuman<LiveEntity>) viewer).getName());
         } else {
             message = message.replaceAll("%Player Name%", "_");
         }
-        return message;
+        return AText.ofPlain(message);
     }
 
 

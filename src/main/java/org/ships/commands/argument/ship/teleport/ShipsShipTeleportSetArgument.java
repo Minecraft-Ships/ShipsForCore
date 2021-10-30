@@ -1,10 +1,13 @@
 package org.ships.commands.argument.ship.teleport;
 
+import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.context.CommandContext;
+import org.core.entity.Entity;
+import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
@@ -33,13 +36,13 @@ public class ShipsShipTeleportSetArgument implements ArgumentCommand {
         return Arrays.asList(
                 new ExactArgument(SHIP_ARGUMENT),
                 new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
-            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                LivePlayer player = (LivePlayer) source;
-                return crewVessel.getPermission(player.getUniqueId()).canCommand();
-            }
-            return vessel instanceof TeleportToVessel;
-        }, v -> "Ship is not teleport capable"),
+                    if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
+                        CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
+                        LivePlayer player = (LivePlayer) source;
+                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                    }
+                    return vessel instanceof TeleportToVessel;
+                }, v -> "Ship is not teleport capable"),
                 new ExactArgument(SHIP_TELEPORT_ARGUMENT),
                 new ExactArgument(SHIP_SET),
                 new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(SHIP_LOCATION, new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, v) -> v instanceof TeleportToVessel, v -> "Ship is not teleport capable"), 1), "Default"));
@@ -61,11 +64,11 @@ public class ShipsShipTeleportSetArgument implements ArgumentCommand {
         CommandSource source = commandContext.getSource();
         if (!(source instanceof LivePlayer)) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessagePlain("Teleport requires to be ran as a player");
+                ((CommandViewer) source).sendMessage(AText.ofPlain("Teleport requires to be ran as a player"));
             }
             return false;
         }
-        LivePlayer player = (LivePlayer) source;
+        Entity<LiveEntity> player = (Entity<LiveEntity>) source;
         TeleportToVessel tVessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
         tVessel.setTeleportPosition(player.getPosition(), commandContext.getArgument(this, SHIP_LOCATION));
         tVessel.save();

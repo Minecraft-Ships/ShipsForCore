@@ -1,5 +1,6 @@
 package org.ships.commands.argument.type;
 
+import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -44,7 +45,7 @@ public class ShipsViewShipTypeArgument implements ArgumentCommand {
         }
         CommandViewer viewer = (CommandViewer) source;
         Set<ShipType> types = ShipsPlugin.getPlugin().getAll(ShipType.class);
-        types.forEach(st -> viewer.sendMessagePlain(" - " + st.getDisplayName()));
+        types.forEach(st -> viewer.sendMessage(AText.ofPlain(" - " + st.getDisplayName())));
         return true;
     }
 }

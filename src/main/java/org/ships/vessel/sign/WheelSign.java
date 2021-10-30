@@ -1,11 +1,8 @@
 package org.ships.vessel.sign;
 
-import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.text.Text;
-import org.core.text.TextColours;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -24,32 +21,26 @@ public class WheelSign implements ShipsSign {
     );
 
     @Override
-    public boolean isSign(List<AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
+    public boolean isSign(List<? extends AText> lines) {
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(this.SIGN.get(0));
 
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(SIGN);
+        stes.setText(this.SIGN);
         return stes;
     }
 
     @Override
-    @Deprecated
-    public Text getFirstLine() {
-        return TranslateCore.buildText(TextColours.YELLOW + "[Wheel]");
-    }
-
-    @Override
     public boolean onPrimaryClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
-        return onClick(player, position, true);
+        return this.onClick(player, position, true);
     }
 
     @Override
     public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
-        return onClick(player, position, false);
+        return this.onClick(player, position, false);
     }
 
     @Override

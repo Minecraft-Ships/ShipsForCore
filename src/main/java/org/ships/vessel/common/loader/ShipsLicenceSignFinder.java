@@ -3,7 +3,7 @@ package org.ships.vessel.common.loader;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncPosition;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
@@ -17,7 +17,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
 
     protected SignTileEntity ste;
 
-    public ShipsLicenceSignFinder(SyncBlockPosition position) throws IOException {
+    public ShipsLicenceSignFinder(SyncPosition<Integer> position) throws IOException {
         Optional<LiveTileEntity> opEntity = position.getTileEntity();
         if (!opEntity.isPresent()) {
             throw new IOException("Block is not a sign");
@@ -25,7 +25,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
         if (!(opEntity.get() instanceof LiveSignTileEntity)) {
             throw new IOException("Block is not a sign");
         }
-        ste = (LiveSignTileEntity) opEntity.get();
+        this.ste = (SignTileEntity) opEntity.get();
     }
 
     public ShipsLicenceSignFinder(SignTileEntity ste) {
@@ -35,15 +35,15 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
     @Override
     public Vessel load() throws LoadVesselException {
         LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
-        if (!ls.isSign(ste)) {
+        if (!ls.isSign(this.ste)) {
             throw new LoadVesselException("Unable to read sign");
         }
-        String typeS = ste.getLine(1).get().toPlain();
+        String typeS = this.ste.getTextAt(1).get().toPlain();
         Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(st -> st.getDisplayName().equalsIgnoreCase(typeS)).findAny();
         if (!opType.isPresent()) {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }
-        String name = ste.getLine(2).get().toPlain().toLowerCase();
+        String name = this.ste.getTextAt(2).get().toPlain().toLowerCase();
         String id = "ships:" + opType.get().getName().toLowerCase() + "." + name;
         return new ShipsIDFinder(id).load();
     }

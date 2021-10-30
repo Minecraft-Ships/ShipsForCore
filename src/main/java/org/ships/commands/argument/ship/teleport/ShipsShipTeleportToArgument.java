@@ -65,7 +65,7 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
         CommandSource source = commandContext.getSource();
         if (!(source instanceof LivePlayer)) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessagePlain("Teleport requires to be ran as a player");
+                ((CommandViewer) source).sendMessage(AText.ofPlain("Teleport requires to be ran as a player"));
             }
             return false;
         }
@@ -73,7 +73,7 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
         TeleportToVessel tVessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
         String telPos = commandContext.getArgument(this, SHIP_LOCATION);
         ExactPosition position = tVessel.getTeleportPositions().get(telPos);
-        if (position == null) {
+        if (position==null) {
             player.sendMessage(AText.ofPlain("Unknown part of ship").withColour(NamedTextColours.RED));
             return false;
         }

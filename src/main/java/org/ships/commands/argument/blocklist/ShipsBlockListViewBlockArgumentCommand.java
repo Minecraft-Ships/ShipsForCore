@@ -1,6 +1,7 @@
 package org.ships.commands.argument.blocklist;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypeArgument;
@@ -11,7 +12,6 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.permissions.Permissions;
@@ -44,7 +44,7 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if(source instanceof LivePlayer){
+        if (source instanceof LivePlayer) {
             return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
         }
         return source instanceof CommandViewer;
@@ -52,15 +52,28 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if(!(commandContext.getSource() instanceof CommandViewer)){
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer)commandContext.getSource();
+        CommandViewer viewer = (CommandViewer) commandContext.getSource();
         BlockType type = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
-        CommandSource source = commandContext.getSource();
         BlockInstruction bi = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(type);
-        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "CollideType: " + TextColours.YELLOW + bi.getCollideType().name()));
-        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "BlockLimit: " + TextColours.YELLOW + bi.getBlockLimit()));
+        AText collideType =
+                AText
+                        .ofPlain("CollideType: ")
+                        .withColour(NamedTextColours.AQUA)
+                        .append(AText
+                                .ofPlain(bi.getCollideType().name())
+                                .withColour(NamedTextColours.YELLOW));
+        AText blockLimit =
+                AText
+                        .ofPlain("BlockLimit: ")
+                        .withColour(NamedTextColours.AQUA)
+                        .append(AText
+                                .ofPlain(String.valueOf(bi.getBlockLimit()))
+                                .withColour(NamedTextColours.YELLOW));
+        viewer.sendMessage(collideType);
+        viewer.sendMessage(blockLimit);
         return true;
     }
 }

@@ -1,6 +1,7 @@
 package org.ships.commands.argument.config;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -9,7 +10,6 @@ import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.ships.commands.argument.arguments.config.ConfigKeyArgument;
 import org.ships.config.Config;
 import org.ships.config.node.DedicatedNode;
@@ -30,7 +30,7 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
     private final String[] configNames;
 
     public AbstractShipsConfigViewArgument(Supplier<Config.KnownNodes> config, String... configNames) {
-        if (configNames.length == 0) {
+        if (configNames.length==0) {
             throw new IllegalArgumentException("configNames must have at least one value");
         }
         this.config = config;
@@ -63,8 +63,8 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>> node = commandContext.getArgument(this, CONFIG_KEY);
-        String value = readUnknownNode(node);
-        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "\"" + node.getKeyName() + "\": " + TextColours.RESET + value));
+        String value = this.readUnknownNode(node);
+        viewer.sendMessage(AText.ofPlain("\"" + node.getKeyName() + "\"").withColour(NamedTextColours.AQUA).append(AText.ofPlain(value)));
         return true;
     }
 

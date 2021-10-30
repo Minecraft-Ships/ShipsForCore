@@ -1,6 +1,7 @@
 package org.ships.commands.argument.config.shiptype;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -9,7 +10,6 @@ import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleKeyArgument;
 import org.ships.permissions.Permissions;
@@ -48,10 +48,10 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        return runGeneric(commandContext, args);
+        return this.runGeneric(commandContext);
     }
 
-    private <T> boolean runGeneric(CommandContext commandContext, String... args) {
+    private <T> boolean runGeneric(CommandContext commandContext) {
         if (!(commandContext.getSource() instanceof CommandViewer)) {
             return false;
         }
@@ -60,10 +60,10 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
         ConfigurationNode.KnownParser<String, T> parser = commandContext.getArgument(this, CONFIG_KEY);
         Optional<T> opResult = type.getFile().parse(parser);
         if (!opResult.isPresent()) {
-            viewer.sendMessagePlain("No value found at node. Is it for this ShipType?");
+            viewer.sendMessage(AText.ofPlain("No Value found at node. Is it for this ShipType?"));
             return true;
         }
-        viewer.sendMessage(TranslateCore.buildText(TextColours.AQUA + "Value is '" + parser.getParser().unparse(opResult.get()) + "'"));
+        viewer.sendMessage(AText.ofPlain("Value is '" + parser.getParser().unparse(opResult.get()) + "'").withColour(NamedTextColours.AQUA));
         return true;
     }
 }

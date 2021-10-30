@@ -7,8 +7,6 @@ import org.core.entity.EntitySnapshot;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.Text;
-import org.core.text.TextColours;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -47,7 +45,7 @@ public class AltitudeSign implements ShipsSign {
     );
 
     @Override
-    public boolean isSign(List<AText> lines) {
+    public boolean isSign(List<? extends AText> lines) {
         return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
     }
 
@@ -56,12 +54,6 @@ public class AltitudeSign implements ShipsSign {
         SignTileEntitySnapshot stes = sign.getSnapshot();
         stes.setText(SIGN);
         return stes;
-    }
-
-    @Override
-    @Deprecated
-    public Text getFirstLine() {
-        return TranslateCore.buildText(TextColours.YELLOW + "[Altitude]");
     }
 
     @Override
@@ -74,7 +66,7 @@ public class AltitudeSign implements ShipsSign {
         if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
-        LiveSignTileEntity stes = (LiveSignTileEntity) lte;
+        SignTileEntity stes = (SignTileEntity) lte;
         boolean updateSpeed = player.isSneaking();
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
 
@@ -188,7 +180,7 @@ public class AltitudeSign implements ShipsSign {
                 @Override
                 protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
                     int foundBlocks = currentStructure.getPositions().size() + 1;
-                    if (finalBar != null) {
+                    if (finalBar!=null) {
                         finalBar.setTitle(AText.ofPlain(foundBlocks + " / " + blockLimit));
                         try {
                             finalBar.setValue(foundBlocks, blockLimit);
@@ -202,7 +194,7 @@ public class AltitudeSign implements ShipsSign {
                 @Override
                 protected void onExceptionThrown(LoadVesselException e) {
                     ShipsSign.LOCKED_SIGNS.remove(position);
-                    if (finalBar != null) {
+                    if (finalBar!=null) {
                         finalBar.deregisterPlayers();
                     }
                     if (e instanceof UnableToFindLicenceSign) {
@@ -248,7 +240,7 @@ public class AltitudeSign implements ShipsSign {
 
     private void onVesselMove(LivePlayer player, BlockPosition position, ServerBossBar bar, int altitude, String line1, Vessel vessel) {
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
-        if (opFlag.isPresent() && bar != null) {
+        if (opFlag.isPresent() && bar!=null) {
             if (opFlag.get()) {
                 bar.deregisterPlayers();
                 player.sendMessage(AText.ofPlain("The altitude is locked on this ship"));
@@ -259,7 +251,7 @@ public class AltitudeSign implements ShipsSign {
         MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).setPostMovement((e) -> ShipsSign.LOCKED_SIGNS.remove(position));
         context.setClicked(position);
         vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
-            if (bar == null) {
+            if (bar==null) {
                 return;
             }
             bar.register((LivePlayer) e);

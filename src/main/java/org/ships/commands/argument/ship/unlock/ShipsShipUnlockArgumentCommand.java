@@ -1,5 +1,6 @@
 package org.ships.commands.argument.ship.unlock;
 
+import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -47,13 +48,13 @@ public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
         Set<SyncBlockPosition> set = vessel.getStructure().getPositions().stream().filter(p -> ShipsSign.LOCKED_SIGNS.stream().anyMatch(p1 -> p1.equals(p))).collect(Collectors.toSet());
         if (set.isEmpty()) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessagePlain("Cleared all locked signs");
+                ((CommandViewer) source).sendMessage(AText.ofPlain("Cleared all locked signs"));
             }
             ShipsSign.LOCKED_SIGNS.clear();
             return true;
         }
         if (source instanceof CommandViewer) {
-            ((CommandViewer) source).sendMessagePlain("Cleared all (" + set.size() + ") locked signs");
+            ((CommandViewer) source).sendMessage(AText.ofPlain("Cleared all (" + set.size() + ") locked signs"));
         }
         set.forEach(ShipsSign.LOCKED_SIGNS::remove);
         return true;

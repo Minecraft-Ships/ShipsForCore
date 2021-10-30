@@ -1,6 +1,8 @@
 package org.ships.commands.argument.ship.track;
 
 import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -11,7 +13,6 @@ import org.core.permission.Permission;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.core.utils.Else;
 import org.core.world.position.block.BlockTypes;
 import org.ships.commands.argument.arguments.ShipIdArgument;
@@ -55,11 +56,11 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         CommandSource source = commandContext.getSource();
         if (!(source instanceof LivePlayer)) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(TranslateCore.buildText(TextColours.RED + "Player only command"));
+                ((CommandViewer) source).sendMessage(AText.ofPlain("Player only command").withColour(NamedTextColours.RED));
             }
             return true;
         }

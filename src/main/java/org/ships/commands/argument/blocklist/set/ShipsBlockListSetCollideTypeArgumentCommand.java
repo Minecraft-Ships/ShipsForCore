@@ -1,6 +1,7 @@
 package org.ships.commands.argument.blocklist.set;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypesArgument;
@@ -10,7 +11,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
-import org.core.text.TextColours;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
@@ -53,8 +53,8 @@ public class ShipsBlockListSetCollideTypeArgumentCommand implements ArgumentComm
             blocklist.replaceBlockInstruction(bi.setCollideType(collideType));
         });
         blocklist.saveChanges();
-        if(commandContext.getSource() instanceof CommandViewer){
-            ((CommandViewer)commandContext.getSource()).sendMessage(TranslateCore.buildText(TextColours.AQUA + "" + blocks.size() + " have been set to " + collideType.name()));
+        if (commandContext.getSource() instanceof CommandViewer) {
+            ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain(blocks.size() + " have been set to " + collideType.name()).withColour(NamedTextColours.AQUA));
         }
         return true;
     }

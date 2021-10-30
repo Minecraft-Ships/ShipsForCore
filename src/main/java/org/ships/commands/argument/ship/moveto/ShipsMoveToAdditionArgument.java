@@ -1,6 +1,7 @@
 package org.ships.commands.argument.ship.moveto;
 
 import org.core.TranslateCore;
+import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -77,7 +78,7 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
             if (commandContext.getSource() instanceof LivePlayer) {
                 bar.register((LivePlayer) commandContext.getSource());
             }
-            bar.setMessage(TranslateCore.buildText("0 / " + trackLimit));
+            bar.setTitle(AText.ofPlain("0 / " + trackLimit));
             context.setBar(bar);
         }
 

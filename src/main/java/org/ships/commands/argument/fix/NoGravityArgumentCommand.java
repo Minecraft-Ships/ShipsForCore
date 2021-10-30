@@ -1,6 +1,7 @@
 package org.ships.commands.argument.fix;
 
-import org.core.TranslateCore;
+import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -8,7 +9,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.text.TextColours;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +47,7 @@ public class NoGravityArgumentCommand implements ArgumentCommand {
         }
         LivePlayer player = (LivePlayer) source;
         player.setGravity(true);
-        player.sendMessage(TranslateCore.buildText(TextColours.AQUA + "Other plugins maybe disrupted by this fix"));
+        player.sendMessage(AText.ofPlain("Other plugins maybe disrupted by this fix").withColour(NamedTextColours.YELLOW));
         return true;
     }
 }

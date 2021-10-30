@@ -1,5 +1,6 @@
 package org.ships.commands.argument.ship.check;
 
+import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -62,10 +63,10 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) source;
-        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         if (vessel instanceof Fallable) {
             Fallable fVessel = (Fallable) vessel;
-            viewer.sendMessagePlain("Will Fall: " + fVessel.shouldFall());
+            viewer.sendMessage(AText.ofPlain("Will Fall: " + fVessel.shouldFall()));
         }
         if (vessel instanceof VesselRequirement) {
             VesselRequirement rVessel = (VesselRequirement) vessel;
@@ -78,9 +79,9 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
             context.setStrictMovement(true);
             try {
                 rVessel.meetsRequirements(context);
-                viewer.sendMessagePlain("Meets Requirements: true");
+                viewer.sendMessage(AText.ofPlain("Meets Requirements: true"));
             } catch (MoveException e) {
-                viewer.sendMessagePlain("Meets Requirements: False");
+                viewer.sendMessage(AText.ofPlain("Meets Requirements: false"));
                 e.getMovement().sendMessage(viewer);
             }
         }
