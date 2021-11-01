@@ -1,9 +1,9 @@
 package org.ships.vessel.common.loader;
 
-import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.exceptions.load.LoadVesselException;
@@ -22,9 +22,12 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
 
         @Override
         public void onShipsStructureUpdated(PositionableShipsStructure structure) {
-            LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+            LicenceSign ls =
+                    ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Could" +
+                            " not get licence"));
             Optional<SyncBlockPosition> opBlock = structure.getAll(SignTileEntity.class).stream().filter(b -> {
-                LiveSignTileEntity lste = (LiveSignTileEntity) b.getTileEntity().get();
+                SignTileEntity lste = (SignTileEntity) b.getTileEntity().orElseThrow(() -> new IllegalStateException(
+                        "Could not get tile entity"));
                 if (!ls.isSign(lste)) {
                     return false;
                 }
@@ -35,19 +38,19 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                 return;
             }
             PositionableShipsStructure structure2 = new AbstractPosititionableShipsStructure(opBlock.get());
-            structure.getPositions().forEach(b -> structure2.addPosition(b));
+            structure.getPositions().forEach(structure2::addPosition);
             try {
-                Vessel vessel = new ShipsLicenceSignFinder((LiveSignTileEntity) structure2.getPosition().getTileEntity().get()).load();
+                Vessel vessel =
+                        new ShipsLicenceSignFinder((SignTileEntity) structure2.getPosition().getTileEntity().orElseThrow(() -> new IllegalStateException("Could not get tile entity"))).load();
                 vessel.setStructure(structure2);
-                onStructureUpdate(vessel);
+                ShipsOvertimeUpdateBlockLoader.this.onStructureUpdate(vessel);
             } catch (LoadVesselException e) {
                 ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(e);
-                return;
             }
         }
 
         @Override
-        public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+        public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
             return ShipsOvertimeUpdateBlockLoader.this.onBlockFind(currentStructure, block);
         }
     }

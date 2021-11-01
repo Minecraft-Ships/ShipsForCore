@@ -32,7 +32,9 @@ public class ShipsDeleteShipTypeArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_TYPE), new ExactArgument(DELETE), new RemainingArgument<>(CUSTOM_SHIP_TYPE, new ShipIdentifiableArgument<>(CUSTOM_SHIP_TYPE, CloneableShipType.class, t -> !t.getOriginType().equals(t))));
+        return Arrays.asList(new ExactArgument(SHIP_TYPE), new ExactArgument(DELETE),
+                new RemainingArgument<>(CUSTOM_SHIP_TYPE, new ShipIdentifiableArgument<>(CUSTOM_SHIP_TYPE,
+                        CloneableShipType.class, (c, a, t) -> !t.getOriginType().equals(t))));
     }
 
     @Override

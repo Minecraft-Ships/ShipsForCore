@@ -30,20 +30,20 @@ public class Ships5BlockFinder implements BasicBlockFinder {
         this.blockCount++;
         for (Direction direction : directions) {
             BlockPosition block = position.getRelative(direction);
-            BlockInstruction bi = list.getBlockInstruction(block.getBlockType());
+            BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
             OvertimeBlockFinderUpdate.BlockFindControl blockFind = null;
-            if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
+            if (bi.getCollideType()==BlockInstruction.CollideType.MATERIAL) {
                 if (event != null) {
                     blockFind = event.onBlockFind(this.shipsStructure, block);
-                    if (blockFind.equals(OvertimeBlockFinderUpdate.BlockFindControl.IGNORE)) {
-                        getNextBlock(event, block, directions);
+                    if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
+                        this.getNextBlock(event, block, directions);
                     }
                 }
-                if (shipsStructure.addPosition(block)) {
-                    if (blockFind != null && blockFind.equals(OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH)) {
+                if (this.shipsStructure.addPosition(block)) {
+                    if (blockFind != null && blockFind==OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                         return;
                     }
-                    getNextBlock(event, block, directions);
+                    this.getNextBlock(event, block, directions);
                 }
             }
         }

@@ -26,11 +26,6 @@ public class ErrorShipsSignIsMoving implements Message<Object> {
     }
 
     @Override
-    public AText process(Object obj) {
-        return Message.super.process(obj);
-    }
-
-    @Override
     @Deprecated
     public AText process(AText text, Object obj) {
         for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {

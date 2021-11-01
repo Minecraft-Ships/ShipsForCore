@@ -70,7 +70,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                 ASyncBlockPosition block = pos.getRelative(direction);
                                 Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
                                 BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
-                                if (bi.getCollideType().equals(BlockInstruction.CollideType.MATERIAL)) {
+                                if (bi.getCollideType()==BlockInstruction.CollideType.MATERIAL) {
                                     if (positions.contains(vector) || finalToProcess.contains(block)) {
                                         return;
                                     }
@@ -80,11 +80,11 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                 }
                             });
                             OvertimeBlockFinderUpdate.BlockFindControl blockFind = runAfterFullSearch.onBlockFind(structure, pos);
-                            if (blockFind.equals(OvertimeBlockFinderUpdate.BlockFindControl.IGNORE)) {
+                            if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 continue;
                             }
                             structure.addPosition(Position.toSync(pos));
-                            if (blockFind.equals(OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH)) {
+                            if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 TranslateCore
                                         .createSchedulerBuilder()
                                         .setDelay(0)
@@ -120,7 +120,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public @NotNull BasicBlockFinder setBlockLimit(@NotNull int limit) {
+    public @NotNull BasicBlockFinder setBlockLimit(int limit) {
         this.limit = limit;
         return this;
     }

@@ -211,7 +211,7 @@ public class CoreEventListener implements EventListener {
         if (!(opTE.get() instanceof LiveSignTileEntity)) {
             return;
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity) opTE.get();
+        SignTileEntity lste = (SignTileEntity) opTE.get();
         BlockInstruction.CollideType collideType = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(position.getBlockType()).getCollideType();
         if (collideType!=BlockInstruction.CollideType.MATERIAL) {
             return;
@@ -451,7 +451,7 @@ public class CoreEventListener implements EventListener {
             if (!(lte instanceof LiveSignTileEntity)) {
                 continue;
             }
-            LiveSignTileEntity lste = (LiveSignTileEntity) lte;
+            SignTileEntity lste = (SignTileEntity) lte;
             LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Licence sign could not be found from register. Something is really wrong."));
             if (!licenceSign.isSign(lste)) {
                 continue;
@@ -471,7 +471,7 @@ public class CoreEventListener implements EventListener {
             }
             Vessel vessel = opVessel.get();
             if (vessel instanceof CrewStoredVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
-                LivePlayer player = ((BlockChangeEvent.Break.Pre.ByPlayer) event).getEntity();
+                LivePlayer player = ((EntityEvent<LivePlayer>) event).getEntity();
                 if (!(((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() || (player.hasPermission(Permissions.ABSTRACT_SHIP_MOVE_OTHER)))) {
                     event.setCancelled(true);
                     return;

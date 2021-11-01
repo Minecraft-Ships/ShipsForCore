@@ -8,7 +8,7 @@ import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -35,20 +35,20 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     protected Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();
 
     protected ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
-    protected ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
+    protected ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
 
-    public WaterShip(WaterShipType type, LiveSignTileEntity licence) throws NoLicencePresent {
+    public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
         this.flags.add(new AltitudeLockFlag(true));
     }
 
-    public WaterShip(WaterShipType type, SignTileEntity ste, SyncBlockPosition position) {
+    public WaterShip(ShipType<WaterShip> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
         this.flags.add(new AltitudeLockFlag(true));
     }
 
     public float getSpecialBlockPercent() {
-        if (this.specialBlockPercent == null) {
+        if (this.specialBlockPercent==null) {
             return this.getType().getDefaultSpecialBlockPercent();
         }
         return this.specialBlockPercent;
@@ -84,14 +84,9 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
             }
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / (context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count()));
-        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
+        if ((this.getSpecialBlockPercent()!=0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
-    }
-
-    @Override
-    public void processRequirements(MovementContext context) throws MoveException {
-        VesselRequirement.super.processRequirements(context);
     }
 
     @Override
@@ -135,7 +130,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
             return true;
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getPositions().size());
-        return (!(this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
+        return (!(this.getSpecialBlockPercent()==0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
     }
 
     @Override

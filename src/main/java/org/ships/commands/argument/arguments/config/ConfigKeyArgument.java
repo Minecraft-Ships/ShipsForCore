@@ -32,7 +32,6 @@ public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, 
     @Override
     public CommandArgumentResult<DedicatedNode<A, V, N>> parse(CommandContext context, CommandArgumentContext<DedicatedNode<A, V, N>> argument) throws IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        int number = argument.getFirstArgument() + 1;
         Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<?, Object>>> opNode = this
                 .config
                 .getNodes()
@@ -48,8 +47,12 @@ public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, 
     @Override
     public List<String> suggest(CommandContext context, CommandArgumentContext<DedicatedNode<A, V, N>> argument) {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        return this.config.getNodes().parallelStream().map(DedicatedNode::getKeyName).filter(n -> {
-            return n.toLowerCase().startsWith(arg.toLowerCase());
-        }).collect(Collectors.toList());
+        return this
+                .config
+                .getNodes()
+                .parallelStream()
+                .map(DedicatedNode::getKeyName)
+                .filter(n -> n.toLowerCase().startsWith(arg.toLowerCase()))
+                .collect(Collectors.toList());
     }
 }

@@ -3,6 +3,7 @@ package org.ships.vessel.common.loader.shipsvessel;
 import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
@@ -24,6 +25,7 @@ import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.WrappedFileLoadVesselException;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.ShipsLoader;
 import org.ships.vessel.common.types.ShipType;
@@ -51,7 +53,7 @@ public class ShipsFileLoader implements ShipsLoader {
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Y = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Meta", "Location", "Y");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Z = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Meta", "Location", "Z");
     public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_WORLD = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_WORLD, "Meta", "Location", "World");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>, Set<Vector3<Integer>>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
     public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(() -> ShipsPlugin
             .getPlugin()
             .getVesselFlags()
@@ -62,7 +64,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
                 @Override
                 public VesselFlagWrappedParser<?> apply(Map.Entry<String, VesselFlag.Builder<?, ?>> stringVesselFlagEntry) {
-                    return build(stringVesselFlagEntry.getValue());
+                    return this.build(stringVesselFlagEntry.getValue());
                 }
 
                 private <T> VesselFlagWrappedParser<?> build(VesselFlag.Builder<?, ?> builder) {
@@ -74,18 +76,18 @@ public class ShipsFileLoader implements ShipsLoader {
 
         private final ShipsVessel ship;
 
-        public StructureLoad(ShipsVessel shipsVessel) {
+        private StructureLoad(ShipsVessel shipsVessel) {
             this.ship = shipsVessel;
         }
 
-        public void load(SyncBlockPosition position, List<Vector3<Integer>> structureList) {
+        public void load(BlockPosition position, Collection<Vector3<Integer>> structureList) {
             if (structureList.isEmpty()) {
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
                     @Override
                     public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                        ship.setStructure(structure);
-                        ship.setLoading(false);
-                        TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " has loaded."));
+                        StructureLoad.this.ship.setStructure(structure);
+                        StructureLoad.this.ship.setLoading(false);
+                        TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, StructureLoad.this.ship::getId, "Unknown") + " has loaded."));
                     }
 
                     @Override
@@ -94,10 +96,10 @@ public class ShipsFileLoader implements ShipsLoader {
                     }
                 });
             } else {
-                PositionableShipsStructure pss = ship.getStructure();
+                PositionableShipsStructure pss = this.ship.getStructure();
                 pss.setRaw(structureList);
-                ship.setLoading(false);
-                TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "") + " has loaded."));
+                this.ship.setLoading(false);
+                TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, this.ship::getId, "") + " has loaded."));
             }
         }
     }
@@ -130,7 +132,7 @@ public class ShipsFileLoader implements ShipsLoader {
             if (key instanceof ConfigurationNode.KnownParser.SingleKnown) {
                 this.setSingleInFile(file, (ConfigurationNode.KnownParser.SingleKnown<?>) key, value);
             } else if (key instanceof ConfigurationNode.KnownParser.CollectionKnown) {
-                this.setCollectionInFile(file, (ConfigurationNode.KnownParser.CollectionKnown<?, ?>) key, (Collection<?>) value);
+                this.setCollectionInFile(file, (ConfigurationNode.KnownParser.CollectionKnown<?>) key, (Collection<?>) value);
             } else {
                 throw new IllegalArgumentException("Could not understand what to do with " + key.getClass().getName());
             }
@@ -217,7 +219,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 double pX = opTelX2.get();
                 double pY = opTelY2.get();
                 double pZ = opTelZ2.get();
-                ((ShipsVessel) vessel).setTeleportVector(Vector3.valueOf(pX, pY, pZ), id);
+                ((TeleportToVessel) vessel).setTeleportVector(Vector3.valueOf(pX, pY, pZ), id);
             }
         });
         TranslateCore
@@ -249,7 +251,7 @@ public class ShipsFileLoader implements ShipsLoader {
         return new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData");
     }
 
-    public static Set<ShipsVessel> loadAll(Consumer<LoadVesselException> function) {
+    public static Set<ShipsVessel> loadAll(Consumer<? super LoadVesselException> function) {
         Set<ShipsVessel> set = new HashSet<>();
         Set<ShipType> types = ShipsPlugin.getPlugin().getAll(ShipType.class);
         types.forEach(st -> {
@@ -268,22 +270,22 @@ public class ShipsFileLoader implements ShipsLoader {
                         }
                         set.add(vessel);
                     } catch (LoadVesselException e) {
-                        System.err.println("Failed to load " + file.getAbsolutePath() + ":");
+                        TranslateCore.getConsole().sendMessage(AText.ofPlain("Failed to load " + file.getAbsolutePath() + ":").withColour(NamedTextColours.RED));
                         function.accept(e);
                     } catch (Throwable e) {
-                        System.err.println("Failed to load " + file.getAbsolutePath() + ":");
+                        TranslateCore.getConsole().sendMessage(AText.ofPlain("Failed to load " + file.getAbsolutePath() + ":").withColour(NamedTextColours.RED));
                         e.printStackTrace();
                     }
                 }
             } catch (Throwable e) {
-                System.err.println("Could not load any ships of " + st.getId());
+                TranslateCore.getConsole().sendMessage(AText.ofPlain("Could not load any ships of " + st.getId()).withColour(NamedTextColours.RED));
                 e.printStackTrace();
             }
         });
         return set;
     }
 
-    private <T, C extends Collection<T>> void setCollectionInFile(ConfigurationStream stream, ConfigurationNode.KnownParser.CollectionKnown<T, C> node, Collection<?> value) {
+    private <T, C extends Collection<T>> void setCollectionInFile(ConfigurationStream stream, ConfigurationNode.KnownParser.CollectionKnown<T> node, Collection<?> value) {
         stream.set(node, (C) value);
     }
 

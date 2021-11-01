@@ -44,7 +44,7 @@ import java.util.Set;
 
 public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
 
-    public static Set<ArgumentCommand> COMMANDS = new HashSet<>();
+    public static final Set<ArgumentCommand> COMMANDS = new HashSet<>();
 
     static {
         COMMANDS.add(new ShipsInfoArgumentCommand());

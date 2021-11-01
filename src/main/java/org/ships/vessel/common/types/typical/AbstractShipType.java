@@ -22,11 +22,11 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractShipType<V extends Vessel> implements SerializableShipType<V> {
 
-    public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType, Set<BlockType>> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
     public static final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> FUEL_CONSUMPTION = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
     public static final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> FUEL_SLOT = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<ItemType, Set<ItemType>> FUEL_TYPES = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<ItemType> FUEL_TYPES = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
@@ -39,7 +39,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     protected final @NotNull ConfigurationStream.ConfigurationFile file;
 
     public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
-        if (types.length == 0) {
+        if (types.length==0) {
             throw new NullPointerException("ShipType constructor failed: Type cannot be empty");
         }
         this.plugin = plugin;
@@ -110,7 +110,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
         String name = this.getFile().getFile().getName();
         String[] split = name.split(Pattern.quote("."));
         int length = split.length;
-        name = ArrayUtils.toString(".", t -> t, ArrayUtils.filter(0, length - 1, split));
+        name = String.join(".", ArrayUtils.filter(0, length - 1, split));
         return name;
     }
 

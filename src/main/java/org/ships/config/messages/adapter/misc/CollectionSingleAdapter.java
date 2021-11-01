@@ -1,6 +1,8 @@
 package org.ships.config.messages.adapter.misc;
 
+import org.core.TranslateCore;
 import org.core.adventureText.AText;
+import org.core.adventureText.format.NamedTextColours;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.*;
@@ -8,9 +10,9 @@ import java.util.stream.Collectors;
 
 public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>> {
 
-    private final Collection<MessageAdapter<T>> adapters;
+    private final Collection<? extends MessageAdapter<T>> adapters;
 
-    public CollectionSingleAdapter(Collection<MessageAdapter<T>> collection) {
+    public CollectionSingleAdapter(Collection<? extends MessageAdapter<T>> collection) {
         if (collection.isEmpty()) {
             throw new IllegalArgumentException("Collection Single Adapter must have adapters, not a empty list");
         }
@@ -30,11 +32,11 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
     @Override
     @Deprecated
     public String adapterTextFormat() {
-        return "!!" + adapterText() + "!!";
+        return "!!" + this.adapterText() + "!!";
     }
 
     public String adapterTextFormat(MessageAdapter<T> adapter, int index) {
-        return "!!" + adapterText(adapter, index) + "!!";
+        return "!!" + this.adapterText(adapter, index) + "!!";
     }
 
     @Override
@@ -54,11 +56,11 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         boolean was = false;
         for (; target < plain.length(); target++) {
             char at = plain.charAt(target);
-            if (at != '!') {
+            if (at!='!') {
                 was = false;
                 continue;
             }
-            if (before != null) {
+            if (before!=null) {
                 if (was) {
                     break;
                 }
@@ -72,7 +74,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
             }
             was = true;
         }
-        if (before == null || target == plain.length() && !plain.endsWith("!!")) {
+        if (before==null || target==plain.length() && !plain.endsWith("!!")) {
             return false;
         }
         String adaptingWithFormat = plain.substring(before, target + 1);
@@ -82,10 +84,10 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         }
         int startAt = adapting.length() - 1;
         for (; startAt >= -1; startAt--) {
-            if (startAt == -1) {
+            if (startAt==-1) {
                 return false;
             }
-            if (adapting.charAt(startAt) == '[') {
+            if (adapting.charAt(startAt)=='[') {
                 break;
             }
         }
@@ -99,7 +101,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
 
     @Override
     public boolean containsAdapter(AText text) {
-        return containsAdapter(text.toPlain());
+        return this.containsAdapter(text.toPlain());
     }
 
     @Override
@@ -110,11 +112,11 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         boolean was = false;
         for (; target < plain.length(); target++) {
             char at = plain.charAt(target);
-            if (at != '!') {
+            if (at!='!') {
                 was = false;
                 continue;
             }
-            if (before != null) {
+            if (before!=null) {
                 if (was) {
                     break;
                 }
@@ -128,7 +130,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
             }
             was = true;
         }
-        if (before == null || target == plain.length() && !plain.endsWith("!!")) {
+        if (before==null || target==plain.length() && !plain.endsWith("!!")) {
             return message;
         }
         String adaptingWithFormat = plain.substring(before, target + 1);
@@ -138,10 +140,10 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         }
         int startAt = adapting.length() - 1;
         for (; startAt >= -1; startAt--) {
-            if (startAt == -1) {
+            if (startAt==-1) {
                 return message;
             }
-            if (adapting.charAt(startAt) == '[') {
+            if (adapting.charAt(startAt)=='[') {
                 break;
             }
         }
@@ -159,25 +161,24 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
                 .parallelStream()
                 .filter(ma -> {
                     boolean check = ma.containsAdapter("%" + adapterText + "%");
-                    System.out.println("MA: " + ma.adapterText() + ": Check:  " + check);
+                    TranslateCore.getConsole().sendMessage(AText.ofPlain("MA: " + ma.adapterText() + ": Check:  " + check).withColour(NamedTextColours.RED));
                     return check;
                 })
                 .map(ma -> {
                     AText process = ma.process(AText.ofPlain("%" + adapterText + "%"), indexedValue);
-                    System.out.println("MA: " + ma.adapterText() + ": Value: " + process.toPlain());
+                    TranslateCore.getConsole().sendMessage(AText.ofPlain("MA: " + ma.adapterText() + ": Value: " + process.toPlain()).withColour(NamedTextColours.RED));
                     return process;
                 })
                 .findAny();
 
-        int finalIndex = index;
+        TranslateCore.getConsole().sendMessage(AText.ofPlain("Message: " + message.toPlain()));
+        TranslateCore.getConsole().sendMessage(AText.ofPlain("Found: " + opReplacement.map(AText::toPlain)));
+        TranslateCore.getConsole().sendMessage(AText.ofPlain("Changing: " + adaptingWithFormat));
 
-        System.out.println("Message: " + message.toPlain());
-        System.out.println("Found: " + opReplacement.map(text -> text.toPlain()));
-        System.out.println("Changing: " + adaptingWithFormat);
         AText result = opReplacement
                 .map(text -> message.withAllAs(adaptingWithFormat, text))
                 .orElse(message);
-        System.out.println("Result: " + result.toPlain());
+        TranslateCore.getConsole().sendMessage(AText.ofPlain("Result: ").append(result));
         return result;
 
     }

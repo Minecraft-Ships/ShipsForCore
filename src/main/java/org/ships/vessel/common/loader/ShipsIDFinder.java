@@ -1,6 +1,5 @@
 package org.ships.vessel.common.loader;
 
-import org.core.utils.Identifiable;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
@@ -12,7 +11,7 @@ public class ShipsIDFinder implements ShipsLoader {
 
     protected String id;
 
-    public ShipsIDFinder(String id){
+    public ShipsIDFinder(String id) {
         this.id = id.toLowerCase();
     }
 
@@ -24,21 +23,21 @@ public class ShipsIDFinder implements ShipsLoader {
                 .stream()
                 .filter(v -> v instanceof IdentifiableShip)
                 .filter(v -> {
-            try {
-                String id = ((IdentifiableShip) v).getId();
-                if (id.equals(this.id)) {
-                    return true;
-                }
-                if (!id.startsWith("ships:")) {
-                    return false;
-                }
-                return id.substring(6).equals(this.id);
-            }catch (Throwable e){
-                e.printStackTrace();
-                return false;
-            }
-        }).findFirst();
-        if(opVessel.isPresent()){
+                    try {
+                        String id = ((IdentifiableShip) v).getId();
+                        if (id.equals(this.id)) {
+                            return true;
+                        }
+                        if (!id.startsWith("ships:")) {
+                            return false;
+                        }
+                        return id.substring(6).equals(this.id);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }).findFirst();
+        if (opVessel.isPresent()) {
             return opVessel.get();
         }
         throw new LoadVesselException("Cannot find " + this.id);

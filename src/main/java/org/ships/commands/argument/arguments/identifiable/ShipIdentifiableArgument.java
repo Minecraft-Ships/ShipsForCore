@@ -11,25 +11,19 @@ import org.ships.plugin.ShipsPlugin;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ShipIdentifiableArgument<T extends Identifiable> implements CommandArgument<T> {
 
     private final String id;
     private final Class<T> type;
-    private final TriPredicate<CommandContext, CommandArgumentContext<T>, T> predicate;
+    private final TriPredicate<? super CommandContext, ? super CommandArgumentContext<T>, ? super T> predicate;
 
     public ShipIdentifiableArgument(String id, Class<T> type) {
         this(id, type, (c, a, v) -> true);
     }
 
-    @Deprecated
-    public ShipIdentifiableArgument(String id, Class<T> type, Predicate<T> predicate) {
-        this(id, type, (c, a, v) -> predicate.test(v));
-    }
-
-    public ShipIdentifiableArgument(String id, Class<T> type, TriPredicate<CommandContext, CommandArgumentContext<T>, T> predicate) {
+    public ShipIdentifiableArgument(String id, Class<T> type, TriPredicate<? super CommandContext, ? super CommandArgumentContext<T>, ? super T> predicate) {
         this.id = id;
         this.type = type;
         this.predicate = predicate;

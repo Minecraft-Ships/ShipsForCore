@@ -170,7 +170,7 @@ public class Movement {
                         }
                         BlockList list = ShipsPlugin.getPlugin().getBlockList();
                         BlockInstruction bi = list.getBlockInstruction(after.getBlockType());
-                        return !bi.getCollideType().equals(BlockInstruction.CollideType.IGNORE);
+                        return bi.getCollideType()!=BlockInstruction.CollideType.IGNORE;
                     })
                     .map(MovingBlock::getAfterPosition)
                     .collect(Collectors.toSet());
@@ -250,7 +250,7 @@ public class Movement {
                     directionNotSupported.printStackTrace();
                 }
             });
-            move(vessel, context, exception);
+            this.move(vessel, context, exception);
         }
 
     }
@@ -289,8 +289,7 @@ public class Movement {
                     directionNotSupported.printStackTrace();
                 }
             });
-            move(vessel, context, exception);
-
+            this.move(vessel, context, exception);
         }
 
     }
@@ -311,7 +310,7 @@ public class Movement {
             });
             context.setMovingStructure(set);
             context.setStrictMovement(true);
-            move(vessel, context, exception);
+            this.move(vessel, context, exception);
         }
 
     }
@@ -322,7 +321,7 @@ public class Movement {
         }
 
         public void move(Vessel vessel, int x, int y, int z, MovementContext context, Consumer<Throwable> exception) {
-            move(vessel, Vector3.valueOf(x, y, z), context, exception);
+            this.move(vessel, Vector3.valueOf(x, y, z), context, exception);
         }
 
         public void move(Vessel vessel, Vector3<Integer> addTo, MovementContext context, Consumer<Throwable> exception) {
@@ -337,7 +336,7 @@ public class Movement {
             if (!(addTo.getX()==0 && addTo.getY() < 0 && addTo.getZ()==0)) {
                 context.setStrictMovement(true);
             }
-            move(vessel, context, exception);
+            this.move(vessel, context, exception);
         }
 
     }

@@ -13,12 +13,12 @@ public interface CloneableShipType<T extends Vessel> extends ShipType<T> {
 
     CloneableShipType<T> getOriginType();
 
-    default CloneableShipType<T> cloneWithName(File file){
-        if(!file.getName().contains(".")){
-            return cloneWithName(file, file.getName().replaceAll(" ", "_"));
+    default CloneableShipType<T> cloneWithName(File file) {
+        if (!file.getName().contains(".")) {
+            return this.cloneWithName(file, file.getName().replaceAll(" ", "_"));
         }
         String[] nameArray = file.getName().split(Pattern.quote("."));
         String[] array = ArrayUtils.filter(0, nameArray.length - 1, nameArray);
-        return cloneWithName(file, ArrayUtils.toString("_", t -> t, array).replaceAll(" ", "_"));
+        return this.cloneWithName(file, String.join("_", array).replaceAll(" ", "_"));
     }
 }

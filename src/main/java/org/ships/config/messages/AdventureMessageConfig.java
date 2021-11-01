@@ -1,6 +1,5 @@
 package org.ships.config.messages;
 
-import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
@@ -14,6 +13,7 @@ import org.ships.config.node.ObjectDedicatedNode;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,37 +44,39 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final ErrorBlockInWayMessage ERROR_BLOCK_IN_WAY = new ErrorBlockInWayMessage();
 
     private final ConfigurationStream.ConfigurationFile file;
-    private final Set<Message<?>> messages = new HashSet<>();
+    private final Collection<Message<?>> messages = new HashSet<>();
 
     public AdventureMessageConfig() {
-        messages.add(INFO_NAME);
-        messages.add(INFO_ID);
-        messages.add(INFO_MAX_SPEED);
-        messages.add(INFO_ALTITUDE_SPEED);
-        messages.add(INFO_SIZE);
-        messages.add(INFO_DEFAULT_PERMISSION);
-        messages.add(INFO_VESSEL_INFO);
-        messages.add(INFO_FLAG);
-        messages.add(INFO_ENTITIES_LIST);
-        messages.add(INFO_ENTITIES_LINE);
-        messages.add(ERROR_OVERSIZED);
-        messages.add(ERROR_UNDERSIZED);
-        messages.add(ERROR_TOO_MANY_OF_BLOCK);
-        messages.add(ERROR_ALREADY_MOVING);
-        messages.add(ERROR_VESSEL_STILL_LOADING);
-        messages.add(ERROR_PERMISSION_MISS_MATCH);
-        messages.add(ERROR_INVALID_SHIP_TYPE);
-        messages.add(ERROR_INVALID_SHIP_NAME);
-        messages.add(ERROR_CANNOT_CREATE_ONTOP);
-        messages.add(ERROR_SHIPS_SIGN_IS_MOVING);
-        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        this.messages.add(INFO_NAME);
+        this.messages.add(INFO_ID);
+        this.messages.add(INFO_MAX_SPEED);
+        this.messages.add(INFO_ALTITUDE_SPEED);
+        this.messages.add(INFO_SIZE);
+        this.messages.add(INFO_DEFAULT_PERMISSION);
+        this.messages.add(INFO_VESSEL_INFO);
+        this.messages.add(INFO_FLAG);
+        this.messages.add(INFO_ENTITIES_LIST);
+        this.messages.add(INFO_ENTITIES_LINE);
+        this.messages.add(ERROR_OVERSIZED);
+        this.messages.add(ERROR_UNDERSIZED);
+        this.messages.add(ERROR_TOO_MANY_OF_BLOCK);
+        this.messages.add(ERROR_ALREADY_MOVING);
+        this.messages.add(ERROR_VESSEL_STILL_LOADING);
+        this.messages.add(ERROR_PERMISSION_MISS_MATCH);
+        this.messages.add(ERROR_INVALID_SHIP_TYPE);
+        this.messages.add(ERROR_INVALID_SHIP_NAME);
+        this.messages.add(ERROR_CANNOT_CREATE_ONTOP);
+        this.messages.add(ERROR_SHIPS_SIGN_IS_MOVING);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                "Configuration" + File.pathSeparatorChar + "Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
-        recreateFile();
+        this.recreateFile();
     }
 
     @Override
     public Set<DedicatedNode<AText, AText, ConfigurationNode.KnownParser.SingleKnown<AText>>> getNodes() {
-        return this.messages.stream().map(m -> new ObjectDedicatedNode<>(m.getKnownPath(), ArrayUtils.toString(".", t -> t, m.getPath()))).collect(Collectors.toSet());
+        return this.messages.stream().map(m -> new ObjectDedicatedNode<>(m.getKnownPath(), String.join(
+                ".", m.getPath()))).collect(Collectors.toSet());
     }
 
     @Override

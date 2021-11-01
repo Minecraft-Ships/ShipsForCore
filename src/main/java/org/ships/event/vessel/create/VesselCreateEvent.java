@@ -6,15 +6,15 @@ import org.core.event.events.entity.EntityEvent;
 import org.ships.event.vessel.VesselEvent;
 import org.ships.vessel.common.types.Vessel;
 
-public abstract class VesselCreateEvent implements VesselEvent {
+public class VesselCreateEvent implements VesselEvent {
 
-    private Vessel vessel;
+    private final Vessel vessel;
 
     public abstract static class Pre extends VesselCreateEvent implements Cancellable {
 
         public static class BySign extends Pre implements EntityEvent<LivePlayer> {
 
-            private LivePlayer player;
+            private final LivePlayer player;
 
             public BySign(Vessel vessel, LivePlayer player) {
                 super(vessel);
@@ -49,7 +49,7 @@ public abstract class VesselCreateEvent implements VesselEvent {
 
         public static class BySign extends Post implements EntityEvent<LivePlayer> {
 
-            private LivePlayer player;
+            private final LivePlayer player;
 
             public BySign(Vessel vessel, LivePlayer player) {
                 super(vessel);
@@ -67,7 +67,7 @@ public abstract class VesselCreateEvent implements VesselEvent {
         }
     }
 
-    public VesselCreateEvent(Vessel vessel){
+    protected VesselCreateEvent(Vessel vessel) {
         this.vessel = vessel;
     }
 

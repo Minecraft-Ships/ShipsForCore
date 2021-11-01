@@ -7,6 +7,7 @@ import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -22,11 +23,12 @@ import java.util.stream.Collectors;
 public interface PositionableShipsStructure extends ShipsStructure, Positionable<SyncBlockPosition> {
 
     PositionableShipsStructure setPosition(SyncBlockPosition pos);
+
     PositionableShipsStructure addAir();
 
-    default Bounds<Integer> getBounds(){
+    default Bounds<Integer> getBounds() {
         Set<Vector3<Integer>> positions = this.getPositions().stream().map(Position::getPosition).collect(Collectors.toSet());
-        if(positions.isEmpty()){
+        if (positions.isEmpty()) {
             throw new IllegalStateException("No structure found");
         }
         Vector3<Integer> randomVector = positions.iterator().next();
@@ -36,32 +38,32 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
         int maxX = minX;
         int maxY = minY;
         int maxZ = minZ;
-        for(Vector3<Integer> vector : positions){
-            if(minX <= vector.getX()){
+        for (Vector3<Integer> vector : positions) {
+            if (minX <= vector.getX()) {
                 minX = vector.getX();
             }
-            if(minY <= vector.getY()){
+            if (minY <= vector.getY()) {
                 minY = vector.getY();
             }
-            if(minZ <= vector.getZ()){
+            if (minZ <= vector.getZ()) {
                 minZ = vector.getZ();
             }
-            if(maxX >= vector.getX()){
+            if (maxX >= vector.getX()) {
                 maxX = vector.getX();
             }
-            if(maxY >= vector.getY()){
+            if (maxY >= vector.getY()) {
                 maxY = vector.getY();
             }
-            if(maxZ >= vector.getZ()){
+            if (maxZ >= vector.getZ()) {
                 maxZ = vector.getZ();
             }
         }
         return new Bounds<>(Vector3.valueOf(minX, minY, minZ), Vector3.valueOf(maxX, maxY, maxZ));
     }
 
-    default Set<ChunkExtent> getChunks(){
+    default Set<ChunkExtent> getChunks() {
         Set<Vector3<Integer>> vector3Set = new HashSet<>();
-         this.getPositions().stream()
+        this.getPositions().stream()
                 .map(Position::getChunkPosition)
                 .forEach(vector3Set::add);
         return vector3Set.stream()
@@ -69,46 +71,46 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
                 .collect(Collectors.toSet());
     }
 
-    default boolean addPosition(BlockPosition position){
-        Vector3<Integer> original = getPosition().getPosition();
+    default boolean addPosition(BlockPosition position) {
+        Vector3<Integer> original = this.getPosition().getPosition();
         Vector3<Integer> next = position.getPosition();
-        return addPosition(next.minus(original));
+        return this.addPosition(next.minus(original));
     }
 
-    default boolean removePosition(BlockPosition position){
-        Vector3<Integer> original = getPosition().getPosition();
+    default boolean removePosition(BlockPosition position) {
+        Vector3<Integer> original = this.getPosition().getPosition();
         Vector3<Integer> next = position.getPosition();
-        return removePosition(next.minus(original));
+        return this.removePosition(next.minus(original));
     }
 
-    default <T> Collection<T> getAllLike(Function<SyncBlockPosition, T> function){
+    default <T> Collection<T> getAllLike(Function<? super SyncBlockPosition, ? extends T> function) {
         Set<T> set = new HashSet<>();
-        getPositions(this).forEach(b -> set.add(function.apply(b)));
+        this.getPositions(this).forEach(b -> set.add(function.apply(b)));
         return Collections.unmodifiableCollection(set);
     }
 
-    default Collection<SyncBlockPosition> getAll(BlockType type){
-        return Collections.unmodifiableCollection(getPositions(this).stream()
+    default Collection<SyncBlockPosition> getAll(BlockType type) {
+        return Collections.unmodifiableCollection(this.getPositions(this).stream()
                 .filter(p -> p.getBlockType().equals(type))
                 .collect(Collectors.toSet()));
     }
 
-    default Collection<SyncBlockPosition> getAll(Class<? extends TileEntity> class1){
-        return Collections.unmodifiableCollection(getPositions(this).stream()
+    default Collection<SyncBlockPosition> getAll(Class<? extends TileEntity> class1) {
+        return Collections.unmodifiableCollection(this.getPositions(this).stream()
                 .filter(p -> p.getTileEntity().isPresent())
                 .filter(p -> class1.isInstance(p.getTileEntity().get()))
                 .collect(Collectors.toSet()));
     }
 
-    default Collection<SyncBlockPosition> getAll(ShipsSign sign){
-        return Collections.unmodifiableCollection(getPositions().stream()
+    default Collection<SyncBlockPosition> getAll(ShipsSign sign) {
+        return Collections.unmodifiableCollection(this.getPositions().stream()
                 .filter(b -> b.getTileEntity().isPresent())
                 .filter(b -> b.getTileEntity().get() instanceof LiveSignTileEntity)
-                .filter(b -> sign.isSign((LiveSignTileEntity)b.getTileEntity().get()))
+                .filter(b -> sign.isSign((SignTileEntity) b.getTileEntity().get()))
                 .collect(Collectors.toSet()));
     }
 
-    default Collection<SyncBlockPosition> getPositions(){
+    default Collection<SyncBlockPosition> getPositions() {
         return ShipsStructure.super.getPositions(this.getPosition());
     }
 }
