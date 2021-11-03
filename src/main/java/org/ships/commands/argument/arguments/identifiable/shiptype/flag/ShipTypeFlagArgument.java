@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 public class ShipTypeFlagArgument implements CommandArgument<VesselFlag<?>> {
 
     private final String id;
-    private final BiFunction<CommandContext, CommandArgumentContext<VesselFlag<?>>, ShipType<?>> getter;
+    private final BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ? extends ShipType<?>> getter;
 
-    public ShipTypeFlagArgument(String id, BiFunction<CommandContext, CommandArgumentContext<VesselFlag<?>>, ShipType<?>> getter) {
+    public ShipTypeFlagArgument(String id, BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ? extends ShipType<?>> getter) {
         this.id = id;
         this.getter = getter;
     }

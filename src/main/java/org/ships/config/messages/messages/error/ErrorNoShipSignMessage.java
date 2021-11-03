@@ -34,7 +34,7 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
 
     @Override
     public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(getExactAdapters());
+        return new HashSet<>(this.getExactAdapters());
     }
 
     private Set<CollectionSingleAdapter<Position<?>>> getExactAdapters() {

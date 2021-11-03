@@ -174,7 +174,7 @@ public class AltitudeSign implements ShipsSign {
             new ShipsOvertimeUpdateBlockLoader(position) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
-                    onVesselMove(player, position, finalBar, finalAltitude, line1, vessel);
+                    AltitudeSign.this.onVesselMove(player, position, finalBar, finalAltitude, line1, vessel);
                 }
 
                 @Override
@@ -210,7 +210,7 @@ public class AltitudeSign implements ShipsSign {
         } else {
             try {
                 Vessel vessel = new ShipsBlockFinder(position).load();
-                onVesselMove(player, position, finalBar, altitude, line1, vessel);
+                this.onVesselMove(player, position, finalBar, altitude, line1, vessel);
             } catch (UnableToFindLicenceSign e1) {
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
@@ -238,7 +238,7 @@ public class AltitudeSign implements ShipsSign {
         movement.sendMessage(viewer, (T) value);
     }
 
-    private void onVesselMove(LivePlayer player, BlockPosition position, ServerBossBar bar, int altitude, String line1, Vessel vessel) {
+    private void onVesselMove(CommandViewer player, BlockPosition position, ServerBossBar bar, int altitude, String line1, Vessel vessel) {
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
         if (opFlag.isPresent() && bar!=null) {
             if (opFlag.get()) {
@@ -273,7 +273,7 @@ public class AltitudeSign implements ShipsSign {
             }
             MoveException e = (MoveException) exc;
             FailedMovement<?> movement = e.getMovement();
-            sendErrorMessage(player, movement, movement.getValue().orElse(null));
+            this.sendErrorMessage(player, movement, movement.getValue().orElse(null));
         };
         if (line1.startsWith("{")) {
             vessel.moveTowards(0, altitude, 0, context, exception);

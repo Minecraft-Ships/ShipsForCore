@@ -9,12 +9,9 @@ import java.util.List;
 
 public class DebugFile {
 
-    protected List<String> messages = new ArrayList<>();
-    protected File file = new File("plugins/Ships/debug.txt");
-
-    public DebugFile(){
-
-    }
+    protected final List<String> messages = new ArrayList<>();
+    protected final File file = new File("plugins" + File.pathSeparatorChar + "Ships" + File.pathSeparatorChar +
+            "debug.txt");
 
     public void addMessage(String... messages){
         this.messages.addAll(Arrays.asList(messages));

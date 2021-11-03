@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 
 public class StringToIdentifiable<T extends Identifiable> implements StringParser.Suggestible<T> {
 
-    protected Class<T> class1;
+    protected final Class<T> class1;
 
-    public StringToIdentifiable(Class<T> class1){
+    public StringToIdentifiable(Class<T> class1) {
         this.class1 = class1;
     }
 
@@ -29,7 +29,7 @@ public class StringToIdentifiable<T extends Identifiable> implements StringParse
 
     @Override
     public List<T> getSuggestions(String peek) {
-        return getSuggestions().stream().filter(i -> i.getId().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
+        return this.getSuggestions().stream().filter(i -> i.getId().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
     }
 
     @Override

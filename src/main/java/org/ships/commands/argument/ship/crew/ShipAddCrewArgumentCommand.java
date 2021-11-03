@@ -29,19 +29,19 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
-                new ExactArgument(SHIP_ARGUMENT),
-                new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
+                new ExactArgument(this.SHIP_ARGUMENT),
+                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
                     if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                         CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                        LivePlayer player = (LivePlayer) source;
+                        User player = (User) source;
                         return crewVessel.getPermission(player.getUniqueId()).canCommand();
                     }
                     return vessel instanceof CrewStoredVessel;
                 }, v -> "Vessel does not accept crew"),
-                new ExactArgument(SHIP_CREW_ARGUMENT),
-                new ExactArgument(SHIP_VIEW_ARGUMENT),
-                new ShipIdentifiableArgument<>(SHIP_CREW_PERMISSION_ARGUMENT, CrewPermission.class),
-                new RemainingArgument<>(SHIP_PLAYERS_ARGUMENT, new UserArgument(SHIP_PLAYERS_ARGUMENT))
+                new ExactArgument(this.SHIP_CREW_ARGUMENT),
+                new ExactArgument(this.SHIP_VIEW_ARGUMENT),
+                new ShipIdentifiableArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT, CrewPermission.class),
+                new RemainingArgument<>(this.SHIP_PLAYERS_ARGUMENT, new UserArgument(this.SHIP_PLAYERS_ARGUMENT))
         );
     }
 
@@ -57,10 +57,10 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        CrewStoredVessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        CrewStoredVessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         Map<UUID, CrewPermission> map = vessel.getCrew();
-        CrewPermission permission = commandContext.getArgument(this, SHIP_CREW_PERMISSION_ARGUMENT);
-        List<User> users = commandContext.getArgument(this, SHIP_PLAYERS_ARGUMENT);
+        CrewPermission permission = commandContext.getArgument(this, this.SHIP_CREW_PERMISSION_ARGUMENT);
+        List<User> users = commandContext.getArgument(this, this.SHIP_PLAYERS_ARGUMENT);
         users.forEach(user -> {
             if (permission.equals(CrewPermission.DEFAULT)) {
                 map.remove(user.getUniqueId());

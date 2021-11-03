@@ -9,22 +9,22 @@ import java.util.Optional;
 
 public class BasicFlightPath implements FlightPath {
 
-    protected Vector3<Integer> first;
-    protected Vector3<Integer> second;
+    protected final Vector3<Integer> first;
+    protected final Vector3<Integer> second;
     protected CommandViewer viewer;
 
-    public BasicFlightPath(Vector3<Integer> first, Vector3<Integer> second){
+    public BasicFlightPath(Vector3<Integer> first, Vector3<Integer> second) {
         this.first = first;
         this.second = second;
     }
 
     @Override
-    public Optional<CommandViewer> getViewer(){
+    public Optional<CommandViewer> getViewer() {
         return Optional.ofNullable(this.viewer);
     }
 
     @Override
-    public BasicFlightPath setViewer(CommandViewer viewer){
+    public BasicFlightPath setViewer(CommandViewer viewer) {
         this.viewer = viewer;
         return this;
     }

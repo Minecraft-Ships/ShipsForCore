@@ -54,17 +54,13 @@ public class LicenceSign implements ShipsSign {
     public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot snapshot = sign.getSnapshot();
         List<AText> lines = snapshot.getText();
-        Optional<ShipType> opType = ShipsPlugin
-                .getPlugin()
-                .getAll(ShipType.class)
+        Optional<ShipType<?>> opType = ShipsPlugin.getPlugin().getAllShipTypes()
                 .stream()
                 .filter(t -> lines.get(1).toPlain().equalsIgnoreCase(t.getDisplayName()))
                 .findFirst();
         if (!opType.isPresent()) {
             throw new IOException("Unknown Ship Type: Ship Types: " +
-                    ShipsPlugin
-                            .getPlugin()
-                            .getAll(ShipType.class)
+                    ShipsPlugin.getPlugin().getAllShipTypes()
                             .stream()
                             .map(ShipType::getDisplayName)
                             .collect(Collectors.joining(", ")));
@@ -138,12 +134,10 @@ public class LicenceSign implements ShipsSign {
             Optional<LiveTileEntity> opTile = position.getTileEntity();
             if (opTile.isPresent()) {
                 if (opTile.get() instanceof LiveSignTileEntity) {
-                    LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
+                    SignTileEntity lste = (SignTileEntity) opTile.get();
                     String type = lste.getTextAt(1).map(AText::toPlain).orElse("");
                     String name = lste.getTextAt(2).map(AText::toPlain).orElse("");
-                    Optional<ShipType> opType = ShipsPlugin
-                            .getPlugin()
-                            .getAll(ShipType.class)
+                    Optional<ShipType<?>> opType = ShipsPlugin.getPlugin().getAllShipTypes()
                             .stream()
                             .filter(t -> t.getDisplayName().equalsIgnoreCase(type))
                             .findAny();

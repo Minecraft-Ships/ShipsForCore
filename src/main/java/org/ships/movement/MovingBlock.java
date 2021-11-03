@@ -40,19 +40,19 @@ public interface MovingBlock {
     }
 
     default MovingBlock setMovingTo() {
-        BlockDetails details = getStoredBlockData();
-        getAfterPosition().setBlock(details);
+        BlockDetails details = this.getStoredBlockData();
+        this.getAfterPosition().setBlock(details);
         return this;
     }
 
     default MovingBlock rotateLeft(SyncBlockPosition position) {
         int shift = position.getX() - position.getZ();
         int symmetry = position.getZ();
-        BlockPosition p = getAfterPosition();
+        BlockPosition p = this.getAfterPosition();
         int x = p.getX() - shift;
         int y = p.getY();
         int z = p.getZ() - (p.getZ() - symmetry) * 2 + shift;
-        setAfterPosition(p.getWorld().getPosition(z, y, x));
+        this.setAfterPosition(p.getWorld().getPosition(z, y, x));
         return this;
     }
 
@@ -63,13 +63,13 @@ public interface MovingBlock {
         int x = p.getX() - (p.getX() - symmetry) * 2 - shift;
         int y = p.getY();
         int z = p.getZ() + shift;
-        setAfterPosition(p.getWorld().getPosition(z, y, x));
+        this.setAfterPosition(p.getWorld().getPosition(z, y, x));
         return this;
     }
 
     default MovingBlock removeBeforePositionOverAir() {
         SyncBlockPosition p = this.getBeforePosition();
-        removeBeforePosition(p);
+        this.removeBeforePosition(p);
         Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
         if (waterLogged.isPresent() && waterLogged.get()) {
             p.setBlock(BlockTypes.AIR.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT.get());
@@ -81,7 +81,7 @@ public interface MovingBlock {
 
     default MovingBlock removeBeforePositionUnderWater() {
         SyncBlockPosition p = this.getBeforePosition();
-        removeBeforePosition(p);
+        this.removeBeforePosition(p);
         Optional<Boolean> waterLogged = p.getBlockDetails().get(WaterLoggedKeyedData.class);
         if (waterLogged.isPresent() && waterLogged.get()) {
             p.setBlock(BlockTypes.WATER.getDefaultBlockDetails(), ApplyPhysicsFlags.DEFAULT.get());

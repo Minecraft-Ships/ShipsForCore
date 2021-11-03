@@ -49,12 +49,17 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
     protected @Nullable FuelSlot fuelSlot;
     protected Set<ItemType> fuelTypes = new HashSet<>();
 
-    protected ConfigurationNode configBurnerBlock = new ConfigurationNode("Block", "Burner");
-    protected ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
-    protected ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
-    protected ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    protected ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    protected ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
+    protected final ConfigurationNode configBurnerBlock = new ConfigurationNode("Block", "Burner");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
+            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -142,12 +147,12 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
         if (!context.isStrictMovement()) {
             return;
         }
-        Optional<Integer> opWaterLevel = getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
+        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
         if (!opWaterLevel.isPresent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }
         int specialBlocks = 0;
-        Set<FurnaceInventory> furnaceInventories = new HashSet<>();
+        Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
         for (MovingBlock block : context.getMovingStructure()) {
             BlockDetails details = block.getStoredBlockData();
             if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(details.getType()))) {
@@ -189,11 +194,11 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
         if (!context.isStrictMovement()) {
             return;
         }
-        Optional<Integer> opWaterLevel = getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
+        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
         if (!opWaterLevel.isPresent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }
-        Set<FurnaceInventory> furnaceInventories = new HashSet<>();
+        Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
         for (MovingBlock movingBlock : context.getMovingStructure()) {
             BlockDetails details = movingBlock.getStoredBlockData();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);

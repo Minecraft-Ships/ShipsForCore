@@ -22,7 +22,7 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
 
     @Override
     public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(getExactAdapters());
+        return new HashSet<>(this.getExactAdapters());
     }
 
     private Set<MessageAdapter<String>> getExactAdapters() {

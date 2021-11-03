@@ -32,22 +32,22 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
-                new ExactArgument(SHIP_ARGUMENT),
-                new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
+                new ExactArgument(this.SHIP_ARGUMENT),
+                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
                     if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                         CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                        LivePlayer player = (LivePlayer) source;
+                        User player = (User) source;
                         return crewVessel.getPermission(player.getUniqueId()).canCommand();
                     }
                     return vessel instanceof CrewStoredVessel;
                 }, v -> "Vessel does not accept crew"),
-                new ExactArgument(SHIP_CREW_ARGUMENT),
-                new ExactArgument(SHIP_VIEW_ARGUMENT),
+                new ExactArgument(this.SHIP_CREW_ARGUMENT),
+                new ExactArgument(this.SHIP_VIEW_ARGUMENT),
                 new OptionalArgument<>(
                         new RemainingArgument<>
-                                (SHIP_CREW_PERMISSION_ARGUMENT,
+                                (this.SHIP_CREW_PERMISSION_ARGUMENT,
                                         new ShipIdentifiableArgument<>(
-                                                SHIP_CREW_PERMISSION_ARGUMENT,
+                                                this.SHIP_CREW_PERMISSION_ARGUMENT,
                                                 CrewPermission.class)),
                         Collections.emptyList()));
     }
@@ -68,9 +68,9 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        Set<CrewPermission> permissionsToShow = new HashSet<>(commandContext.getArgument(this, SHIP_CREW_PERMISSION_ARGUMENT));
+        Set<CrewPermission> permissionsToShow = new HashSet<>(commandContext.getArgument(this, this.SHIP_CREW_PERMISSION_ARGUMENT));
 
-        CrewStoredVessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        CrewStoredVessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
 
         if (permissionsToShow.isEmpty()) {
             permissionsToShow.addAll(vessel.getCrew().values());

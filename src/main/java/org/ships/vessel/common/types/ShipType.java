@@ -54,15 +54,15 @@ public interface ShipType<T extends Vessel> extends Identifiable {
     @NotNull Set<VesselFlag<?>> getFlags();
 
     default T createNewVessel(@NotNull LiveSignTileEntity position) {
-        return createNewVessel(position, position.getPosition());
+        return this.createNewVessel(position, position.getPosition());
     }
 
     default <E> @NotNull Optional<E> getFlag(@NotNull Class<E> class1) {
-        return getFlags().stream().filter(class1::isInstance).map(f -> (E) f).findAny();
+        return this.getFlags().stream().filter(class1::isInstance).map(f -> (E) f).findAny();
     }
 
     default <E> @NotNull Optional<E> getFlagValue(@NotNull Class<? extends VesselFlag<E>> class1) {
-        Optional<? extends VesselFlag<E>> opFlag = getFlag(class1);
+        Optional<? extends VesselFlag<E>> opFlag = this.getFlag(class1);
         if (!opFlag.isPresent()) {
             return Optional.empty();
         }
@@ -71,7 +71,7 @@ public interface ShipType<T extends Vessel> extends Identifiable {
 
     @Override
     default @NotNull String getId() {
-        return getPlugin().getPluginId() + ":" + getName().toLowerCase();
+        return this.getPlugin().getPluginId() + ":" + this.getName().toLowerCase();
     }
 
 }

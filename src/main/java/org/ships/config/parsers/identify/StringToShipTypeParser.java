@@ -9,28 +9,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class StringToShipTypeParser extends StringToIdentifiable<ShipType> {
+public class StringToShipTypeParser extends StringToIdentifiable<ShipType<?>> {
 
-    public static class StringToHostClonableShipTypeParser extends StringToIdentifiable<CloneableShipType>{
+    public static class StringToHostCloneableShipTypeParser extends StringToIdentifiable<CloneableShipType<?>> {
 
-        public StringToHostClonableShipTypeParser() {
-            super(CloneableShipType.class);
+        public StringToHostCloneableShipTypeParser() {
+            super((Class<CloneableShipType<?>>) (Object) CloneableShipType.class);
         }
 
         @Override
-        public Optional<CloneableShipType> parse(String original) {
-            Collection<CloneableShipType> shipTypes = ShipsPlugin.getPlugin().getAll(CloneableShipType.class);
+        public Optional<CloneableShipType<?>> parse(String original) {
+            Collection<CloneableShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllCloneableShipTypes();
             return shipTypes.stream().filter(s -> s.getOriginType().equals(s)).filter(s -> s.getId().equals(original)).findAny();
         }
 
         @Override
-        public List<CloneableShipType> getSuggestions() {
-            Collection<CloneableShipType> shipTypes = ShipsPlugin.getPlugin().getAll(CloneableShipType.class);
+        public List<CloneableShipType<?>> getSuggestions() {
+            Collection<CloneableShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllCloneableShipTypes();
             return shipTypes.stream().filter(s -> s.getOriginType().equals(s)).collect(Collectors.toList());
         }
     }
 
     public StringToShipTypeParser() {
-        super(ShipType.class);
+        super((Class<ShipType<?>>) (Object) ShipType.class);
     }
 }

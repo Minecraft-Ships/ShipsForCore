@@ -7,13 +7,13 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class RawDedicatedNode <V, N extends ConfigurationNode.KnownParser<?, V>> implements DedicatedNode<V, V, N> {
+public class RawDedicatedNode<V, N extends ConfigurationNode.KnownParser<?, V>> implements DedicatedNode<V, V, N> {
 
     private final N node;
     private final String keyName;
-    private final BiConsumer<ConfigurationStream, Map.Entry<N, V>> consumer;
+    private final BiConsumer<? super ConfigurationStream, ? super Map.Entry<N, V>> consumer;
 
-    public RawDedicatedNode(N node, String keyName, BiConsumer<ConfigurationStream, Map.Entry<N, V>> consumer){
+    public RawDedicatedNode(N node, String keyName, BiConsumer<? super ConfigurationStream, ? super Map.Entry<N, V>> consumer) {
         this.node = node;
         this.keyName = keyName;
         this.consumer = consumer;
@@ -31,6 +31,6 @@ public class RawDedicatedNode <V, N extends ConfigurationNode.KnownParser<?, V>>
 
     @Override
     public void apply(ConfigurationStream stream, V value) {
-        this.consumer.accept(stream, new AbstractMap.SimpleImmutableEntry<>(getNode(), value));
+        this.consumer.accept(stream, new AbstractMap.SimpleImmutableEntry<>(this.getNode(), value));
     }
 }

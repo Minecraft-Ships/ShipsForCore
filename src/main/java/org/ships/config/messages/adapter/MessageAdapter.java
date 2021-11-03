@@ -13,7 +13,7 @@ public interface MessageAdapter<T> {
     AText process(AText message, T obj);
 
     default String adapterTextFormat() {
-        return "%" + adapterText() + "%";
+        return "%" + this.adapterText() + "%";
     }
 
     default boolean containsAdapter(String plain) {

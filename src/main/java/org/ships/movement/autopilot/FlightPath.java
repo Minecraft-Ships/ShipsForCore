@@ -20,11 +20,11 @@ public interface FlightPath {
     }
 
     default Optional<Vector3<Integer>> getNext(){
-        return getNext(0);
+        return this.getNext(0);
     }
 
     default Optional<Vector3<Integer>> getNext(int B){
-        List<FlightSinglePath> list = getPath();
+        List<FlightSinglePath> list = this.getPath();
         if(list.isEmpty()){
             return Optional.empty();
         }

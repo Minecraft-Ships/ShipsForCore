@@ -6,21 +6,21 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 public class VesselStructureUpdate implements VesselEvent, Cancellable {
 
-    private Vessel vessel;
-    private PositionableShipsStructure newStructure;
+    private final Vessel vessel;
+    private final PositionableShipsStructure newStructure;
     private boolean cancellable;
 
-    public VesselStructureUpdate(PositionableShipsStructure newStructure, Vessel vessel){
+    public VesselStructureUpdate(PositionableShipsStructure newStructure, Vessel vessel) {
         this.newStructure = newStructure;
         this.vessel = vessel;
     }
 
-    public PositionableShipsStructure getNewStructure(){
+    public PositionableShipsStructure getNewStructure() {
         return this.newStructure;
     }
 
-    public PositionableShipsStructure getOldStructure(){
-        return getVessel().getStructure();
+    public PositionableShipsStructure getOldStructure() {
+        return this.getVessel().getStructure();
     }
 
     @Override

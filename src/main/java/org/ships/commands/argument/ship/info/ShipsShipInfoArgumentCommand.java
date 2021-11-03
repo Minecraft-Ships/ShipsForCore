@@ -40,7 +40,7 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT), new ExactArgument(SHIP_INFO_ARGUMENT));
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT), new ExactArgument(this.SHIP_INFO_ARGUMENT));
     }
 
     @Override
@@ -64,12 +64,12 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         displayInfo(viewer, vessel);
         return true;
     }
 
-    private static <T> String flagToString(Function<VesselFlag<T>, String> to, VesselFlag<T> flag) {
+    private static <T> String flagToString(Function<? super VesselFlag<T>, String> to, VesselFlag<T> flag) {
         return to.apply(flag) + flag.getValue().map(v -> ": " + flag.getParser().unparse(v)).orElse("");
     }
 

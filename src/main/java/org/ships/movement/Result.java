@@ -68,21 +68,21 @@ public class Result extends ArrayList<Result.Run> {
 
         Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, c) -> {
             Optional<MovingBlock> opSign = c.getMovingStructure().getOriginal().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
-            if(!opSign.isPresent()){
+            if (!opSign.isPresent()) {
                 return;
             }
             v.getStructure().setPosition(opSign.get().getAfterPosition());
         };
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> c.getEntities().keySet().forEach(e -> {
-            if(e instanceof EntitySnapshot.NoneDestructibleSnapshot){
+            if (e instanceof EntitySnapshot.NoneDestructibleSnapshot) {
                 EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot = (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) e;
                 snapshot.teleportEntity(true);
-            }else{
+            } else {
                 e.getCreatedFrom().ifPresent(LiveEntity::remove);
                 try {
                     e.spawnEntity();
-                }catch (IllegalStateException ignored){
+                } catch (IllegalStateException ignored) {
                 }
             }
         });
@@ -93,23 +93,22 @@ public class Result extends ArrayList<Result.Run> {
 
     }
 
-    public Result(){
-        super();
+    public Result() {
     }
 
-    public Result(Run... run){
+    public Result(Run... run) {
         super(Arrays.asList(run));
     }
 
-    public Result(Collection<Run> collection){
+    public Result(Collection<? extends Run> collection) {
         super(collection);
     }
 
-    public void run(Vessel vessel, MovementContext context){
+    public void run(Vessel vessel, MovementContext context) {
         this.forEach(e -> {
             ResultEvent.PreRun event = new ResultEvent.PreRun(vessel, this, e, context);
             TranslateCore.getEventManager().callEvent(event);
-            if(event.isCancelled()){
+            if (event.isCancelled()) {
                 return;
             }
             e.run(vessel, context);

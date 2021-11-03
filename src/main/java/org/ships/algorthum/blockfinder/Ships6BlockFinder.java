@@ -14,7 +14,7 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.ArrayList;
@@ -122,7 +122,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         };
 
         private Overtime(SyncBlockPosition position, OvertimeBlockFinderUpdate update) {
-            this.pss = new AbstractPosititionableShipsStructure(position);
+            this.pss = new AbstractPositionableShipsStructure(position);
             this.update = update;
             this.process.add(position);
         }
@@ -145,12 +145,12 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
         int count = 0;
         Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
-        PositionableShipsStructure pss = new AbstractPosititionableShipsStructure(Position.toSync(position));
+        PositionableShipsStructure pss = new AbstractPositionableShipsStructure(Position.toSync(position));
         Collection<SyncBlockPosition> ret = new ArrayList<>();
         Collection<SyncBlockPosition> target = new ArrayList<>();
         Collection<SyncBlockPosition> process = new ArrayList<>();
         process.add(Position.toSync(position));
-        while (count != this.limit) {
+        while (count!=this.limit) {
             if (process.isEmpty()) {
                 ret.forEach(pss::addPosition);
                 return pss;

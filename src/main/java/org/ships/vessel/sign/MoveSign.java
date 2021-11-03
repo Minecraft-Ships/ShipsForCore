@@ -122,7 +122,7 @@ public class MoveSign implements ShipsSign {
         return "Move sign";
     }
 
-    private void onSignSpeedUpdate(CommandViewer player, Vessel ship, LiveSignTileEntity lste, int finalSpeed) {
+    private void onSignSpeedUpdate(CommandViewer player, Vessel ship, SignTileEntity lste, int finalSpeed) {
         int originalSpeed = ShipsPlugin.getPlugin().getConfig().getDefaultMoveSpeed();
         Optional<AText> opSpeed = lste.getTextAt(3);
         if (opSpeed.isPresent()) {

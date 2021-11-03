@@ -4,7 +4,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 public class UnableToFindLicenceSign extends LoadVesselException {
 
-    private PositionableShipsStructure shipsStructure;
+    private final PositionableShipsStructure shipsStructure;
 
     public UnableToFindLicenceSign(PositionableShipsStructure pss, String reason) {
         super(reason);

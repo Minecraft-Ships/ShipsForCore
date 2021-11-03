@@ -11,8 +11,8 @@ public class ResultEvent implements VesselEvent {
     public static class PreRun extends ResultEvent implements Cancellable {
 
         private boolean isCancelled;
-        private Result.Run run;
-        private MovementContext context;
+        private final Result.Run run;
+        private final MovementContext context;
 
         public PreRun(Vessel vessel, Result result, Result.Run run, MovementContext context) {
             super(vessel, result);
@@ -20,11 +20,11 @@ public class ResultEvent implements VesselEvent {
             this.run = run;
         }
 
-        public Result.Run getRun(){
+        public Result.Run getRun() {
             return this.run;
         }
 
-        public MovementContext getContext(){
+        public MovementContext getContext() {
             return this.context;
         }
 
@@ -39,15 +39,15 @@ public class ResultEvent implements VesselEvent {
         }
     }
 
-    private Vessel vessel;
-    private Result result;
+    private final Vessel vessel;
+    private final Result result;
 
-    public ResultEvent(Vessel vessel, Result result){
+    public ResultEvent(Vessel vessel, Result result) {
         this.vessel = vessel;
         this.result = result;
     }
 
-    public Result getResult(){
+    public Result getResult() {
         return this.result;
     }
 

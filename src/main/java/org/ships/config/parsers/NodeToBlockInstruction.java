@@ -34,7 +34,7 @@ public class NodeToBlockInstruction implements StringMapParser<BlockInstruction>
         }
         BlockInstruction bi = new BlockInstruction(opType.get());
         opCollideType.flatMap(stringStringEntry -> ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(stringStringEntry.getValue())).ifPresent(bi::setCollideType);
-        opLimit.flatMap(stringLimit -> Parser.STRING_TO_INTEGER.parse(stringLimit.getValue())).ifPresent(l -> bi.setBlockLimit(l));
+        opLimit.flatMap(stringLimit -> Parser.STRING_TO_INTEGER.parse(stringLimit.getValue())).ifPresent(bi::setBlockLimit);
         return Optional.of(bi);
     }
 

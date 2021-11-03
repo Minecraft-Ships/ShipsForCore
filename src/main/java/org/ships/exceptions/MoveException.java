@@ -6,14 +6,14 @@ import java.io.IOException;
 
 public class MoveException extends IOException {
 
-    private FailedMovement<?> movement;
+    private final FailedMovement<?> movement;
 
-    public MoveException(FailedMovement<?> failed){
+    public MoveException(FailedMovement<?> failed) {
         super("Failed to move due to " + failed.getResult().getClass().getSimpleName());
         this.movement = failed;
     }
 
-    public FailedMovement<?> getMovement(){
+    public FailedMovement<?> getMovement() {
         return this.movement;
     }
 }

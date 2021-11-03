@@ -50,7 +50,7 @@ public class ShipsDeleteShipTypeArgument implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        List<CloneableShipType> types = commandContext.getArgument(this, CUSTOM_SHIP_TYPE);
+        List<CloneableShipType<?>> types = commandContext.getArgument(this, CUSTOM_SHIP_TYPE);
         types.forEach(type -> {
             Set<SwitchableVessel<?>> vessels = ShipsPlugin
                     .getPlugin()
@@ -62,7 +62,7 @@ public class ShipsDeleteShipTypeArgument implements ArgumentCommand {
                     .collect(Collectors.toSet());
             long count = vessels.stream().filter(v -> {
                 try {
-                    ((SwitchableVessel<CloneableShipType<?>>) v).setType((CloneableShipType<?>) type);
+                    ((SwitchableVessel<CloneableShipType<?>>) v).setType(type);
                     return true;
                 } catch (IOException e) {
                     return false;

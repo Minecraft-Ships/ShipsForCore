@@ -48,9 +48,7 @@ public class ShipsBlockListSetBlockLimitArgumentCommand implements ArgumentComma
         List<BlockType> blocks = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
         int limit = commandContext.getArgument(this, SHIP_LIMIT_VALUE_ARGUMENT);
         DefaultBlockList blocklist = ShipsPlugin.getPlugin().getBlockList();
-        blocklist.getBlockList().stream().filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b))).forEach(bi -> {
-            blocklist.replaceBlockInstruction(bi.setBlockLimit(limit));
-        });
+        blocklist.getBlockList().stream().filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b))).forEach(bi -> blocklist.replaceBlockInstruction(bi.setBlockLimit(limit)));
         blocklist.saveChanges();
         if (commandContext.getSource() instanceof CommandViewer) {
             ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain(blocks.size() + " have been set to" +

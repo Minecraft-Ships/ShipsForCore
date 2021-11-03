@@ -25,13 +25,14 @@ public class ModifyShipTypeFlagArgument implements ArgumentCommand {
     private final ExactArgument VESSEL_TYPE_KEY = new ExactArgument("vessel type key", false, "shiptype");
     private final ExactArgument FLAG_KEY = new ExactArgument("flag key", false, "flag");
     private final ExactArgument MODIFY_KEY = new ExactArgument("modify");
-    private final ShipIdentifiableArgument<ShipType> VESSEL_TYPE = new ShipIdentifiableArgument<>("shiptype", ShipType.class, (c, a, v) -> !v.getFlags().isEmpty());
-    private final ShipTypeFlagArgument VESSEL_TYPE_FLAG = new ShipTypeFlagArgument("flag", (c, a) -> c.getArgument(this, VESSEL_TYPE));
-    private final StringParserArgument<Object> FLAG_PARSER = new StringParserArgument<>("flagValue", (c, a) -> (StringParser<Object>) c.getArgument(this, VESSEL_TYPE_FLAG).getParser(), (a, p) -> "Could not understand the value you entered");
+    private final ShipIdentifiableArgument<ShipType<?>> VESSEL_TYPE = new ShipIdentifiableArgument<>("shiptype",
+            (Class<ShipType<?>>) (Object) ShipType.class, (c, a, v) -> !v.getFlags().isEmpty());
+    private final ShipTypeFlagArgument VESSEL_TYPE_FLAG = new ShipTypeFlagArgument("flag", (c, a) -> c.getArgument(this, this.VESSEL_TYPE));
+    private final StringParserArgument<Object> FLAG_PARSER = new StringParserArgument<>("flagValue", (c, a) -> (StringParser<Object>) c.getArgument(this, this.VESSEL_TYPE_FLAG).getParser(), (a, p) -> "Could not understand the value you entered");
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(VESSEL_TYPE_KEY, FLAG_KEY, MODIFY_KEY, VESSEL_TYPE, VESSEL_TYPE_FLAG, FLAG_PARSER);
+        return Arrays.asList(this.VESSEL_TYPE_KEY, this.FLAG_KEY, this.MODIFY_KEY, this.VESSEL_TYPE, this.VESSEL_TYPE_FLAG, this.FLAG_PARSER);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class ModifyShipTypeFlagArgument implements ArgumentCommand {
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if(!(source instanceof CommandViewer)){
+        if (!(source instanceof CommandViewer)) {
             return false;
         }
         return ArgumentCommand.super.hasPermission(source);
@@ -54,13 +55,13 @@ public class ModifyShipTypeFlagArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        VesselFlag<?> flag = commandContext.getArgument(this, VESSEL_TYPE_FLAG);
-        Object parsedValue = commandContext.getArgument(this, FLAG_PARSER);
-        setFlagValue(flag, parsedValue);
+        VesselFlag<?> flag = commandContext.getArgument(this, this.VESSEL_TYPE_FLAG);
+        Object parsedValue = commandContext.getArgument(this, this.FLAG_PARSER);
+        this.setFlagValue(flag, parsedValue);
         return true;
     }
 
-    private <T> void setFlagValue(VesselFlag<T> flag, Object value){
-        flag.setValue((T)value);
+    private <T> void setFlagValue(VesselFlag<T> flag, Object value) {
+        flag.setValue((T) value);
     }
 }

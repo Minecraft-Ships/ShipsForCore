@@ -4,25 +4,25 @@ import org.core.world.position.block.BlockType;
 
 public class RequiredPercentMovementData {
 
-    protected float required;
-    protected float has;
-    protected BlockType blockType;
+    protected final float required;
+    protected final float has;
+    protected final BlockType blockType;
 
-    public RequiredPercentMovementData(BlockType blockType, float required, float has){
+    public RequiredPercentMovementData(BlockType blockType, float required, float has) {
         this.has = has;
         this.required = required;
         this.blockType = blockType;
     }
 
-    public BlockType getBlockType(){
+    public BlockType getBlockType() {
         return this.blockType;
     }
 
-    public float getRequired(){
+    public float getRequired() {
         return this.required;
     }
 
-    public float getHas(){
+    public float getHas() {
         return this.has;
     }
 }

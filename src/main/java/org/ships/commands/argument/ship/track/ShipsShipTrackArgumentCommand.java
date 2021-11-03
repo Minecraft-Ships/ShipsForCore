@@ -33,7 +33,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT), new ExactArgument(TRACK_ARGUMENT));
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT), new ExactArgument(this.TRACK_ARGUMENT));
     }
 
     @Override

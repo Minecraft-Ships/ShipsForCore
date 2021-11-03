@@ -5,17 +5,18 @@ import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AbstractPosititionableShipsStructure implements PositionableShipsStructure {
+public class AbstractPositionableShipsStructure implements PositionableShipsStructure {
 
     protected Set<Vector3<Integer>> vectors = new HashSet<>();
     protected SyncBlockPosition position;
 
-    public AbstractPosititionableShipsStructure(SyncBlockPosition position) {
+    public AbstractPositionableShipsStructure(SyncBlockPosition position) {
         this.position = position;
     }
 
@@ -32,8 +33,8 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
 
     @Override
     public PositionableShipsStructure addAir() {
-        Collection<SyncBlockPosition> positions = getPositions();
-        List<SyncBlockPosition> toAdd = new ArrayList<>();
+        Collection<SyncBlockPosition> positions = this.getPositions();
+        Collection<SyncBlockPosition> toAdd = new ArrayList<>();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         positions.forEach(p -> {
             for (Direction dir : directions) {
@@ -75,7 +76,7 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
 
     @Override
     public Set<Vector3<Integer>> getRelativePositions() {
-        Set<Vector3<Integer>> vectors = new HashSet<>(getOriginalRelativePositions());
+        Set<Vector3<Integer>> vectors = new HashSet<>(this.getOriginalRelativePositions());
         if (vectors.stream().noneMatch(v -> v.equals(Vector3.valueOf(0, 0, 0)))) {
             vectors.add(Vector3.valueOf(0, 0, 0));
         }
@@ -95,16 +96,16 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
         return this.vectors.add(add);
     }
 
-    private void addRawPosition(SyncBlockPosition position) {
-        Vector3<Integer> original = getPosition().getPosition();
+    private void addRawPosition(Position<Integer> position) {
+        Vector3<Integer> original = this.getPosition().getPosition();
         Vector3<Integer> next = position.getPosition();
         this.vectors.add(next.minus(original));
     }
 
     @Override
     public boolean removePosition(Vector3<Integer> remove) {
-        Vector3<Integer> original = getPosition().getPosition();
-        Vector3<Integer> next = position.getPosition();
+        Vector3<Integer> original = this.getPosition().getPosition();
+        Vector3<Integer> next = this.position.getPosition();
         return this.vectors.remove(next.minus(original));
     }
 
@@ -115,14 +116,14 @@ public class AbstractPosititionableShipsStructure implements PositionableShipsSt
     }
 
     @Override
-    public ShipsStructure setRaw(Collection<Vector3<Integer>> collection) {
+    public ShipsStructure setRaw(Collection<? extends Vector3<Integer>> collection) {
         this.vectors = new HashSet<>(collection);
         return this;
     }
 
-    private static Optional<SyncBlockPosition> getNextInLine(SyncBlockPosition pos, Direction direction, Collection<SyncBlockPosition> collections) throws DirectionNotSupported {
+    private static Optional<SyncBlockPosition> getNextInLine(Position<Integer> pos, Direction direction, Collection<? extends SyncBlockPosition> collections) throws DirectionNotSupported {
         Vector3<Integer> original = pos.getPosition();
-        List<Direction> directions = new ArrayList<>(Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));
+        Collection<Direction> directions = new ArrayList<>(Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));
         if (!directions.contains(direction)) {
             throw new DirectionNotSupported(direction, "");
         }

@@ -28,7 +28,7 @@ public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT), new ExactArgument(SHIP_UNLOCK_ARGUMENT));
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT), new ExactArgument(this.SHIP_UNLOCK_ARGUMENT));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         Set<SyncBlockPosition> set = vessel.getStructure().getPositions().stream().filter(p -> ShipsSign.LOCKED_SIGNS.stream().anyMatch(p1 -> p1.equals(p))).collect(Collectors.toSet());
         if (set.isEmpty()) {
             if (source instanceof CommandViewer) {

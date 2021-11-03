@@ -44,7 +44,7 @@ public class ShipsViewShipTypeArgument implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) source;
-        Set<ShipType> types = ShipsPlugin.getPlugin().getAll(ShipType.class);
+        Set<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
         types.forEach(st -> viewer.sendMessage(AText.ofPlain(" - " + st.getDisplayName())));
         return true;
     }

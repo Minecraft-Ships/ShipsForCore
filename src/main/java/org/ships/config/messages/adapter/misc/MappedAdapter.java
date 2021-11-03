@@ -8,10 +8,10 @@ import java.util.function.Function;
 
 public class MappedAdapter<M, T> implements MessageAdapter<M> {
 
-    private final Function<M, T> function;
-    private final MessageAdapter<T> adapter;
+    private final Function<? super M, ? extends T> function;
+    private final MessageAdapter<? super T> adapter;
 
-    public MappedAdapter(MessageAdapter<T> adapter, Function<M, T> function){
+    public MappedAdapter(MessageAdapter<? super T> adapter, Function<? super M, ? extends T> function) {
         this.function = function;
         this.adapter = adapter;
     }

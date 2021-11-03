@@ -34,8 +34,10 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     protected Float specialBlockPercent;
     protected Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();
 
-    protected ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
-    protected ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
 
     public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -72,7 +74,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         if (!context.isStrictMovement()) {
             return;
         }
-        Optional<Integer> opWaterLevel = getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
+        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
         if (!opWaterLevel.isPresent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }

@@ -65,7 +65,7 @@ public class ShipsConfig implements Config.KnownNodes {
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modified = false;
         if (!this.file.getFile().exists()) {
-            recreateFile();
+            this.recreateFile();
         }
         if (!this.file.parse(this.ADVANCED_MOVEMENT.getNode()).isPresent()) {
             modified = true;
@@ -211,7 +211,7 @@ public class ShipsConfig implements Config.KnownNodes {
 
     public Optional<String> getDefaultLoginCommand() {
         String command = this.file.getString(this.LOGIN_COMMAND.getNode(), "");
-        if (command.equals("")) {
+        if (command.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(command);

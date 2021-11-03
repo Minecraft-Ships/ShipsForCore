@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class LegacyShipsConfig implements Config {
 
-    protected ConfigurationStream.ConfigurationFile configuration;
+    protected final ConfigurationStream.ConfigurationFile configuration;
 
     public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_STRUCTURE_LIMITS_AIR_CHECK_GAP = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Structure", "StructureLimits", "airCheckGap");
     public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Structure", "StructureLimits", "trackLimit");
@@ -39,14 +39,14 @@ public class LegacyShipsConfig implements Config {
     }
 
     public boolean isLegacy() {
-        return getFile().getInteger(this.LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT).isPresent();
+        return this.getFile().getInteger(this.LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT).isPresent();
     }
 
     public ShipsConfig convertToNew() {
-        Optional<Boolean> opForceUsername = getFile().getBoolean(LEGACY_SIGN_FORCE_USER_NAME_ON_SIGN);
-        Optional<Integer> opEOTRepeat = getFile().getInteger(LEGACY_SIGN_EOT_REPEAT);
-        Optional<Boolean> opEOTEnabled = getFile().getBoolean(LEGACY_SIGN_EOT_ENABLED);
-        Optional<Integer> opTrack = getFile().getInteger(LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT);
+        Optional<Boolean> opForceUsername = this.getFile().getBoolean(this.LEGACY_SIGN_FORCE_USER_NAME_ON_SIGN);
+        Optional<Integer> opEOTRepeat = this.getFile().getInteger(this.LEGACY_SIGN_EOT_REPEAT);
+        Optional<Boolean> opEOTEnabled = this.getFile().getBoolean(this.LEGACY_SIGN_EOT_ENABLED);
+        Optional<Integer> opTrack = this.getFile().getInteger(this.LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT);
         this.configuration.getFile().delete();
         ShipsConfig config = new ShipsConfig();
         opForceUsername.ifPresent(b -> config.file.set(config.LICENCE_SIGN_TEXT_4TH.getNode(), Parser.STRING_TO_STRING_PARSER, b ? "%PlayerN%":""));

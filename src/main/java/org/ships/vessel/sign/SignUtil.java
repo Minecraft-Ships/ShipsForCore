@@ -62,11 +62,11 @@ public interface SignUtil {
 
         @Override
         protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-            if (context.getBar().isPresent()) {
-                ServerBossBar bar = context.getBar().get();
+            if (this.context.getBar().isPresent()) {
+                ServerBossBar bar = this.context.getBar().get();
                 int foundBlocks = currentStructure.getPositions().size() + 1;
                 try {
-                    bar.setValue(foundBlocks, trackLimit);
+                    bar.setValue(foundBlocks, this.trackLimit);
                 } catch (IllegalArgumentException ignore) {
                 }
             }
@@ -76,12 +76,12 @@ public interface SignUtil {
         @Override
         protected void onExceptionThrown(LoadVesselException e) {
             ShipsSign.LOCKED_SIGNS.remove(this.original);
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+            this.context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             if (e instanceof UnableToFindLicenceSign) {
                 UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                 this.player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
-                e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                TranslateCore.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
+                TranslateCore.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(this.player))).build(ShipsPlugin.getPlugin()).run();
             } else {
                 this.player.sendMessage(AText.ofPlain(e.getReason()).withColour(NamedTextColours.RED));
             }

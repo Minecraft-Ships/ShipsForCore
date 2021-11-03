@@ -26,10 +26,10 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
     private static final String CONFIG_TYPE = "config_type";
     private static final String CONFIG_KEY = "config_key";
 
-    private final Supplier<Config.KnownNodes> config;
+    private final Supplier<? extends Config.KnownNodes> config;
     private final String[] configNames;
 
-    public AbstractShipsConfigViewArgument(Supplier<Config.KnownNodes> config, String... configNames) {
+    public AbstractShipsConfigViewArgument(Supplier<? extends Config.KnownNodes> config, String... configNames) {
         if (configNames.length==0) {
             throw new IllegalArgumentException("configNames must have at least one value");
         }
@@ -69,10 +69,10 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
     }
 
     private <T> String readUnknownNode(DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>> node) {
-        return readNode((DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>>) node);
+        return this.readNode((DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>>) node);
     }
 
-    private <T> String readNode(DedicatedNode<T, T, ConfigurationNode.KnownParser<String, T>> node) {
+    private <T> String readNode(DedicatedNode<T, T, ? extends ConfigurationNode.KnownParser<String, T>> node) {
         Optional<T> opValue = this.config.get().getFile().parse(node.getNode());
         if (!opValue.isPresent()) {
             return "<no value>";

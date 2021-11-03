@@ -6,11 +6,11 @@ import java.util.Optional;
 
 public class AbstractFailedMovement<E extends Object> implements FailedMovement<E> {
 
-    protected MovementResult<E> result;
-    protected Vessel ship;
-    protected E value;
+    protected final MovementResult<E> result;
+    protected final Vessel ship;
+    protected final E value;
 
-    public AbstractFailedMovement(Vessel vessel, MovementResult<E> mr, E value){
+    public AbstractFailedMovement(Vessel vessel, MovementResult<E> mr, E value) {
         this.result = mr;
         this.ship = vessel;
         this.value = value;

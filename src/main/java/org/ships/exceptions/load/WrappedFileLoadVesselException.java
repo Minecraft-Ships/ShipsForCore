@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 
 public class WrappedFileLoadVesselException extends FileLoadVesselException {
 
-    private Throwable throwable;
+    private final Throwable throwable;
 
     public WrappedFileLoadVesselException(File file, Throwable throwable) {
         super(file, throwable.getMessage());
@@ -14,20 +14,20 @@ public class WrappedFileLoadVesselException extends FileLoadVesselException {
     }
 
     @Override
-    public void printStackTrace(){
-        System.err.println("An error occurred in file: " + getFile().getPath());
+    public void printStackTrace() {
+        System.err.println("An error occurred in file: " + this.getFile().getPath());
         this.throwable.printStackTrace();
     }
 
     @Override
-    public void printStackTrace(PrintStream stream){
-        System.err.println("An error occurred in file: " + getFile().getPath());
+    public void printStackTrace(PrintStream stream) {
+        System.err.println("An error occurred in file: " + this.getFile().getPath());
         this.throwable.printStackTrace(stream);
     }
 
     @Override
-    public void printStackTrace(PrintWriter writer){
-        System.err.println("An error occurred in file: " + getFile().getPath());
+    public void printStackTrace(PrintWriter writer) {
+        System.err.println("An error occurred in file: " + this.getFile().getPath());
         this.throwable.printStackTrace(writer);
     }
 }

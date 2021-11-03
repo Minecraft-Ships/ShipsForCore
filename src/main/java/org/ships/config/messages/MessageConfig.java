@@ -37,7 +37,7 @@ public class MessageConfig implements Config.KnownNodes {
         boolean modifications = false;
         if (!this.file.getString(TOO_MANY).isPresent()) {
             modifications = true;
-            recreateFile();
+            this.recreateFile();
         }
         if (!this.file.getString(SYNCED_SHIP).isPresent()) {
             modifications = true;

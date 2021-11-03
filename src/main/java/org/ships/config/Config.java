@@ -14,7 +14,7 @@ public interface Config {
         <A, V, N extends ConfigurationNode.KnownParser<?, V>> Set<DedicatedNode<A, V, N>> getNodes();
 
         default Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> getNode(String key){
-            return (Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>>)(Object)getNodes().parallelStream().filter(n -> n.getKeyName().equalsIgnoreCase(key)).findAny();
+            return (Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>>)(Object) this.getNodes().parallelStream().filter(n -> n.getKeyName().equalsIgnoreCase(key)).findAny();
         }
 
     }

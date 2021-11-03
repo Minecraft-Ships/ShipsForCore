@@ -23,7 +23,7 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
 
     @Override
     public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(getExactAdapters());
+        return new HashSet<>(this.getExactAdapters());
     }
 
     private Set<MessageAdapter<CrewPermission>> getExactAdapters() {
@@ -32,7 +32,7 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
 
     @Override
     public AText process(AText text, CrewPermission obj) {
-        for (MessageAdapter<CrewPermission> adapter : getExactAdapters()) {
+        for (MessageAdapter<CrewPermission> adapter : this.getExactAdapters()) {
             text = adapter.process(text, obj);
         }
         return text;

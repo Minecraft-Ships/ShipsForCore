@@ -46,16 +46,16 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) source;
-        SortedSet<ArgumentCommand> commands = new TreeSet<>((o1, o2) -> {
+        Collection<ArgumentCommand> commands = new TreeSet<>((o1, o2) -> {
             List<CommandArgument<?>> a1 = o1.getArguments();
             List<CommandArgument<?>> a2 = o2.getArguments();
-            if (a1.size()==0 && a2.size()==0) {
+            if (a1.isEmpty() && a2.isEmpty()) {
                 return 0;
             }
-            if (a1.size()==0) {
+            if (a1.isEmpty()) {
                 return 1;
             }
-            if (a2.size()==0) {
+            if (a2.isEmpty()) {
                 return -1;
             }
             CommandArgument<?> arg1 = a1.get(0);
@@ -67,14 +67,14 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
                 continue;
             }
             List<CommandArgument<?>> arguments = cmd.getArguments();
-            if (arguments.size()==0) {
+            if (arguments.isEmpty()) {
                 commands.add(cmd);
                 continue;
             }
             String usage = arguments.get(0).getUsage();
             boolean result = commands.parallelStream().anyMatch(argCmd -> {
                 List<CommandArgument<?>> commandArgs = argCmd.getArguments();
-                if (commandArgs.size()==0) {
+                if (commandArgs.isEmpty()) {
                     return false;
                 }
                 return usage.equals(commandArgs.get(0).getUsage());
@@ -86,7 +86,7 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
         }
         for (ArgumentCommand cmd : commands) {
             List<CommandArgument<?>> arguments = cmd.getArguments();
-            if (arguments.size()==0) {
+            if (arguments.isEmpty()) {
                 viewer.sendMessage(AText.ofPlain(cmd.getDescription()).withColour(NamedTextColours.YELLOW));
                 continue;
             }

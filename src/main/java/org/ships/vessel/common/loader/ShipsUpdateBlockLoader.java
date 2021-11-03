@@ -10,7 +10,7 @@ import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 public class ShipsUpdateBlockLoader {
 
-    protected SyncBlockPosition original;
+    protected final SyncBlockPosition original;
 
     public ShipsUpdateBlockLoader(SyncBlockPosition position) {
         this.original = position;
@@ -62,7 +62,7 @@ public class ShipsUpdateBlockLoader {
         SyncBlockPosition block = opBlock.get();
         Vessel vessel =
                 new ShipsLicenceSignFinder((SignTileEntity) opBlock.get().getTileEntity().orElseThrow(() -> new IllegalStateException("Could not get tile entity"))).load();
-        PositionableShipsStructure apss = new AbstractPosititionableShipsStructure(block);
+        PositionableShipsStructure apss = new AbstractPositionableShipsStructure(block);
         blocks.getPositions().forEach(apss::addPosition);
         vessel.setStructure(apss);
         return vessel;

@@ -80,7 +80,7 @@ public class ShipsFileLoader implements ShipsLoader {
             this.ship = shipsVessel;
         }
 
-        public void load(BlockPosition position, Collection<Vector3<Integer>> structureList) {
+        public void load(BlockPosition position, Collection<? extends Vector3<Integer>> structureList) {
             if (structureList.isEmpty()) {
                 ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
                     @Override
@@ -104,7 +104,7 @@ public class ShipsFileLoader implements ShipsLoader {
         }
     }
 
-    protected File file;
+    protected final File file;
 
     public ShipsFileLoader(File file) {
         this.file = file;
@@ -192,8 +192,9 @@ public class ShipsFileLoader implements ShipsLoader {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
         String shipTypeS = opShipTypeS.get().toPlain();
-        Set<ShipType> types = ShipsPlugin.getPlugin().getAll(ShipType.class);
-        Optional<ShipType> opShipType = types.parallelStream().filter(s -> s.getDisplayName().equalsIgnoreCase(shipTypeS)).findAny();
+        Set<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
+        Optional<ShipType<?>> opShipType =
+                types.parallelStream().filter(s -> s.getDisplayName().equalsIgnoreCase(shipTypeS)).findAny();
         if (!opShipType.isPresent()) {
             throw new FileLoadVesselException(this.file, "Unknown ShipType");
         }
@@ -253,7 +254,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public static Set<ShipsVessel> loadAll(Consumer<? super LoadVesselException> function) {
         Set<ShipsVessel> set = new HashSet<>();
-        Set<ShipType> types = ShipsPlugin.getPlugin().getAll(ShipType.class);
+        Set<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
         types.forEach(st -> {
             try {
                 File vesselDataFolder = getVesselDataFolder();

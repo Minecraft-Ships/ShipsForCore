@@ -14,7 +14,7 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
@@ -55,7 +55,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
 
     private PositionableShipsStructure getConnectedBlocks(ASyncBlockPosition position, OvertimeBlockFinderUpdate update) {
         this.blockCount = 0;
-        this.shipsStructure = new AbstractPosititionableShipsStructure(Position.toSync(position));
+        this.shipsStructure = new AbstractPositionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
         this.getNextBlock(update, position, directions);

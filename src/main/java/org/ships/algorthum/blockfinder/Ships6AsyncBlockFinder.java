@@ -15,7 +15,7 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Collections;
@@ -57,7 +57,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(0)
                 .setExecutor(() -> {
-                    PositionableShipsStructure structure = new AbstractPosititionableShipsStructure(Position.toSync(position));
+                    PositionableShipsStructure structure = new AbstractPositionableShipsStructure(Position.toSync(position));
                     Set<ASyncBlockPosition> toProcess = new HashSet<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
                     toProcess.add(Position.toASync(position));

@@ -57,29 +57,29 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     }
 
     @Override
-    default void moveTowards(int x, int y, int z, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+    default void moveTowards(int x, int y, int z, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
         Movement.MidMovement.ADD_TO_POSITION.move(this, x, y, z, context, exception);
     }
 
     @Override
-    default void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+    default void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
         Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context, exception);
     }
 
     @Override
-    default void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+    default void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
         SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context, exception);
     }
 
     @Override
-    default void rotateRightAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+    default void rotateRightAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
         SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context, exception);
     }
 
     @Override
-    default void rotateLeftAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception) {
+    default void rotateLeftAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
         SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context, exception);
     }

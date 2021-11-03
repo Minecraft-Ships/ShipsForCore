@@ -10,6 +10,6 @@ public interface ConfigAdapter extends MessageAdapter<Object> {
     @Override
     @Deprecated
     default AText process(AText message, Object obj) {
-        return process(message);
+        return this.process(message);
     }
 }

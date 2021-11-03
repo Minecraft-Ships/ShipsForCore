@@ -1,14 +1,16 @@
 package org.ships.permissions.vessel;
 
-public class AbstractCrewPermission implements CrewPermission{
+import org.core.utils.Identifiable;
+
+public class AbstractCrewPermission implements CrewPermission {
 
     protected boolean move;
     protected boolean remove;
     protected boolean command;
-    protected String name;
-    protected String id;
+    protected final String name;
+    protected final String id;
 
-    public AbstractCrewPermission(String id, String name){
+    public AbstractCrewPermission(String id, String name) {
         this.name = name;
         this.id = id;
     }
@@ -57,11 +59,11 @@ public class AbstractCrewPermission implements CrewPermission{
     }
 
     @Override
-    public boolean equals(Object obj){
-        if(!(obj instanceof CrewPermission)){
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CrewPermission)) {
             return false;
         }
-        CrewPermission permission = (CrewPermission)obj;
+        Identifiable permission = (Identifiable) obj;
         return permission.getId().equals(this.getId());
     }
 }

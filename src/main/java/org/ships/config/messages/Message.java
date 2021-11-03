@@ -72,10 +72,10 @@ public interface Message<R> {
 
     TrackLimitAdapter CONFIG_TRACK_LIMIT = new TrackLimitAdapter();
 
-    List<ConfigAdapter> CONFIG_ADAPTERS = Arrays.asList(CONFIG_TRACK_LIMIT);
+    List<ConfigAdapter> CONFIG_ADAPTERS = Collections.singletonList(CONFIG_TRACK_LIMIT);
     List<MessageAdapter<BlockType>> BLOCK_TYPE_ADAPTERS = Arrays.asList(BLOCK_TYPE_ID, BLOCK_TYPE_NAME);
     List<MessageAdapter<Position<?>>> LOCATION_ADAPTERS = new ArrayList<MessageAdapter<Position<?>>>() {{
-        addAll(
+        this.addAll(
                 BLOCK_TYPE_ADAPTERS
                         .parallelStream()
                         .map(ma -> new MappedAdapter<Position<?>, BlockType>(ma, (Position::getBlockType)))
@@ -84,23 +84,23 @@ public interface Message<R> {
     List<MessageAdapter<EntityType<?, ?>>> ENTITY_TYPE_ADAPTERS = Arrays.asList(ENTITY_TYPE_ID, ENTITY_TYPE_NAME);
 
     List<MessageAdapter<Entity<?>>> ENTITY_ADAPTERS = new ArrayList<MessageAdapter<Entity<?>>>(){{
-        add(ENTITY_NAME);
-        addAll(LOCATION_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<Entity<?>, Position<?>>(ma, Entity::getPosition)).collect(Collectors.toSet()));
-        addAll(ENTITY_TYPE_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<Entity<?>, EntityType<?, ?>>(ma, Entity::getType)).collect(Collectors.toSet()));
+        this.add(ENTITY_NAME);
+        this.addAll(LOCATION_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<Entity<?>, Position<?>>(ma, Entity::getPosition)).collect(Collectors.toSet()));
+        this.addAll(ENTITY_TYPE_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<Entity<?>, EntityType<?, ?>>(ma, Entity::getType)).collect(Collectors.toSet()));
     }};
     List<MessageAdapter<ShipsStructure>> STRUCTURE_ADAPTERS = new ArrayList<MessageAdapter<ShipsStructure>>(){{
-        add(STRUCTURE_SIZE);
-        add(STRUCTURE_CHUNK_SIZE);
+        this.add(STRUCTURE_SIZE);
+        this.add(STRUCTURE_CHUNK_SIZE);
     }};
 
 
     List<MessageAdapter<Vessel>> VESSEL_ADAPTERS = new ArrayList<MessageAdapter<Vessel>>() {{
-        add(VESSEL_NAME);
-        add(VESSEL_SPEED);
-        add(VESSEL_SIZE);
-        add(VESSEL_ID);
-        addAll(STRUCTURE_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<>(ma, Vessel::getStructure)).collect(Collectors.toSet()));
-        addAll(LOCATION_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<>(ma, Vessel::getPosition)).collect(Collectors.toSet()));
+        this.add(VESSEL_NAME);
+        this.add(VESSEL_SPEED);
+        this.add(VESSEL_SIZE);
+        this.add(VESSEL_ID);
+        this.addAll(STRUCTURE_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<>(ma, Vessel::getStructure)).collect(Collectors.toSet()));
+        this.addAll(LOCATION_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<>(ma, Vessel::getPosition)).collect(Collectors.toSet()));
     }};
 
 
@@ -114,7 +114,7 @@ public interface Message<R> {
     AText process(AText text, R obj);
 
     default AText process(R obj) {
-        return process(parse(), obj);
+        return this.process(this.parse(), obj);
     }
 
     default ConfigurationNode.KnownParser.SingleKnown<AText> getKnownPath() {
@@ -126,19 +126,20 @@ public interface Message<R> {
     }
 
     default AText parse() {
-        return parse(ShipsPlugin.getPlugin().getAdventureMessageConfig());
+        return this.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig());
     }
 
     default Set<String> suggestAdapter(String peek) {
         String peekLower = peek.replaceAll("%", "").toLowerCase();
-        return getAdapters().parallelStream().map(a -> a.adapterText().toLowerCase()).filter(a -> a.contains(peekLower)).collect(Collectors.toSet());
+        return this.getAdapters().parallelStream().map(a -> a.adapterText().toLowerCase()).filter(a -> a.contains(peekLower)).collect(Collectors.toSet());
     }
 
+    @SafeVarargs
     static <T> CollectionSingleAdapter<T> asCollectionSingle(MessageAdapter<T>... array) {
         return asCollectionSingle(Arrays.asList(array));
     }
 
-    static <T> CollectionSingleAdapter<T> asCollectionSingle(Collection<MessageAdapter<T>> collection) {
+    static <T> CollectionSingleAdapter<T> asCollectionSingle(Collection<? extends MessageAdapter<T>> collection) {
         return new CollectionSingleAdapter<>(collection);
     }
 }

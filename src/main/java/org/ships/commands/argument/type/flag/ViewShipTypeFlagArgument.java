@@ -23,15 +23,16 @@ public class ViewShipTypeFlagArgument implements ArgumentCommand {
     private final ExactArgument SHIP_TYPE_KEY_ARGUMENT = new ExactArgument("ship type key", false, "shiptype");
     private final ExactArgument FLAG_KEY_ARGUMENT = new ExactArgument("flag key", false, "flag");
     private final ExactArgument VIEW_KEY = new ExactArgument("view");
-    private final ShipIdentifiableArgument<ShipType> SHIP_TYPE = new ShipIdentifiableArgument<>("shiptype", ShipType.class, (c, a, v) -> !v.getFlags().isEmpty());
+    private final ShipIdentifiableArgument<ShipType<?>> SHIP_TYPE = new ShipIdentifiableArgument<>("shiptype",
+            (Class<ShipType<?>>) (Object) ShipType.class, (c, a, v) -> !v.getFlags().isEmpty());
 
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
-                SHIP_TYPE_KEY_ARGUMENT,
-                FLAG_KEY_ARGUMENT,
-                VIEW_KEY,
-                SHIP_TYPE
+                this.SHIP_TYPE_KEY_ARGUMENT,
+                this.FLAG_KEY_ARGUMENT,
+                this.VIEW_KEY,
+                this.SHIP_TYPE
         );
     }
 
@@ -55,9 +56,9 @@ public class ViewShipTypeFlagArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        ShipType<?> type = commandContext.getArgument(this, SHIP_TYPE);
+        ShipType<?> type = commandContext.getArgument(this, this.SHIP_TYPE);
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        type.getFlags().forEach(vf -> sendMessage(viewer, vf));
+        type.getFlags().forEach(vf -> this.sendMessage(viewer, vf));
         return true;
     }
 

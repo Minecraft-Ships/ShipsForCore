@@ -18,8 +18,8 @@ import java.util.stream.Stream;
 
 public class DefaultBlockList implements BlockList {
 
-    protected ConfigurationStream.ConfigurationFile file;
-    protected Set<BlockInstruction> blocks = new HashSet<>();
+    protected final ConfigurationStream.ConfigurationFile file;
+    protected final Set<BlockInstruction> blocks = new HashSet<>();
 
     public DefaultBlockList() {
         ConfigurationFormat format = TranslateCore.getPlatform().getConfigFormat();
@@ -83,7 +83,7 @@ public class DefaultBlockList implements BlockList {
     @Override
     public void recreateFile() {
         ConfigurationStream.ConfigurationFile file = this.getFile();
-        Set<BlockType> completedBefore = new HashSet<>();
+        Collection<BlockType> completedBefore = new HashSet<>();
         BlockTypes.OAK_SIGN.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
         BlockTypes.OAK_WALL_SIGN.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
         BlockTypes.PURPUR_BLOCK.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));

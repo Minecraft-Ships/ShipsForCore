@@ -41,11 +41,11 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
-                new ExactArgument(SHIP_ARGUMENT),
-                new ShipIdArgument<>(SHIP_ID_ARGUMENT),
-                new ExactArgument(SHIP_MOVE_TO_ARGUMENT),
-                new ExactArgument(SHIP_ADDITION_ARGUMENT, false, "add", "minus"),
-                new Vector3IntegerArgument(SHIP_VECTOR_ARGUMENT)
+                new ExactArgument(this.SHIP_ARGUMENT),
+                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
+                new ExactArgument(this.SHIP_ADDITION_ARGUMENT, false, "add", "minus"),
+                new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT)
         );
     }
 
@@ -61,9 +61,9 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        Vector3<Integer> vector3 = commandContext.getArgument(this, SHIP_VECTOR_ARGUMENT);
-        if (commandContext.getArgument(this, SHIP_ADDITION_ARGUMENT).equals("minus")) {
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
+        Vector3<Integer> vector3 = commandContext.getArgument(this, this.SHIP_VECTOR_ARGUMENT);
+        if (commandContext.getArgument(this, this.SHIP_ADDITION_ARGUMENT).equals("minus")) {
             vector3 = Vector3.valueOf(-vector3.getX(), -vector3.getY(), -vector3.getZ());
         }
         SyncBlockPosition position = vessel.getPosition();
@@ -89,7 +89,7 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
                 MoveException e = (MoveException) exc;
                 if (commandContext.getSource() instanceof CommandViewer) {
                     CommandViewer viewer = (CommandViewer) commandContext.getSource();
-                    sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
                 }
             } else {
                 exc.printStackTrace();

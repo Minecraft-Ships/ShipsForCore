@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 public class ShipTeleportLocationArgument implements CommandArgument<String> {
 
     private final String id;
-    private final ParseCommandArgument<TeleportToVessel> toVessel;
+    private final ParseCommandArgument<? extends TeleportToVessel> toVessel;
 
-    public ShipTeleportLocationArgument(String id, ParseCommandArgument<TeleportToVessel> toVessel) {
+    public ShipTeleportLocationArgument(String id, ParseCommandArgument<? extends TeleportToVessel> toVessel) {
         this.id = id;
         this.toVessel = toVessel;
     }

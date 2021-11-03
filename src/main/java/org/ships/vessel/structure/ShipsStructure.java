@@ -19,24 +19,24 @@ public interface ShipsStructure {
     boolean addPosition(Vector3<Integer> add);
     boolean removePosition(Vector3<Integer> remove);
     ShipsStructure clear();
-    ShipsStructure setRaw(Collection<Vector3<Integer>> collection);
+    ShipsStructure setRaw(Collection<? extends Vector3<Integer>> collection);
 
     default int getXSize(){
-        return getSpecificSize(Vector3::getX);
+        return this.getSpecificSize(Vector3::getX);
     }
 
     default int getYSize(){
-        return getSpecificSize(Vector3::getY);
+        return this.getSpecificSize(Vector3::getY);
     }
 
     default int getZSize(){
-        return getSpecificSize(Vector3::getZ);
+        return this.getSpecificSize(Vector3::getZ);
     }
 
-    default int getSpecificSize(Function<Vector3<Integer>, Integer> function){
+    default int getSpecificSize(Function<? super Vector3<Integer>, Integer> function){
         Integer min = null;
         Integer max = null;
-        for(Vector3<Integer> vector : getRelativePositions()){
+        for(Vector3<Integer> vector : this.getRelativePositions()){
             int value = function.apply(vector);
             if(min == null && max == null){
                 max = value;
@@ -57,12 +57,12 @@ public interface ShipsStructure {
     }
 
     default Collection<SyncBlockPosition> getPositions(Positionable<? extends Position<? extends Number>> positionable){
-        return getPositions(Position.toBlock(positionable.getPosition()));
+        return this.getPositions(Position.toBlock(positionable.getPosition()));
     }
 
     default Collection<SyncBlockPosition> getPositions(BlockPosition position){
         Set<SyncBlockPosition> set = new HashSet<>();
-        getRelativePositions().forEach(v -> set.add(Position.toSync(position.getRelative(v))));
+        this.getRelativePositions().forEach(v -> set.add(Position.toSync(position.getRelative(v))));
         return Collections.unmodifiableCollection(set);
     }
 }

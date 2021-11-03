@@ -6,6 +6,7 @@ import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
@@ -33,17 +34,17 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
             if (vessel instanceof Fallable) {
                 return true;
             }
             if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                 CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                LivePlayer player = (LivePlayer) source;
+                User player = (User) source;
                 return crewVessel.getPermission(player.getUniqueId()).canCommand();
             }
             return vessel instanceof VesselRequirement;
-        }, vessel -> "Does not have any requirements"), new ExactArgument(SHIP_CHECK_ARGUMENT));
+        }, vessel -> "Does not have any requirements"), new ExactArgument(this.SHIP_CHECK_ARGUMENT));
     }
 
     @Override

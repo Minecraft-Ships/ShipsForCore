@@ -34,14 +34,14 @@ public class VesselMoveEvent implements VesselEvent {
 
     public static class CollideDetected extends VesselMoveEvent {
 
-        private Set<SyncBlockPosition> collisions;
+        private final Set<SyncBlockPosition> collisions;
 
         public CollideDetected(Vessel vessel, MovementContext context, Set<SyncBlockPosition> collision) {
             super(vessel, context);
             this.collisions = collision;
         }
 
-        public Set<SyncBlockPosition> getCollisions(){
+        public Set<SyncBlockPosition> getCollisions() {
             return this.collisions;
         }
     }
@@ -67,43 +67,43 @@ public class VesselMoveEvent implements VesselEvent {
 
     public static class Post extends VesselMoveEvent {
 
-        private Result result;
+        private final Result result;
 
-        public Post(Vessel vessel, MovementContext context, Result result){
+        public Post(Vessel vessel, MovementContext context, Result result) {
             super(vessel, context);
             this.result = result;
         }
 
-        public Result getResult(){
+        public Result getResult() {
             return this.result;
         }
 
     }
 
-    private Vessel vessel;
-    private MovementContext context;
+    private final Vessel vessel;
+    private final MovementContext context;
 
-    public VesselMoveEvent(Vessel vessel, MovementContext context){
+    public VesselMoveEvent(Vessel vessel, MovementContext context) {
         this.vessel = vessel;
         this.context = context;
     }
 
-    public MovementContext getContext(){
+    public MovementContext getContext() {
         return this.context;
     }
 
     @Deprecated
-    public BasicMovement getMovement(){
+    public BasicMovement getMovement() {
         return this.context.getMovement();
     }
 
     @Deprecated
-    public boolean isStrictedMovement(){
+    public boolean isStrictedMovement() {
         return this.context.isStrictMovement();
     }
 
     @Deprecated
-    public MovingBlockSet getMovingStructure(){
+    public MovingBlockSet getMovingStructure() {
         return this.context.getMovingStructure();
     }
 

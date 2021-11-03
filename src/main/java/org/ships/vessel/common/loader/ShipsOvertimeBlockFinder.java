@@ -24,7 +24,7 @@ public class ShipsOvertimeBlockFinder {
         this.position = position;
     }
 
-    public void loadOvertime(Consumer<Vessel> consumer, Consumer<PositionableShipsStructure> exceptionRunner) {
+    public void loadOvertime(Consumer<? super Vessel> consumer, Consumer<? super PositionableShipsStructure> exceptionRunner) {
         Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = ShipsPlugin
                 .getPlugin()
                 .getVessels()

@@ -5,6 +5,7 @@ import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.vessel.structure.PositionableShipsStructure;
 import org.ships.vessel.structure.ShipsStructure;
 
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
@@ -17,7 +18,7 @@ public class StructureChunkSizeAdapter implements MessageAdapter<ShipsStructure>
 
     @Override
     public Set<String> examples() {
-        return Collections.singleton(new Random().nextInt(99) + "");
+        return Collections.singleton(new SecureRandom().nextInt(99) + "");
     }
 
     @Override

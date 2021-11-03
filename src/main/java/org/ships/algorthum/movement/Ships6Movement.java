@@ -22,12 +22,12 @@ public class Ships6Movement implements BasicMovement {
 
     private static class RemoveBlocks implements Runnable {
 
-        private final List<MovingBlock> toProcess;
+        private final List<? extends MovingBlock> toProcess;
         private final int waterLevel;
         private final int attempt;
         private final MovementContext context;
 
-        public RemoveBlocks(int level, int attempt, MovementContext context, List<MovingBlock> blocks) {
+        private RemoveBlocks(int level, int attempt, MovementContext context, List<? extends MovingBlock> blocks) {
             this.toProcess = blocks;
             this.waterLevel = level;
             this.attempt = attempt;
@@ -38,9 +38,9 @@ public class Ships6Movement implements BasicMovement {
         public void run() {
             for (int A = 0; A < this.toProcess.size(); A++) {
                 final int B = A;
-                context.getBar().ifPresent(bar -> {
+                this.context.getBar().ifPresent(bar -> {
                     try {
-                        bar.setValue((attempt - 1) + B, context.getMovingStructure().size());
+                        bar.setValue((this.attempt - 1) + B, this.context.getMovingStructure().size());
                     } catch (IllegalArgumentException ignore) {
                     }
                 });
@@ -56,13 +56,13 @@ public class Ships6Movement implements BasicMovement {
 
     private static class SetBlocks implements Runnable {
 
-        private final List<MovingBlock> toProcess;
+        private final List<? extends MovingBlock> toProcess;
         private final int attempt;
         private final MovementContext context;
         private final int totalBlocks;
 
 
-        public SetBlocks(int attempt, int totalBlocks, MovementContext context, List<MovingBlock> blocks) {
+        private SetBlocks(int attempt, int totalBlocks, MovementContext context, List<? extends MovingBlock> blocks) {
             this.toProcess = blocks;
             this.context = context;
             this.attempt = attempt;
@@ -74,13 +74,13 @@ public class Ships6Movement implements BasicMovement {
             for (int A = 0; A < this.toProcess.size(); A++) {
                 MovingBlock m = this.toProcess.get(A);
                 final int B = A;
-                context.getBar().ifPresent(bar -> {
+                this.context.getBar().ifPresent(bar -> {
                     try {
-                        bar.setValue(attempt * B, (totalBlocks * 2) + 1);
+                        bar.setValue(this.attempt * B, (this.totalBlocks * 2) + 1);
                     } catch (IllegalArgumentException ignore) {
                     }
                 });
-                Stream.of(context.getMidMovementProcess()).forEach(mid -> mid.move(m));
+                Stream.of(this.context.getMidMovementProcess()).forEach(mid -> mid.move(m));
                 m.setMovingTo();
             }
         }
@@ -146,7 +146,7 @@ public class Ships6Movement implements BasicMovement {
                     .setDelayUnit(config.getDefaultMovementStackDelayUnit())
                     .build(ShipsPlugin.getPlugin());
         }
-        if (scheduler == null) {
+        if (scheduler==null) {
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.UNKNOWN, null));
         }
         scheduler.run();

@@ -274,9 +274,7 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             String typeText = opTypeText.get().toPlain();
-            Optional<ShipType> opType = ShipsPlugin
-                    .getPlugin()
-                    .getAll(ShipType.class)
+            Optional<ShipType<?>> opType = ShipsPlugin.getPlugin().getAllShipTypes()
                     .stream()
                     .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
                     .findAny();

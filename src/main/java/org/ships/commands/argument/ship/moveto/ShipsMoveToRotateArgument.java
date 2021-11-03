@@ -41,11 +41,11 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
-                new ExactArgument(SHIP_ARGUMENT),
-                new ShipIdArgument<>(SHIP_ID_ARGUMENT),
-                new ExactArgument(SHIP_MOVE_TO_ARGUMENT),
-                new ExactArgument(SHIP_ROTATE_ARGUMENT),
-                new ExactArgument(SHIP_ROTATION_ARGUMENT, true, "left", "right")
+                new ExactArgument(this.SHIP_ARGUMENT),
+                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
+                new ExactArgument(this.SHIP_ROTATE_ARGUMENT),
+                new ExactArgument(this.SHIP_ROTATION_ARGUMENT, true, "left", "right")
         );
     }
 
@@ -61,8 +61,8 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        String rotate = commandContext.getArgument(this, SHIP_ROTATION_ARGUMENT);
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
+        String rotate = commandContext.getArgument(this, this.SHIP_ROTATION_ARGUMENT);
         SyncBlockPosition position = vessel.getPosition();
         MovementContext context = new MovementContext();
         BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
@@ -86,7 +86,7 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
                 MoveException e = (MoveException) exc;
                 if (commandContext.getSource() instanceof CommandViewer) {
                     CommandViewer viewer = (CommandViewer) commandContext.getSource();
-                    sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
                 }
             } else {
                 exc.printStackTrace();

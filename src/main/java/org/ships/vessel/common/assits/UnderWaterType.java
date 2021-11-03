@@ -7,16 +7,16 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 public interface UnderWaterType extends WaterType {
 
     default boolean isSubmerged() {
-        PositionableShipsStructure pss = getStructure();
+        PositionableShipsStructure pss = this.getStructure();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         int height = pss.getYSize();
-        Set<Integer> values = new HashSet<>();
+        Collection<Integer> values = new HashSet<>();
         for (SyncBlockPosition position : pss.getPositions()) {
             if (values.contains(position.getY())) {
                 continue;
@@ -31,7 +31,7 @@ public interface UnderWaterType extends WaterType {
         Integer lowest = null;
         Integer highest = null;
         for (int value : values) {
-            if (lowest == null) {
+            if (lowest==null) {
                 lowest = value;
                 highest = value;
                 continue;
@@ -43,9 +43,9 @@ public interface UnderWaterType extends WaterType {
                 highest = value;
             }
         }
-        if (highest == null) {
+        if (highest==null) {
             return false;
         }
-        return (highest - lowest) == height;
+        return (highest - lowest)==height;
     }
 }

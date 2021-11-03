@@ -16,9 +16,9 @@ import java.util.function.BiFunction;
 public class ShipTypeSingleValueArgument<T> implements CommandArgument<T> {
 
     private final String id;
-    private final BiFunction<CommandContext, CommandArgumentContext<T>, ConfigurationNode.KnownParser.SingleKnown<T>> function;
+    private final BiFunction<? super CommandContext, ? super CommandArgumentContext<T>, ? extends ConfigurationNode.KnownParser.SingleKnown<T>> function;
 
-    public ShipTypeSingleValueArgument(String id, BiFunction<CommandContext, CommandArgumentContext<T>, ConfigurationNode.KnownParser.SingleKnown<T>> function) {
+    public ShipTypeSingleValueArgument(String id, BiFunction<? super CommandContext, ? super CommandArgumentContext<T>, ? extends ConfigurationNode.KnownParser.SingleKnown<T>> function) {
         this.id = id;
         this.function = function;
     }
@@ -34,7 +34,6 @@ public class ShipTypeSingleValueArgument<T> implements CommandArgument<T> {
         ConfigurationNode.KnownParser.SingleKnown<T> node = this.function.apply(context, argument);
         Optional<T> opValue = node.getParser().parse(arg);
         if (opValue.isPresent()) {
-            int number = argument.getFirstArgument() + 1;
             return CommandArgumentResult.from(argument, opValue.get());
         }
         throw new IOException("Unknown value of '" + arg + "'");

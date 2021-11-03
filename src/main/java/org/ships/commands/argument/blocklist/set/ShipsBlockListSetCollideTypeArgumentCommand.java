@@ -49,9 +49,7 @@ public class ShipsBlockListSetCollideTypeArgumentCommand implements ArgumentComm
         List<BlockType> blocks = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
         BlockInstruction.CollideType collideType = commandContext.getArgument(this, SHIP_COLLIDE_VALUE_ARGUMENT);
         DefaultBlockList blocklist = ShipsPlugin.getPlugin().getBlockList();
-        blocklist.getBlockList().stream().filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b))).forEach(bi -> {
-            blocklist.replaceBlockInstruction(bi.setCollideType(collideType));
-        });
+        blocklist.getBlockList().stream().filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b))).forEach(bi -> blocklist.replaceBlockInstruction(bi.setCollideType(collideType)));
         blocklist.saveChanges();
         if (commandContext.getSource() instanceof CommandViewer) {
             ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain(blocks.size() + " have been set to " + collideType.name()).withColour(NamedTextColours.AQUA));

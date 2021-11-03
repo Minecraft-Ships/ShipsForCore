@@ -4,6 +4,7 @@ import org.core.adventureText.AText;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.vessel.common.types.Vessel;
 
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
@@ -16,7 +17,7 @@ public class VesselSizeAdapter implements MessageAdapter<Vessel> {
 
     @Override
     public Set<String> examples() {
-        return Collections.singleton(new Random().nextInt(99) + "");
+        return Collections.singleton(new SecureRandom().nextInt(99) + "");
     }
 
     @Override

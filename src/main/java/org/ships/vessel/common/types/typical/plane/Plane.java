@@ -43,9 +43,12 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     protected @NotNull Set<ItemType> fuelTypes = new HashSet<>();
     protected @Nullable FlightPath path;
 
-    protected ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    protected ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    protected ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
+            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
         super(licence, type);
@@ -121,7 +124,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         if (this.getFuelConsumption()==0 || (this.getFuelTypes().isEmpty())) {
             return;
         }
-        Set<FurnaceInventory> furnaceInventories = new HashSet<>();
+        Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
         for (MovingBlock movingBlock : context.getMovingStructure()) {
             BlockDetails details = movingBlock.getStoredBlockData();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);

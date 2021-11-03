@@ -23,7 +23,7 @@ public class InfoNameMessage implements Message<Vessel> {
 
     @Override
     public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(getExactAdapters());
+        return new HashSet<>(this.getExactAdapters());
     }
 
     public Set<MessageAdapter<Vessel>> getExactAdapters() {
@@ -32,7 +32,7 @@ public class InfoNameMessage implements Message<Vessel> {
 
     @Override
     public AText process(AText text, Vessel obj) {
-        for (MessageAdapter<Vessel> adapter : getExactAdapters()) {
+        for (MessageAdapter<Vessel> adapter : this.getExactAdapters()) {
             text = adapter.process(text, obj);
         }
         return text;

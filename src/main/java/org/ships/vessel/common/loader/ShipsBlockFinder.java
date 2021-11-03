@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class ShipsBlockFinder implements ShipsLoader {
 
-    protected SyncBlockPosition position;
+    protected final SyncBlockPosition position;
 
     public ShipsBlockFinder(SyncBlockPosition position) {
         this.position = position;

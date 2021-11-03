@@ -12,7 +12,7 @@ public interface VesselFlag<T> extends Identifiable {
         protected abstract F buildEmpty();
 
         public F build(String parse){
-            F flag = buildEmpty();
+            F flag = this.buildEmpty();
             Optional<T> opValue = flag.getParser().parse(parse);
             if(!opValue.isPresent()){
                 throw new IllegalArgumentException("Could not parse \"" + parse + "\"");

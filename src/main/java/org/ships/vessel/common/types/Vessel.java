@@ -19,7 +19,6 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.MovementContext;
 import org.ships.plugin.ShipsPlugin;
@@ -64,15 +63,15 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     @NotNull Vessel setAltitudeSpeed(int speed);
 
-    void moveTowards(int x, int y, int z, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception);
+    void moveTowards(int x, int y, int z, @NotNull MovementContext context, Consumer<? super Throwable> exception);
 
-    void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception);
+    void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context, Consumer<? super Throwable> exception);
 
-    void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, @NotNull Consumer<Throwable> exception);
+    void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception);
 
-    void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
+    void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<? super Throwable> exception);
 
-    void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception);
+    void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<? super Throwable> exception);
 
     void setLoading(boolean check);
 
@@ -84,11 +83,11 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     @Override
     default SyncBlockPosition getPosition() {
-        return getStructure().getPosition();
+        return this.getStructure().getPosition();
     }
 
     default <V, F extends VesselFlag<V>> Optional<V> getValue(Class<F> flagClass) {
-        Optional<F> opFlag = get(flagClass);
+        Optional<F> opFlag = this.get(flagClass);
         if (opFlag.isPresent()) {
             return opFlag.get().getValue();
         }
@@ -96,14 +95,14 @@ public interface Vessel extends Positionable<BlockPosition> {
     }
 
     default Collection<LiveEntity> getEntities() {
-        return getEntities(e -> true);
+        return this.getEntities(e -> true);
     }
 
     default <X extends LiveEntity> Collection<X> getEntities(Class<X> clazz) {
-        return (Collection<X>) getEntities(clazz::isInstance);
+        return (Collection<X>) this.getEntities(clazz::isInstance);
     }
 
-    default Collection<LiveEntity> getEntities(Predicate<LiveEntity> check) {
+    default Collection<LiveEntity> getEntities(Predicate<? super LiveEntity> check) {
         Bounds<Integer> bounds = this.getStructure().getBounds();
         Set<LiveEntity> entities = new HashSet<>();
         this.getStructure().getChunks().stream().map(Extent::getEntities).forEach(entities::addAll);
@@ -113,7 +112,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                     .filter(syncBlockPosition -> bounds.contains(syncBlockPosition.getPosition()))
                     .isPresent();
         }).collect(Collectors.toSet());
-        Collection<SyncBlockPosition> blocks = getStructure().getPositions();
+        Collection<SyncBlockPosition> blocks = this.getStructure().getPositions();
         return entities.stream()
                 .filter(check)
                 .filter(e -> {
@@ -124,9 +123,8 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     }
 
-    default void getEntitiesOvertime(int limit, Predicate<LiveEntity> predicate, Consumer<LiveEntity> single, Consumer<Collection<LiveEntity>> output) {
-        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        Set<LiveEntity> entities = new HashSet<>();
+    default void getEntitiesOvertime(int limit, Predicate<? super LiveEntity> predicate, Consumer<? super LiveEntity> single, Consumer<? super Collection<LiveEntity>> output) {
+        Collection<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>();
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
         chunks.forEach(c -> entities2.addAll(c.getEntities()));
@@ -134,14 +132,14 @@ public interface Vessel extends Positionable<BlockPosition> {
         Scheduler sched = TranslateCore.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
         }).build(ShipsPlugin.getPlugin());
         double fin = entities2.size() / (double) limit;
-        if (fin != ((int) fin)) {
+        if (fin!=((int) fin)) {
             fin++;
         }
-        if (fin == 0) {
+        if (fin==0) {
             output.accept(entities);
             return;
         }
-        Collection<SyncBlockPosition> pss = getStructure().getPositions();
+        Collection<SyncBlockPosition> pss = this.getStructure().getPositions();
         for (int A = 0; A < fin; A++) {
             final int B = A;
             sched = TranslateCore.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
@@ -170,7 +168,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                         entities.add(e);
                     }
                 }
-                if (B == 0) {
+                if (B==0) {
                     output.accept(entities);
                 }
             }).setToRunAfter(sched).build(ShipsPlugin.getPlugin());
@@ -187,10 +185,10 @@ public interface Vessel extends Positionable<BlockPosition> {
     }
 
     default boolean isInWater() {
-        return !getWaterLevel().isPresent();
+        return !this.getWaterLevel().isPresent();
     }
 
-    default <T> Optional<Integer> getWaterLevel(Function<T, BlockPosition> function, Collection<T> collection) {
+    default <T> Optional<Integer> getWaterLevel(Function<? super T, ? extends BlockPosition> function, Collection<T> collection) {
         Map<Vector2<Integer>, Integer> height = new HashMap<>();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         for (T value : collection) {
@@ -222,7 +220,7 @@ public interface Vessel extends Positionable<BlockPosition> {
         });
         Map.Entry<Integer, Integer> best = null;
         for (Map.Entry<Integer, Integer> entry : mean.entrySet()) {
-            if (best == null) {
+            if (best==null) {
                 best = entry;
                 continue;
             }
@@ -230,15 +228,15 @@ public interface Vessel extends Positionable<BlockPosition> {
                 best = entry;
             }
         }
-        if (best == null) {
+        if (best==null) {
             return Optional.empty();
         }
         return Optional.of(best.getKey());
     }
 
     default Optional<Integer> getWaterLevel() {
-        PositionableShipsStructure pss = getStructure();
-        return getWaterLevel(p -> p, pss.getPositions());
+        PositionableShipsStructure pss = this.getStructure();
+        return this.getWaterLevel(p -> p, pss.getPositions());
     }
 
 }

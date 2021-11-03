@@ -27,7 +27,7 @@ public class StringToCollideTypeParser implements StringParser.Suggestible<Block
 
     @Override
     public List<BlockInstruction.CollideType> getSuggestions(String peek) {
-        return getSuggestions().stream().filter(ct -> ct.name().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
+        return this.getSuggestions().stream().filter(ct -> ct.name().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
     }
 
     @Override

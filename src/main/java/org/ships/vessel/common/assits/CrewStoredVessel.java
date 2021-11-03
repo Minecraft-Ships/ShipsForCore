@@ -36,9 +36,9 @@ public interface CrewStoredVessel extends Vessel {
      * @return The permission the user has on this ship
      */
     default CrewPermission getPermission(UUID user) {
-        CrewPermission permission = getCrew().get(user);
+        CrewPermission permission = this.getCrew().get(user);
         if (permission == null) {
-            permission = getDefaultPermission();
+            permission = this.getDefaultPermission();
         }
         return permission;
     }
@@ -50,7 +50,7 @@ public interface CrewStoredVessel extends Vessel {
      * @return The users with the specific permission
      */
     default Set<User> getUserCrew(CrewPermission permission) {
-        return getCrew(permission)
+        return this.getCrew(permission)
                 .stream()
                 .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(), null))
                 .filter(Objects::nonNull)
@@ -65,7 +65,7 @@ public interface CrewStoredVessel extends Vessel {
      * @return The users with the specific permission
      */
     default Set<User> getUserCrew(String permissionId) {
-        return getCrew(permissionId)
+        return this.getCrew(permissionId)
                 .stream()
                 .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(), null))
                 .filter(Objects::nonNull)
@@ -80,7 +80,7 @@ public interface CrewStoredVessel extends Vessel {
      * @return The users uuids ith the specific permission
      */
     default Set<UUID> getCrew(CrewPermission permission) {
-        Map<UUID, CrewPermission> permissionMap = getCrew();
+        Map<UUID, CrewPermission> permissionMap = this.getCrew();
         return permissionMap.keySet().stream().filter(u -> permissionMap.get(u).equals(permission)).collect(Collectors.toSet());
     }
 
@@ -91,7 +91,7 @@ public interface CrewStoredVessel extends Vessel {
      * @return The users uuids ith the specific permission
      */
     default Set<UUID> getCrew(String permissionId) {
-        Map<UUID, CrewPermission> permissionMap = getCrew();
+        Map<UUID, CrewPermission> permissionMap = this.getCrew();
         return permissionMap.keySet().stream().filter(u -> permissionMap.get(u).getId().equals(permissionId)).collect(Collectors.toSet());
     }
 }

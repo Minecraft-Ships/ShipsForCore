@@ -17,6 +17,6 @@ public interface TeleportToVessel extends Vessel {
     TeleportToVessel setTeleportVector(Vector3<Double> position, String id);
 
     default TeleportToVessel setTeleportPosition(ExactPosition position) {
-        return setTeleportPosition(position, "default");
+        return this.setTeleportPosition(position, "default");
     }
 }

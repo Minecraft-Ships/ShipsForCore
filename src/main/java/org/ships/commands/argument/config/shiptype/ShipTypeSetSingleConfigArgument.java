@@ -52,7 +52,7 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        return runGeneric(commandContext, args);
+        return this.runGeneric(commandContext, args);
     }
 
     private <T> boolean runGeneric(CommandContext commandContext, String... args){

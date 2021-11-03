@@ -47,7 +47,7 @@ public class EOTSign implements ShipsSign {
 
     @Override
     public boolean isSign(List<? extends AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(this.SIGN.get(0));
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.ships.config.blocks;
 import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.world.position.block.BlockType;
+import org.ships.config.Config;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,9 +32,9 @@ public class ExpandedBlockList implements BlockList {
 
     @Override
     public Set<BlockInstruction> getBlockList() {
-        if (this.fullBlocks.size() == 0) {
+        if (this.fullBlocks.isEmpty()) {
             this.file.reload();
-            this.originalBlocks = reloadBlockList();
+            this.originalBlocks = this.reloadBlockList();
             this.fullBlocks = new HashSet<>(this.expandedOn.getBlockList());
             this.fullBlocks.addAll(this.originalBlocks);
         }
@@ -87,7 +88,7 @@ public class ExpandedBlockList implements BlockList {
         if (!(obj instanceof BlockList)) {
             return false;
         }
-        BlockList list = (BlockList) obj;
+        Config list = (Config) obj;
         return list.getFile().getFile().equals(this.getFile().getFile());
     }
 }

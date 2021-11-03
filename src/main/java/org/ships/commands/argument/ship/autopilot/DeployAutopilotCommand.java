@@ -15,6 +15,7 @@ import org.core.vector.type.Vector3;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.movement.autopilot.BasicFlightPath;
+import org.ships.movement.autopilot.FlightPath;
 import org.ships.movement.autopilot.scheduler.FlightPathExecutor;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
@@ -36,11 +37,11 @@ public class DeployAutopilotCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(
-                SHIP_KEY,
-                SHIP,
-                AUTOPILOT,
-                ADD,
-                VECTOR
+                this.SHIP_KEY,
+                this.SHIP,
+                this.AUTOPILOT,
+                this.ADD,
+                this.VECTOR
         );
     }
 
@@ -56,11 +57,11 @@ public class DeployAutopilotCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        FlightPathType vessel = commandContext.getArgument(this, SHIP);
-        Vector3<Integer> vectorToAdd = commandContext.getArgument(this, VECTOR);
+        FlightPathType vessel = commandContext.getArgument(this, this.SHIP);
+        Vector3<Integer> vectorToAdd = commandContext.getArgument(this, this.VECTOR);
         SyncBlockPosition position = vessel.getPosition().getRelative(vectorToAdd);
 
-        BasicFlightPath bfp = new BasicFlightPath(vessel.getPosition().getPosition(), position.getPosition());
+        FlightPath bfp = new BasicFlightPath(vessel.getPosition().getPosition(), position.getPosition());
         if (commandContext.getSource() instanceof CommandViewer) {
             bfp.setViewer((CommandViewer) commandContext.getSource());
         }

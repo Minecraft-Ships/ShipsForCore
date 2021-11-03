@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class ShipsIDFinder implements ShipsLoader {
 
-    protected String id;
+    protected final String id;
 
     public ShipsIDFinder(String id) {
         this.id = id.toLowerCase();

@@ -6,7 +6,7 @@ public class BlockInstruction {
 
     protected BlockInstruction.CollideType collideType = CollideType.DETECT_COLLIDE;
     protected int blockLimit = -1;
-    protected BlockType type;
+    protected final BlockType type;
 
     public BlockInstruction(BlockType type){
         this.type = type;

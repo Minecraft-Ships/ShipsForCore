@@ -52,7 +52,7 @@ public class Movement {
 
     }
 
-    protected void move(Vessel vessel, MovementContext context, Consumer<Throwable> exception) {
+    protected void move(Vessel vessel, MovementContext context, Consumer<? super Throwable> exception) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         if (vessel.isLoading()) {
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
@@ -222,7 +222,7 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context, Consumer<Throwable> exception) {
+        public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context, Consumer<? super Throwable> exception) {
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateLeft(rotateAround);
@@ -234,10 +234,12 @@ public class Movement {
                 BlockDetails blockDetails = mb.getStoredBlockData();
                 Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
                 if (!(opDirectional.isPresent())) {
-                    Optional<Collection<Direction>> opData = blockDetails.get(KeyedData.MULTI_DIRECTIONAL);
-                    if (opData.isPresent()) {
-                        Collection<Direction> collection = new HashSet<>();
-                        opData.get().forEach(d -> collection.add(d.getRightAngleLeft()));
+                    Collection<Direction> opData =
+                            blockDetails.getAll(KeyedData.MULTI_DIRECTIONAL);
+                    if (!opData.isEmpty()) {
+                        Collection<Direction> collection =
+                                opData.stream().map(Direction::getRightAngleLeft).collect(Collectors.toSet());
+                        ;
                         blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
                     }
                     return;
@@ -261,7 +263,7 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context, Consumer<Throwable> exception) {
+        public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context, Consumer<? super Throwable> exception) {
             MovingBlockSet set = new MovingBlockSet();
             vessel.getStructure().getPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateRight(rotateAround);
@@ -273,12 +275,9 @@ public class Movement {
                 BlockDetails blockDetails = mb.getStoredBlockData();
                 Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
                 if (!(opDirectional.isPresent())) {
-                    Optional<Collection<Direction>> opData = blockDetails.get(KeyedData.MULTI_DIRECTIONAL);
-                    Collection<Direction> collection = new HashSet<>();
-                    if (opData.isPresent()) {
-                        opData.get().forEach(d -> collection.add(d.getRightAngleRight()));
-                        blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
-                    }
+                    Collection<Direction> opData = blockDetails.getAll(KeyedData.MULTI_DIRECTIONAL);
+                    blockDetails.set(KeyedData.MULTI_DIRECTIONAL,
+                            opData.stream().map(Direction::getRightAngleRight).collect(Collectors.toSet()));
                     return;
                 }
                 DirectionalData directionalData = opDirectional.get();
@@ -300,7 +299,7 @@ public class Movement {
 
         }
 
-        public void move(Vessel vessel, SyncBlockPosition to, MovementContext context, Consumer<Throwable> exception) {
+        public void move(Vessel vessel, SyncBlockPosition to, MovementContext context, Consumer<? super Throwable> exception) {
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().forEach(f -> {
@@ -320,11 +319,11 @@ public class Movement {
         private AddToPosition() {
         }
 
-        public void move(Vessel vessel, int x, int y, int z, MovementContext context, Consumer<Throwable> exception) {
+        public void move(Vessel vessel, int x, int y, int z, MovementContext context, Consumer<? super Throwable> exception) {
             this.move(vessel, Vector3.valueOf(x, y, z), context, exception);
         }
 
-        public void move(Vessel vessel, Vector3<Integer> addTo, MovementContext context, Consumer<Throwable> exception) {
+        public void move(Vessel vessel, Vector3<Integer> addTo, MovementContext context, Consumer<? super Throwable> exception) {
             MovingBlockSet set = new MovingBlockSet();
             PositionableShipsStructure pss = vessel.getStructure();
             pss.getRelativePositions().forEach(f -> {

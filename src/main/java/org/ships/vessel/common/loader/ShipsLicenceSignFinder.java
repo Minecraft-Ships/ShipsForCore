@@ -39,7 +39,8 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
             throw new LoadVesselException("Unable to read sign");
         }
         String typeS = this.ste.getTextAt(1).get().toPlain();
-        Optional<ShipType> opType = ShipsPlugin.getPlugin().getAll(ShipType.class).stream().filter(st -> st.getDisplayName().equalsIgnoreCase(typeS)).findAny();
+        Optional<ShipType<?>> opType =
+                ShipsPlugin.getPlugin().getAllShipTypes().stream().filter(st -> st.getDisplayName().equalsIgnoreCase(typeS)).findAny();
         if (!opType.isPresent()) {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }

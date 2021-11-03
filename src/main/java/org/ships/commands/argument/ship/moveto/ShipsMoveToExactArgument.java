@@ -85,8 +85,8 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        Vector3<Integer> vector3 = commandContext.getArgument(this, SHIP_VECTOR_ARGUMENT);
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
+        Vector3<Integer> vector3 = commandContext.getArgument(this, this.SHIP_VECTOR_ARGUMENT);
         SyncBlockPosition position = Position.toSync(Position.toBlock(vessel.getPosition().getWorld().getPosition(vector3)));
         MovementContext context = new MovementContext();
         BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
@@ -110,7 +110,7 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
                 MoveException e = (MoveException) exc;
                 if (commandContext.getSource() instanceof CommandViewer) {
                     CommandViewer viewer = (CommandViewer) commandContext.getSource();
-                    sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
                 }
             } else {
                 exc.printStackTrace();

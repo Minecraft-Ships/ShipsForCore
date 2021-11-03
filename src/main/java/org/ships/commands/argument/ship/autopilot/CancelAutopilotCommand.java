@@ -25,7 +25,7 @@ public class CancelAutopilotCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(SHIP_KEY, SHIP, AUTOPILOT, CANCEL);
+        return Arrays.asList(this.SHIP_KEY, this.SHIP, this.AUTOPILOT, this.CANCEL);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class CancelAutopilotCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        FlightPathType vessel = commandContext.getArgument(this, SHIP);
+        FlightPathType vessel = commandContext.getArgument(this, this.SHIP);
         vessel.setFlightPath(null);
         return true;
     }

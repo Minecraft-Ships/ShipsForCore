@@ -56,7 +56,7 @@ public class FlightPathExecutor implements Runnable {
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
                 ServerBossBar bar = TranslateCore.createBossBar();
                 final ServerBossBar finalBar = bar;
-                vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> finalBar.register((LivePlayer) e));
+                this.vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> finalBar.register((LivePlayer) e));
                 context.setBar(bar);
             }
             context.setPostMovement(e -> this.vessel.setFlightPath(this.vessel.getFlightPath().get().createUpdatedPath(this.vessel.getPosition().getPosition(), this.vessel.getFlightPath().get().getEndingPosition())));
@@ -76,7 +76,7 @@ public class FlightPathExecutor implements Runnable {
                         e.getMovement().sendMessage(this.viewer);
                     }
                 } else {
-                    vessel.getEntities().forEach(e -> e.setGravity(true));
+                    this.vessel.getEntities().forEach(e -> e.setGravity(true));
                 }
             });
         });

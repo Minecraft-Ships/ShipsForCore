@@ -11,7 +11,7 @@ import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
@@ -28,16 +28,13 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
             Optional<SyncBlockPosition> opBlock = structure.getAll(SignTileEntity.class).stream().filter(b -> {
                 SignTileEntity lste = (SignTileEntity) b.getTileEntity().orElseThrow(() -> new IllegalStateException(
                         "Could not get tile entity"));
-                if (!ls.isSign(lste)) {
-                    return false;
-                }
-                return true;
+                return ls.isSign(lste);
             }).findAny();
             if (!opBlock.isPresent()) {
                 ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(new UnableToFindLicenceSign(structure, "Failed to find licence sign"));
                 return;
             }
-            PositionableShipsStructure structure2 = new AbstractPosititionableShipsStructure(opBlock.get());
+            PositionableShipsStructure structure2 = new AbstractPositionableShipsStructure(opBlock.get());
             structure.getPositions().forEach(structure2::addPosition);
             try {
                 Vessel vessel =

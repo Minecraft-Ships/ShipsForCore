@@ -24,7 +24,7 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
@@ -34,10 +34,10 @@ import java.util.stream.Collectors;
 public abstract class AbstractShipsVessel implements ShipsVessel {
 
     protected @NotNull PositionableShipsStructure positionableShipsStructure;
-    protected @NotNull Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
-    protected @NotNull Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
-    protected @NotNull CrewPermission defaultPermission = CrewPermission.DEFAULT;
-    protected @NotNull Map<String, Vector3<Double>> teleportPositions = new HashMap<>();
+    protected final @NotNull Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
+    protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
+    protected final @NotNull CrewPermission defaultPermission = CrewPermission.DEFAULT;
+    protected final @NotNull Map<String, Vector3<Double>> teleportPositions = new HashMap<>();
     protected @NotNull File file;
     protected @NotNull ShipType<? extends AbstractShipsVessel> type;
     protected int maxSpeed = 10;
@@ -48,7 +48,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected String cachedName;
 
     public AbstractShipsVessel(@NotNull LiveTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
-        this.positionableShipsStructure = new AbstractPosititionableShipsStructure(licence.getPosition());
+        this.positionableShipsStructure = new AbstractPositionableShipsStructure(licence.getPosition());
         this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
                 "VesselData" + File.pathSeparatorChar + this.getType().getId().replaceAll(":", ".") + File.pathSeparatorChar + this.getName() +
                         "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
@@ -56,12 +56,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     public AbstractShipsVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition position, @NotNull ShipType<? extends AbstractShipsVessel> type) {
-        this.positionableShipsStructure = new AbstractPosititionableShipsStructure(position);
+        this.positionableShipsStructure = new AbstractPositionableShipsStructure(position);
         this.file = new File(
                 ShipsPlugin.getPlugin().getConfigFolder(),
                 "VesselData" + File.pathSeparatorChar + ShipsPlugin
                         .getPlugin()
-                        .getAll(ShipType.class)
+                        .getAllShipTypes()
                         .stream()
                         .filter(t -> ste.getTextAt(1)
                                 .orElseThrow(() -> new IllegalStateException("Could not get line 1 of sign"))
@@ -127,7 +127,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
 
     @Override
     public <T> @NotNull Vessel set(@NotNull Class<? extends VesselFlag<T>> clazz, T value) {
-        Optional<VesselFlag<?>> opFlag = getFlags().stream().filter(clazz::isInstance).findFirst();
+        Optional<VesselFlag<?>> opFlag = this.getFlags().stream().filter(clazz::isInstance).findFirst();
         if (!opFlag.isPresent()) {
             Optional<? extends VesselFlag<T>> opNewFlag = ShipsPlugin.getPlugin().get(clazz);
             if (!opNewFlag.isPresent()) {
@@ -156,7 +156,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
             String flagID = flag.getId();
             return fID.equals(flagID);
         }).collect(Collectors.toSet());
-        collect.forEach(f -> this.flags.remove(f));
+        collect.forEach(this.flags::remove);
         this.flags.add(flag);
         return this;
     }
@@ -230,7 +230,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                     double y = entry.getValue().getY();
                     double z = entry.getValue().getZ();
 
-                    Vector3<Double> vec = flip(direction, x, y, z);
+                    Vector3<Double> vec = this.flip(direction, x, y, z);
                     return new AbstractMap.SimpleImmutableEntry<>(
                             entry.getKey(),
                             position.getRelative(vec.getX(), vec.getY(), vec.getZ()));

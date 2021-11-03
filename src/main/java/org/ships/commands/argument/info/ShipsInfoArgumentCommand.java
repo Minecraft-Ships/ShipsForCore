@@ -49,12 +49,12 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
             return true;
         }
         CommandViewer viewer = (CommandViewer) source;
-        Set<ShipType> shipTypes = ShipsPlugin.getPlugin().getAll(ShipType.class);
+        Set<ShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllShipTypes();
         viewer.sendMessage(AText.ofPlain("----[Ships]----").withColour(NamedTextColours.YELLOW));
         viewer.sendMessage(AText.ofPlain("Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.getPlugin().getPluginVersion().asString()).withColour(NamedTextColours.GOLD)));
         viewer.sendMessage(AText.ofPlain(ShipsPlugin.PRERELEASE_TAG + " Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.PRERELEASE_VERSION + "").withColour(NamedTextColours.GOLD)));
         viewer.sendMessage(AText.ofPlain("Vessel Types: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(shipTypes.size() + "").withColour(NamedTextColours.GOLD)));
-        if (commandContext.getArgument(this, SHIP_TYPE_ARGUMENT) != null) {
+        if (commandContext.getArgument(this, SHIP_TYPE_ARGUMENT)!=null) {
             List<AText> typeText = shipTypes.stream().map(s -> AText.ofPlain(s.getDisplayName()).withColour(NamedTextColours.GOLD)).collect(Collectors.toList());
             AText text = ArrayUtils.collect(t -> t, (old, t) -> old.append(AText.ofPlain(" | ").withColour(NamedTextColours.GREEN).append(t)), typeText);
             viewer.sendMessage(text);

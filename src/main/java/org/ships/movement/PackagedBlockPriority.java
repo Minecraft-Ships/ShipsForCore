@@ -1,12 +1,12 @@
 package org.ships.movement;
 
-class PackagedBlockPriority implements BlockPriority{
+class PackagedBlockPriority implements BlockPriority {
 
     private int number;
-    private String name;
+    private final String name;
 
-    public PackagedBlockPriority(String name, int priorty){
-        this.number = priorty;
+    PackagedBlockPriority(String name, int priority) {
+        this.number = priority;
         this.name = name;
     }
 
@@ -23,7 +23,7 @@ class PackagedBlockPriority implements BlockPriority{
 
     @Override
     public String getId() {
-        return "ships:" + getName().toLowerCase();
+        return "ships:" + this.getName().toLowerCase();
     }
 
     @Override

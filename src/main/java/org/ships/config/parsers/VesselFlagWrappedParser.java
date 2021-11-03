@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public class VesselFlagWrappedParser<T> implements StringParser<VesselFlag<T>> {
 
-    private VesselFlag.Builder<T, ? extends VesselFlag<T>> builder;
+    private final VesselFlag.Builder<T, ? extends VesselFlag<T>> builder;
 
-    public VesselFlagWrappedParser(VesselFlag.Builder<T, ? extends VesselFlag<T>> builder){
+    public VesselFlagWrappedParser(VesselFlag.Builder<T, ? extends VesselFlag<T>> builder) {
         this.builder = builder;
     }
 
@@ -17,7 +17,7 @@ public class VesselFlagWrappedParser<T> implements StringParser<VesselFlag<T>> {
     public Optional<VesselFlag<T>> parse(String original) {
         try {
             return Optional.of(this.builder.build(original));
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
     }

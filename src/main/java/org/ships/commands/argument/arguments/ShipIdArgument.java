@@ -5,6 +5,7 @@ import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
+import org.core.entity.living.human.player.User;
 import org.core.source.command.CommandSource;
 import org.core.utils.Else;
 import org.ships.exceptions.NoLicencePresent;
@@ -25,21 +26,21 @@ import java.util.stream.Collectors;
 public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
 
     private final String id;
-    private final BiPredicate<CommandSource, Vessel> predicate;
-    private final Function<Vessel, String> failMessage;
+    private final BiPredicate<? super CommandSource, ? super Vessel> predicate;
+    private final Function<? super Vessel, String> failMessage;
 
     public ShipIdArgument(String id) {
         this(id, (source, vessel) -> {
             if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                 CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                LivePlayer player = (LivePlayer) source;
+                User player = (User) source;
                 return crewVessel.getPermission(player.getUniqueId()).canCommand();
             }
             return true;
         }, v -> "Your crew permission does not allow for commands");
     }
 
-    public ShipIdArgument(String id, BiPredicate<CommandSource, Vessel> predicate, Function<Vessel, String> failMessage) {
+    public ShipIdArgument(String id, BiPredicate<? super CommandSource, ? super Vessel> predicate, Function<? super Vessel, String> failMessage) {
         this.id = id;
         this.predicate = predicate;
         this.failMessage = failMessage;
@@ -78,7 +79,6 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
 
     @Override
     public Set<String> suggest(CommandContext commandContext, CommandArgumentContext<V> argument) {
-        String peek = commandContext.getCommand()[argument.getFirstArgument()];
         return ShipsPlugin
                 .getPlugin()
                 .getVessels()

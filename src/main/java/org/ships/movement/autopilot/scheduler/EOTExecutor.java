@@ -61,7 +61,7 @@ public class EOTExecutor implements Runnable {
     }
 
     public Optional<SyncBlockPosition> getSign() {
-        Collection<SyncBlockPosition> blocks = getVessel().getStructure().getAll(SignTileEntity.class);
+        Collection<SyncBlockPosition> blocks = this.getVessel().getStructure().getAll(SignTileEntity.class);
         EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
         return blocks.stream().filter(b -> sign.isSign((SignTileEntity) b.getTileEntity().get())).findFirst();
     }
@@ -75,7 +75,7 @@ public class EOTExecutor implements Runnable {
                 return;
             }
         }
-        Optional<SyncBlockPosition> opSign = getSign();
+        Optional<SyncBlockPosition> opSign = this.getSign();
         if (!opSign.isPresent()) {
             return;
         }
@@ -84,8 +84,8 @@ public class EOTExecutor implements Runnable {
         if (!directionalData.isPresent()) {
             return;
         }
-        if (this.disableOnNoPilot && vessel instanceof CrewStoredVessel) {
-            boolean check = vessel.getEntities(LivePlayer.class).stream().anyMatch(e -> ((CrewStoredVessel) vessel).getPermission(e.getUniqueId()).canMove());
+        if (this.disableOnNoPilot && this.vessel instanceof CrewStoredVessel) {
+            boolean check = this.vessel.getEntities(LivePlayer.class).stream().anyMatch(e -> ((CrewStoredVessel) this.vessel).getPermission(e.getUniqueId()).canMove());
             if (!check) {
                 return;
             }
@@ -93,7 +93,7 @@ public class EOTExecutor implements Runnable {
         MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
         if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
             ServerBossBar bar2 = TranslateCore.createBossBar();
-            vessel.getEntities(LivePlayer.class).forEach(bar2::register);
+            this.vessel.getEntities(LivePlayer.class).forEach(bar2::register);
             context.setBar(bar2);
         }
         this.vessel.moveTowards(directionalData.get().getDirection().getOpposite().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), context, exc -> {
@@ -104,7 +104,7 @@ public class EOTExecutor implements Runnable {
                 if (e.getMovement() instanceof MovementResult.VesselMovingAlready) {
                     return;
                 }
-                sendError(e.getMovement());
+                this.sendError(e.getMovement());
             }
         });
 

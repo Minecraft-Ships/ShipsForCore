@@ -10,7 +10,7 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.AbstractPosititionableShipsStructure;
+import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public class Ships5BlockFinder implements BasicBlockFinder {
 
     private int blockLimit;
-    private int blockCount = 0;
+    private int blockCount;
     private PositionableShipsStructure shipsStructure;
     private Vessel vessel;
     private BlockList list;
@@ -51,10 +51,10 @@ public class Ships5BlockFinder implements BasicBlockFinder {
 
     private PositionableShipsStructure getConnectedBlocks(BlockPosition position, OvertimeBlockFinderUpdate update) {
         this.blockCount = 0;
-        this.shipsStructure = new AbstractPosititionableShipsStructure(Position.toSync(position));
+        this.shipsStructure = new AbstractPositionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-        getNextBlock(update, position, directions);
+        this.getNextBlock(update, position, directions);
         return this.shipsStructure;
     }
 
@@ -67,12 +67,12 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
-        return getConnectedBlocks(position, null);
+        return this.getConnectedBlocks(position, null);
     }
 
     @Override
     public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
-        runAfterFullSearch.onShipsStructureUpdated(getConnectedBlocks(position, runAfterFullSearch));
+        runAfterFullSearch.onShipsStructureUpdated(this.getConnectedBlocks(position, runAfterFullSearch));
     }
 
     @Override

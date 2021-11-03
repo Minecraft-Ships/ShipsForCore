@@ -12,11 +12,11 @@ public interface FailedMovement<E extends Object>{
     Optional<E> getValue();
 
     default void sendMessage(CommandViewer viewer, E value){
-        getResult().sendMessage(getShip(), viewer, value);
+        this.getResult().sendMessage(this.getShip(), viewer, value);
     }
 
     default void sendMessage(CommandViewer viewer){
-        getResult().sendMessage(getShip(), viewer, getValue().orElse(null));
+        this.getResult().sendMessage(this.getShip(), viewer, this.getValue().orElse(null));
     }
 
 }
