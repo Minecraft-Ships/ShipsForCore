@@ -284,9 +284,9 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             ShipType<? extends Vessel> type = opType.get();
-            String permission = Permissions.getMakePermission(type);
-            if (!(event.getEntity().hasPermission(permission) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
-                AText text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(event.getEntity(), permission));
+            if (!(event.getEntity().hasPermission(type.getMakePermission()) || event.getEntity().hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
+                AText text =
+                        AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(event.getEntity(), type.getMakePermission().getPermissionValue()));
                 event.getEntity().sendMessage(text);
                 event.setCancelled(true);
                 return;
@@ -470,7 +470,7 @@ public class CoreEventListener implements EventListener {
             Vessel vessel = opVessel.get();
             if (vessel instanceof CrewStoredVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
                 LivePlayer player = ((EntityEvent<LivePlayer>) event).getEntity();
-                if (!(((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() || (player.hasPermission(Permissions.ABSTRACT_SHIP_MOVE_OTHER)))) {
+                if (!(((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() || (player.hasPermission(vessel.getType().getMoveOtherPermission())))) {
                     event.setCancelled(true);
                     return;
                 }

@@ -14,20 +14,18 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
-import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 
 import java.util.*;
 
-public class ShipAddCrewArgumentCommand implements ArgumentCommand {
+public class ShipsRemoveCrewArgumentCommand implements ArgumentCommand {
 
     private final String SHIP_ARGUMENT = "ship";
     private final String SHIP_ID_ARGUMENT = "ship_id";
     private final String SHIP_CREW_ARGUMENT = "crew";
-    private final String SHIP_VIEW_ARGUMENT = "add";
-    private final String SHIP_CREW_PERMISSION_ARGUMENT = "permission";
+    private final String SHIP_VIEW_ARGUMENT = "remove";
     private final String SHIP_PLAYERS_ARGUMENT = "players";
 
     @Override
@@ -44,14 +42,13 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
                 }, v -> "Vessel does not accept crew"),
                 new ExactArgument(this.SHIP_CREW_ARGUMENT),
                 new ExactArgument(this.SHIP_VIEW_ARGUMENT),
-                new ShipIdentifiableArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT, CrewPermission.class),
                 new RemainingArgument<>(this.SHIP_PLAYERS_ARGUMENT, new UserArgument(this.SHIP_PLAYERS_ARGUMENT))
         );
     }
 
     @Override
     public String getDescription() {
-        return "Adds a crew member to your ship";
+        return "Removes a crew member to your ship";
     }
 
     @Override
@@ -63,21 +60,12 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CrewStoredVessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         Map<UUID, CrewPermission> map = vessel.getCrew();
-        CrewPermission permission = commandContext.getArgument(this, this.SHIP_CREW_PERMISSION_ARGUMENT);
         List<User> users = commandContext.getArgument(this, this.SHIP_PLAYERS_ARGUMENT);
         users.forEach(user -> {
-            if (permission.equals(CrewPermission.DEFAULT)) {
-                map.remove(user.getUniqueId());
-                return;
-            }
-            if (map.containsKey(user.getUniqueId())) {
-                map.replace(user.getUniqueId(), permission);
-            } else {
-                map.put(user.getUniqueId(), permission);
-            }
+            map.remove(user.getUniqueId());
         });
         if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain("Added crew member(s)").withColour(NamedTextColours.AQUA));
+            ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain("Removed crew member(s)").withColour(NamedTextColours.AQUA));
         }
         return true;
     }

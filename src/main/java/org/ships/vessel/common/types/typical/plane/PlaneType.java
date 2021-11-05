@@ -3,12 +3,14 @@ package org.ships.vessel.common.types.typical.plane;
 import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.inventory.item.ItemTypes;
+import org.core.permission.CorePermission;
 import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
 import org.ships.vessel.common.types.typical.AbstractShipType;
@@ -42,5 +44,20 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
     @Override
     public @NotNull Plane createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
         return new Plane(ste, bPos, this);
+    }
+
+    @Override
+    public @NotNull CorePermission getMoveOwnPermission() {
+        return Permissions.PLANE_MOVE_OWN;
+    }
+
+    @Override
+    public @NotNull CorePermission getMoveOtherPermission() {
+        return Permissions.PLANE_MOVE_OTHER;
+    }
+
+    @Override
+    public @NotNull CorePermission getMakePermission() {
+        return Permissions.PLANE_MAKE;
     }
 }

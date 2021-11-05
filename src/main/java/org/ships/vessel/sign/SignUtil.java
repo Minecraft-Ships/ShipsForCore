@@ -22,7 +22,6 @@ import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.MovementContext;
 import org.ships.movement.result.FailedMovement;
-import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.loader.ShipsBlockFinder;
@@ -92,13 +91,13 @@ public interface SignUtil {
         if (vessel instanceof CrewStoredVessel) {
             context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Checking permissions")));
             CrewStoredVessel stored = (CrewStoredVessel) vessel;
-            if (!((stored.getPermission(player.getUniqueId()).canMove() && player.hasPermission(Permissions.getMovePermission(stored.getType()))) || player.hasPermission(Permissions.getOtherMovePermission(stored.getType())))) {
+            if (!((stored.getPermission(player.getUniqueId()).canMove() && player.hasPermission(stored.getType().getMoveOwnPermission())) || player.hasPermission(stored.getType().getMoveOtherPermission()))) {
                 if (!stored.getPermission(player.getUniqueId()).canMove()) {
                     AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, "Vessel crew rank"));
-                } else if (!player.hasPermission(Permissions.getMovePermission(stored.getType()))) {
-                    AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, Permissions.getMovePermission(stored.getType())));
-                } else if (!player.hasPermission(Permissions.getOtherMovePermission(stored.getType()))) {
-                    AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, Permissions.getOtherMovePermission(stored.getType())));
+                } else if (!player.hasPermission(stored.getType().getMoveOwnPermission())) {
+                    AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, stored.getType().getMoveOwnPermission().getPermissionValue()));
+                } else if (!player.hasPermission(stored.getType().getMoveOtherPermission())) {
+                    AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(new AbstractMap.SimpleImmutableEntry<>(player, stored.getType().getMoveOtherPermission().getPermissionValue()));
                 }
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);

@@ -1,6 +1,7 @@
 package org.ships.vessel.common.types;
 
 import org.core.config.ConfigurationStream;
+import org.core.permission.CorePermission;
 import org.core.platform.plugin.Plugin;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
@@ -52,6 +53,12 @@ public interface ShipType<T extends Vessel> extends Identifiable {
     @NotNull BlockType[] getIgnoredTypes();
 
     @NotNull Set<VesselFlag<?>> getFlags();
+
+    @NotNull CorePermission getMoveOwnPermission();
+
+    @NotNull CorePermission getMoveOtherPermission();
+
+    @NotNull CorePermission getMakePermission();
 
     default T createNewVessel(@NotNull LiveSignTileEntity position) {
         return this.createNewVessel(position, position.getPosition());

@@ -3,12 +3,14 @@ package org.ships.vessel.common.types.typical.submarine;
 import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.inventory.item.ItemTypes;
+import org.core.permission.CorePermission;
 import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
@@ -46,5 +48,20 @@ public class SubmarineType extends AbstractShipType<Submarine> implements Specia
     @Override
     public @NotNull Submarine createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
         return new Submarine(this, ste, bPos);
+    }
+
+    @Override
+    public @NotNull CorePermission getMoveOwnPermission() {
+        return Permissions.SUBMARINE_MOVE_OWN;
+    }
+
+    @Override
+    public @NotNull CorePermission getMoveOtherPermission() {
+        return Permissions.SUBMARINE_MOVE_OTHER;
+    }
+
+    @Override
+    public @NotNull CorePermission getMakePermission() {
+        return Permissions.SUBMARINE_MAKE;
     }
 }
