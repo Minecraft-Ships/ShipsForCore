@@ -20,7 +20,7 @@ import org.ships.vessel.common.assits.CrewStoredVessel;
 
 import java.util.*;
 
-public class ShipsRemoveCrewArgumentCommand implements ArgumentCommand {
+public class ShipRemoveCrewArgumentCommand implements ArgumentCommand {
 
     private final String SHIP_ARGUMENT = "ship";
     private final String SHIP_ID_ARGUMENT = "ship_id";

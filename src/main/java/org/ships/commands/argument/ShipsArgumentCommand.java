@@ -23,6 +23,7 @@ import org.ships.commands.argument.ship.autopilot.CancelAutopilotCommand;
 import org.ships.commands.argument.ship.autopilot.DeployAutopilotCommand;
 import org.ships.commands.argument.ship.crew.ShipAddCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipViewCrewArgumentCommand;
+import org.ships.commands.argument.ship.crew.ShipRemoveCrewArgumentCommand;
 import org.ships.commands.argument.ship.eot.ShipsShipEOTEnableArgumentCommand;
 import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
 import org.ships.commands.argument.ship.moveto.ShipsMoveToAdditionArgument;
@@ -75,6 +76,7 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new ShipsShipEOTEnableArgumentCommand());
         COMMANDS.add(new ShipViewCrewArgumentCommand());
         COMMANDS.add(new ShipAddCrewArgumentCommand());
+        COMMANDS.add(new ShipRemoveCrewArgumentCommand());
         COMMANDS.add(new CancelAutopilotCommand());
         COMMANDS.add(new DeployAutopilotCommand());
 
