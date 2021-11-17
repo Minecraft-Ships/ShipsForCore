@@ -1,5 +1,6 @@
 package org.ships.vessel.structure;
 
+import org.core.collection.BlockSetSnapshot;
 import org.core.utils.Bounds;
 import org.core.vector.type.Vector3;
 import org.core.world.ChunkExtent;
@@ -11,6 +12,8 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncPosition;
+import org.core.world.structure.StructureBuilder;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Collection;
@@ -25,6 +28,16 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     PositionableShipsStructure setPosition(SyncBlockPosition pos);
 
     PositionableShipsStructure addAir();
+
+    default StructureBuilder toCoreStructure(StructureBuilder builder) {
+        BlockSetSnapshot structure =
+                this
+                        .getPositions()
+                        .stream()
+                        .map(SyncPosition::getBlockDetails)
+                        .collect(Collectors.toCollection(BlockSetSnapshot::new));
+        return builder.addBlocks(structure);
+    }
 
     default Bounds<Integer> getBounds() {
         Set<Vector3<Integer>> positions = this.getPositions().stream().map(Position::getPosition).collect(Collectors.toSet());

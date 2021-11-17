@@ -22,13 +22,14 @@ import org.ships.commands.argument.info.ShipsInfoArgumentCommand;
 import org.ships.commands.argument.ship.autopilot.CancelAutopilotCommand;
 import org.ships.commands.argument.ship.autopilot.DeployAutopilotCommand;
 import org.ships.commands.argument.ship.crew.ShipAddCrewArgumentCommand;
-import org.ships.commands.argument.ship.crew.ShipViewCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipRemoveCrewArgumentCommand;
+import org.ships.commands.argument.ship.crew.ShipViewCrewArgumentCommand;
 import org.ships.commands.argument.ship.eot.ShipsShipEOTEnableArgumentCommand;
 import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
 import org.ships.commands.argument.ship.moveto.ShipsMoveToAdditionArgument;
 import org.ships.commands.argument.ship.moveto.ShipsMoveToExactArgument;
 import org.ships.commands.argument.ship.moveto.ShipsMoveToRotateArgument;
+import org.ships.commands.argument.ship.structure.ShipStructureSaveCommand;
 import org.ships.commands.argument.ship.teleport.ShipsShipTeleportSetArgument;
 import org.ships.commands.argument.ship.teleport.ShipsShipTeleportToArgument;
 import org.ships.commands.argument.ship.track.ShipsShipTrackArgumentCommand;
@@ -63,6 +64,8 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
         COMMANDS.add(new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config", "configuration"));
         COMMANDS.add(new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
+        COMMANDS.add(new ShipStructureSaveCommand());
+
         COMMANDS.add(new ShipTypeViewSingleConfigArgument());
         COMMANDS.add(new ShipTypeSetSingleConfigArgument());
         COMMANDS.add(new ViewShipTypeFlagArgument());

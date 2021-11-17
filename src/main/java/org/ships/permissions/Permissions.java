@@ -99,6 +99,9 @@ public interface Permissions {
             "cmd",
             "ship", "teleport", "set"));
 
+    CorePermission CMD_SHIP_STRUCTURE_SAVE = TranslateCore.getPlatform().register(new CorePermission(false, "ships",
+            "cmd", "ship", "structure", "save"));
+
     @Deprecated
     static String getMakePermission(ShipType<?> type) {
         return ABSTRACT_SHIP_MAKE + "." + type.getId().replace(":", ".").toLowerCase();
