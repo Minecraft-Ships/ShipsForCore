@@ -10,19 +10,18 @@ import java.util.List;
 public class DebugFile {
 
     protected final List<String> messages = new ArrayList<>();
-    protected final File file = new File("plugins" + File.pathSeparatorChar + "Ships" + File.pathSeparatorChar +
-            "debug.txt");
+    protected final File file = new File("plugins/Ships/debug.txt");
 
-    public void addMessage(String... messages){
+    public void addMessage(String... messages) {
         this.messages.addAll(Arrays.asList(messages));
     }
 
-    public File getFile(){
+    public File getFile() {
         return this.file;
     }
 
-    public void writeToDebug(){
-        if(!this.file.exists()){
+    public void writeToDebug() {
+        if (!this.file.exists()) {
             return;
         }
         try {

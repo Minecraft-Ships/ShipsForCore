@@ -24,7 +24,7 @@ public class DefaultBlockList implements BlockList {
     public DefaultBlockList() {
         ConfigurationFormat format = TranslateCore.getPlatform().getConfigFormat();
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                File.pathSeparatorChar + "Configuration" + File.pathSeparatorChar + "BlockList." + format.getFileType()[0]);
+                 "Configuration/BlockList." + format.getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, format);
         if (!this.file.getFile().exists()) {
             this.recreateFile();

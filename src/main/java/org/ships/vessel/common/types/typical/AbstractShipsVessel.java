@@ -50,7 +50,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public AbstractShipsVessel(@NotNull LiveTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
         this.positionableShipsStructure = new AbstractPositionableShipsStructure(licence.getPosition());
         this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "VesselData" + File.pathSeparatorChar + this.getType().getId().replaceAll(":", ".") + File.pathSeparatorChar + this.getName() +
+                "VesselData/" + this.getType().getId().replaceAll(":", ".") + "/" + this.getName() +
                         "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         this.init(type);
     }
@@ -59,7 +59,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this.positionableShipsStructure = new AbstractPositionableShipsStructure(position);
         this.file = new File(
                 ShipsPlugin.getPlugin().getConfigFolder(),
-                "VesselData" + File.pathSeparatorChar + ShipsPlugin
+                "VesselData/" + ShipsPlugin
                         .getPlugin()
                         .getAllShipTypes()
                         .stream()
@@ -70,7 +70,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                         .orElseThrow(() -> new IllegalStateException("Could not find the shiptype"))
                         .getId()
                         .replaceAll(":", ".")
-                        + File.pathSeparatorChar
+                        + "/"
                         + ste.getTextAt(2)
                         .orElseThrow(() -> new IllegalArgumentException("Could not get name of ship"))
                         .toPlain()

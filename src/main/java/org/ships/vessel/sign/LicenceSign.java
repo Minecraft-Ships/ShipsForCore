@@ -148,9 +148,8 @@ public class LicenceSign implements ShipsSign {
                         return false;
                     }
                     File file =
-                            new File("plugins" + File.pathSeparatorChar + "Ships" + File.pathSeparatorChar +
-                                    "VesselData" + File.pathSeparatorChar + opType.get().getId().replaceAll(":",
-                                    ".") + File.pathSeparatorChar + name + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+                            new File("plugins/Ships/VesselData/" + opType.get().getId().replaceAll(":",
+                                    ".") + "/" + name + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
                     if (!file.exists()) {
                         player.sendMessage(AText.ofPlain("Could not find the file associated with the ship").withColour(NamedTextColours.RED));
                         return false;
