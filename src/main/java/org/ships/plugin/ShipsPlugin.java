@@ -106,6 +106,7 @@ public class ShipsPlugin implements CorePlugin {
     @Override
     public void onCoreFinishedInit() {
         this.loadCustomShipType();
+        this.initShipType();
         this.loadVesselTypeFlagData();
         this.loadVessels();
         this.getLoadedMessages();
@@ -123,6 +124,15 @@ public class ShipsPlugin implements CorePlugin {
 
     public AdventureMessageConfig getAdventureMessageConfig() {
         return this.aMessageConfig;
+    }
+
+    public void initShipType() {
+        for (ShipType<?> type : this.getAllShipTypes()) {
+            if (!(type instanceof AbstractShipType)) {
+                continue;
+            }
+            ((AbstractShipType<?>) type).init();
+        }
     }
 
     public void loadCustomShipType() {

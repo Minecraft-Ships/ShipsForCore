@@ -71,7 +71,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
+    public void getConnectedBlocksOvertime(@NotNull BlockPosition position, OvertimeBlockFinderUpdate runAfterFullSearch) {
         runAfterFullSearch.onShipsStructureUpdated(this.getConnectedBlocks(position, runAfterFullSearch));
     }
 
@@ -81,7 +81,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public BasicBlockFinder setBlockLimit(int limit) {
+    public @NotNull BasicBlockFinder setBlockLimit(int limit) {
         this.blockLimit = limit;
         return this;
     }
@@ -92,7 +92,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public BasicBlockFinder setConnectedVessel(Vessel vessel) {
+    public @NotNull BasicBlockFinder setConnectedVessel(Vessel vessel) {
         this.vessel = vessel;
         this.list = ShipsPlugin.getPlugin().getBlockList();
 

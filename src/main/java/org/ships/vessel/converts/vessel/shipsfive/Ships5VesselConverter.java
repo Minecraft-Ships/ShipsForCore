@@ -9,6 +9,7 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
@@ -25,12 +26,12 @@ import java.util.UUID;
 
 public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
     @Override
-    public File getFolder() {
+    public @NotNull File getFolder() {
         return new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData");
     }
 
     @Override
-    public ShipsVessel convert(File file) throws IOException {
+    public @NotNull ShipsVessel convert(@NotNull File file) throws IOException {
         ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
 
         String type = config.getString(new ConfigurationNode("ShipsData", "Type")).get();
@@ -73,13 +74,13 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
             ShipsPlugin.getPlugin().registerVessel(vessel);
             ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(vessel).getConnectedBlocksOvertime(vessel.getPosition(), new OvertimeBlockFinderUpdate() {
                 @Override
-                public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+                public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                     vessel.setStructure(structure);
                     vessel.setLoading(false);
                 }
 
                 @Override
-                public BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                     return BlockFindControl.USE;
                 }
             });

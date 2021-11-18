@@ -46,6 +46,9 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
         this.displayName = displayName;
         this.types = types;
         this.file = file;
+    }
+
+    public void init() {
         if (!this.file.getFile().exists()) {
             this.createDefault(this.file);
             this.file.save();
