@@ -103,6 +103,23 @@ public class ShipsPlugin implements CorePlugin {
         register.register(new ShipsArgumentCommand());
     }
 
+    public void loadStructures(){
+        File file = new File(this.getConfigFolder(), "Structure");
+        File[] pluginFolders = file.listFiles();
+        if(pluginFolders == null){
+            return;
+        }
+        for(File pluginFolder : pluginFolders){
+            File[] structureFiles = pluginFolder.listFiles();
+            if(structureFiles == null){
+                continue;
+            }
+            for(File structureFile : structureFiles){
+
+            }
+        }
+    }
+
     @Override
     public void onCoreFinishedInit() {
         this.loadCustomShipType();

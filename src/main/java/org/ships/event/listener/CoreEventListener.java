@@ -118,7 +118,17 @@ public class CoreEventListener implements EventListener {
             return opValue.filter(movementContext -> !movementContext.getMovingStructure().isEmpty()).isPresent();
         }).anyMatch(v -> {
             Optional<MovementContext> opSet = v.getValue(MovingFlag.class);
-            return opSet.map(movementContext -> movementContext.getMovingStructure().stream().anyMatch(mb -> (mb.getBeforePosition().equals(event.getPosition().toBlockPosition())) || (mb.getAfterPosition().equals(event.getPosition().toBlockPosition())))).orElse(false);
+            return opSet.map(movementContext -> movementContext
+                            .getMovingStructure()
+                            .stream()
+                            .anyMatch(mb ->
+                                    (mb
+                                            .getBeforePosition()
+                                            .equals(event.getPosition().toBlockPosition())) ||
+                                            (mb
+                                                    .getAfterPosition()
+                                                    .equals(event.getPosition().toBlockPosition()))))
+                    .orElse(false);
         });
         if (bool) {
             event.setCancelled(true);

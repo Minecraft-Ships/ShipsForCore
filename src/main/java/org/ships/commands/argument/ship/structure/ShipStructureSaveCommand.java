@@ -8,9 +8,13 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.RemainingArgument;
 import org.core.command.argument.arguments.simple.StringArgument;
 import org.core.command.argument.context.CommandContext;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
+import org.core.utils.Bounds;
+import org.core.vector.type.Vector3;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.structure.Structure;
 import org.core.world.structure.StructureBuilder;
 import org.ships.commands.argument.arguments.ShipIdArgument;
@@ -56,10 +60,9 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         String id = name.toLowerCase().replace(" ", "_");
 
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "structure/" + ShipsPlugin.getPlugin().getPluginId() + "/" + id + ".structure");
+                "Structure/" + ShipsPlugin.getPlugin().getPluginId() + "/" + id + ".structure");
         if (file.exists()) {
-            if (commandContext.getSource() instanceof CommandViewer) {
-                CommandViewer viewer = (CommandViewer) commandContext.getSource();
+            if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Cannot replace another structure file"));
             }
             return false;
@@ -69,29 +72,32 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            if (commandContext.getSource() instanceof CommandViewer) {
-                CommandViewer viewer = (CommandViewer) commandContext.getSource();
+            if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Error when creating file: " + e.getMessage()));
             }
             e.printStackTrace();
             return false;
         }
 
+        Bounds<Integer> bounds = vessel.getStructure().getBounds();
+        bounds.addX(1);
+        bounds.addY(1);
+        bounds.addZ(1);
+
         StructureBuilder structureBuilder = new StructureBuilder()
                 .setId(id)
                 .setPlugin(ShipsPlugin.getPlugin())
-                .setName(name);
-        structureBuilder = vessel.getStructure().toCoreStructure(structureBuilder);
+                .setName(name)
+                .setBounds(bounds)
+                .setWorld(vessel.getPosition().getWorld());
         Structure structure = TranslateCore.getPlatform().register(structureBuilder);
         try {
             structure.serialize(file);
-            if (commandContext.getSource() instanceof CommandViewer) {
-                CommandViewer viewer = (CommandViewer) commandContext.getSource();
+            if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Saved"));
             }
         } catch (IOException e) {
-            if (commandContext.getSource() instanceof CommandViewer) {
-                CommandViewer viewer = (CommandViewer) commandContext.getSource();
+            if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Error saving: " + e.getMessage()));
             }
             e.printStackTrace();

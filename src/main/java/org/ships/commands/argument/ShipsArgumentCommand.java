@@ -16,6 +16,7 @@ import org.ships.commands.argument.config.AbstractShipsConfigSetArgument;
 import org.ships.commands.argument.config.AbstractShipsConfigViewArgument;
 import org.ships.commands.argument.config.shiptype.ShipTypeSetSingleConfigArgument;
 import org.ships.commands.argument.config.shiptype.ShipTypeViewSingleConfigArgument;
+import org.ships.commands.argument.create.CreateShipCommand;
 import org.ships.commands.argument.fix.NoGravityArgumentCommand;
 import org.ships.commands.argument.help.ShipsHelpArgumentCommand;
 import org.ships.commands.argument.info.ShipsInfoArgumentCommand;
@@ -59,6 +60,8 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new ShipsBlockListSetBlockLimitArgumentCommand());
 
         COMMANDS.add(new NoGravityArgumentCommand());
+
+        COMMANDS.add(new CreateShipCommand());
 
         COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config", "configuration"));
         COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
