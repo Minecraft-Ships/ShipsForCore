@@ -5,7 +5,9 @@ import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
+import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.arguments.operation.SuggestionArgument;
+import org.core.command.argument.arguments.position.WorldArgument;
 import org.core.command.argument.arguments.position.vector.Vector3IntegerArgument;
 import org.core.command.argument.arguments.simple.number.IntegerArgument;
 import org.core.command.argument.context.CommandArgumentContext;
@@ -17,6 +19,7 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
+import org.core.world.WorldExtent;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.Positionable;
 import org.core.world.position.impl.Position;
@@ -43,6 +46,8 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
     private final String SHIP_ID_ARGUMENT = "ship_id";
     private final String SHIP_MOVE_TO_ARGUMENT = "moveTo";
     private final String SHIP_EXACT_ARGUMENT = "exact";
+    private final OptionalArgument<WorldExtent> SHIP_WORLD_ARGUMENT = new OptionalArgument<>(new WorldArgument(
+            "world"), (WorldExtent) null);
     private final String SHIP_VECTOR_ARGUMENT = "vector";
 
 
@@ -55,7 +60,9 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
                 new ExactArgument(this.SHIP_EXACT_ARGUMENT),
                 new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT, this.createSuggestion(p -> p.getX().intValue()),
                         this.createSuggestion(p -> p.getY().intValue()),
-                        this.createSuggestion(p -> p.getZ().intValue()))
+                        this.createSuggestion(p -> p.getZ().intValue())),
+                SHIP_WORLD_ARGUMENT
+
         );
     }
 
@@ -87,7 +94,13 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         Vector3<Integer> vector3 = commandContext.getArgument(this, this.SHIP_VECTOR_ARGUMENT);
-        SyncBlockPosition position = Position.toSync(Position.toBlock(vessel.getPosition().getWorld().getPosition(vector3)));
+        WorldExtent world = commandContext.getArgument(this, this.SHIP_WORLD_ARGUMENT);
+        if (world==null) {
+            world = vessel.getPosition().getWorld();
+        }
+
+
+        SyncBlockPosition position = Position.toSync(Position.toBlock(world.getPosition(vector3)));
         MovementContext context = new MovementContext();
         BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
         context.setMovement(movement);

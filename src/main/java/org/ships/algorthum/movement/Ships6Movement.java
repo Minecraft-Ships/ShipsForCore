@@ -121,7 +121,9 @@ public class Ships6Movement implements BasicMovement {
             VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
             TranslateCore.getPlatform().callEvent(eventPost);
             context.getPostMovement().accept(eventPost);
-            Result.DEFAULT_RESULT.run(vessel, context);
+            Result result = new Result(Result.DEFAULT_RESULT);
+            result.remove(Result.Run.COMMON_TELEPORT_ENTITIES);
+            result.run(vessel, context);
             vessel.set(MovingFlag.class, null);
         }).build(ShipsPlugin.getPlugin());
         for (int A = 0; A < blocksToProcess.size(); A++) {

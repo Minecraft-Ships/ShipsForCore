@@ -23,6 +23,7 @@ import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
+import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.AttachableKeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -427,16 +428,22 @@ public class CoreEventListener implements EventListener {
                 continue;
             }
             SignTileEntity sign = (SignTileEntity) lte;
-            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Could not get Licence sign from register. Something is really wrong"));
+            LicenceSign licenceSign = ShipsPlugin
+                    .getPlugin()
+                    .get(LicenceSign.class)
+                    .orElseThrow(() -> new IllegalStateException("Could not get Licence sign from register. Something is really wrong"));
             if (!licenceSign.isSign(sign)) {
                 continue;
             }
             if (!direction.equals(FourFacingDirection.NONE)) {
-                Optional<Direction> opAttachable = position.getRelative(direction).getBlockDetails().get(AttachableKeyedData.class);
+                BlockSnapshot.SyncBlockSnapshot block = position.getRelative(direction).getBlockDetails();
+                Optional<Direction> opAttachable = block
+                        .get(AttachableKeyedData.class);
                 if (!opAttachable.isPresent()) {
                     continue;
                 }
-                if (!opAttachable.get().getOpposite().equals(direction)) {
+                Direction dir = opAttachable.get().getOpposite();
+                if (!dir.equals(direction)) {
                     continue;
                 }
             }
