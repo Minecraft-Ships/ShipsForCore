@@ -28,7 +28,9 @@ import org.core.world.structure.Structure;
 import org.core.world.structure.StructurePlacementBuilder;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.commands.argument.arguments.structure.ShipsStructureArgument;
+import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.loader.ShipsIDFinder;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
@@ -110,7 +112,17 @@ public class CreateShipCommand implements ArgumentCommand {
         if (name.contains(":")) {
             name = name.replaceAll(":", "");
         }
-        System.out.println("Blocks: " + structure.getBlocks().parallelStream().map(Collection::parallelStream).count());
+
+        String fullId = shipType.getId() + ":" + name.toLowerCase().replaceAll(" ", "_");
+        try {
+            new ShipsIDFinder(fullId).load();
+            if(commandContext.getSource() instanceof CommandViewer viewer){
+                viewer.sendMessage(AText.ofPlain("Ship name already taken"));
+            }
+            return false;
+        } catch (LoadVesselException e) {
+        }
+
         SyncBlockPosition start = world.getPosition(x, y, z);
         structure.place(new StructurePlacementBuilder().setPosition(start));
 

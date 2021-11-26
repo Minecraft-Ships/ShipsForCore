@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,10 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
 
     PositionableShipsStructure setPosition(SyncBlockPosition pos);
 
+    @Deprecated
     PositionableShipsStructure addAir();
+
+    void addAir(Consumer<? super PositionableShipsStructure> onComplete);
 
     default Bounds<Integer> getBounds() {
         Set<Vector3<Integer>> positions = this.getPositions().stream().map(Position::getPosition).collect(Collectors.toSet());

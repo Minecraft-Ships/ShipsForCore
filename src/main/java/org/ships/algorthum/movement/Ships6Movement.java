@@ -135,11 +135,21 @@ public class Ships6Movement implements BasicMovement {
                     .setDelayUnit(config.getDefaultMovementStackDelayUnit())
                     .build(ShipsPlugin.getPlugin());
         }
+        scheduler = TranslateCore
+                .createSchedulerBuilder()
+                .setDisplayName("Teleport entities")
+                .setExecutor(() -> {
+                    Result.Run.COMMON_TELEPORT_ENTITIES.run(vessel, context);
+                })
+                .setToRunAfter(scheduler)
+                .setDelay(config.getDefaultMovementStackDelay())
+                .setDelayUnit(config.getDefaultMovementStackDelayUnit())
+                .build(ShipsPlugin.getPlugin());
         for (int A = 0; A < blocksToProcess.size(); A++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = TranslateCore
                     .createSchedulerBuilder()
-                    .setDisplayName("Remove Block")
+                    .setDisplayName("Remove Blocxds67ytyk")
                     .setExecutor(new RemoveBlocks(waterLevel, A, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())

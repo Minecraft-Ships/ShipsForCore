@@ -10,6 +10,7 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.algorthum.blockfinder.FindAirOvertimeBlockFinderUpdate;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
@@ -72,7 +73,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
             vessel.setMaxSpeed(engineSpeed);
             vessel.getCrew().put(owner, CrewPermission.CAPTAIN);
             ShipsPlugin.getPlugin().registerVessel(vessel);
-            ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(vessel).getConnectedBlocksOvertime(vessel.getPosition(), new OvertimeBlockFinderUpdate() {
+            ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(vessel).getConnectedBlocksOvertime(vessel.getPosition(), new FindAirOvertimeBlockFinderUpdate(vessel, new OvertimeBlockFinderUpdate() {
                 @Override
                 public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                     vessel.setStructure(structure);
@@ -83,7 +84,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
                 public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                     return BlockFindControl.USE;
                 }
-            });
+            }));
             return vessel;
         }
         throw new IOException("Unknown");

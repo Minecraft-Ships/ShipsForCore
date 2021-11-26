@@ -9,7 +9,6 @@ import org.ships.vessel.common.types.Vessel;
 public interface BasicMovement extends Algorithm {
 
     Ships5Movement SHIPS_FIVE = new Ships5Movement();
-    Ships5AsyncedMovement SHIPS_FIVE_ASYNC = new Ships5AsyncedMovement();
     Ships6Movement SHIPS_SIX = new Ships6Movement();
 
     Result move(Vessel vessel, MovementContext context) throws MoveException;

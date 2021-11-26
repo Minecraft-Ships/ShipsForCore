@@ -15,6 +15,7 @@ import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.algorthum.blockfinder.FindAirOvertimeBlockFinderUpdate;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
 import org.ships.config.configuration.ShipsConfig;
@@ -101,7 +102,7 @@ public class LicenceSign implements ShipsSign {
                     bar = TranslateCore.createBossBar().register(player).setTitle(AText.ofPlain("0 / " + totalCount));
                 }
                 final ServerBossBar finalBar = bar;
-                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(s).getConnectedBlocksOvertime(s.getPosition(), new OvertimeBlockFinderUpdate() {
+                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().setConnectedVessel(s).getConnectedBlocksOvertime(s.getPosition(), new FindAirOvertimeBlockFinderUpdate(s, new OvertimeBlockFinderUpdate() {
                     @Override
                     public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                         s.setStructure(structure);
@@ -125,7 +126,7 @@ public class LicenceSign implements ShipsSign {
                         }
                         return BlockFindControl.USE;
                     }
-                });
+                }));
             }
         } catch (UnableToFindLicenceSign e1) {
             e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));

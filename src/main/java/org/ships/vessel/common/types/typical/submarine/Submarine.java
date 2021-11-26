@@ -36,7 +36,6 @@ import org.ships.vessel.common.assits.UnderWaterType;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
-import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -235,11 +234,5 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
             }
             slot.setItem(item);
         }
-    }
-
-    @Override
-    public void setStructure(@NotNull PositionableShipsStructure structure) {
-        structure.addAir();
-        super.setStructure(structure);
     }
 }

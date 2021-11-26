@@ -1,14 +1,19 @@
 package org.ships.vessel.structure;
 
+import org.core.TranslateCore;
 import org.core.exceptions.DirectionNotSupported;
+import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.ships.plugin.ShipsPlugin;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class AbstractPositionableShipsStructure implements PositionableShipsStructure {
@@ -32,6 +37,72 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
+    public void addAir(Consumer<? super PositionableShipsStructure> onComplete) {
+        Collection<SyncBlockPosition> positions = this.getPositions();
+        Direction[] directions = FourFacingDirection.getFourFacingDirections();
+        TranslateCore.createSchedulerBuilder().setAsync(true)
+                .setDisplayName("air check")
+                .setDelay(0)
+                .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                .setExecutor(() -> {
+                    Collection<BlockPosition> toAdd = positions.parallelStream().flatMap(p -> {
+                        Collection<BlockPosition> blocksToAdd = new HashSet<>();
+                        for (Direction dir : directions) {
+                            try {
+                                Optional<BlockPosition> nextInLine = getNextInLine(p, dir, positions);
+                                if (nextInLine.isEmpty()) {
+                                    continue;
+                                }
+                                BlockPosition p1 = nextInLine.get();
+                                SyncBlockPosition target = p;
+                                Vector3<Integer> dirV = dir.getAsVector();
+                                int disX = p1.getX() - target.getX();
+                                int disY = p1.getY() - target.getY();
+                                int disZ = p1.getZ() - target.getZ();
+                                while (!((disX==0) && (disY==0) && (disZ==0))) {
+                                    target = target.getRelative(dir);
+                                    if (disX!=0) {
+                                        disX = disX - dirV.getX();
+                                    }
+                                    if (disY!=0) {
+                                        disY = disY - dirV.getY();
+                                    }
+                                    if (disZ!=0) {
+                                        disZ = disZ - dirV.getZ();
+                                    }
+                                    if (!target.getBlockType().equals(BlockTypes.AIR)) {
+                                        break;
+                                    }
+                                    if (blocksToAdd.contains(target)) {
+                                        continue;
+                                    }
+                                    blocksToAdd.add(target);
+                                }
+
+                            } catch (DirectionNotSupported directionNotSupported) {
+                                directionNotSupported.printStackTrace();
+                            }
+                        }
+                        return blocksToAdd.parallelStream();
+                    }).collect(Collectors.toSet());
+
+                    TranslateCore.createSchedulerBuilder()
+                            .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                            .setDelay(0)
+                            .setDisplayName("combine async")
+                            .setAsync(false)
+                            .setExecutor(() -> {
+                                toAdd.forEach(this::addRawPosition);
+                                onComplete.accept(this);
+                            })
+                            .build(ShipsPlugin.getPlugin());
+                }).build(ShipsPlugin.getPlugin());
+        positions.forEach(p -> {
+
+        });
+    }
+
+    @Override
     public PositionableShipsStructure addAir() {
         Collection<SyncBlockPosition> positions = this.getPositions();
         Collection<SyncBlockPosition> toAdd = new ArrayList<>();
@@ -45,15 +116,15 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
                         int disX = p1.getX() - target.getX();
                         int disY = p1.getY() - target.getY();
                         int disZ = p1.getZ() - target.getZ();
-                        while (!((disX == 0) && (disY == 0) && (disZ == 0))) {
+                        while (!((disX==0) && (disY==0) && (disZ==0))) {
                             target = target.getRelative(dir);
-                            if (disX != 0) {
+                            if (disX!=0) {
                                 disX = disX - dirV.getX();
                             }
-                            if (disY != 0) {
+                            if (disY!=0) {
                                 disY = disY - dirV.getY();
                             }
-                            if (disZ != 0) {
+                            if (disZ!=0) {
                                 disZ = disZ - dirV.getZ();
                             }
                             if (!target.getBlockType().equals(BlockTypes.AIR)) {
@@ -121,13 +192,13 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         return this;
     }
 
-    private static Optional<SyncBlockPosition> getNextInLine(Position<Integer> pos, Direction direction, Collection<? extends SyncBlockPosition> collections) throws DirectionNotSupported {
+    private static Optional<BlockPosition> getNextInLine(Position<Integer> pos, Direction direction, Collection<? extends BlockPosition> collections) throws DirectionNotSupported {
         Vector3<Integer> original = pos.getPosition();
         Collection<Direction> directions = new ArrayList<>(Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));
         if (!directions.contains(direction)) {
             throw new DirectionNotSupported(direction, "");
         }
-        List<SyncBlockPosition> positions = collections.stream().filter(p -> {
+        List<BlockPosition> positions = collections.stream().filter(p -> {
             Vector3<Integer> vector = p.getPosition();
             if (vector.getX().equals(original.getX()) && vector.getY().equals(original.getY())) {
                 int oz = original.getZ();
@@ -157,8 +228,8 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
             return false;
         }).filter(p -> !p.getPosition().equals(original)).collect(Collectors.toList());
         double min = Double.MAX_VALUE;
-        SyncBlockPosition current = null;
-        for (SyncBlockPosition position : positions) {
+        BlockPosition current = null;
+        for (BlockPosition position : positions) {
             double distance = position.getPosition().distanceSquared(original);
             if (min > distance) {
                 min = distance;

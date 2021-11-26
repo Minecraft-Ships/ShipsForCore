@@ -48,6 +48,7 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.assits.FileBasedVessel;
 import org.ships.vessel.common.assits.TeleportToVessel;
+import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.PlayerStatesFlag;
 import org.ships.vessel.common.loader.ShipsBlockFinder;
@@ -158,9 +159,13 @@ public class CoreEventListener implements EventListener {
             SyncExactPosition position = sPos.toExactPosition().getRelative(vector);
             if (!position.equals(player.getPosition())) {
                 player.setPosition(position);
+                map.remove(player.getUniqueId());
+                vessel.set(PlayerStatesFlag.class, map);
             }
             Optional<MovingFlag> opMovingFlag = vessel.get(MovingFlag.class);
             player.setGravity(!opMovingFlag.isPresent() || !opMovingFlag.get().getValue().isPresent());
+
+
         }
     }
 
@@ -378,6 +383,9 @@ public class CoreEventListener implements EventListener {
                             TranslateCore.getEventManager().callEvent(postEvent);
                             if (finalBar!=null) {
                                 finalBar.deregisterPlayers();
+                            }
+                            if (vessel.getType() instanceof WaterType) {
+                                structure.addAir(vessel::setStructure);
                             }
                         }
 

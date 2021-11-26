@@ -103,18 +103,18 @@ public class ShipsPlugin implements CorePlugin {
         register.register(new ShipsArgumentCommand());
     }
 
-    public void loadStructures(){
+    public void loadStructures() {
         File file = new File(this.getConfigFolder(), "Structure");
         File[] pluginFolders = file.listFiles();
-        if(pluginFolders == null){
+        if (pluginFolders==null) {
             return;
         }
-        for(File pluginFolder : pluginFolders){
+        for (File pluginFolder : pluginFolders) {
             File[] structureFiles = pluginFolder.listFiles();
-            if(structureFiles == null){
+            if (structureFiles==null) {
                 continue;
             }
-            for(File structureFile : structureFiles){
+            for (File structureFile : structureFiles) {
 
             }
         }
@@ -195,7 +195,6 @@ public class ShipsPlugin implements CorePlugin {
     private void init() {
         this.identifiables.add(BasicMovement.SHIPS_FIVE);
         this.identifiables.add(BasicMovement.SHIPS_SIX);
-        this.identifiables.add(BasicMovement.SHIPS_FIVE_ASYNC);
 
         this.identifiables.add(BasicBlockFinder.SHIPS_FIVE);
         this.identifiables.add(BasicBlockFinder.SHIPS_FIVE_ASYNC);

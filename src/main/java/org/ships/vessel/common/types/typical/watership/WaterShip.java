@@ -25,7 +25,6 @@ import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
-import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
 
@@ -133,11 +132,5 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getPositions().size());
         return (!(this.getSpecialBlockPercent()==0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
-    }
-
-    @Override
-    public void setStructure(@NotNull PositionableShipsStructure structure) {
-        structure.addAir();
-        super.setStructure(structure);
     }
 }

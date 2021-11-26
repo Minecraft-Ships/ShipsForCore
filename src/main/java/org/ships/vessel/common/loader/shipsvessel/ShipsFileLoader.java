@@ -16,6 +16,7 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.algorthum.blockfinder.FindAirOvertimeBlockFinderUpdate;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.config.parsers.VesselFlagWrappedParser;
@@ -82,19 +83,20 @@ public class ShipsFileLoader implements ShipsLoader {
 
         public void load(BlockPosition position, Collection<? extends Vector3<Integer>> structureList) {
             if (structureList.isEmpty()) {
-                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position, new OvertimeBlockFinderUpdate() {
-                    @Override
-                    public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                        StructureLoad.this.ship.setStructure(structure);
-                        StructureLoad.this.ship.setLoading(false);
-                        TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, StructureLoad.this.ship::getId, "Unknown") + " has loaded."));
-                    }
+                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position,
+                        new FindAirOvertimeBlockFinderUpdate(StructureLoad.this.ship, new OvertimeBlockFinderUpdate() {
+                            @Override
+                            public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
+                                StructureLoad.this.ship.setStructure(structure);
+                                StructureLoad.this.ship.setLoading(false);
+                                TranslateCore.getConsole().sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, StructureLoad.this.ship::getId, "Unknown") + " has loaded."));
+                            }
 
-                    @Override
-                    public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
-                        return BlockFindControl.USE;
-                    }
-                });
+                            @Override
+                            public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
+                                return BlockFindControl.USE;
+                            }
+                        }));
             } else {
                 PositionableShipsStructure pss = this.ship.getStructure();
                 pss.setRaw(structureList);
