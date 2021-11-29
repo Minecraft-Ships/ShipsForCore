@@ -45,7 +45,6 @@ public class ShipsConfig implements Config.KnownNodes {
     protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> FALL_DELAY_UNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "Falling", "DelayUnit"), "Running.Fall.DelayUnit");
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_SPEED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Speed"), "Running.Fall.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> FALL_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "Falling", "Enabled"), "Running.Fall.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LICENCE_SIGN_TEXT_1ST = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Sign", "Licence", "First"), "sign.licence.first");
     protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LICENCE_SIGN_TEXT_4TH = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Sign", "Licence", "Fourth"), "sign.licence.fourth");
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> VISIBLE_BOSS_BAR = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Bar", "Visible"), "Boss.Bar.Visible", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_AUTO = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Auto"), "Structure.Auto.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
@@ -55,7 +54,10 @@ public class ShipsConfig implements Config.KnownNodes {
     protected final CollectionDedicatedNode<WorldExtent, Set<WorldExtent>,
             ConfigurationNode.KnownParser.CollectionKnown<WorldExtent>> DISABLED_WORLDS = new CollectionDedicatedNode<>(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_WORLD, "World", "Disabled"), "worlds.ignore");
     protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LOGIN_COMMAND = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Login", "Command"), "login.command");
-    protected final ObjectDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> SIGN_MOVE_SPEED = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Sign", "Move", "Speed"), "sign.move.speed");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> SIGN_MOVE_SPEED =
+            new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Sign",
+                    "Move", "Speed"), "sign.move.speed", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_PREVENT_EXPLOSION = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Prevent", "Explosion"), "Structure.Prevent.Explosion", (f, v) -> f.set(v.getKey(), v.getValue()));
 
     @Deprecated
     public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
@@ -119,6 +121,10 @@ public class ShipsConfig implements Config.KnownNodes {
             modified = true;
             this.file.set(new ConfigurationNode(this.SIGN_MOVE_SPEED.getNode().getPath()), 2);
         }
+        if (!this.file.getBoolean(this.STRUCTURE_PREVENT_EXPLOSION.getNode()).isPresent()) {
+            modified = true;
+            this.file.set(new ConfigurationNode(this.STRUCTURE_PREVENT_EXPLOSION.getNode().getPath()), true);
+        }
         if (modified) {
             this.file.save();
         }
@@ -127,6 +133,10 @@ public class ShipsConfig implements Config.KnownNodes {
 
     public Set<WorldExtent> getDisabledWorlds() {
         return this.file.parseCollection(this.DISABLED_WORLDS.getNode(), new HashSet<>());
+    }
+
+    public boolean isPreventingExplosions() {
+        return this.file.getBoolean(this.STRUCTURE_PREVENT_EXPLOSION.getNode(), true);
     }
 
     public boolean isUpdateEnabled() {
@@ -233,6 +243,10 @@ public class ShipsConfig implements Config.KnownNodes {
         return this.file.getInteger(this.ADVANCED_TRACK_LIMIT.getNode(), 4000);
     }
 
+    public Optional<String> getTextOnLicenceForthLine() {
+        return this.file.getString(this.LICENCE_SIGN_TEXT_4TH.getNode());
+    }
+
     @Override
     public ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
@@ -275,13 +289,14 @@ public class ShipsConfig implements Config.KnownNodes {
                 this.FALL_DELAY_UNIT,
                 this.FALL_ENABLED,
                 this.FALL_SPEED,
-                this.LICENCE_SIGN_TEXT_1ST,
-                this.LICENCE_SIGN_TEXT_4TH,
                 this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE,
                 this.STRUCTURE_UPDATE_AUTO,
                 this.STRUCTURE_UPDATE_CLICK,
+                this.STRUCTURE_PREVENT_EXPLOSION,
+                this.SIGN_MOVE_SPEED,
                 this.VISIBLE_BOSS_BAR,
-                this.UPDATE_ENABLED
+                this.UPDATE_ENABLED,
+                this.LICENCE_SIGN_TEXT_4TH
         );
     }
 }

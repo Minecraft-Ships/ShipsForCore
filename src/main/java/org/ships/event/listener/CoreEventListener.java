@@ -420,6 +420,10 @@ public class CoreEventListener implements EventListener {
 
     @HEvent
     public void onBlockExplode(ExplosionEvent.Post event) {
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        if (!config.isPreventingExplosions()) {
+            return;
+        }
         LicenceSign licenceSign =
                 ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new RuntimeException("Could not " +
                         "find licence sign? is it registered?"));
@@ -473,6 +477,9 @@ public class CoreEventListener implements EventListener {
 
     @HEvent
     public void onBlockBreak(BlockChangeEvent.Break.Pre event) {
+        if (event instanceof BlockChangeEvent.Break.Pre.ByExplosion) {
+            return;
+        }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Collection<Direction> list = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
         list.add(FourFacingDirection.NONE);

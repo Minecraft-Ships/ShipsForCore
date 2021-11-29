@@ -81,7 +81,13 @@ public class LicenceSign implements ShipsSign {
         snapshot.setTextAt(0, AText.ofPlain("[Ships]").withColour(NamedTextColours.YELLOW));
         snapshot.setTextAt(1, AText.ofPlain(opType.get().getDisplayName()).withColour(NamedTextColours.BLUE));
         snapshot.setTextAt(2, AText.ofPlain(name).withColour(NamedTextColours.GREEN));
-        snapshot.setTextAt(3, lines.get(3).withColour(NamedTextColours.GREEN));
+        AText forth = ShipsPlugin
+                .getPlugin()
+                .getConfig()
+                .getTextOnLicenceForthLine()
+                .map(AText::ofLegacy)
+                .orElseGet(() -> lines.get(3).withColour(NamedTextColours.GREEN));
+        snapshot.setTextAt(3, forth);
         return snapshot;
     }
 
