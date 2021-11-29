@@ -11,6 +11,7 @@ import org.core.event.EventListener;
 import org.core.event.EventPriority;
 import org.core.event.HEvent;
 import org.core.event.events.block.BlockChangeEvent;
+import org.core.event.events.block.ExplosionEvent;
 import org.core.event.events.block.tileentity.SignChangeEvent;
 import org.core.event.events.connection.ClientConnectionEvent;
 import org.core.event.events.entity.EntityCommandEvent;
@@ -25,7 +26,10 @@ import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.AttachableKeyedData;
+import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.TileEntity;
+import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
@@ -415,40 +419,55 @@ public class CoreEventListener implements EventListener {
     }
 
     @HEvent
-    public void onBlockExplode(BlockChangeEvent.Break.Pre.ByExplosion event) {
-        SyncBlockPosition position = event.getPosition();
-        Collection<Direction> directions = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
-        directions.add(FourFacingDirection.NONE);
-        for (Direction direction : directions) {
-            if (!(position.getRelative(direction).getTileEntity().isPresent())) {
-                continue;
-            }
-            LiveTileEntity lte = position.getRelative(direction).getTileEntity().get();
-            if (!(lte instanceof LiveSignTileEntity)) {
-                continue;
-            }
-            SignTileEntity sign = (SignTileEntity) lte;
-            LicenceSign licenceSign = ShipsPlugin
-                    .getPlugin()
-                    .get(LicenceSign.class)
-                    .orElseThrow(() -> new IllegalStateException("Could not get Licence sign from register. Something is really wrong"));
-            if (!licenceSign.isSign(sign)) {
-                continue;
-            }
-            if (!direction.equals(FourFacingDirection.NONE)) {
-                BlockSnapshot.SyncBlockSnapshot block = position.getRelative(direction).getBlockDetails();
-                Optional<Direction> opAttachable = block
-                        .get(AttachableKeyedData.class);
-                if (!opAttachable.isPresent()) {
-                    continue;
-                }
-                Direction dir = opAttachable.get().getOpposite();
-                if (!dir.equals(direction)) {
-                    continue;
-                }
-            }
-            event.setCancelled(true);
+    public void onBlockExplode(ExplosionEvent.Post event) {
+        LicenceSign licenceSign =
+                ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new RuntimeException("Could not " +
+                        "find licence sign? is it registered?"));
+        Optional<BlockSnapshot.SyncBlockSnapshot> opLicenceSignSnapshot = event
+                .getExplosion()
+                .getBlocks()
+                .stream()
+                .filter(sbs -> sbs.get(KeyedData.TILED_ENTITY).isPresent())
+                .filter(sbs -> {
+                    TileEntitySnapshot<? extends TileEntity> tileEntity = sbs
+                            .get(KeyedData.TILED_ENTITY)
+                            .orElseThrow(() -> new RuntimeException("Broken logic"));
+                    return tileEntity instanceof SignTileEntity;
+                })
+                .filter(sbs -> licenceSign
+                        .isSign((SignTileEntity) sbs
+                                .get(KeyedData.TILED_ENTITY)
+                                .orElseThrow(() -> new RuntimeException("Broken logic"))))
+                .findAny();
+
+        if (opLicenceSignSnapshot.isEmpty()) {
             return;
+        }
+
+        Set<BlockSnapshot.SyncBlockSnapshot> restoreBlocks =
+                new HashSet<>(Collections.singleton(opLicenceSignSnapshot.get()));
+
+        Optional<Direction> opSign = opLicenceSignSnapshot.get().get(KeyedData.ATTACHABLE);
+        if (opSign.isPresent()) {
+            SyncBlockPosition attachedPosition = opLicenceSignSnapshot.get().getPosition().getRelative(opSign.get());
+            Optional<BlockSnapshot.SyncBlockSnapshot> attached = event
+                    .getExplosion()
+                    .getBlocks()
+                    .stream()
+                    .filter(sbs -> sbs.getPosition().equals(attachedPosition))
+                    .findAny();
+            attached.ifPresent(restoreBlocks::add);
+        }
+
+        if (!restoreBlocks.isEmpty()) {
+            TranslateCore
+                    .createSchedulerBuilder()
+                    .setExecutor(() -> restoreBlocks.forEach(BlockSnapshot.SyncBlockSnapshot::restore))
+                    .setDisplayName("restoring blocks")
+                    .setDelay(1)
+                    .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                    .build(ShipsPlugin.getPlugin())
+                    .run();
         }
     }
 
