@@ -518,7 +518,10 @@ public class CoreEventListener implements EventListener {
             Vessel vessel = opVessel.get();
             if (vessel instanceof CrewStoredVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
                 LivePlayer player = ((EntityEvent<LivePlayer>) event).getEntity();
-                if (!(((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() || (player.hasPermission(vessel.getType().getMoveOtherPermission())))) {
+                if (!(
+                        ((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() ||
+                        (player.hasPermission(vessel.getType().getMoveOtherPermission())))
+                ) {
                     event.setCancelled(true);
                     return;
                 }
@@ -540,11 +543,10 @@ public class CoreEventListener implements EventListener {
             return;
         }
         if (config.isStructureClickUpdating()) {
-            try {
-                Vessel vessel = new ShipsBlockFinder(event.getPosition()).load();
-                vessel.getStructure().removePosition(event.getPosition());
-            } catch (LoadVesselException ignored) {
-            }
+            new ShipsOvertimeBlockFinder(event.getPosition())
+                    .loadOvertime(vessel -> vessel.getStructure().removePosition(event.getPosition()),
+                            structure -> {
+                            });
         }
     }
 }
