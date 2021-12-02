@@ -34,11 +34,12 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
 
     @Override
     public Vessel load() throws LoadVesselException {
-        LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).get();
+        LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new RuntimeException("Could" +
+                " not find licence sign. is it registered?"));
         if (!ls.isSign(this.ste)) {
             throw new LoadVesselException("Unable to read sign");
         }
-        String typeS = this.ste.getTextAt(1).get().toPlain();
+        String typeS = this.ste.getTextAt(1).orElseThrow(() -> new RuntimeException("You broke logic")).toPlain();
         Optional<ShipType<?>> opType =
                 ShipsPlugin.getPlugin().getAllShipTypes().stream().filter(st -> st.getDisplayName().equalsIgnoreCase(typeS)).findAny();
         if (!opType.isPresent()) {

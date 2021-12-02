@@ -481,33 +481,30 @@ public class CoreEventListener implements EventListener {
             return;
         }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        LicenceSign licenceSign = ShipsPlugin
+                .getPlugin()
+                .get(LicenceSign.class)
+                .orElseThrow(() -> new IllegalStateException("Licence sign could not be found from register. Something is really wrong."));
         Collection<Direction> list = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
         list.add(FourFacingDirection.NONE);
         SyncBlockPosition position = event.getPosition();
         for (Direction direction : list) {
             SyncBlockPosition pos = position.getRelative(direction);
-            if (config.isStructureClickUpdating()) {
-                try {
-                    Vessel vessel = new ShipsBlockFinder(pos).load();
-                    vessel.getStructure().removePosition(pos);
-                } catch (LoadVesselException ignored) {
-                }
-            }
-            if (!(pos.getTileEntity().isPresent())) {
+            Optional<LiveTileEntity> opTileEntity = pos.getTileEntity();
+            if (opTileEntity.isEmpty()) {
                 continue;
             }
-            LiveTileEntity lte = pos.getTileEntity().get();
+            LiveTileEntity lte = opTileEntity.get();
             if (!(lte instanceof LiveSignTileEntity)) {
                 continue;
             }
             SignTileEntity lste = (SignTileEntity) lte;
-            LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Licence sign could not be found from register. Something is really wrong."));
             if (!licenceSign.isSign(lste)) {
                 continue;
             }
             if (!direction.equals(FourFacingDirection.NONE)) {
                 Optional<Direction> opAttachable = position.getRelative(direction).getBlockDetails().get(AttachableKeyedData.class);
-                if (!opAttachable.isPresent()) {
+                if (opAttachable.isEmpty()) {
                     continue;
                 }
                 if (!opAttachable.get().getOpposite().equals(direction)) {
@@ -515,7 +512,7 @@ public class CoreEventListener implements EventListener {
                 }
             }
             Optional<Vessel> opVessel = licenceSign.getShip(lste);
-            if (!opVessel.isPresent()) {
+            if (opVessel.isEmpty()) {
                 continue;
             }
             Vessel vessel = opVessel.get();
@@ -541,6 +538,13 @@ public class CoreEventListener implements EventListener {
                 player.sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " removed successfully"));
             }
             return;
+        }
+        if (config.isStructureClickUpdating()) {
+            try {
+                Vessel vessel = new ShipsBlockFinder(event.getPosition()).load();
+                vessel.getStructure().removePosition(event.getPosition());
+            } catch (LoadVesselException ignored) {
+            }
         }
     }
 }

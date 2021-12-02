@@ -39,6 +39,9 @@ import java.util.stream.Collectors;
 public class LicenceSign implements ShipsSign {
 
     public Optional<Vessel> getShip(SignTileEntity entity) {
+        if (!this.isSign(entity)) {
+            return Optional.empty();
+        }
         try {
             return Optional.of(new ShipsLicenceSignFinder(entity).load());
         } catch (LoadVesselException e) {
