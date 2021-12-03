@@ -37,7 +37,7 @@ public interface MovementResult<E> {
     VesselMovingAlready VESSEL_MOVING_ALREADY = new VesselMovingAlready();
     VesselStillLoading VESSEL_STILL_LOADING = new VesselStillLoading();
     NoMovingToFound NO_MOVING_TO_FOUND = new NoMovingToFound();
-    @Deprecated
+    @Deprecated(forRemoval = true)
     NoBurnerFound NO_BURNER_FOUND = new NoBurnerFound();
     NoSpecialBlockFound NO_SPECIAL_BLOCK_FOUND = new NoSpecialBlockFound();
     NoSpecialNamedBlockFound NO_SPECIAL_NAMED_BLOCK_FOUND = new NoSpecialNamedBlockFound();
@@ -154,7 +154,7 @@ public interface MovementResult<E> {
         }
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     class NoBurnerFound implements MovementResult<Boolean> {
 
         @Override

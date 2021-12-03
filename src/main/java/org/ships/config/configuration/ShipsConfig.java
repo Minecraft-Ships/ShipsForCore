@@ -58,8 +58,9 @@ public class ShipsConfig implements Config.KnownNodes {
             new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Sign",
                     "Move", "Speed"), "sign.move.speed", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_PREVENT_EXPLOSION = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Prevent", "Explosion"), "Structure.Prevent.Explosion", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EVENT_LOAD_FAIL_DELETE = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Event", "OnLoad", "Failed", "DeleteFile"), "Event.OnLoad.Failed.DeleteFile", (f, v) -> f.set(v.getKey(), v.getValue()));
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
 
     public ShipsConfig() {
@@ -125,10 +126,18 @@ public class ShipsConfig implements Config.KnownNodes {
             modified = true;
             this.file.set(new ConfigurationNode(this.STRUCTURE_PREVENT_EXPLOSION.getNode().getPath()), true);
         }
+        if (!this.file.getBoolean(this.EVENT_LOAD_FAIL_DELETE.getNode()).isPresent()) {
+            modified = true;
+            this.file.set(new ConfigurationNode(this.EVENT_LOAD_FAIL_DELETE.getNode().getPath()), false);
+        }
         if (modified) {
             this.file.save();
         }
         this.file.reload();
+    }
+
+    public boolean willDeleteFilesIfFailedToLoad() {
+        return this.file.getBoolean(this.EVENT_LOAD_FAIL_DELETE.getNode(), false);
     }
 
     public Set<WorldExtent> getDisabledWorlds() {

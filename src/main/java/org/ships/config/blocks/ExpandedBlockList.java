@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-@Deprecated
+@Deprecated(forRemoval = true)
 public class ExpandedBlockList implements BlockList {
 
     private final ConfigurationStream.ConfigurationFile file;

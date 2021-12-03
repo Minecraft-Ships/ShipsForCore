@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@Deprecated
+@Deprecated(forRemoval = true)
 public class OPShip extends AbstractShipsVessel implements AirType, FlightPathType {
 
     protected @Nullable FlightPath flightPath;

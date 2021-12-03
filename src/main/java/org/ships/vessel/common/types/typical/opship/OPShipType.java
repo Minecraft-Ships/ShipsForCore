@@ -15,7 +15,7 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
 
-@Deprecated
+@Deprecated(forRemoval = true)
 public class OPShipType extends AbstractShipType<OPShip> {
 
     public OPShipType() {

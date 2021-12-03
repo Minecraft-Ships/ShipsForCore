@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-@Deprecated
+@Deprecated(forRemoval = true)
 public class MessageConfig implements Config.KnownNodes {
 
     private final ConfigurationStream.ConfigurationFile file;

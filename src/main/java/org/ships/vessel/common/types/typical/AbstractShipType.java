@@ -68,7 +68,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     }
 
     @Override
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public @NotNull ExpandedBlockList getDefaultBlockList() {
         throw new RuntimeException("Use normal blockList now");
     }

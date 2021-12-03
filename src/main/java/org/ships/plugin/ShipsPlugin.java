@@ -10,6 +10,7 @@ import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.ConsoleSource;
 import org.core.utils.Identifiable;
+import org.core.world.structure.StructureFileBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.movement.BasicMovement;
@@ -21,6 +22,7 @@ import org.ships.config.debug.DebugFile;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.config.messages.MessageConfig;
 import org.ships.event.listener.CoreEventListener;
+import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.movement.BlockPriority;
 import org.ships.movement.autopilot.scheduler.FallExecutor;
 import org.ships.permissions.vessel.CrewPermission;
@@ -52,9 +54,8 @@ public class ShipsPlugin implements CorePlugin {
     private final Set<Identifiable> identifiables = new HashSet<>();
     private final Set<Vessel> vessels = new HashSet<>();
     private DefaultBlockList blockList;
-    @Deprecated
-    private
-    MessageConfig messageConfig;
+    @Deprecated(forRemoval = true)
+    private MessageConfig messageConfig;
     private AdventureMessageConfig aMessageConfig;
     private ShipsConfig config;
     private DebugFile debugFile;
@@ -115,7 +116,20 @@ public class ShipsPlugin implements CorePlugin {
                 continue;
             }
             for (File structureFile : structureFiles) {
-
+                String structureName = structureFile.getName();
+                if (structureName.endsWith(".structure")) {
+                    structureName = structureName.substring(0, structureName.length() - 10);
+                }
+                StructureFileBuilder fileBuilder = new StructureFileBuilder()
+                        .setFile(structureFile)
+                        .setPlugin(ShipsPlugin.getPlugin())
+                        .setKey(structureName.replaceAll(" ", "_").toLowerCase())
+                        .setName(structureName);
+                try {
+                    TranslateCore.getPlatform().register(fileBuilder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -134,7 +148,7 @@ public class ShipsPlugin implements CorePlugin {
         }
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public MessageConfig getMessageConfig() {
         return this.messageConfig;
     }
@@ -170,26 +184,33 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     public void loadVessels() {
-        this.vessels.addAll(ShipsFileLoader.loadAll(Throwable::printStackTrace));
+        ShipsConfig config = this.getConfig();
+        this.vessels.addAll(ShipsFileLoader.loadAll((e) -> {
+            if (e instanceof FileLoadVesselException flve && config.willDeleteFilesIfFailedToLoad()) {
+                flve.getFile().delete();
+            }
+            e.printStackTrace();
+        }));
     }
 
     public void loadConverts() {
-        this.getAll(VesselConverter.class).forEach(c -> {
-            File folder = c.getFolder();
-            File[] files = folder.listFiles();
-            if (files==null) {
-                return;
-            }
-            Stream.of(files).filter(f -> !f.isDirectory()).forEach(f -> {
-                try {
-                    this.registerVessel(c.convert(f));
-                } catch (IOException e) {
-                    System.err.println("Error converting vessel with " + c.getId() + " at: " + f.getPath());
-                    e.printStackTrace();
-                }
-
-            });
-        });
+        this
+                .getAll(VesselConverter.class)
+                .forEach(c -> {
+                    File folder = c.getFolder();
+                    File[] files = folder.listFiles();
+                    if (files==null) {
+                        return;
+                    }
+                    Stream.of(files).filter(f -> !f.isDirectory()).forEach(f -> {
+                        try {
+                            this.registerVessel(c.convert(f));
+                        } catch (IOException e) {
+                            System.err.println("Error converting vessel with " + c.getId() + " at: " + f.getPath());
+                            e.printStackTrace();
+                        }
+                    });
+                });
     }
 
     private void init() {

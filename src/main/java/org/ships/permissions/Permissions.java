@@ -7,11 +7,11 @@ import org.ships.vessel.common.types.ShipType;
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection"})
 public interface Permissions {
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     String ABSTRACT_SHIP_MOVE = "ships.move.own";
-    @Deprecated
+    @Deprecated(forRemoval = true)
     String ABSTRACT_SHIP_MOVE_OTHER = "ships.move.other";
-    @Deprecated
+    @Deprecated(forRemoval = true)
     String ABSTRACT_SHIP_MAKE = "ships.make";
 
     CorePermission AIRSHIP_MOVE_OWN = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "move",
@@ -102,17 +102,17 @@ public interface Permissions {
     CorePermission CMD_SHIP_STRUCTURE_SAVE = TranslateCore.getPlatform().register(new CorePermission(false, "ships",
             "cmd", "ship", "structure", "save"));
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     static String getMakePermission(ShipType<?> type) {
         return ABSTRACT_SHIP_MAKE + "." + type.getId().replace(":", ".").toLowerCase();
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     static String getMovePermission(ShipType<?> type) {
         return ABSTRACT_SHIP_MOVE + "." + type.getId().replace(":", ".").toLowerCase();
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     static String getOtherMovePermission(ShipType<?> type) {
         return ABSTRACT_SHIP_MOVE_OTHER + "." + type.getId().replace(":", ".").toLowerCase();
     }
