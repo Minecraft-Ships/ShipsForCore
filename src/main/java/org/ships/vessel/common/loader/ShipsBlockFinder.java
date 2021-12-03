@@ -1,5 +1,6 @@
 package org.ships.vessel.common.loader;
 
+import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
@@ -11,9 +12,14 @@ import java.util.Optional;
 
 public class ShipsBlockFinder implements ShipsLoader {
 
-    protected final SyncBlockPosition position;
+    protected final BlockPosition position;
 
+    @Deprecated(forRemoval = true)
     public ShipsBlockFinder(SyncBlockPosition position) {
+        this.position = position;
+    }
+
+    protected ShipsBlockFinder(BlockPosition position) {
         this.position = position;
     }
 

@@ -1,10 +1,14 @@
 package org.ships.vessel.common.loader;
 
+import org.core.TranslateCore;
+import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -36,12 +40,32 @@ public class ShipsOvertimeBlockFinder {
     }
 
     public void loadOvertime(Consumer<? super Vessel> consumer, Consumer<? super PositionableShipsStructure> exceptionRunner) {
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this.vessels
                 .stream()
                 .collect(Collectors.toMap(v -> v.getPosition().getPosition(), v -> v)).entrySet();
 
         Map.Entry<Byte, Vessel> passed = new AbstractMap.SimpleEntry<>((byte) 0, null);
 
+        if (!config.isStructureAutoUpdating()) {
+            ShipsPlugin.getPlugin().getVessels().forEach(v -> {
+                PositionableShipsStructure pss = v.getStructure();
+                Collection<SyncBlockPosition> collection = pss.getPositions();
+                TranslateCore
+                        .createSchedulerBuilder()
+                        .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                        .setDelay(1)
+                        .setDisplayName("Ship Finder")
+                        .setAsync(true)
+                        .setExecutor(() -> {
+                            if (collection.parallelStream().anyMatch(p -> p.equals(this.position))) {
+                                consumer.accept(v);
+                            }
+                        })
+                        .build(ShipsPlugin.getPlugin());
+            });
+            return;
+        }
 
         BasicBlockFinder finder = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().init();
         finder.getConnectedBlocksOvertime(this.position, new OvertimeBlockFinderUpdate() {

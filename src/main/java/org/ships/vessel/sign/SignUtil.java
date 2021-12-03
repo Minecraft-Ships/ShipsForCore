@@ -24,7 +24,6 @@ import org.ships.movement.MovementContext;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
-import org.ships.vessel.common.loader.ShipsBlockFinder;
 import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -142,20 +141,6 @@ public interface SignUtil {
         ShipsSign.LOCKED_SIGNS.add(sign);
         if (config.isStructureAutoUpdating()) {
             new OnOvertimeAutoUpdate(sign, context, player, movement, config.getDefaultTrackSize()).loadOvertime();
-            return;
-        }
-        try {
-            Vessel vessel = new ShipsBlockFinder(sign).load();
-            SignUtil.postMovementReady(context, vessel, player, sign, movement);
-        } catch (UnableToFindLicenceSign e1) {
-            player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
-            e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-            TranslateCore.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
-        } catch (LoadVesselException e) {
-            player.sendMessage(AText.ofPlain(e.getReason()).withColour(NamedTextColours.RED));
-        } finally {
-            ShipsSign.LOCKED_SIGNS.remove(sign);
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
         }
     }
 }
