@@ -106,11 +106,10 @@ public class CoreEventListener implements EventListener {
             if (list.getBlockInstruction(position.getBlockType()).getCollideType()!=BlockInstruction.CollideType.MATERIAL) {
                 continue;
             }
-            try {
-                Vessel vessel = new ShipsBlockFinder(position).load();
-                vessel.getStructure().addPosition(position);
-            } catch (LoadVesselException ignored) {
-            }
+
+            new ShipsOvertimeBlockFinder(position)
+                    .loadOvertime(vessel -> vessel.getStructure().addPosition(position), structure -> {
+                    });
         }
     }
 
@@ -520,7 +519,7 @@ public class CoreEventListener implements EventListener {
                 LivePlayer player = ((EntityEvent<LivePlayer>) event).getEntity();
                 if (!(
                         ((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() ||
-                        (player.hasPermission(vessel.getType().getMoveOtherPermission())))
+                                (player.hasPermission(vessel.getType().getMoveOtherPermission())))
                 ) {
                     event.setCancelled(true);
                     return;
