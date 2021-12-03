@@ -70,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CoreEventListener implements EventListener {
 
@@ -118,26 +119,19 @@ public class CoreEventListener implements EventListener {
         if (!(event.getEntity() instanceof DroppedItem)) {
             return;
         }
-        boolean bool = ShipsPlugin.getPlugin().getVessels().stream().filter(e -> {
-            Optional<MovementContext> opValue = e.getValue(MovingFlag.class);
-            return opValue.filter(movementContext -> !movementContext.getMovingStructure().isEmpty()).isPresent();
-        }).anyMatch(v -> {
-            Optional<MovementContext> opSet = v.getValue(MovingFlag.class);
-            return opSet.map(movementContext -> movementContext
-                            .getMovingStructure()
-                            .stream()
-                            .anyMatch(mb ->
-                                    (mb
-                                            .getBeforePosition()
-                                            .equals(event.getPosition().toBlockPosition())) ||
-                                            (mb
-                                                    .getAfterPosition()
-                                                    .equals(event.getPosition().toBlockPosition()))))
-                    .orElse(false);
-        });
-        if (bool) {
-            event.setCancelled(true);
-        }
+        new ShipsOvertimeBlockFinder(event.getPosition().toBlockPosition())
+                .fromVessels(ShipsPlugin
+                        .getPlugin()
+                        .getVessels()
+                        .stream()
+                        .filter(e -> {
+                            Optional<MovementContext> opValue = e.getValue(MovingFlag.class);
+                            return opValue.filter(movementContext -> !movementContext.getMovingStructure().isEmpty()).isPresent();
+                        })
+                        .collect(Collectors.toSet()))
+                .loadOvertime(vessel -> event.getEntity().remove(), structure -> {
+
+                });
     }
 
     @HEvent

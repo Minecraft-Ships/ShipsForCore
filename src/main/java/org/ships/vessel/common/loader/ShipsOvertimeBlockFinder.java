@@ -9,25 +9,34 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ShipsOvertimeBlockFinder {
 
     private final BlockPosition position;
+    private final Collection<Vessel> vessels = new HashSet<>();
 
     public ShipsOvertimeBlockFinder(BlockPosition position) {
         this.position = position;
     }
 
+    public ShipsOvertimeBlockFinder fromVessels(Collection<? extends Vessel> vessels) {
+        this.vessels.clear();
+        this.vessels.addAll(vessels);
+        return this;
+    }
+
+    public Collection<Vessel> getVessels() {
+        if (this.vessels.isEmpty()) {
+            return ShipsPlugin.getPlugin().getVessels();
+        }
+        return this.vessels;
+    }
+
     public void loadOvertime(Consumer<? super Vessel> consumer, Consumer<? super PositionableShipsStructure> exceptionRunner) {
-        Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = ShipsPlugin
-                .getPlugin()
-                .getVessels()
+        Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this.vessels
                 .stream()
                 .collect(Collectors.toMap(v -> v.getPosition().getPosition(), v -> v)).entrySet();
 
@@ -38,7 +47,7 @@ public class ShipsOvertimeBlockFinder {
         finder.getConnectedBlocksOvertime(this.position, new OvertimeBlockFinderUpdate() {
             @Override
             public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                if (passed.getValue() == null) {
+                if (passed.getValue()==null) {
                     exceptionRunner.accept(structure);
                     return;
                 }
