@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class MoveSign implements ShipsSign {
 
@@ -81,7 +82,8 @@ public class MoveSign implements ShipsSign {
 
             player.sendMessage(AText.ofPlain("Could not find [Ships] sign").withColour(NamedTextColours.RED));
             ShipsSign.LOCKED_SIGNS.remove(position);
-            Collection<SyncBlockPosition> positions = pss.getPositions();
+            Collection<SyncBlockPosition> positions = pss
+                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>)  s -> s);
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .createSchedulerBuilder()

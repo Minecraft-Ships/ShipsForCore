@@ -31,6 +31,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Movement {
@@ -83,7 +84,7 @@ public class Movement {
             Optional<MovingBlock> mBlock = context.getMovingStructure().getBefore(opAttached.get());
             if (!mBlock.isPresent()) {
                 SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
-                Collection<SyncBlockPosition> positions = vessel.getStructure().getPositions();
+                Collection<SyncBlockPosition> positions = vessel.getStructure().getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) t -> t);
                 Optional<SyncBlockPosition> opDown = positions.stream().filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN)).findAny();
                 if (!opDown.isPresent()) {
                     return;
@@ -223,17 +224,18 @@ public class Movement {
         }
 
         public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context, Consumer<? super Throwable> exception) {
-            MovingBlockSet set = new MovingBlockSet();
-            vessel.getStructure().getPositions().forEach(s -> {
-                MovingBlock block = new SetMovingBlock(s, s).rotateLeft(rotateAround);
-                set.add(block);
-            });
+            MovingBlockSet set = vessel
+                    .getStructure()
+                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) t -> t)
+                    .parallelStream()
+                    .map(s -> new SetMovingBlock(s, s).rotateLeft(rotateAround))
+                    .collect(Collectors.toCollection(MovingBlockSet::new));
             context.setMovingStructure(set);
             context.setStrictMovement(true);
             context.setMidMovementProcess(mb -> {
                 BlockDetails blockDetails = mb.getStoredBlockData();
                 Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
-                if (!(opDirectional.isPresent())) {
+                if (opDirectional.isEmpty()) {
                     Collection<Direction> opData =
                             blockDetails.getAll(KeyedData.MULTI_DIRECTIONAL);
                     if (!opData.isEmpty()) {

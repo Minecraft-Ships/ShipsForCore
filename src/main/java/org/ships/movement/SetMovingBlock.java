@@ -11,11 +11,11 @@ public class SetMovingBlock implements MovingBlock {
     protected SyncBlockPosition after;
     protected BlockDetails detail;
 
-    public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after){
+    public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after) {
         this(before, after, before.getBlockDetails());
     }
 
-    public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after, BlockDetails details){
+    public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after, BlockDetails details) {
         this.before = before;
         this.after = after;
         this.detail = details;
@@ -56,11 +56,11 @@ public class SetMovingBlock implements MovingBlock {
 
     @Override
     public BlockPriority getBlockPriority() {
-        if((this.detail.getType().equals(BlockTypes.AIR))) {
+        if ((this.detail.getType().equals(BlockTypes.AIR))) {
             return BlockPriority.AIR;
-        }else if(this.detail.get(KeyedData.ATTACHABLE).isPresent()){
+        } else if (this.detail.get(KeyedData.ATTACHABLE).isPresent()) {
             return BlockPriority.ATTACHED;
-        }else if(this.detail.getDirectionalData().isPresent()){
+        } else if (this.detail.getDirectionalData().isPresent()) {
             return BlockPriority.DIRECTIONAL;
         }
         return BlockPriority.NORMAL;

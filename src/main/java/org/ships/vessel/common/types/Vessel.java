@@ -15,6 +15,8 @@ import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
+import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
@@ -112,12 +114,18 @@ public interface Vessel extends Positionable<BlockPosition> {
                     .filter(syncBlockPosition -> bounds.contains(syncBlockPosition.getPosition()))
                     .isPresent();
         }).collect(Collectors.toSet());
-        Collection<SyncBlockPosition> blocks = this.getStructure().getPositions();
+        Collection<ASyncBlockPosition> blocks = this.getStructure().getPositions((Function<? super SyncBlockPosition,
+                ? extends ASyncBlockPosition>) Position::toASync);
         return entities.stream()
                 .filter(check)
                 .filter(e -> {
                     Optional<SyncBlockPosition> opBlock = e.getAttachedTo();
-                    return opBlock.filter(syncBlockPosition -> blocks.parallelStream().anyMatch(b -> b.equals(syncBlockPosition))).isPresent();
+                    //noinspection EqualsBetweenInconvertibleTypes
+                    return opBlock
+                            .filter(syncBlockPosition -> blocks
+                                    .parallelStream()
+                                    .anyMatch(b -> b.equals(syncBlockPosition)))
+                            .isPresent();
                 })
                 .collect(Collectors.toSet());
 
@@ -139,39 +147,47 @@ public interface Vessel extends Positionable<BlockPosition> {
             output.accept(entities);
             return;
         }
-        Collection<SyncBlockPosition> pss = this.getStructure().getPositions();
+        Collection<SyncBlockPosition> pss = this.getStructure().getPositions((Function<? super SyncBlockPosition, ?
+                extends SyncBlockPosition>) s -> s);
         for (int A = 0; A < fin; A++) {
             final int B = A;
-            sched = TranslateCore.createSchedulerBuilder().setDisplayName("\tentity getter " + A).setDelay(1).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
-                int c = (B * limit);
-                for (int to = 0; to < limit; to++) {
-                    if ((c + to) >= entities2.size()) {
-                        break;
-                    }
-                    LiveEntity e = entities2.get(c + to);
-                    if (!predicate.test(e)) {
-                        continue;
-                    }
-                    Optional<SyncBlockPosition> opPosition = e.getAttachedTo();
-                    if (!opPosition.isPresent()) {
-                        continue;
-                    }
-                    if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
-                        single.accept(e);
-                        entities.add(e);
-                    } else if (!e.isOnGround()) {
-                        SyncBlockPosition bPos = e.getPosition().toBlockPosition();
-                        if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))) {
-                            continue;
+            sched = TranslateCore
+                    .createSchedulerBuilder()
+                    .setDisplayName("\tentity getter " + A)
+                    .setDelay(1)
+                    .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                    .setExecutor(() -> {
+                        int c = (B * limit);
+                        for (int to = 0; to < limit; to++) {
+                            if ((c + to) >= entities2.size()) {
+                                break;
+                            }
+                            LiveEntity e = entities2.get(c + to);
+                            if (!predicate.test(e)) {
+                                continue;
+                            }
+                            Optional<SyncBlockPosition> opPosition = e.getAttachedTo();
+                            if (!opPosition.isPresent()) {
+                                continue;
+                            }
+                            if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
+                                single.accept(e);
+                                entities.add(e);
+                            } else if (!e.isOnGround()) {
+                                SyncBlockPosition bPos = e.getPosition().toBlockPosition();
+                                if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))) {
+                                    continue;
+                                }
+                                single.accept(e);
+                                entities.add(e);
+                            }
                         }
-                        single.accept(e);
-                        entities.add(e);
-                    }
-                }
-                if (B==0) {
-                    output.accept(entities);
-                }
-            }).setToRunAfter(sched).build(ShipsPlugin.getPlugin());
+                        if (B==0) {
+                            output.accept(entities);
+                        }
+                    })
+                    .setToRunAfter(sched)
+                    .build(ShipsPlugin.getPlugin());
         }
         sched.run();
     }
@@ -236,7 +252,7 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     default Optional<Integer> getWaterLevel() {
         PositionableShipsStructure pss = this.getStructure();
-        return this.getWaterLevel(p -> p, pss.getPositions());
+        return this.getWaterLevel(p -> p, pss.getPositions((Function<? super SyncBlockPosition, ? extends BlockPosition>) Position::toASync));
     }
 
 }

@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LicenceSign implements ShipsSign {
@@ -103,7 +104,7 @@ public class LicenceSign implements ShipsSign {
                     ShipsShipInfoArgumentCommand.displayInfo(player, s);
                 }
             } else {
-                int size = s.getStructure().getPositions().size();
+                int size = s.getStructure().getRelativePositions().size();
                 ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
                 ServerBossBar bar = null;
                 int totalCount = config.getDefaultTrackSize();
@@ -116,7 +117,7 @@ public class LicenceSign implements ShipsSign {
                     public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
                         s.setStructure(structure);
                         s.save();
-                        player.sendMessage(AText.ofPlain("Vessel structure has updated by " + (structure.getPositions().size() - size)));
+                        player.sendMessage(AText.ofPlain("Vessel structure has updated by " + (structure.getOriginalRelativePositions().size() - size)));
                         if (finalBar!=null) {
                             finalBar.deregisterPlayers();
                         }
@@ -125,7 +126,7 @@ public class LicenceSign implements ShipsSign {
                     @Override
                     public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
                         if (finalBar!=null) {
-                            int blockCount = currentStructure.getPositions().size() + 1;
+                            int blockCount = currentStructure.getOriginalRelativePositions().size() + 1;
                             finalBar.setTitle(AText.ofPlain(blockCount + "/" + totalCount));
                             try {
                                 finalBar.setValue(blockCount, totalCount);
@@ -139,7 +140,16 @@ public class LicenceSign implements ShipsSign {
             }
         } catch (UnableToFindLicenceSign e1) {
             e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-            TranslateCore.createSchedulerBuilder().setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+            TranslateCore
+                    .createSchedulerBuilder()
+                    .setDelay(5)
+                    .setDelayUnit(TimeUnit.SECONDS)
+                    .setExecutor(() -> e1
+                            .getFoundStructure()
+                            .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>)  s -> s)
+                            .forEach(bp -> bp.resetBlock(player)))
+                    .build(ShipsPlugin.getPlugin())
+                    .run();
         } catch (IOException e) {
             Optional<LiveTileEntity> opTile = position.getTileEntity();
             if (opTile.isPresent()) {

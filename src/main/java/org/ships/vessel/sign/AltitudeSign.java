@@ -157,7 +157,7 @@ public class AltitudeSign implements ShipsSign {
 
             @Override
             protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
-                int foundBlocks = currentStructure.getPositions().size() + 1;
+                int foundBlocks = currentStructure.getRelativePositions().size() + 1;
                 if (finalBar!=null) {
                     finalBar.setTitle(AText.ofPlain(foundBlocks + " / " + blockLimit));
                     try {
@@ -178,8 +178,22 @@ public class AltitudeSign implements ShipsSign {
                 if (e instanceof UnableToFindLicenceSign) {
                     UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                     player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
-                    e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
-                    TranslateCore.createSchedulerBuilder().setDisplayName("Unable to find ships sign").setDelay(5).setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player))).build(ShipsPlugin.getPlugin()).run();
+                    e1
+                            .getFoundStructure()
+                            .getPositions()
+                            .forEach(bp -> bp
+                                    .setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
+                    TranslateCore
+                            .createSchedulerBuilder()
+                            .setDisplayName("Unable to find ships sign")
+                            .setDelay(5)
+                            .setDelayUnit(TimeUnit.SECONDS)
+                            .setExecutor(() -> e1
+                                    .getFoundStructure()
+                                    .getPositions()
+                                    .forEach(bp -> bp.resetBlock(player)))
+                            .build(ShipsPlugin.getPlugin())
+                            .run();
                 } else {
                     player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));
                 }

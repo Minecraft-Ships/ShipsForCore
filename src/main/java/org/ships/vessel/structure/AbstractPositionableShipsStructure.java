@@ -9,11 +9,13 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
+import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.plugin.ShipsPlugin;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AbstractPositionableShipsStructure implements PositionableShipsStructure {
@@ -38,7 +40,8 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     public void addAir(Consumer<? super PositionableShipsStructure> onComplete) {
-        Collection<SyncBlockPosition> positions = this.getPositions();
+        Collection<ASyncBlockPosition> positions = this.getPositions((Function<? super SyncBlockPosition, ?
+                extends ASyncBlockPosition>) Position::toASync);
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         TranslateCore.createSchedulerBuilder().setAsync(true)
                 .setDisplayName("air check")
@@ -54,7 +57,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
                                     continue;
                                 }
                                 BlockPosition p1 = nextInLine.get();
-                                SyncBlockPosition target = p;
+                                BlockPosition target = p;
                                 Vector3<Integer> dirV = dir.getAsVector();
                                 int disX = p1.getX() - target.getX();
                                 int disY = p1.getY() - target.getY();
@@ -104,14 +107,15 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     public PositionableShipsStructure addAir() {
-        Collection<SyncBlockPosition> positions = this.getPositions();
-        Collection<SyncBlockPosition> toAdd = new ArrayList<>();
+        Collection<ASyncBlockPosition> positions = this.getPositions((Function<? super SyncBlockPosition, ?
+                extends ASyncBlockPosition>) Position::toASync);
+        Collection<BlockPosition> toAdd = new ArrayList<>();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         positions.forEach(p -> {
             for (Direction dir : directions) {
                 try {
                     getNextInLine(p, dir, positions).ifPresent(p1 -> {
-                        SyncBlockPosition target = p;
+                        BlockPosition target = p;
                         Vector3<Integer> dirV = dir.getAsVector();
                         int disX = p1.getX() - target.getX();
                         int disY = p1.getY() - target.getY();

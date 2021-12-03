@@ -30,6 +30,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.AbstractMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface SignUtil {
 
@@ -62,7 +63,7 @@ public interface SignUtil {
         protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
             if (this.context.getBar().isPresent()) {
                 ServerBossBar bar = this.context.getBar().get();
-                int foundBlocks = currentStructure.getPositions().size() + 1;
+                int foundBlocks = currentStructure.getRelativePositions().size() + 1;
                 try {
                     bar.setValue(foundBlocks, this.trackLimit);
                 } catch (IllegalArgumentException ignore) {
@@ -78,8 +79,21 @@ public interface SignUtil {
             if (e instanceof UnableToFindLicenceSign) {
                 UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                 this.player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
-                e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
-                TranslateCore.createSchedulerBuilder().setDelay(5).setDisplayName("bedrock reset").setDelayUnit(TimeUnit.SECONDS).setExecutor(() -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(this.player))).build(ShipsPlugin.getPlugin()).run();
+                e1
+                        .getFoundStructure()
+                        .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
+                        .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
+                TranslateCore
+                        .createSchedulerBuilder()
+                        .setDelay(5)
+                        .setDisplayName("bedrock reset")
+                        .setDelayUnit(TimeUnit.SECONDS)
+                        .setExecutor(() -> e1
+                                .getFoundStructure()
+                                .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
+                                .forEach(bp -> bp.resetBlock(this.player)))
+                        .build(ShipsPlugin.getPlugin())
+                        .run();
             } else {
                 this.player.sendMessage(AText.ofPlain(e.getReason()).withColour(NamedTextColours.RED));
             }

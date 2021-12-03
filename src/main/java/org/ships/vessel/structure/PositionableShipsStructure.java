@@ -31,7 +31,12 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     void addAir(Consumer<? super PositionableShipsStructure> onComplete);
 
     default Bounds<Integer> getBounds() {
-        Set<Vector3<Integer>> positions = this.getPositions().stream().map(Position::getPosition).collect(Collectors.toSet());
+        Set<Vector3<Integer>> positions =
+                this
+                        .getPositionsRelativeTo(Position.toASync(this.getPosition()))
+                        .parallelStream()
+                        .map(Position::getPosition)
+                        .collect(Collectors.toSet());
         if (positions.isEmpty()) {
             throw new IllegalStateException("No structure found");
         }
@@ -66,10 +71,9 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     }
 
     default Set<ChunkExtent> getChunks() {
-        Set<Vector3<Integer>> vector3Set = new HashSet<>();
-        this.getPositions().stream()
+        Set<Vector3<Integer>> vector3Set = this.getPositionsRelativeTo(Position.toASync(this.getPosition())).parallelStream()
                 .map(Position::getChunkPosition)
-                .forEach(vector3Set::add);
+                .collect(Collectors.toUnmodifiableSet());
         return vector3Set.stream()
                 .map(pos -> this.getPosition().getWorld().loadChunk(pos))
                 .collect(Collectors.toSet());
@@ -87,20 +91,31 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
         return this.removePosition(next.minus(original));
     }
 
-    default <T> Collection<T> getAllLike(Function<? super SyncBlockPosition, ? extends T> function) {
-        Set<T> set = new HashSet<>();
-        this.getPositions(this).forEach(b -> set.add(function.apply(b)));
-        return Collections.unmodifiableCollection(set);
+    @Deprecated(forRemoval = true)
+    default <T> Collection<T> getAllLike(Function<SyncBlockPosition, ? extends T> function){
+        return this.getAllLike(s -> s, function);
     }
 
+    default <P extends BlockPosition, T> Collection<T> getAllLike(Function<? super SyncBlockPosition, P> toPos,
+                                                                  Function<P, ?
+            extends T> function) {
+        return this.getPositions(toPos).stream().map(function).collect(Collectors.toUnmodifiableSet());
+    }
+
+    @Deprecated(forRemoval = true)
     default Collection<SyncBlockPosition> getAll(BlockType type) {
-        return Collections.unmodifiableCollection(this.getPositions(this).stream()
+        return this.getAll(type, p -> p);
+    }
+
+    default <T extends BlockPosition> Collection<T> getAll(BlockType type,
+                                                           Function<? super SyncBlockPosition, ? extends T> function) {
+        return Collections.unmodifiableCollection(this.getPositions(function).stream()
                 .filter(p -> p.getBlockType().equals(type))
                 .collect(Collectors.toSet()));
     }
 
     default Collection<SyncBlockPosition> getAll(Class<? extends TileEntity> class1) {
-        return Collections.unmodifiableCollection(this.getPositions(this).stream()
+        return Collections.unmodifiableCollection(this.getPositionsRelativeTo(this).stream()
                 .filter(p -> p.getTileEntity().isPresent())
                 .filter(p -> class1.isInstance(p.getTileEntity().get()))
                 .collect(Collectors.toSet()));
@@ -114,7 +129,12 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
                 .collect(Collectors.toSet()));
     }
 
+    @Deprecated(forRemoval = true)
     default Collection<SyncBlockPosition> getPositions() {
-        return ShipsStructure.super.getPositions(this.getPosition());
+        return this.getPositionsRelativeTo(this.getPosition());
+    }
+
+    default <T extends BlockPosition> Collection<T> getPositions(Function<? super SyncBlockPosition, ? extends T> function) {
+        return ShipsStructure.super.getPositionsRelativeTo(function.apply(this.getPosition()));
     }
 }
