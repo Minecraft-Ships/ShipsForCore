@@ -43,7 +43,8 @@ public class ShipsOvertimeBlockFinder {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this.vessels
                 .stream()
-                .collect(Collectors.toMap(v -> v.getPosition().getPosition(), v -> v)).entrySet();
+                .collect(Collectors.toMap(v -> v.getPosition().getPosition(), v -> v))
+                .entrySet();
 
         Map.Entry<Byte, Vessel> passed = new AbstractMap.SimpleEntry<>((byte) 0, null);
 
@@ -54,7 +55,7 @@ public class ShipsOvertimeBlockFinder {
                 TranslateCore
                         .createSchedulerBuilder()
                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                        .setDelay(1)
+                        .setDelay(0)
                         .setDisplayName("Ship Finder")
                         .setAsync(true)
                         .setExecutor(() -> {
@@ -62,7 +63,8 @@ public class ShipsOvertimeBlockFinder {
                                 consumer.accept(v);
                             }
                         })
-                        .build(ShipsPlugin.getPlugin());
+                        .build(ShipsPlugin.getPlugin())
+                        .run();
             });
             return;
         }

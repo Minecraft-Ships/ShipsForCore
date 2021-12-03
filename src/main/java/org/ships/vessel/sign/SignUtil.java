@@ -139,8 +139,7 @@ public interface SignUtil {
             context.setBar(bar);
         }
         ShipsSign.LOCKED_SIGNS.add(sign);
-        if (config.isStructureAutoUpdating()) {
-            new OnOvertimeAutoUpdate(sign, context, player, movement, config.getDefaultTrackSize()).loadOvertime();
-        }
+        new OnOvertimeAutoUpdate(sign, context, player, movement, config.getDefaultTrackSize()).loadOvertime();
+
     }
 }
