@@ -129,9 +129,17 @@ public class CoreEventListener implements EventListener {
                             return opValue.filter(movementContext -> !movementContext.getMovingStructure().isEmpty()).isPresent();
                         })
                         .collect(Collectors.toSet()))
-                .loadOvertime(vessel -> event.getEntity().remove(), structure -> {
+                .loadOvertime(vessel -> TranslateCore
+                                .createSchedulerBuilder()
+                                .setDelay(0)
+                                .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                                .setExecutor(() -> event.getEntity().remove())
+                                .setDisplayName("remove entity")
+                                .build(ShipsPlugin.getPlugin())
+                                .run(),
+                        structure -> {
 
-                });
+                        });
     }
 
     @HEvent
