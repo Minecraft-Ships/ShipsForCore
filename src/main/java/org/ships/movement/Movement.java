@@ -224,12 +224,11 @@ public class Movement {
         }
 
         public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context, Consumer<? super Throwable> exception) {
-            MovingBlockSet set = vessel
-                    .getStructure()
-                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) t -> t)
-                    .parallelStream()
-                    .map(s -> new SetMovingBlock(s, s).rotateLeft(rotateAround))
-                    .collect(Collectors.toCollection(MovingBlockSet::new));
+            MovingBlockSet set = new MovingBlockSet();
+            vessel.getStructure().getPositions().forEach(s -> {
+                MovingBlock block = new SetMovingBlock(s, s).rotateLeft(rotateAround);
+                set.add(block);
+            });
             context.setMovingStructure(set);
             context.setStrictMovement(true);
             context.setMidMovementProcess(mb -> {
