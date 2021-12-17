@@ -22,8 +22,15 @@ import java.util.Collections;
 
 public class MarsshipType extends AbstractShipType<Marsship> implements CloneableShipType<Marsship>, SpecialBlockShipType<Marsship> {
 
+    public static final String NAME = "Marsship";
+
+    private CorePermission moveOwnPermission = Permissions.MARSSHIP_MOVE_OWN;
+    private CorePermission moveOtherPermission = Permissions.MARSSHIP_MOVE_OTHER;
+    private CorePermission makePermission = Permissions.MARSSHIP_MAKE;
+
     public MarsshipType() {
-        this("Marsship", new File(ShipsPlugin.getPlugin().getConfigFolder(), "/Configuration/ShipType/MarsShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+        this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                "/Configuration/ShipType/MarsShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public MarsshipType(String name, File file) {
@@ -32,6 +39,17 @@ public class MarsshipType extends AbstractShipType<Marsship> implements Cloneabl
 
     public MarsshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {
         super(plugin, displayName, file, types);
+        if (!(plugin.equals(ShipsPlugin.getPlugin()) && displayName.equals(NAME))) {
+            String pluginId = plugin.getPluginId();
+            String name = displayName.toLowerCase().replace(" ", "");
+            this.moveOwnPermission = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "move",
+                    "own",
+                    pluginId, name));
+            this.moveOtherPermission = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "move",
+                    "other", pluginId, name));
+            this.makePermission = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "make",
+                    pluginId, name));
+        }
     }
 
     @Override
@@ -59,16 +77,16 @@ public class MarsshipType extends AbstractShipType<Marsship> implements Cloneabl
 
     @Override
     public @NotNull CorePermission getMoveOwnPermission() {
-        return Permissions.MARSSHIP_MOVE_OWN;
+        return this.moveOwnPermission;
     }
 
     @Override
     public @NotNull CorePermission getMoveOtherPermission() {
-        return Permissions.MARSSHIP_MOVE_OTHER;
+        return this.moveOtherPermission;
     }
 
     @Override
     public @NotNull CorePermission getMakePermission() {
-        return Permissions.MARSSHIP_MOVE_OTHER;
+        return this.makePermission;
     }
 }
