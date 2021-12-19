@@ -20,7 +20,12 @@ public interface BlockList extends Config {
     BlockList saveChanges();
 
     default BlockInstruction getBlockInstruction(BlockType type) {
-        return this.getBlockList().parallelStream().filter(b -> b.getType().equals(type)).findFirst().orElseThrow(() -> new RuntimeException("BlockType of " + type.getId() + " was not registered at runtime."));
+        Collection<BlockInstruction> blockList = this.getBlockList();
+        return blockList
+                .stream()
+                .filter(b -> b.getType().equals(type))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("BlockType of " + type.getId() + " was not registered at runtime."));
     }
 
     static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes) {
