@@ -2,6 +2,8 @@ package org.ships.vessel.common.loader;
 
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
+import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
@@ -14,14 +16,16 @@ import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoader {
 
     private class OvertimeRunnable implements OvertimeBlockFinderUpdate {
 
         @Override
-        public void onShipsStructureUpdated(PositionableShipsStructure structure) {
+        public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
             LicenceSign ls =
                     ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Could" +
                             " not get licence"));
@@ -30,7 +34,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                         "Could not get tile entity"));
                 return ls.isSign(lste);
             }).findAny();
-            if (!opBlock.isPresent()) {
+            if (opBlock.isEmpty()) {
                 ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(new UnableToFindLicenceSign(structure, "Failed to find licence sign"));
                 return;
             }
@@ -58,18 +62,36 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
 
     protected abstract void onExceptionThrown(LoadVesselException e);
 
-    public ShipsOvertimeUpdateBlockLoader(SyncBlockPosition position) {
+    private final boolean update;
+
+    public ShipsOvertimeUpdateBlockLoader(@NotNull SyncBlockPosition position, boolean update) {
         super(position);
+        this.update = update;
     }
 
     public void loadOvertime() {
-        BasicBlockFinder finder = ShipsPlugin.getPlugin().getConfig().getDefaultFinder();
-        /*try {
-            Vessel vessel = new ShipsBlockFinder(this.original).load();
-            finder.setConnectedVessel(vessel);
-        } catch (LoadVesselException e) {
+        if (!this.update) {
+            Set<Vessel> vessels = ShipsPlugin.getPlugin().getVessels();
+            Optional<Vessel> opVessel = vessels
+                    .parallelStream()
+                    .filter(vessel -> vessel
+                            .getPosition()
+                            .getWorld()
+                            .equals(this.original.getWorld()))
+                    .filter(v -> {
+                        Collection<ASyncBlockPosition> positions = v.getStructure().getPositionsRelativeTo(Position.toASync(this.original));
+                        return positions.parallelStream().anyMatch(position -> position.getPosition().equals(this.original.getPosition()));
+                    }).findAny();
+            if (opVessel.isEmpty()) {
+                this.onExceptionThrown(new UnableToFindLicenceSign(new AbstractPositionableShipsStructure(this.original), "no ship found at position"));
+                return;
+            }
+            this.onStructureUpdate(opVessel.get());
+            return;
+        }
 
-        }*/
+
+        BasicBlockFinder finder = ShipsPlugin.getPlugin().getConfig().getDefaultFinder();
         finder.getConnectedBlocksOvertime(this.original, new OvertimeRunnable());
     }
 }

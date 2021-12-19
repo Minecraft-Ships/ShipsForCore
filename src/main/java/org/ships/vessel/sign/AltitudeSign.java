@@ -71,7 +71,7 @@ public class AltitudeSign implements ShipsSign {
 
         if (updateSpeed) {
             int altitude = Integer.parseInt(stes.getTextAt(3).map(AText::toPlain).orElse("0"));
-            new ShipsOvertimeUpdateBlockLoader(position) {
+            new ShipsOvertimeUpdateBlockLoader(position, config.isStructureAutoUpdating()) {
                 @Override
                 protected void onStructureUpdate(Vessel vessel) {
                     int newSpeed = altitude + 1;
@@ -149,7 +149,7 @@ public class AltitudeSign implements ShipsSign {
         final ServerBossBar finalBar = bar;
         final int finalAltitude = altitude;
         ShipsSign.LOCKED_SIGNS.add(position);
-        new ShipsOvertimeUpdateBlockLoader(position) {
+        new ShipsOvertimeUpdateBlockLoader(position, config.isStructureAutoUpdating()) {
             @Override
             protected void onStructureUpdate(Vessel vessel) {
                 AltitudeSign.this.onVesselMove(player, position, finalBar, finalAltitude, line1, vessel);

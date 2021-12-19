@@ -47,7 +47,7 @@ public interface SignUtil {
         private final MovementReady movementReady;
 
         public OnOvertimeAutoUpdate(SyncBlockPosition sign, MovementContext context, LivePlayer player, MovementReady ready, int trackLimit) {
-            super(sign);
+            super(sign, ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating());
             this.context = context;
             this.trackLimit = trackLimit;
             this.player = player;
