@@ -24,7 +24,7 @@ public class DefaultBlockList implements BlockList {
     public DefaultBlockList() {
         ConfigurationFormat format = TranslateCore.getPlatform().getConfigFormat();
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                 "Configuration/BlockList." + format.getFileType()[0]);
+                "Configuration/BlockList." + format.getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, format);
         if (!this.file.getFile().exists()) {
             this.recreateFile();
@@ -36,13 +36,18 @@ public class DefaultBlockList implements BlockList {
     @Override
     public Collection<BlockInstruction> getBlockList() {
         if (this.blocks.isEmpty()) {
-            return this.reloadBlockList();
+            synchronized (this) {
+                if (this.blocks.isEmpty()) {
+                    return this.reloadBlockList();
+                }
+                return Collections.unmodifiableCollection(this.blocks);
+            }
         }
         return Collections.unmodifiableCollection(this.blocks);
     }
 
     @Override
-    public Collection<BlockInstruction> reloadBlockList() {
+    public synchronized Collection<BlockInstruction> reloadBlockList() {
         this.file.reload();
         this.blocks.clear();
         Collection<BlockType> mBlocks = TranslateCore.getPlatform().getBlockTypes();
@@ -54,7 +59,7 @@ public class DefaultBlockList implements BlockList {
             }
             this.blocks.add(new BlockInstruction(bt).setCollideType(BlockInstruction.CollideType.DETECT_COLLIDE));
         });
-        return this.blocks;
+        return Collections.unmodifiableCollection(this.blocks);
     }
 
     @Override
@@ -66,7 +71,7 @@ public class DefaultBlockList implements BlockList {
     }
 
     @Override
-    public BlockList saveChanges() {
+    public synchronized BlockList saveChanges() {
         this.blocks.forEach(b -> {
             String[] idSplit = b.getType().getId().split(":");
             this.file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]), ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, b);
@@ -81,7 +86,7 @@ public class DefaultBlockList implements BlockList {
     }
 
     @Override
-    public void recreateFile() {
+    public synchronized void recreateFile() {
         ConfigurationStream.ConfigurationFile file = this.getFile();
         Collection<BlockType> completedBefore = new HashSet<>();
         BlockTypes.OAK_SIGN.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
