@@ -50,13 +50,12 @@ public class ShipsOvertimeBlockFinder {
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setExecutor(() -> this.loadOvertimeSynced(consumer, exceptionRunner)).build(ShipsPlugin.getPlugin()).run();
-
     }
 
     public void loadOvertimeSynced(Consumer<? super Vessel> consumer,
                                    Consumer<? super PositionableShipsStructure> exceptionRunner) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this.vessels
+        Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this.getVessels()
                 .parallelStream()
                 .collect(Collectors.toMap(v -> v.getPosition().getPosition(), v -> v))
                 .entrySet();

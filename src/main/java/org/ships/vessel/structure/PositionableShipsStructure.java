@@ -10,6 +10,7 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
+import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.vessel.sign.ShipsSign;
 
@@ -71,7 +72,8 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     }
 
     default Set<ChunkExtent> getChunks() {
-        Set<Vector3<Integer>> vector3Set = this.getPositionsRelativeTo(Position.toASync(this.getPosition())).parallelStream()
+        Collection<ASyncBlockPosition> positions = this.getPositionsRelativeTo(Position.toASync(this.getPosition()));
+        Set<Vector3<Integer>> vector3Set = positions.parallelStream()
                 .map(Position::getChunkPosition)
                 .collect(Collectors.toUnmodifiableSet());
         return vector3Set.stream()
