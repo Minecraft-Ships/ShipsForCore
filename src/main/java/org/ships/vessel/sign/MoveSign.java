@@ -55,17 +55,24 @@ public class MoveSign implements ShipsSign {
     @Override
     public boolean onPrimaryClick(@NotNull LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if (!opTile.isPresent()) {
+        if (opTile.isEmpty()) {
             return false;
         }
         LiveTileEntity lte = opTile.get();
-        if (!(lte instanceof LiveSignTileEntity)) {
+        if (!(lte instanceof LiveSignTileEntity lste)) {
             return false;
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity) lte;
-        String name = lste.getTextAt(3).get().toPlain();
+        String defaultSpeed = ShipsPlugin
+                .getPlugin()
+                .getConfig()
+                .getDefaultMoveSpeed() + "";
+        String name =
+                lste
+                        .getTextAt(3)
+                        .map(AText::toPlain)
+                        .orElse(defaultSpeed);
         if (name.isEmpty()) {
-            name = "1";
+            name = defaultSpeed;
         }
         int speed = Integer.parseInt(name);
         if (player.isSneaking()) {
@@ -79,11 +86,10 @@ public class MoveSign implements ShipsSign {
             this.onSignSpeedUpdate(player, vessel, lste, finalSpeed);
             ShipsSign.LOCKED_SIGNS.remove(position);
         }, (pss) -> {
-
             player.sendMessage(AText.ofPlain("Could not find [Ships] sign").withColour(NamedTextColours.RED));
             ShipsSign.LOCKED_SIGNS.remove(position);
             Collection<SyncBlockPosition> positions = pss
-                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>)  s -> s);
+                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .createSchedulerBuilder()

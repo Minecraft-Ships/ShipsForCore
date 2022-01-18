@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class DefaultBlockList implements BlockList {
 
     protected final ConfigurationStream.ConfigurationFile file;
-    protected final Set<BlockInstruction> blocks = new HashSet<>();
+    protected final LinkedHashSet<BlockInstruction> blocks = new LinkedHashSet<>();
 
     public DefaultBlockList() {
         ConfigurationFormat format = TranslateCore.getPlatform().getConfigFormat();
