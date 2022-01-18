@@ -45,7 +45,7 @@ public class ShipsOvertimeBlockFinder {
     public void loadOvertime(Consumer<? super Vessel> consumer, Consumer<? super PositionableShipsStructure> exceptionRunner) {
         TranslateCore
                 .createSchedulerBuilder()
-                .setAsync(true)
+                .setAsync(false)
                 .setDisplayName("Async vessel finder")
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
