@@ -14,12 +14,13 @@ import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Stream;
 
 public class DefaultBlockList implements BlockList {
 
     protected final ConfigurationStream.ConfigurationFile file;
-    protected final LinkedHashSet<BlockInstruction> blocks = new LinkedHashSet<>();
+    protected final LinkedTransferQueue<BlockInstruction> blocks = new LinkedTransferQueue<>();
 
     public DefaultBlockList() {
         ConfigurationFormat format = TranslateCore.getPlatform().getConfigFormat();

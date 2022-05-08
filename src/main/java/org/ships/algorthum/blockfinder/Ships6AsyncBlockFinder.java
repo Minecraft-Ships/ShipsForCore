@@ -14,15 +14,12 @@ import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
 public class Ships6AsyncBlockFinder implements BasicBlockFinder {
@@ -59,32 +56,34 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                 .setDelay(0)
                 .setExecutor(() -> {
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(Position.toSync(position));
-                    Set<ASyncBlockPosition> toProcess = new HashSet<>();
+                    Collection<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new HashSet<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-                    toProcess.add(Position.toASync(position));
+                    toProcess.add(new AbstractMap.SimpleImmutableEntry<>(Position.toASync(position),
+                            FourFacingDirection.NONE));
                     while (!toProcess.isEmpty() && structure.getOriginalRelativePositions().size() < this.limit) {
                         Set<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
-                        Set<ASyncBlockPosition> next = Collections.synchronizedSet(new HashSet<>());
-                        for (ASyncBlockPosition pos : toProcess) {
-                            final Set<ASyncBlockPosition> finalToProcess = toProcess;
-                            Stream.of(directions).forEach(direction -> {
-                                ASyncBlockPosition block = pos.getRelative(direction);
+                        Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
+                        for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
+                            final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
+                            Stream.of(directions).filter(direction -> !posEntry.getValue().equals(direction.getOpposite())).forEach(direction -> {
+                                ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
                                 Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
                                 BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
                                 if (bi.getCollideType()==BlockInstruction.CollideType.MATERIAL) {
-                                    if (positions.contains(vector) || finalToProcess.contains(block)) {
+                                    if (positions.contains(vector) || finalToProcess.parallelStream().anyMatch(entry -> entry.getKey().equals(block))) {
                                         return;
                                     }
-                                    if (next.parallelStream().noneMatch(b -> b.getPosition().equals(block.getPosition()))) {
-                                        next.add(block);
+                                    if (next.parallelStream().noneMatch(b -> b.getKey().getPosition().equals(block.getPosition()))) {
+                                        next.add(new AbstractMap.SimpleImmutableEntry<>(block, direction));
                                     }
                                 }
                             });
-                            OvertimeBlockFinderUpdate.BlockFindControl blockFind = runAfterFullSearch.onBlockFind(structure, pos);
+                            OvertimeBlockFinderUpdate.BlockFindControl blockFind =
+                                    runAfterFullSearch.onBlockFind(structure, posEntry.getKey());
                             if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 continue;
                             }
-                            structure.addPosition(Position.toSync(pos));
+                            structure.addPosition(Position.toSync(posEntry.getKey()));
                             if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 TranslateCore
                                         .createSchedulerBuilder()
