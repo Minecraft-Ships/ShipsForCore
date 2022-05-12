@@ -201,11 +201,12 @@ public interface Vessel extends Positionable<BlockPosition> {
     }
 
     default boolean isInWater() {
-        return !this.getWaterLevel().isPresent();
+        return this.getWaterLevel().isEmpty();
     }
 
     default <T> Optional<Integer> getWaterLevel(Function<? super T, ? extends BlockPosition> function, Collection<T> collection) {
         Map<Vector2<Integer>, Integer> height = new HashMap<>();
+        int lowest = this.getPosition().getWorld().getMinimumBlockHeight();
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         for (T value : collection) {
             BlockPosition position = function.apply(value);
@@ -214,10 +215,10 @@ public interface Vessel extends Positionable<BlockPosition> {
                 if (type.equals(BlockTypes.WATER)) {
                     Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(), position.getZ() + direction.getAsVector().getZ());
                     if (height.containsKey(vector)) {
-                        if (height.getOrDefault(vector, -1) < position.getY()) {
+                        if (height.getOrDefault(vector, lowest) < position.getY()) {
                             height.replace(vector, position.getY());
-                            continue;
                         }
+                        continue;
                     }
                     height.put(vector, position.getY());
                 }
