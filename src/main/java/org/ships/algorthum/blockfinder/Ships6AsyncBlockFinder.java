@@ -54,7 +54,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                 .setAsync(true)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(0)
-                .setExecutor(() -> {
+                .setRunner((scheduler) -> {
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(Position.toSync(position));
                     Collection<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new HashSet<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
@@ -89,10 +89,12 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                         .createSchedulerBuilder()
                                         .setDelay(0)
                                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                                        .setExecutor(() -> runAfterFullSearch.onShipsStructureUpdated(structure))
+                                        .setRunner((context) -> runAfterFullSearch.onShipsStructureUpdated(structure))
                                         .setDisplayName("Ships 6 async release")
                                         .build(ShipsPlugin.getPlugin())
                                         .run();
+                                scheduler.cancel();
+
                                 return;
                             }
 
@@ -103,10 +105,12 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                             .createSchedulerBuilder()
                             .setDelay(0)
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                            .setExecutor(() -> runAfterFullSearch.onShipsStructureUpdated(structure))
+                            .setRunner((context) -> runAfterFullSearch.onShipsStructureUpdated(structure))
                             .setDisplayName("Ships 6 async release")
                             .build(ShipsPlugin.getPlugin())
                             .run();
+                    scheduler.cancel();
+
                 })
                 .setDisplayName("Ships 6 async structure finder")
                 .build(ShipsPlugin.getPlugin())
