@@ -60,6 +60,7 @@ public class ShipsPlugin implements CorePlugin {
     private ShipsConfig config;
     private DebugFile debugFile;
     private Object launcher;
+    private boolean shutdown = false;
 
     public ShipsPlugin() {
         plugin = this;
@@ -67,6 +68,15 @@ public class ShipsPlugin implements CorePlugin {
 
     public static ShipsPlugin getPlugin() {
         return plugin;
+    }
+
+    public boolean isShuttingDown() {
+        return this.shutdown;
+    }
+
+    @Override
+    public void onShutdown() {
+        shutdown = true;
     }
 
     @Override
@@ -133,6 +143,7 @@ public class ShipsPlugin implements CorePlugin {
             }
         }
     }
+
 
     @Override
     public void onCoreFinishedInit() {

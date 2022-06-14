@@ -18,6 +18,8 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
@@ -49,21 +51,33 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+        int limit = this.limit;
+
         TranslateCore
                 .createSchedulerBuilder()
                 .setAsync(true)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(0)
                 .setRunner((scheduler) -> {
+                    LocalTime startTime = LocalTime.now();
+                    LocalTime endTime = startTime.plus(3, ChronoUnit.MINUTES);
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(Position.toSync(position));
                     Collection<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new HashSet<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
+                    int addedBlocks = 1;
                     toProcess.add(new AbstractMap.SimpleImmutableEntry<>(Position.toASync(position),
                             FourFacingDirection.NONE));
-                    while (!toProcess.isEmpty() && structure.getOriginalRelativePositions().size() < this.limit) {
+                    while (!toProcess.isEmpty() && addedBlocks < limit && !ShipsPlugin.getPlugin().isShuttingDown()) {
                         Set<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
                         Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
                         for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
+                            LocalTime currentTime = LocalTime.now();
+                            if (currentTime.isAfter(endTime)) {
+                                break;
+                            }
+                            if (ShipsPlugin.getPlugin().isShuttingDown()) {
+                                return;
+                            }
                             final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
                             Stream.of(directions).filter(direction -> !posEntry.getValue().equals(direction.getOpposite())).forEach(direction -> {
                                 ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
@@ -84,6 +98,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                 continue;
                             }
                             structure.addPosition(Position.toSync(posEntry.getKey()));
+                            addedBlocks++;
                             if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 TranslateCore
                                         .createSchedulerBuilder()
@@ -94,7 +109,6 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                         .build(ShipsPlugin.getPlugin())
                                         .run();
                                 scheduler.cancel();
-
                                 return;
                             }
 
