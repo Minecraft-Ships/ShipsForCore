@@ -59,8 +59,8 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(0)
                 .setRunner((scheduler) -> {
-                    LocalTime startTime = LocalTime.now();
-                    LocalTime endTime = startTime.plus(3, ChronoUnit.MINUTES);
+                    
+                    
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(Position.toSync(position));
                     Collection<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new HashSet<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
@@ -71,10 +71,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                         Set<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
                         Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
                         for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
-                            LocalTime currentTime = LocalTime.now();
-                            if (currentTime.isAfter(endTime)) {
-                                break;
-                            }
+                         
                             if (ShipsPlugin.getPlugin().isShuttingDown()) {
                                 return;
                             }
