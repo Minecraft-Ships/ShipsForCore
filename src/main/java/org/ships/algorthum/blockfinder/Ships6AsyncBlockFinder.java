@@ -52,15 +52,12 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         int limit = this.limit;
-
         TranslateCore
                 .createSchedulerBuilder()
                 .setAsync(true)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(0)
                 .setRunner((scheduler) -> {
-                    
-                    
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(Position.toSync(position));
                     Collection<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new HashSet<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
