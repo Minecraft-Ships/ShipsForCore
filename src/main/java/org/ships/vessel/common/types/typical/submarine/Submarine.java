@@ -147,7 +147,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
             return;
         }
         Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
-        if (!opWaterLevel.isPresent()) {
+        if (opWaterLevel.isEmpty()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }
         int specialBlocks = 0;
@@ -158,7 +158,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
                 specialBlocks++;
             }
             Optional<TileEntitySnapshot<? extends TileEntity>> opTile = details.get(KeyedData.TILED_ENTITY);
-            if (!opTile.isPresent()) {
+            if (opTile.isEmpty()) {
                 continue;
             }
             if (!(opTile.get() instanceof FurnaceTileEntity)) {
@@ -172,15 +172,15 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
         }
         if (this.getFuelConsumption()!=0 && (!this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-                Slot slot = this.getFuelSlot()==FuelSlot.BOTTOM ? i.getSmeltingSlot():i.getFuelSlot();
+                Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
             }).filter(i -> {
-                Slot slot = this.getFuelSlot()==FuelSlot.BOTTOM ? i.getSmeltingSlot():i.getFuelSlot();
+                Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
             }).filter(i -> {
-                Slot slot = this.getFuelSlot()==FuelSlot.BOTTOM ? i.getSmeltingSlot():i.getFuelSlot();
+                Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
-            }).collect(Collectors.toList());
+            }).toList();
             if (acceptedSlots.isEmpty()) {
                 throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
@@ -194,7 +194,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
             return;
         }
         Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
-        if (!opWaterLevel.isPresent()) {
+        if (opWaterLevel.isEmpty()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
@@ -209,22 +209,22 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, or
         }
         if (this.getFuelConsumption()!=0 && (!this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-                Slot slot = this.getFuelSlot()==FuelSlot.BOTTOM ? i.getSmeltingSlot():i.getFuelSlot();
+                Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().isPresent();
             }).filter(i -> {
-                Slot slot = this.getFuelSlot()==FuelSlot.BOTTOM ? i.getSmeltingSlot():i.getFuelSlot();
+                Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
                 return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
             }).filter(i -> {
-                Slot slot = this.getFuelSlot()==FuelSlot.BOTTOM ? i.getSmeltingSlot():i.getFuelSlot();
+                Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
                 return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
-            }).collect(Collectors.toList());
+            }).toList();
             if (acceptedSlots.isEmpty()) {
                 throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
             FurnaceInventory inv = acceptedSlots.get(0);
             Slot slot = this.getFuelSlot()==FuelSlot.BOTTOM ? inv.getSmeltingSlot():inv.getFuelSlot();
             Optional<ItemStack> opItem = slot.getItem();
-            if (!opItem.isPresent()) {
+            if (opItem.isEmpty()) {
                 return;
             }
             ItemStack item = opItem.get();

@@ -3,7 +3,9 @@ package org.ships.vessel.structure;
 import org.core.TranslateCore;
 import org.core.exceptions.DirectionNotSupported;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.Bounds;
 import org.core.vector.type.Vector3;
+import org.core.world.WorldExtent;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockTypes;
@@ -40,69 +42,35 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     public void addAir(Consumer<? super PositionableShipsStructure> onComplete) {
-        Collection<ASyncBlockPosition> positions = this.getPositions((Function<? super SyncBlockPosition, ?
-                extends ASyncBlockPosition>) Position::toASync);
-        Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        TranslateCore.createSchedulerBuilder().setAsync(true)
-                .setDisplayName("air check")
+        Bounds<Integer> bounds = this.getBounds();
+        Vector3<Integer> max = bounds.getIntMax();
+        Vector3<Integer> min = bounds.getIntMin();
+        WorldExtent world = this.getPosition().getWorld();
+        TranslateCore.createSchedulerBuilder()
+                .setDisplayName("Air getter")
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                .setExecutor(() -> {
-                    Collection<BlockPosition> toAdd = positions.parallelStream().flatMap(p -> {
-                        Collection<BlockPosition> blocksToAdd = new HashSet<>();
-                        for (Direction dir : directions) {
-                            try {
-                                Optional<BlockPosition> nextInLine = getNextInLine(p, dir, positions);
-                                if (nextInLine.isEmpty()) {
-                                    continue;
+                .setAsync(true)
+                .setRunner((scheduler -> {
+                    for(int x = min.getX(); x < max.getX(); x++){
+                        for(int y = min.getY(); y < max.getY(); y++){
+                            for(int z = min.getZ(); z < max.getZ(); z++){
+                                BlockPosition position = world.getAsyncPosition(x, y, z);
+                                if(position.getBlockType().equals(BlockTypes.AIR)){
+                                    this.addPosition(position);
                                 }
-                                BlockPosition p1 = nextInLine.get();
-                                BlockPosition target = p;
-                                Vector3<Integer> dirV = dir.getAsVector();
-                                int disX = p1.getX() - target.getX();
-                                int disY = p1.getY() - target.getY();
-                                int disZ = p1.getZ() - target.getZ();
-                                while (!((disX==0) && (disY==0) && (disZ==0))) {
-                                    target = target.getRelative(dir);
-                                    if (disX!=0) {
-                                        disX = disX - dirV.getX();
-                                    }
-                                    if (disY!=0) {
-                                        disY = disY - dirV.getY();
-                                    }
-                                    if (disZ!=0) {
-                                        disZ = disZ - dirV.getZ();
-                                    }
-                                    if (!target.getBlockType().equals(BlockTypes.AIR)) {
-                                        break;
-                                    }
-                                    if (blocksToAdd.contains(target)) {
-                                        continue;
-                                    }
-                                    blocksToAdd.add(target);
-                                }
-
-                            } catch (DirectionNotSupported directionNotSupported) {
-                                directionNotSupported.printStackTrace();
                             }
                         }
-                        return blocksToAdd.parallelStream();
-                    }).collect(Collectors.toSet());
-
+                    }
                     TranslateCore.createSchedulerBuilder()
-                            .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                            .setDisplayName("from air getter")
                             .setDelay(0)
-                            .setDisplayName("combine async")
-                            .setAsync(false)
-                            .setExecutor(() -> {
-                                toAdd.forEach(this::addRawPosition);
-                                onComplete.accept(this);
-                            })
-                            .build(ShipsPlugin.getPlugin());
-                }).build(ShipsPlugin.getPlugin());
-        positions.forEach(p -> {
-
-        });
+                            .setRunner((s) -> onComplete.accept(this))
+                            .build(ShipsPlugin.getPlugin())
+                            .run();
+                }))
+                .build(ShipsPlugin.getPlugin())
+                .run();
     }
 
     @Override
