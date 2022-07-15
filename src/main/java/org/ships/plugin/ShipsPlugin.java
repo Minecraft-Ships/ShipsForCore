@@ -83,7 +83,7 @@ public class ShipsPlugin implements CorePlugin {
     public void onCoreReady() {
         this.init();
         LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
-        this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew():new ShipsConfig();
+        this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
         this.messageConfig = new MessageConfig();
         this.aMessageConfig = new AdventureMessageConfig();
         this.blockList = new DefaultBlockList();
@@ -117,12 +117,12 @@ public class ShipsPlugin implements CorePlugin {
     public void loadStructures() {
         File file = new File(this.getConfigFolder(), "Structure");
         File[] pluginFolders = file.listFiles();
-        if (pluginFolders==null) {
+        if (pluginFolders == null) {
             return;
         }
         for (File pluginFolder : pluginFolders) {
             File[] structureFiles = pluginFolder.listFiles();
-            if (structureFiles==null) {
+            if (structureFiles == null) {
                 continue;
             }
             for (File structureFile : structureFiles) {
@@ -150,7 +150,7 @@ public class ShipsPlugin implements CorePlugin {
         this.loadCustomShipType();
         this.initShipType();
         this.loadVesselTypeFlagData();
-        this.loadVessels();
+        //this.loadVessels();
         this.getLoadedMessages();
 
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
@@ -182,7 +182,7 @@ public class ShipsPlugin implements CorePlugin {
         for (CloneableShipType<?> type : this.getAllCloneableShipTypes()) {
             File folderType = new File(folder, type.getId().replace(":", ".") + "/");
             File[] files = folderType.listFiles();
-            if (files==null) {
+            if (files == null) {
                 if (!folderType.exists() && !folderType.mkdirs()) {
                     System.err.println("Could not create folder at '" + folderType.getPath() + "'");
                 }
@@ -210,7 +210,7 @@ public class ShipsPlugin implements CorePlugin {
                 .forEach(c -> {
                     File folder = c.getFolder();
                     File[] files = folder.listFiles();
-                    if (files==null) {
+                    if (files == null) {
                         return;
                     }
                     Stream.of(files).filter(f -> !f.isDirectory()).forEach(f -> {
@@ -266,7 +266,7 @@ public class ShipsPlugin implements CorePlugin {
         this.displayMessage(BasicMovement.class, "MovementMethods", bm -> "");
         this.displayMessage(BlockPriority.class, "BlockPriorities", bp -> bp.getPriorityNumber() + "");
         this.displayMessage(ShipsSign.class, "Signs", sn -> "");
-        this.displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + (st.getDisplayName().length() > 7 ? "\t":"\t\t") + st.getFile().getFile().getPath());
+        this.displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + (st.getDisplayName().length() > 7 ? "\t" : "\t\t") + st.getFile().getFile().getPath());
         source.sendMessage(AText.ofPlain("Vessels: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
         source.sendMessage(AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
     }
@@ -285,7 +285,7 @@ public class ShipsPlugin implements CorePlugin {
         values.forEach(v -> {
             String id = v.getId();
             String text = function.apply(v);
-            AText ret = AText.ofPlain("\t- " + id + (id.length() > 13 ? "\t":"\t\t") + text).withColour(NamedTextColours.YELLOW);
+            AText ret = AText.ofPlain("\t- " + id + (id.length() > 13 ? "\t" : "\t\t") + text).withColour(NamedTextColours.YELLOW);
             source.sendMessage(ret);
         });
     }
