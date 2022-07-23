@@ -24,6 +24,7 @@ import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
+import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.AttachableKeyedData;
 import org.core.world.position.block.details.data.keyed.KeyedData;
@@ -70,6 +71,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class CoreEventListener implements EventListener {
@@ -77,7 +79,7 @@ public class CoreEventListener implements EventListener {
     @HEvent
     public void onPlayerCommand(EntityCommandEvent event) {
         Optional<String> opLoginCommand = ShipsPlugin.getPlugin().getConfig().getDefaultLoginCommand();
-        if (!opLoginCommand.isPresent()) {
+        if (opLoginCommand.isEmpty()) {
             return;
         }
 
@@ -88,11 +90,12 @@ public class CoreEventListener implements EventListener {
             return;
         }
         TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager().schedule()
                 .setDelay(2)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                .setExecutor(() -> this.onPlayerJoin(event.getEntity()))
-                .build(ShipsPlugin.getPlugin());
+                .setRunner((sch) -> this.onPlayerJoin(event.getEntity()))
+                .build(ShipsPlugin.getPlugin())
+                .run();
     }
 
     @HEvent
@@ -104,7 +107,7 @@ public class CoreEventListener implements EventListener {
         }
         for (Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())) {
             SyncBlockPosition position = event.getPosition().getRelative(direction);
-            if (list.getBlockInstruction(position.getBlockType()).getCollideType()!=BlockInstruction.CollideType.MATERIAL) {
+            if (list.getBlockInstruction(position.getBlockType()).getCollideType() != BlockInstruction.CollideType.MATERIAL) {
                 continue;
             }
 
@@ -130,10 +133,11 @@ public class CoreEventListener implements EventListener {
                         })
                         .collect(Collectors.toSet()))
                 .loadOvertime(vessel -> TranslateCore
-                                .createSchedulerBuilder()
+                                .getScheduleManager()
+                                .schedule()
                                 .setDelay(0)
                                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                                .setExecutor(() -> event.getEntity().remove())
+                                .setRunner((sch) -> event.getEntity().remove())
                                 .setDisplayName("remove entity")
                                 .build(ShipsPlugin.getPlugin())
                                 .run(),
@@ -153,12 +157,12 @@ public class CoreEventListener implements EventListener {
                 continue;
             }
             Optional<PlayerStatesFlag> opFlag = vessel.get(PlayerStatesFlag.class);
-            if (!opFlag.isPresent()) {
+            if (opFlag.isEmpty()) {
                 continue;
             }
             Map<UUID, Vector3<Double>> map = opFlag.get().getValue().orElse(new HashMap<>());
             Vector3<Double> vector = map.get(player.getUniqueId());
-            if (vector==null) {
+            if (vector == null) {
                 continue;
             }
             SyncBlockPosition sPos = vessel.getPosition();
@@ -169,9 +173,7 @@ public class CoreEventListener implements EventListener {
                 vessel.set(PlayerStatesFlag.class, map);
             }
             Optional<MovingFlag> opMovingFlag = vessel.get(MovingFlag.class);
-            player.setGravity(!opMovingFlag.isPresent() || !opMovingFlag.get().getValue().isPresent());
-
-
+            player.setGravity(opMovingFlag.isEmpty() || opMovingFlag.get().getValue().isEmpty());
         }
     }
 
@@ -180,7 +182,7 @@ public class CoreEventListener implements EventListener {
         ShipsPlugin
                 .getPlugin()
                 .getVessels()
-                .stream()
+                .parallelStream()
                 .filter(vessel -> vessel.getValue(PlayerStatesFlag.class).isPresent())
                 .map(vessel -> vessel
                         .getValue(PlayerStatesFlag.class)
@@ -226,29 +228,37 @@ public class CoreEventListener implements EventListener {
     public void onPlayerInteractWithBlock(EntityInteractEvent.WithBlock.AsPlayer event) {
         SyncBlockPosition position = event.getInteractPosition();
         Optional<LiveTileEntity> opTE = position.getTileEntity();
-        if (!opTE.isPresent()) {
+        if (opTE.isEmpty()) {
             return;
         }
-        if (!(opTE.get() instanceof LiveSignTileEntity)) {
+        if (!(opTE.get() instanceof LiveSignTileEntity lste)) {
             return;
         }
-        SignTileEntity lste = (SignTileEntity) opTE.get();
-        BlockInstruction.CollideType collideType = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(position.getBlockType()).getCollideType();
-        if (collideType!=BlockInstruction.CollideType.MATERIAL) {
+        BlockInstruction.CollideType collideType = ShipsPlugin
+                .getPlugin()
+                .getBlockList()
+                .getBlockInstruction(position.getBlockType())
+                .getCollideType();
+        if (collideType != BlockInstruction.CollideType.MATERIAL) {
             return;
         }
-        ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
-            if (ShipsSign.LOCKED_SIGNS.stream().anyMatch(b -> b.equals(position))) {
-                LivePlayer player = event.getEntity();
-                AText text = AdventureMessageConfig.ERROR_SHIPS_SIGN_IS_MOVING.parse();
-                player.sendMessage(text);
-                return;
-            }
-            boolean cancel = event.getClickAction()==EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position):s.onSecondClick(event.getEntity(), position);
-            if (cancel) {
-                event.setCancelled(true);
-            }
-        });
+        ShipsPlugin
+                .getPlugin()
+                .getAll(ShipsSign.class)
+                .stream()
+                .filter(s -> s.isSign(lste))
+                .forEach(s -> {
+                    if (ShipsSign.LOCKED_SIGNS.stream().anyMatch(b -> b.equals(position))) {
+                        LivePlayer player = event.getEntity();
+                        AText text = AdventureMessageConfig.ERROR_SHIPS_SIGN_IS_MOVING.parse();
+                        player.sendMessage(text);
+                        return;
+                    }
+                    boolean cancel = event.getClickAction() == EntityInteractEvent.PRIMARY_CLICK_ACTION ? s.onPrimaryClick(event.getEntity(), position) : s.onSecondClick(event.getEntity(), position);
+                    if (cancel) {
+                        event.setCancelled(true);
+                    }
+                });
     }
 
     @HEvent
@@ -258,12 +268,12 @@ public class CoreEventListener implements EventListener {
             return;
         }
         BlockInstruction.CollideType collideType = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(event.getPosition().getBlockType()).getCollideType();
-        if (collideType!=BlockInstruction.CollideType.MATERIAL) {
+        if (collideType != BlockInstruction.CollideType.MATERIAL) {
             return;
         }
         boolean register = false;
         Optional<AText> opFirstLine = event.getFrom().getTextAt(0);
-        if (!opFirstLine.isPresent()) {
+        if (opFirstLine.isEmpty()) {
             return;
         }
         ShipsSign sign = ShipsPlugin
@@ -273,7 +283,7 @@ public class CoreEventListener implements EventListener {
                 .filter(s -> s.isSign(event.getFrom().getText()))
                 .findFirst()
                 .orElse(null);
-        if (sign==null) {
+        if (sign == null) {
             return;
         }
 
@@ -290,7 +300,7 @@ public class CoreEventListener implements EventListener {
         }
         if (register) {
             Optional<AText> opTypeText = stes.getTextAt(1);
-            if (!opTypeText.isPresent()) {
+            if (opTypeText.isEmpty()) {
                 event.setCancelled(true);
                 return;
             }
@@ -299,7 +309,7 @@ public class CoreEventListener implements EventListener {
                     .stream()
                     .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
                     .findAny();
-            if (!opType.isPresent()) {
+            if (opType.isEmpty()) {
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));
                 event.setCancelled(true);
                 return;
@@ -314,7 +324,7 @@ public class CoreEventListener implements EventListener {
             }
             try {
                 Optional<AText> opName = stes.getTextAt(2);
-                if (!opName.isPresent()) {
+                if (opName.isEmpty()) {
                     event.setCancelled(true);
                     return;
                 }
@@ -346,7 +356,7 @@ public class CoreEventListener implements EventListener {
                     .getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
                         @Override
                         public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                            if (finalBar!=null) {
+                            if (finalBar != null) {
                                 finalBar.setTitle(AText.ofPlain("Complete"));
                             }
                             Vessel vessel = type.createNewVessel(stes, event.getPosition());
@@ -360,22 +370,22 @@ public class CoreEventListener implements EventListener {
                             VesselCreateEvent.Pre preEvent = new VesselCreateEvent.Pre.BySign(vessel, event.getEntity());
                             TranslateCore.getEventManager().callEvent(preEvent);
                             if (preEvent.isCancelled()) {
-                                if (finalBar!=null) {
+                                if (finalBar != null) {
                                     finalBar.deregisterPlayers();
                                 }
                                 event.setCancelled(true);
                                 TranslateCore
-                                        .createSchedulerBuilder()
+                                        .getScheduleManager()
+                                        .schedule()
                                         .setDisplayName("event cancelled")
-                                        .setExecutor(() -> {
+                                        .setRunner((sch) -> {
                                             Optional<LiveTileEntity> opTileEntity = event.getPosition().getTileEntity();
-                                            if (!opTileEntity.isPresent()) {
+                                            if (opTileEntity.isEmpty()) {
                                                 return;
                                             }
-                                            if (!(opTileEntity.get() instanceof SignTileEntity)) {
+                                            if (!(opTileEntity.get() instanceof SignTileEntity ste)) {
                                                 return;
                                             }
-                                            SignTileEntity ste = (SignTileEntity) opTileEntity.get();
                                             ste.setText(Collections.emptySet());
                                         })
                                         .build(ShipsPlugin.getPlugin())
@@ -387,7 +397,7 @@ public class CoreEventListener implements EventListener {
                             ShipsPlugin.getPlugin().registerVessel(vessel);
                             VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
                             TranslateCore.getEventManager().callEvent(postEvent);
-                            if (finalBar!=null) {
+                            if (finalBar != null) {
                                 finalBar.deregisterPlayers();
                             }
                             if (vessel.getType() instanceof WaterType) {
@@ -397,11 +407,12 @@ public class CoreEventListener implements EventListener {
 
                         @Override
                         public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
-                            if (finalBar!=null) {
+                            if (finalBar != null) {
                                 TranslateCore
-                                        .createSchedulerBuilder()
+                                        .getScheduleManager()
+                                        .schedule()
                                         .setDisplayName("OnBlockFind Message")
-                                        .setExecutor(() -> {
+                                        .setRunner((sch) -> {
                                             if (finalBar.getValue() > trackSize) {
                                                 return;
                                             }
@@ -466,8 +477,9 @@ public class CoreEventListener implements EventListener {
 
         if (!restoreBlocks.isEmpty()) {
             TranslateCore
-                    .createSchedulerBuilder()
-                    .setExecutor(() -> restoreBlocks.forEach(BlockSnapshot.SyncBlockSnapshot::restore))
+                    .getScheduleManager()
+                    .schedule()
+                    .setRunner((sch) -> restoreBlocks.forEach(BlockSnapshot.SyncBlockSnapshot::restore))
                     .setDisplayName("restoring blocks")
                     .setDelay(1)
                     .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
@@ -482,6 +494,7 @@ public class CoreEventListener implements EventListener {
             return;
         }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        BlockDetails beforeDetails = event.getBeforeState();
         LicenceSign licenceSign = ShipsPlugin
                 .getPlugin()
                 .get(LicenceSign.class)
@@ -504,7 +517,10 @@ public class CoreEventListener implements EventListener {
                 continue;
             }
             if (!direction.equals(FourFacingDirection.NONE)) {
-                Optional<Direction> opAttachable = position.getRelative(direction).getBlockDetails().get(AttachableKeyedData.class);
+                Optional<Direction> opAttachable = position
+                        .getRelative(direction)
+                        .getBlockDetails()
+                        .get(AttachableKeyedData.class);
                 if (opAttachable.isEmpty()) {
                     continue;
                 }
@@ -512,42 +528,36 @@ public class CoreEventListener implements EventListener {
                     continue;
                 }
             }
-            Optional<Vessel> opVessel = licenceSign.getShip(lste);
-            if (opVessel.isEmpty()) {
-                continue;
-            }
-            Vessel vessel = opVessel.get();
-            if (vessel instanceof CrewStoredVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
-                LivePlayer player = ((EntityEvent<LivePlayer>) event).getEntity();
-                if (!(
-                        ((CrewStoredVessel) vessel).getPermission(player.getUniqueId()).canRemove() ||
-                                (player.hasPermission(vessel.getType().getMoveOtherPermission())))
-                ) {
-                    event.setCancelled(true);
-                    return;
+            new ShipsOvertimeBlockFinder(pos).loadOvertime(vessel -> {
+                if (config.isStructureClickUpdating()) {
+                    vessel.getStructure().removePosition(event.getPosition());
                 }
-            }
-            if (vessel instanceof FileBasedVessel) {
-                File file = ((FileBasedVessel) vessel).getFile();
-                try {
-                    Files.delete(file.toPath());
-                } catch (IOException e) {
-                    event.setCancelled(true);
-                    e.printStackTrace();
+                if (vessel instanceof CrewStoredVessel csVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer eventBreak) {
+                    LivePlayer player = eventBreak.getEntity();
+                    if (!(
+                            csVessel.getPermission(player.getUniqueId()).canRemove() ||
+                                    (player.hasPermission(vessel.getType().getMoveOtherPermission())))
+                    ) {
+                        event.getPosition().setBlock(beforeDetails);
+                        return;
+                    }
                 }
-            }
-            ShipsPlugin.getPlugin().unregisterVessel(vessel);
-            if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
-                LivePlayer player = ((EntityEvent<LivePlayer>) event).getEntity();
-                player.sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " removed successfully"));
-            }
-            return;
-        }
-        if (config.isStructureClickUpdating()) {
-            new ShipsOvertimeBlockFinder(event.getPosition())
-                    .loadOvertime(vessel -> vessel.getStructure().removePosition(event.getPosition()),
-                            structure -> {
-                            });
+                if (vessel instanceof FileBasedVessel) {
+                    File file = ((FileBasedVessel) vessel).getFile();
+                    try {
+                        Files.delete(file.toPath());
+                    } catch (IOException e) {
+                        event.setCancelled(true);
+                        e.printStackTrace();
+                    }
+                }
+                ShipsPlugin.getPlugin().unregisterVessel(vessel);
+                if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer eventBreak) {
+                    LivePlayer player = eventBreak.getEntity();
+                    player.sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " removed successfully"));
+                }
+            }, positionableShipsStructure -> {
+            });
         }
     }
 }
