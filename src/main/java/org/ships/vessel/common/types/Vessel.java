@@ -140,10 +140,10 @@ public interface Vessel extends Positionable<BlockPosition> {
         Scheduler sched = TranslateCore.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
         }).build(ShipsPlugin.getPlugin());
         double fin = entities2.size() / (double) limit;
-        if (fin!=((int) fin)) {
+        if (fin != ((int) fin)) {
             fin++;
         }
-        if (fin==0) {
+        if (fin == 0) {
             output.accept(entities);
             return;
         }
@@ -182,7 +182,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                                 entities.add(e);
                             }
                         }
-                        if (B==0) {
+                        if (B == 0) {
                             output.accept(entities);
                         }
                     })
@@ -206,7 +206,7 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     default <T> Optional<Integer> getWaterLevel(Function<? super T, ? extends BlockPosition> function, Collection<T> collection) {
         Map<Vector2<Integer>, Integer> height = new HashMap<>();
-        int lowest = this.getPosition().getWorld().getMinimumBlockHeight();
+        int lowest = Integer.MIN_VALUE;
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         for (T value : collection) {
             BlockPosition position = function.apply(value);
@@ -237,7 +237,7 @@ public interface Vessel extends Positionable<BlockPosition> {
         });
         Map.Entry<Integer, Integer> best = null;
         for (Map.Entry<Integer, Integer> entry : mean.entrySet()) {
-            if (best==null) {
+            if (best == null) {
                 best = entry;
                 continue;
             }
@@ -245,7 +245,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                 best = entry;
             }
         }
-        if (best==null) {
+        if (best == null) {
             return Optional.empty();
         }
         return Optional.of(best.getKey());
