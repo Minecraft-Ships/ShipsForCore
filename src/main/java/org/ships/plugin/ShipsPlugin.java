@@ -150,7 +150,7 @@ public class ShipsPlugin implements CorePlugin {
         this.loadCustomShipType();
         this.initShipType();
         this.loadVesselTypeFlagData();
-        //this.loadVessels();
+        this.loadVessels();
         this.getLoadedMessages();
 
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
