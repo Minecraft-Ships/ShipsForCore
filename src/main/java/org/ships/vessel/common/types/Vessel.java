@@ -5,6 +5,7 @@ import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.utils.Bounds;
+import org.core.utils.MathUtils;
 import org.core.vector.type.Vector2;
 import org.core.vector.type.Vector3;
 import org.core.world.ChunkExtent;
@@ -200,6 +201,7 @@ public interface Vessel extends Positionable<BlockPosition> {
         this.rotateLeftAround(location, context, exception);
     }
 
+    @Deprecated(forRemoval = true)
     default boolean isInWater() {
         return this.getWaterLevel().isEmpty();
     }
@@ -212,43 +214,23 @@ public interface Vessel extends Positionable<BlockPosition> {
             BlockPosition position = function.apply(value);
             for (Direction direction : directions) {
                 BlockType type = position.getRelative(direction).getBlockType();
-                if (type.equals(BlockTypes.WATER)) {
-                    Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(), position.getZ() + direction.getAsVector().getZ());
-                    if (height.containsKey(vector)) {
-                        if (height.getOrDefault(vector, lowest) < position.getY()) {
-                            height.replace(vector, position.getY());
-                        }
-                        continue;
-                    }
+                if (!type.equals(BlockTypes.WATER)) {
+                    continue;
+                }
+                Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(), position.getZ() + direction.getAsVector().getZ());
+                if (!height.containsKey(vector)) {
                     height.put(vector, position.getY());
+                    continue;
+                }
+                if (height.getOrDefault(vector, lowest) < position.getY()) {
+                    height.replace(vector, position.getY());
                 }
             }
         }
         if (height.isEmpty()) {
             return Optional.empty();
         }
-        Map<Integer, Integer> mean = new HashMap<>();
-        height.values().forEach(value -> {
-            if (mean.containsKey(value)) {
-                mean.replace(value, mean.get(value) + 1);
-            } else {
-                mean.put(value, 1);
-            }
-        });
-        Map.Entry<Integer, Integer> best = null;
-        for (Map.Entry<Integer, Integer> entry : mean.entrySet()) {
-            if (best == null) {
-                best = entry;
-                continue;
-            }
-            if (best.getValue() < entry.getValue()) {
-                best = entry;
-            }
-        }
-        if (best == null) {
-            return Optional.empty();
-        }
-        return Optional.of(best.getKey());
+        return Optional.of(MathUtils.getMostCommonNumber(height.values()));
     }
 
     default Optional<Integer> getWaterLevel() {
