@@ -58,15 +58,16 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof LivePlayer)) {
+        if (!(source instanceof LivePlayer player)) {
             if (source instanceof CommandViewer) {
                 ((CommandViewer) source).sendMessage(AText.ofPlain("Player only command").withColour(NamedTextColours.RED));
             }
             return true;
         }
-        LivePlayer player = (LivePlayer) source;
         vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
-        TranslateCore.createSchedulerBuilder()
+        TranslateCore
+                .getScheduleManager()
+                .schedule()
                 .setDisplayName("ShipsTrack:" + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                 .setDelay(10)
                 .setDelayUnit(TimeUnit.SECONDS)

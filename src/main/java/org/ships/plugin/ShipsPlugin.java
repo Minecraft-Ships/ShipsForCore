@@ -41,18 +41,17 @@ import org.ships.vessel.sign.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 14.5;
+    public static final double PRERELEASE_VERSION = 15.0;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
-    private final Set<Identifiable> identifiables = new HashSet<>();
-    private final Set<Vessel> vessels = new HashSet<>();
+    private final Collection<Identifiable> identifiables = new HashSet<>();
+    private final Collection<Vessel> vessels = new LinkedHashSet<>();
     private DefaultBlockList blockList;
     @Deprecated(forRemoval = true)
     private MessageConfig messageConfig;
@@ -94,7 +93,8 @@ public class ShipsPlugin implements CorePlugin {
             fallScheduler.run();
         }
         TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager()
+                .schedule()
                 .setDisplayName("Ships no gravity fix")
                 .setIteration(1)
                 .setIterationUnit(TimeUnit.SECONDS)
@@ -262,11 +262,7 @@ public class ShipsPlugin implements CorePlugin {
     public void getLoadedMessages() {
         ConsoleSource source = TranslateCore.getConsole();
         source.sendMessage(AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
-        this.displayMessage(BasicBlockFinder.class, "BlockFinders", bf -> "");
-        this.displayMessage(BasicMovement.class, "MovementMethods", bm -> "");
-        this.displayMessage(BlockPriority.class, "BlockPriorities", bp -> bp.getPriorityNumber() + "");
-        this.displayMessage(ShipsSign.class, "Signs", sn -> "");
-        this.displayMessage(ShipType.class, "ShipTypes", st -> st.getDisplayName() + (st.getDisplayName().length() > 7 ? "\t" : "\t\t") + st.getFile().getFile().getPath());
+        source.sendMessage(AText.ofPlain("Ships Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-" + PRERELEASE_VERSION)));
         source.sendMessage(AText.ofPlain("Vessels: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
         source.sendMessage(AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
     }
@@ -278,18 +274,6 @@ public class ShipsPlugin implements CorePlugin {
         });
     }
 
-    private <I extends Identifiable> void displayMessage(Class<I> class1, String name, Function<? super I, String> function) {
-        Set<I> values = this.getAll(class1);
-        ConsoleSource source = TranslateCore.getConsole();
-        source.sendMessage(AText.ofPlain("Found " + name + ": " + values.size()).withColour(NamedTextColours.AQUA));
-        values.forEach(v -> {
-            String id = v.getId();
-            String text = function.apply(v);
-            AText ret = AText.ofPlain("\t- " + id + (id.length() > 13 ? "\t" : "\t\t") + text).withColour(NamedTextColours.YELLOW);
-            source.sendMessage(ret);
-        });
-    }
-
     public DebugFile getDebugFile() {
         return this.debugFile;
     }
@@ -298,32 +282,27 @@ public class ShipsPlugin implements CorePlugin {
         return this.blockList;
     }
 
-    @Deprecated
-    public Set<CrewPermission> getDefaultPermissions() {
-        return this.getAll(CrewPermission.class);
-    }
-
-    public Set<Vessel> getVessels() {
+    public Collection<Vessel> getVessels() {
         return this.vessels;
     }
 
-    public <T extends Identifiable> Set<T> getAll(Class<T> class1) {
-        return this.identifiables.stream().filter(class1::isInstance).map(t -> (T) t).collect(Collectors.toSet());
+    public <T extends Identifiable> Collection<T> getAll(Class<T> class1) {
+        return this.identifiables.parallelStream().filter(class1::isInstance).map(t -> (T) t).collect(Collectors.toSet());
     }
 
-    public Set<ShipType<?>> getAllShipTypes() {
-        return (Set<ShipType<?>>) (Object) this.getAll(ShipType.class);
+    public Collection<ShipType<?>> getAllShipTypes() {
+        return (Collection<ShipType<?>>) (Object) this.getAll(ShipType.class);
     }
 
-    public Set<CloneableShipType<?>> getAllCloneableShipTypes() {
-        return (Set<CloneableShipType<?>>) (Object) this.getAll(CloneableShipType.class);
+    public @NotNull Collection<CloneableShipType<?>> getAllCloneableShipTypes() {
+        return (Collection<CloneableShipType<?>>) (Object) this.getAll(CloneableShipType.class);
     }
 
-    public <T extends Identifiable> Optional<T> get(Class<T> class1) {
+    public <T extends Identifiable> Optional<T> get(@NotNull Class<T> class1) {
         return this.identifiables.stream().filter(class1::isInstance).map(t -> (T) t).findAny();
     }
 
-    public Map<String, VesselFlag.Builder<?, ?>> getVesselFlags() {
+    public @NotNull Map<String, VesselFlag.Builder<?, ?>> getVesselFlags() {
         return this.vesselFlags;
     }
 
@@ -335,8 +314,18 @@ public class ShipsPlugin implements CorePlugin {
         this.vessels.remove(vessel);
     }
 
+    @Deprecated
+    public void register() {
+        throw new RuntimeException("Must specify a Identifiable to register");
+    }
+
     public void register(Identifiable... identifiables) {
         this.identifiables.addAll(Arrays.asList(identifiables));
+    }
+
+    @Deprecated
+    public void unregister() {
+        throw new RuntimeException("Must specify an Identifiable to unregister");
     }
 
     public void unregister(Identifiable... identifiables) {
@@ -347,7 +336,7 @@ public class ShipsPlugin implements CorePlugin {
         this.defaultPermissions.addAll(Arrays.asList(permissions));
     }*/
 
-    public void register(String id, VesselFlag.Builder<?, ?> flag) {
+    public void register(@NotNull String id, @NotNull VesselFlag.Builder<?, ?> flag) {
         this.vesselFlags.put(id, flag);
     }
 

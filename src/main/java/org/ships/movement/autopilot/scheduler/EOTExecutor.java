@@ -22,6 +22,10 @@ import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Optional;
 
+/**
+ * @deprecated Will be replaced with completely rewritten EOT code
+ */
+@Deprecated(forRemoval = true)
 public class EOTExecutor implements Runnable {
 
     protected Vessel vessel;

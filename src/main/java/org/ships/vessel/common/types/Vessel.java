@@ -52,19 +52,27 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     int getMaxSpeed();
 
+    boolean isMaxSpeedSpecified();
+
     int getAltitudeSpeed();
+
+    boolean isAltitudeSpeedSpecified();
 
     Optional<Integer> getMaxSize();
 
+    boolean isMaxSizeSpecified();
+
     int getMinSize();
+
+    boolean isMinSizeSpecified();
 
     @NotNull Vessel setMaxSize(@Nullable Integer size);
 
     @NotNull Vessel setMinSize(@Nullable Integer size);
 
-    @NotNull Vessel setMaxSpeed(int speed);
+    @NotNull Vessel setMaxSpeed(@Nullable Integer speed);
 
-    @NotNull Vessel setAltitudeSpeed(int speed);
+    @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed);
 
     void moveTowards(int x, int y, int z, @NotNull MovementContext context, Consumer<? super Throwable> exception);
 
@@ -90,11 +98,7 @@ public interface Vessel extends Positionable<BlockPosition> {
     }
 
     default <V, F extends VesselFlag<V>> Optional<V> getValue(Class<F> flagClass) {
-        Optional<F> opFlag = this.get(flagClass);
-        if (opFlag.isPresent()) {
-            return opFlag.get().getValue();
-        }
-        return Optional.empty();
+        return this.get(flagClass).flatMap(VesselFlag::getValue);
     }
 
     default Collection<LiveEntity> getEntities() {
@@ -138,8 +142,16 @@ public interface Vessel extends Positionable<BlockPosition> {
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
         chunks.forEach(c -> entities2.addAll(c.getEntities()));
 
-        Scheduler sched = TranslateCore.createSchedulerBuilder().setDisplayName("Ignore").setDelay(0).setDelayUnit(TimeUnit.MINECRAFT_TICKS).setExecutor(() -> {
-        }).build(ShipsPlugin.getPlugin());
+        Scheduler sched = TranslateCore
+                .getScheduleManager()
+                .schedule()
+                .setDisplayName("Ignore")
+                .setDelay(0)
+                .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
+                .setRunner((sch) -> {
+                })
+                .setAsync(true)
+                .build(ShipsPlugin.getPlugin());
         double fin = entities2.size() / (double) limit;
         if (fin != ((int) fin)) {
             fin++;
@@ -153,7 +165,8 @@ public interface Vessel extends Positionable<BlockPosition> {
         for (int A = 0; A < fin; A++) {
             final int B = A;
             sched = TranslateCore
-                    .createSchedulerBuilder()
+                    .getScheduleManager()
+                    .schedule()
                     .setDisplayName("\tentity getter " + A)
                     .setDelay(1)
                     .setDelayUnit(TimeUnit.MINECRAFT_TICKS)

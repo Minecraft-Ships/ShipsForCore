@@ -30,6 +30,7 @@ import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.vessel.common.assits.*;
+import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 

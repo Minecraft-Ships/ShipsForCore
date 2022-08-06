@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * @deprecated Will be replaced with completely rewritten AutoPilot code
+ */
+@Deprecated(forRemoval = true)
 public class BasicFlightSinglePath implements FlightSinglePath {
 
     protected final Vector3<Integer> firstPosition;

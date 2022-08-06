@@ -21,6 +21,10 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated Will be replaced with completely rewritten EOT sign
+ */
+@Deprecated(forRemoval = true)
 public class EOTSign implements ShipsSign {
 
     private final Collection<Scheduler> eot_scheduler = new HashSet<>();

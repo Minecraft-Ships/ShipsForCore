@@ -43,7 +43,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                             continue;
                         }
                         BlockInstruction bi = Ships6BlockFinder.this.list.getBlockInstruction(block.getBlockType());
-                        if (bi.getCollideType()==BlockInstruction.CollideType.MATERIAL) {
+                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
                             this.ret.add(block);
                         }
                     }
@@ -76,15 +76,18 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             collections.add(current);
 
             Scheduler scheduler = TranslateCore
-                    .createSchedulerBuilder()
+                    .getScheduleManager()
+                    .schedule()
                     .setDelay(config.getDefaultFinderStackDelay())
                     .setDelayUnit(config.getDefaultFinderStackDelayUnit())
-                    .setExecutor(() -> {
+                    .setRunner((sch) -> {
                         if ((this.total.size() <= Ships6BlockFinder.this.limit) && (!this.ret.isEmpty())) {
                             this.process = this.ret;
                             this.ret = new ArrayList<>();
 
-                            TranslateCore.createSchedulerBuilder().
+                            TranslateCore
+                                    .getScheduleManager()
+                                    .schedule().
                                     setDelay(config.getDefaultFinderStackDelay()).
                                     setDelayUnit(config.getDefaultFinderStackDelayUnit()).
                                     setExecutor(this.runnable).
@@ -98,15 +101,17 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                     .build(ShipsPlugin.getPlugin());
 
             for (List<SyncBlockPosition> list : collections) {
-                scheduler = TranslateCore.createSchedulerBuilder()
+                scheduler = TranslateCore
+                        .getScheduleManager()
+                        .schedule()
                         .setDelay(config.getDefaultFinderStackDelay())
                         .setDelayUnit(config.getDefaultFinderStackDelayUnit())
-                        .setExecutor(() -> {
+                        .setRunner((sch) -> {
                             OvertimeSection section = new OvertimeSection(list, this.total);
                             section.runnable.run();
                             section.ret.forEach(p -> {
                                 OvertimeBlockFinderUpdate.BlockFindControl blockFind = this.update.onBlockFind(this.pss, p);
-                                if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
+                                if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                     return;
                                 }
                                 this.pss.addPosition(p);
@@ -150,7 +155,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         Collection<SyncBlockPosition> target = new ArrayList<>();
         Collection<SyncBlockPosition> process = new ArrayList<>();
         process.add(Position.toSync(position));
-        while (count!=this.limit) {
+        while (count != this.limit) {
             if (process.isEmpty()) {
                 ret.forEach(pss::addPosition);
                 return pss;
@@ -161,7 +166,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                     SyncBlockPosition block = proc.getRelative(face);
                     if (ret.stream().noneMatch(b -> b.equals(block))) {
                         BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
-                        if (bi.getCollideType()==BlockInstruction.CollideType.MATERIAL) {
+                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
                             ret.add(block);
                             target.add(block);
                         }
@@ -180,13 +185,15 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch);
-        TranslateCore.createSchedulerBuilder().
-                setDelay(config.getDefaultFinderStackDelay()).
-                setDelayUnit(config.getDefaultFinderStackDelayUnit()).
-                setExecutor(overtime.runnable).
-                setDisplayName("Ships 6 block finder").
-                build(ShipsPlugin.getPlugin()).
-                run();
+        TranslateCore
+                .getScheduleManager()
+                .schedule()
+                .setDelay(config.getDefaultFinderStackDelay())
+                .setDelayUnit(config.getDefaultFinderStackDelayUnit())
+                .setExecutor(overtime.runnable)
+                .setDisplayName("Ships 6 block finder")
+                .build(ShipsPlugin.getPlugin())
+                .run();
 
     }
 

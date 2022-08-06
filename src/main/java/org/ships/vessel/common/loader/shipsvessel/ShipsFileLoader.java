@@ -118,7 +118,7 @@ public class ShipsFileLoader implements ShipsLoader {
         vessel.getCrew().forEach((key, value) -> {
             List<String> list = uuidList.get(value);
             boolean override = false;
-            if (list==null) {
+            if (list == null) {
                 override = true;
                 list = new ArrayList<>();
             }
@@ -226,7 +226,8 @@ public class ShipsFileLoader implements ShipsLoader {
             }
         });
         TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager()
+                .schedule()
                 .setDisplayName(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " - Structure-Loader")
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(1)
@@ -262,13 +263,13 @@ public class ShipsFileLoader implements ShipsLoader {
                 File vesselDataFolder = getVesselDataFolder();
                 File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
                 File[] files = typeFolder.listFiles();
-                if (files==null) {
+                if (files == null) {
                     return;
                 }
                 for (File file : files) {
                     try {
                         ShipsVessel vessel = new ShipsFileLoader(file).load();
-                        if (vessel==null) {
+                        if (vessel == null) {
                             continue;
                         }
                         set.add(vessel);

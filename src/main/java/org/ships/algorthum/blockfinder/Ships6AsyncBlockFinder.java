@@ -53,7 +53,8 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         int limit = this.limit;
         TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager()
+                .schedule()
                 .setAsync(true)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(0)
@@ -68,7 +69,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                         Set<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
                         Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
                         for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
-                         
+
                             if (ShipsPlugin.getPlugin().isShuttingDown()) {
                                 return;
                             }
@@ -77,7 +78,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                 ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
                                 Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
                                 BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
-                                if (bi.getCollideType()==BlockInstruction.CollideType.MATERIAL) {
+                                if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
                                     if (positions.contains(vector) || finalToProcess.parallelStream().anyMatch(entry -> entry.getKey().equals(block))) {
                                         return;
                                     }
@@ -88,14 +89,15 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                             });
                             OvertimeBlockFinderUpdate.BlockFindControl blockFind =
                                     runAfterFullSearch.onBlockFind(structure, posEntry.getKey());
-                            if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
+                            if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 continue;
                             }
                             structure.addPosition(Position.toSync(posEntry.getKey()));
                             addedBlocks++;
-                            if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
+                            if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 TranslateCore
-                                        .createSchedulerBuilder()
+                                        .getScheduleManager()
+                                        .schedule()
                                         .setDelay(0)
                                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                                         .setRunner((context) -> runAfterFullSearch.onShipsStructureUpdated(structure))
@@ -110,7 +112,8 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                         toProcess = next;
                     }
                     TranslateCore
-                            .createSchedulerBuilder()
+                            .getScheduleManager()
+                            .schedule()
                             .setDelay(0)
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                             .setRunner((context) -> runAfterFullSearch.onShipsStructureUpdated(structure))

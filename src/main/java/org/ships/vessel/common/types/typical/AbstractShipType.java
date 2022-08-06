@@ -39,7 +39,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     protected final @NotNull ConfigurationStream.ConfigurationFile file;
 
     public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
-        if (types.length==0) {
+        if (types.length == 0) {
             throw new NullPointerException("ShipType constructor failed: Type cannot be empty");
         }
         this.plugin = plugin;
@@ -49,10 +49,12 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     }
 
     public void init() {
-        if (!this.file.getFile().exists()) {
-            this.createDefault(this.file);
-            this.file.save();
+        if (this.file.getFile().exists()) {
+            return;
         }
+        this.createDefault(this.file);
+        this.file.save();
+
     }
 
     protected abstract void createDefault(@NotNull ConfigurationStream.ConfigurationFile file);
@@ -153,7 +155,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
             VesselFlag.Serializable<?> vesselFlag = (VesselFlag.Serializable<?>) vf;
             String[] id = vf.getId().split(Pattern.quote(":"));
             Optional<String> opValue = file.getString(new ConfigurationNode("flags", id[0], id[1]));
-            if (!opValue.isPresent()) {
+            if (opValue.isEmpty()) {
                 return;
             }
             if (!vesselFlag.isDeserializable(opValue.get())) {

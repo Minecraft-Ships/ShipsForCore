@@ -40,8 +40,8 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected final @NotNull Map<String, Vector3<Double>> teleportPositions = new HashMap<>();
     protected @NotNull File file;
     protected @NotNull ShipType<? extends AbstractShipsVessel> type;
-    protected int maxSpeed = 10;
-    protected int altitudeSpeed = 2;
+    protected @Nullable Integer maxSpeed;
+    protected @Nullable Integer altitudeSpeed;
     protected @Nullable Integer maxSize;
     protected @Nullable Integer minSize;
     protected boolean isLoading = true;
@@ -86,8 +86,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         ConfigurationStream.ConfigurationFile configuration = TranslateCore.createConfigurationFile(this.file, TranslateCore.getPlatform().getConfigFormat());
         this.file = configuration.getFile();
         this.type = type;
-        this.maxSpeed = this.type.getDefaultMaxSpeed();
-        this.altitudeSpeed = this.type.getDefaultAltitudeSpeed();
     }
 
     @Override
@@ -128,9 +126,9 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     @Override
     public <T> @NotNull Vessel set(@NotNull Class<? extends VesselFlag<T>> clazz, T value) {
         Optional<VesselFlag<?>> opFlag = this.getFlags().stream().filter(clazz::isInstance).findFirst();
-        if (!opFlag.isPresent()) {
+        if (opFlag.isEmpty()) {
             Optional<? extends VesselFlag<T>> opNewFlag = ShipsPlugin.getPlugin().get(clazz);
-            if (!opNewFlag.isPresent()) {
+            if (opNewFlag.isEmpty()) {
                 AText error = AText.ofPlain("Class of " + clazz.getName() + " is not registered in ShipsPlugin. " +
                         "Failed to set for ");
                 try {
@@ -176,7 +174,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public TeleportToVessel setTeleportPosition(ExactPosition tel, String id) {
         ExactPosition position = this.getPosition().toExactPosition();
         Optional<DirectionalData> opDirectionalData = position.getBlockDetails().getDirectionalData();
-        if (!opDirectionalData.isPresent()) {
+        if (opDirectionalData.isEmpty()) {
             return this;
         }
         Direction direction = opDirectionalData.get().getDirection();
@@ -217,7 +215,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public @NotNull Map<String, ExactPosition> getTeleportPositions() {
         ExactPosition position = this.getPosition().toExactPosition();
         Optional<DirectionalData> opDirectionalData = position.getBlockDetails().getDirectionalData();
-        if (!opDirectionalData.isPresent()) {
+        if (opDirectionalData.isEmpty()) {
             return new HashMap<>();
         }
         Direction direction = opDirectionalData.get().getDirection();
@@ -268,35 +266,67 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
+    public boolean isMaxSpeedSpecified() {
+        return this.maxSpeed != null;
+    }
+
+    @Override
     public int getMaxSpeed() {
+        if (this.maxSpeed == null) {
+            return this.getType().getDefaultMaxSpeed();
+        }
         return this.maxSpeed;
     }
 
     @Override
     public int getAltitudeSpeed() {
+        if (this.altitudeSpeed == null) {
+            return this.getType().getDefaultAltitudeSpeed();
+        }
         return this.altitudeSpeed;
     }
 
     @Override
-    public @NotNull Vessel setMaxSpeed(int speed) {
+    public @NotNull Vessel setMaxSpeed(@Nullable Integer speed) {
+        if (speed != null && speed < 0) {
+            throw new IndexOutOfBoundsException("Speed cannot be less then 0");
+        }
         this.maxSpeed = speed;
         return this;
     }
 
     @Override
-    public @NotNull Vessel setAltitudeSpeed(int speed) {
+    public boolean isMaxSizeSpecified() {
+        return this.maxSize != null;
+    }
+
+    @Override
+    public boolean isMinSizeSpecified() {
+        return this.minSize != null;
+    }
+
+    @Override
+    public boolean isAltitudeSpeedSpecified() {
+        return this.altitudeSpeed != null;
+    }
+
+    @Override
+    public @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed) {
+        if (speed != null && speed < 0) {
+            throw new IndexOutOfBoundsException("Speed cannot be less then 0");
+        }
         this.altitudeSpeed = speed;
         return this;
     }
 
     @Override
     public Optional<Integer> getMaxSize() {
-        return (this.maxSize==null) ? this.getType().getDefaultMaxSize():Optional.of(this.maxSize);
+        return (this.maxSize == null) ? this.getType().getDefaultMaxSize() : Optional.of(this.maxSize);
     }
 
     @Override
     public int getMinSize() {
-        return (this.minSize==null) ? this.getType().getDefaultMinSize():this.minSize;
+        return (this.minSize == null) ? this.getType().getDefaultMinSize() : this.minSize;
     }
 
     @Override

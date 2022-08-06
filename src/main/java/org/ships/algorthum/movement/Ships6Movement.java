@@ -113,23 +113,28 @@ public class Ships6Movement implements BasicMovement {
             waterLevel = opWaterLevel.get();
         }
         final int total = blocks.size();
-        Scheduler scheduler = TranslateCore.createSchedulerBuilder().setDisplayName("Post Movement").setExecutor(() -> {
-            context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing: Post movement")));
-            for (Movement.PostMovement movement : context.getPostMovementProcess()) {
-                movement.postMove(vessel);
-            }
-            VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
-            TranslateCore.getPlatform().callEvent(eventPost);
-            context.getPostMovement().accept(eventPost);
-            Result result = new Result(Result.DEFAULT_RESULT);
-            result.remove(Result.Run.COMMON_TELEPORT_ENTITIES);
-            result.run(vessel, context);
-            vessel.set(MovingFlag.class, null);
-        }).build(ShipsPlugin.getPlugin());
+        Scheduler scheduler = TranslateCore
+                .getScheduleManager()
+                .schedule()
+                .setDisplayName("Post Movement")
+                .setRunner((sch) -> {
+                    context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing: Post movement")));
+                    for (Movement.PostMovement movement : context.getPostMovementProcess()) {
+                        movement.postMove(vessel);
+                    }
+                    VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
+                    TranslateCore.getPlatform().callEvent(eventPost);
+                    context.getPostMovement().accept(eventPost);
+                    Result result = new Result(Result.DEFAULT_RESULT);
+                    result.remove(Result.Run.COMMON_TELEPORT_ENTITIES);
+                    result.run(vessel, context);
+                    vessel.set(MovingFlag.class, null);
+                }).build(ShipsPlugin.getPlugin());
         for (int A = 0; A < blocksToProcess.size(); A++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = TranslateCore
-                    .createSchedulerBuilder()
+                    .getScheduleManager()
+                    .schedule()
                     .setDisplayName("Set Block")
                     .setExecutor(new SetBlocks(A, total, context, blocks2))
                     .setToRunAfter(scheduler)
@@ -138,11 +143,10 @@ public class Ships6Movement implements BasicMovement {
                     .build(ShipsPlugin.getPlugin());
         }
         scheduler = TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager()
+                .schedule()
                 .setDisplayName("Teleport entities")
-                .setExecutor(() -> {
-                    Result.Run.COMMON_TELEPORT_ENTITIES.run(vessel, context);
-                })
+                .setRunner((sch) -> Result.Run.COMMON_TELEPORT_ENTITIES.run(vessel, context))
                 .setToRunAfter(scheduler)
                 .setDelay(config.getDefaultMovementStackDelay())
                 .setDelayUnit(config.getDefaultMovementStackDelayUnit())
@@ -150,7 +154,8 @@ public class Ships6Movement implements BasicMovement {
         for (int A = 0; A < blocksToProcess.size(); A++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = TranslateCore
-                    .createSchedulerBuilder()
+                    .getScheduleManager()
+                    .schedule()
                     .setDisplayName("Remove Blocxds67ytyk")
                     .setExecutor(new RemoveBlocks(waterLevel, A, context, blocks2))
                     .setToRunAfter(scheduler)
@@ -158,7 +163,7 @@ public class Ships6Movement implements BasicMovement {
                     .setDelayUnit(config.getDefaultMovementStackDelayUnit())
                     .build(ShipsPlugin.getPlugin());
         }
-        if (scheduler==null) {
+        if (scheduler == null) {
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.UNKNOWN, null));
         }
         scheduler.run();

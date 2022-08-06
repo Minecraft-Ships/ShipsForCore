@@ -6,6 +6,10 @@ import org.core.vector.type.Vector3;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @deprecated Will be replaced with completely rewritten AutoPilot code
+ */
+@Deprecated(forRemoval = true)
 public interface FlightPath {
 
     List<FlightSinglePath> getPath();

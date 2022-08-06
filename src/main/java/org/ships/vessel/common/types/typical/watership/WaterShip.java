@@ -28,7 +28,7 @@ import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.*;
 
-public class WaterShip extends AbstractShipsVessel implements WaterType, Fallable, org.ships.vessel.common.assits.VesselRequirement {
+public class WaterShip extends AbstractShipsVessel implements WaterType, Fallable, VesselRequirement {
 
     protected Float specialBlockPercent;
     protected Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();

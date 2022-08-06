@@ -63,14 +63,14 @@ public class LicenceSign implements ShipsSign {
             this.vessel.setStructure(structure);
             this.vessel.save();
             this.messager.sendMessage(AText.ofPlain("Vessel structure has updated by " + (structure.getOriginalRelativePositions().size() - originalSize)));
-            if (this.finalBar!=null) {
+            if (this.finalBar != null) {
                 this.finalBar.deregisterPlayers();
             }
         }
 
         @Override
         public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
-            if (this.finalBar!=null) {
+            if (this.finalBar != null) {
                 int blockCount = currentStructure.getOriginalRelativePositions().size() + 1;
                 this.finalBar.setTitle(AText.ofPlain(blockCount + "/" + this.totalBlockCount));
                 try {
@@ -175,7 +175,8 @@ public class LicenceSign implements ShipsSign {
                     .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
             foundStructure.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
-                    .createSchedulerBuilder()
+                    .getScheduleManager()
+                    .schedule()
                     .setDelay(5)
                     .setDelayUnit(TimeUnit.SECONDS)
                     .setRunner((sched) -> foundStructure

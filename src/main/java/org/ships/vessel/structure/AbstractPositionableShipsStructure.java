@@ -46,23 +46,27 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         Vector3<Integer> max = bounds.getIntMax();
         Vector3<Integer> min = bounds.getIntMin();
         WorldExtent world = this.getPosition().getWorld();
-        TranslateCore.createSchedulerBuilder()
+        TranslateCore
+                .getScheduleManager()
+                .schedule()
                 .setDisplayName("Air getter")
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setAsync(true)
                 .setRunner((scheduler -> {
-                    for(int x = min.getX(); x < max.getX(); x++){
-                        for(int y = min.getY(); y < max.getY(); y++){
-                            for(int z = min.getZ(); z < max.getZ(); z++){
+                    for (int x = min.getX(); x < max.getX(); x++) {
+                        for (int y = min.getY(); y < max.getY(); y++) {
+                            for (int z = min.getZ(); z < max.getZ(); z++) {
                                 BlockPosition position = world.getAsyncPosition(x, y, z);
-                                if(position.getBlockType().equals(BlockTypes.AIR)){
+                                if (position.getBlockType().equals(BlockTypes.AIR)) {
                                     this.addPosition(position);
                                 }
                             }
                         }
                     }
-                    TranslateCore.createSchedulerBuilder()
+                    TranslateCore
+                            .getScheduleManager()
+                            .schedule()
                             .setDisplayName("from air getter")
                             .setDelay(0)
                             .setRunner((s) -> onComplete.accept(this))
@@ -88,15 +92,15 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
                         int disX = p1.getX() - target.getX();
                         int disY = p1.getY() - target.getY();
                         int disZ = p1.getZ() - target.getZ();
-                        while (!((disX==0) && (disY==0) && (disZ==0))) {
+                        while (!((disX == 0) && (disY == 0) && (disZ == 0))) {
                             target = target.getRelative(dir);
-                            if (disX!=0) {
+                            if (disX != 0) {
                                 disX = disX - dirV.getX();
                             }
-                            if (disY!=0) {
+                            if (disY != 0) {
                                 disY = disY - dirV.getY();
                             }
-                            if (disZ!=0) {
+                            if (disZ != 0) {
                                 disZ = disZ - dirV.getZ();
                             }
                             if (!target.getBlockType().equals(BlockTypes.AIR)) {

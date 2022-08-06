@@ -27,7 +27,9 @@ import java.util.Optional;
 public class FallExecutor implements Runnable {
 
     public static Scheduler createScheduler() {
-        return TranslateCore.createSchedulerBuilder()
+        return TranslateCore
+                .getScheduleManager()
+                .schedule()
                 .setExecutor(new FallExecutor())
                 .setDelayUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
                 .setDelay(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
@@ -67,10 +69,9 @@ public class FallExecutor implements Runnable {
                 v.moveTowards(0, -(ShipsPlugin.getPlugin().getConfig().getFallingSpeed()), 0, context, exc -> {
                     context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                     v.getEntities().forEach(e -> e.setGravity(true));
-                    if (!(exc instanceof MoveException)) {
+                    if (!(exc instanceof MoveException e)) {
                         return;
                     }
-                    MoveException e = (MoveException) exc;
                     context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                     if (!e.getMovement().getResult().equals(MovementResult.COLLIDE_DETECTED)) {
                         return;

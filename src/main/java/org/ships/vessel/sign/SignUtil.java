@@ -84,7 +84,8 @@ public interface SignUtil {
                         .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
                         .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
                 TranslateCore
-                        .createSchedulerBuilder()
+                        .getScheduleManager()
+                        .schedule()
                         .setDelay(5)
                         .setDisplayName("bedrock reset")
                         .setDelayUnit(TimeUnit.SECONDS)

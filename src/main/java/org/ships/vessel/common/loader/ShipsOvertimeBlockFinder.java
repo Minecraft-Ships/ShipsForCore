@@ -44,12 +44,13 @@ public class ShipsOvertimeBlockFinder {
 
     public void loadOvertime(Consumer<? super Vessel> consumer, Consumer<? super PositionableShipsStructure> exceptionRunner) {
         TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager()
+                .schedule()
                 .setAsync(false)
                 .setDisplayName("Async vessel finder")
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                .setExecutor(() -> this.loadOvertimeSynced(consumer, exceptionRunner)).build(ShipsPlugin.getPlugin()).run();
+                .setRunner((sch) -> this.loadOvertimeSynced(consumer, exceptionRunner)).build(ShipsPlugin.getPlugin()).run();
     }
 
     public void loadOvertimeSynced(Consumer<? super Vessel> consumer,
@@ -88,7 +89,7 @@ public class ShipsOvertimeBlockFinder {
         finder.getConnectedBlocksOvertime(this.position, new OvertimeBlockFinderUpdate() {
             @Override
             public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                if (passed.getValue()==null) {
+                if (passed.getValue() == null) {
                     exceptionRunner.accept(structure);
                     return;
                 }

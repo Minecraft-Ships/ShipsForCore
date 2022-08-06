@@ -92,10 +92,11 @@ public class MoveSign implements ShipsSign {
                     .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
-                    .createSchedulerBuilder()
+                    .getScheduleManager()
+                    .schedule()
                     .setDelay(5)
                     .setDelayUnit(TimeUnit.SECONDS)
-                    .setExecutor(() -> positions.forEach(bp -> bp.resetBlock(player)))
+                    .setRunner((sch) -> positions.forEach(bp -> bp.resetBlock(player)))
                     .setDisplayName("Remove bedrock")
                     .build(ShipsPlugin.getPlugin()).run();
         });

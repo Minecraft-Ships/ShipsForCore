@@ -67,7 +67,7 @@ public class DeployAutopilotCommand implements ArgumentCommand {
         }
         vessel.setFlightPath(bfp);
         TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager().schedule()
                 .setIteration(5)
                 .setIterationUnit(TimeUnit.SECONDS)
                 .setExecutor(new FlightPathExecutor(vessel))

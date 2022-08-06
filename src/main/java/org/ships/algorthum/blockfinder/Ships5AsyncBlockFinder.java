@@ -28,7 +28,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     private BlockList list;
 
     private void getNextBlock(OvertimeBlockFinderUpdate event, ASyncBlockPosition position, Direction... directions) {
-        if (this.blockLimit!=-1 && this.blockCount >= this.blockLimit) {
+        if (this.blockLimit != -1 && this.blockCount >= this.blockLimit) {
             return;
         }
         this.blockCount++;
@@ -36,15 +36,15 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
             ASyncBlockPosition block = position.getRelative(direction);
             BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
             OvertimeBlockFinderUpdate.BlockFindControl blockFind = null;
-            if (bi.getCollideType()==BlockInstruction.CollideType.MATERIAL) {
-                if (event!=null) {
+            if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+                if (event != null) {
                     blockFind = event.onBlockFind(this.shipsStructure, block);
-                    if (blockFind==OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
+                    if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                         this.getNextBlock(event, block, directions);
                     }
                 }
                 if (this.shipsStructure.addPosition(Position.toSync(block))) {
-                    if (blockFind!=null && blockFind==OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
+                    if (blockFind != null && blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                         return;
                     }
                     this.getNextBlock(event, block, directions);
@@ -78,7 +78,8 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         TranslateCore
-                .createSchedulerBuilder()
+                .getScheduleManager()
+                .schedule()
                 .setAsync(true)
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
@@ -86,7 +87,8 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
                 .setRunner((s) -> {
                     PositionableShipsStructure positions = this.getConnectedBlocks(position);
                     TranslateCore
-                            .createSchedulerBuilder()
+                            .getScheduleManager()
+                            .schedule()
                             .setDelay(0)
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                             .setDisplayName("ToSync")

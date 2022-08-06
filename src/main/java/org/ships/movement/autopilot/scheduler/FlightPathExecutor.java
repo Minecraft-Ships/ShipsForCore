@@ -16,6 +16,10 @@ import org.ships.vessel.common.assits.FlightPathType;
 
 import java.util.Optional;
 
+/**
+ * @deprecated Will be replaced with completely rewritten AutoPilot code
+ */
+@Deprecated(forRemoval = true)
 public class FlightPathExecutor implements Runnable {
 
     protected FlightPathType vessel;

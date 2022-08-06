@@ -21,18 +21,16 @@ import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class Marsship extends AbstractShipsVessel implements AirType, org.ships.vessel.common.assits.VesselRequirement {
+public class Marsship extends AbstractShipsVessel implements AirType, VesselRequirement {
 
     protected @Nullable Float specialBlockPercent;
-    protected @NotNull Set<BlockType> specialBlocks = new HashSet<>();
+    protected @Nullable Collection<BlockType> specialBlocks;
 
     protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
@@ -48,18 +46,46 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
         super(ste, position, type);
     }
 
+    @Deprecated(forRemoval = true)
     public float getSpecialBlockPercent() {
-        if (this.specialBlockPercent==null) {
-            return this.getType().getDefaultSpecialBlockPercent();
-        }
-        return this.specialBlockPercent;
+        return this.getSpecialBlocksPercent();
     }
 
-    public Set<BlockType> getSpecialBlocks() {
-        if (this.specialBlocks.isEmpty()) {
+    public Collection<BlockType> getSpecialBlocks() {
+        if (this.specialBlocks == null) {
             return this.getType().getDefaultSpecialBlockType();
         }
         return this.specialBlocks;
+    }
+
+    public float getSpecialBlocksPercent() {
+        return Objects.requireNonNullElseGet(
+                this.specialBlockPercent,
+                () -> this.getType().getDefaultSpecialBlockPercent());
+    }
+
+    @Override
+    public Collection<Requirement> getRequirements() {
+        throw new RuntimeException("Not implemented");
+    }
+
+    public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
+        this.specialBlocks = types;
+    }
+
+    public void setSpecialBlocksPercent(@Nullable Float value) {
+        if (value != null && (value < 0 || value > 100)) {
+            throw new IndexOutOfBoundsException("Percent must be between 0 and 100");
+        }
+        this.specialBlockPercent = value;
+    }
+
+    public boolean isSpecialBlocksSpecified() {
+        return this.specialBlocks != null;
+    }
+
+    public boolean isSpecialBlocksPercentSpecified() {
+        return this.specialBlockPercent != null;
     }
 
     public @NotNull MarsshipType getType() {
@@ -103,7 +129,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, org.ships.
             }
         }
         float specialBlockPercent = ((specialBlocks * 100.0f) / context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count());
-        if ((this.getSpecialBlockPercent()!=0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
+        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
     }

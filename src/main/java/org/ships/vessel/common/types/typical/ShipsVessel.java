@@ -32,14 +32,13 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
     @Override
     default @NotNull LiveSignTileEntity getSign() throws NoLicencePresent {
         Optional<LiveTileEntity> opTile = this.getPosition().getTileEntity();
-        if (!opTile.isPresent()) {
+        if (opTile.isEmpty()) {
             throw new NoLicencePresent(this);
         }
         LiveTileEntity tile = opTile.get();
-        if (!(tile instanceof LiveSignTileEntity)) {
+        if (!(tile instanceof LiveSignTileEntity sign)) {
             throw new NoLicencePresent(this);
         }
-        LiveSignTileEntity sign = (LiveSignTileEntity) tile;
         LicenceSign licenceSign = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException("Could not get licence sign builder"));
         if (!licenceSign.isSign(sign)) {
             throw new NoLicencePresent(this);
@@ -68,19 +67,19 @@ public interface ShipsVessel extends SignBasedVessel, TeleportToVessel, CrewStor
 
     @Override
     default void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.TELEPORT_TO_POSITION.move(this, position, context, exception);
     }
 
     @Override
     default void rotateRightAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_RIGHT_AROUND_POSITION.move(this, position, context, exception);
     }
 
     @Override
     default void rotateLeftAround(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception) {
-        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location:((SyncExactPosition) location).toBlockPosition();
+        SyncBlockPosition position = location instanceof SyncBlockPosition ? (SyncBlockPosition) location : ((SyncExactPosition) location).toBlockPosition();
         Movement.MidMovement.ROTATE_LEFT_AROUND_POSITION.move(this, position, context, exception);
     }
 

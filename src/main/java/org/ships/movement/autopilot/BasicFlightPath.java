@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @deprecated Will be replaced with completely rewritten AutoPilot code
+ */
+
+@Deprecated(forRemoval = true)
 public class BasicFlightPath implements FlightPath {
 
     protected final Vector3<Integer> first;

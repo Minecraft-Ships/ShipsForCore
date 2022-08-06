@@ -81,6 +81,8 @@ public interface Permissions {
             "blocklist", "view"));
     CorePermission CMD_SHIP_TRACK = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "cmd", "ship",
             "track"));
+
+    CorePermission CMD_SHIP_MODIFY_SPEED = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "cmd", "ship", "modify", "speed"));
     CorePermission CMD_SHIP_EOT = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "cmd", "ship", "eot"));
     CorePermission CMD_SHIP_CREW = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "cmd", "ship",
             "crew"));

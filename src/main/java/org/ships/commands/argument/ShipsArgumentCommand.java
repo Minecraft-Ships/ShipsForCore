@@ -25,6 +25,8 @@ import org.ships.commands.argument.ship.autopilot.DeployAutopilotCommand;
 import org.ships.commands.argument.ship.crew.ShipAddCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipRemoveCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipViewCrewArgumentCommand;
+import org.ships.commands.argument.ship.data.speed.max.ShipsDataSetMaxSpeedCommand;
+import org.ships.commands.argument.ship.data.speed.max.ShipsDataViewMaxSpeedCommand;
 import org.ships.commands.argument.ship.eot.ShipsShipEOTEnableArgumentCommand;
 import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
 import org.ships.commands.argument.ship.moveto.ShipsMoveToAdditionArgument;
@@ -50,6 +52,9 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
     public static final Set<ArgumentCommand> COMMANDS = new HashSet<>();
 
     static {
+        COMMANDS.add(new ShipsDataSetMaxSpeedCommand());
+        COMMANDS.add(new ShipsDataViewMaxSpeedCommand());
+
         COMMANDS.add(new ShipsInfoArgumentCommand());
         COMMANDS.add(new ShipsHelpArgumentCommand());
         COMMANDS.add(new ShipsBlockInfoArgumentCommand());

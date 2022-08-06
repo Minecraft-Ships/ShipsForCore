@@ -23,7 +23,7 @@ import java.util.Set;
 
 public interface ShipType<T extends Vessel> extends Identifiable {
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     OPShipType OVERPOWERED_SHIP = new OPShipType();
     MarsshipType MARSSHIP = new MarsshipType();
     AirshipType AIRSHIP = new AirshipType();
