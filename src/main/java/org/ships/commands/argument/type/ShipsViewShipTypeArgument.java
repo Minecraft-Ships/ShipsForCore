@@ -12,10 +12,7 @@ import org.core.source.viewer.CommandViewer;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class ShipsViewShipTypeArgument implements ArgumentCommand {
 
@@ -44,7 +41,7 @@ public class ShipsViewShipTypeArgument implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) source;
-        Set<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
+        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
         types.forEach(st -> viewer.sendMessage(AText.ofPlain(" - " + st.getDisplayName())));
         return true;
     }

@@ -262,4 +262,10 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
             slot.setItem(item);
         }
     }
+
+    @Override
+    public void setRequirement(Requirement updated) {
+        throw new RuntimeException("Not implemented yet");
+
+    }
 }

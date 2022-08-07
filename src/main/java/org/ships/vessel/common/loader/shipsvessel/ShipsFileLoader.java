@@ -190,22 +190,21 @@ public class ShipsFileLoader implements ShipsLoader {
         }
 
         Optional<AText> opShipTypeS = lste.getTextAt(1);
-        if (!opShipTypeS.isPresent()) {
+        if (opShipTypeS.isEmpty()) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
         String shipTypeS = opShipTypeS.get().toPlain();
-        Set<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
+        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
         Optional<ShipType<?>> opShipType =
                 types.parallelStream().filter(s -> s.getDisplayName().equalsIgnoreCase(shipTypeS)).findAny();
-        if (!opShipType.isPresent()) {
+        if (opShipType.isEmpty()) {
             throw new FileLoadVesselException(this.file, "Unknown ShipType");
         }
         ShipType<?> type = opShipType.get();
         Vessel vessel = type.createNewVessel(lste);
-        if (!(vessel instanceof ShipsVessel)) {
+        if (!(vessel instanceof ShipsVessel ship)) {
             throw new FileLoadVesselException(this.file, "ShipType requires to be ShipsVessel");
         }
-        ShipsVessel ship = (ShipsVessel) vessel;
 
         file.getInteger(SPEED_ALTITUDE).ifPresent(ship::setAltitudeSpeed);
         file.getInteger(SPEED_MAX).ifPresent(ship::setMaxSpeed);
@@ -231,7 +230,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 .setDisplayName(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " - Structure-Loader")
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(1)
-                .setExecutor(() -> new StructureLoad(ship).load(position, file.parseCollection(META_STRUCTURE, new ArrayList<>())))
+                .setRunner((sch) -> new StructureLoad(ship).load(position, file.parseCollection(META_STRUCTURE, new ArrayList<>())))
                 .build(ShipsPlugin.getPlugin())
                 .run();
 
@@ -257,7 +256,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public static Set<ShipsVessel> loadAll(Consumer<? super LoadVesselException> function) {
         Set<ShipsVessel> set = new HashSet<>();
-        Set<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
+        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
         types.forEach(st -> {
             try {
                 File vesselDataFolder = getVesselDataFolder();

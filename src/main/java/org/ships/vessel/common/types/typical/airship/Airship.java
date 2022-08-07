@@ -257,6 +257,11 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
     }
 
     @Override
+    public void setRequirement(Requirement updated) {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
     public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configBurnerBlock, this.isUsingBurner());

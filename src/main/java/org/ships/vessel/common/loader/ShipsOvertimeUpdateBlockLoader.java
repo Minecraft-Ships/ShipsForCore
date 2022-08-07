@@ -71,7 +71,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
 
     public void loadOvertime() {
         if (!this.update) {
-            Set<Vessel> vessels = ShipsPlugin.getPlugin().getVessels();
+            Collection<Vessel> vessels = ShipsPlugin.getPlugin().getVessels();
             Optional<Vessel> opVessel = vessels
                     .parallelStream()
                     .filter(vessel -> vessel

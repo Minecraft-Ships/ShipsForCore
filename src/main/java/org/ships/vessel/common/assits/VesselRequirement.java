@@ -6,6 +6,7 @@ import org.ships.movement.MovementContext;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
@@ -49,4 +50,5 @@ public interface VesselRequirement extends Vessel {
         }
     }
 
+    void setRequirement(Requirement updated);
 }

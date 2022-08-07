@@ -83,9 +83,18 @@ public class SpecialBlocksRequirement implements Requirement {
     }
 
     @Override
-    public @NotNull Requirement createChild() {
+    public @NotNull SpecialBlocksRequirement createChild() {
         return new SpecialBlocksRequirement(this);
     }
+
+    public @NotNull SpecialBlocksRequirement createChildWithPercentage(@Nullable Float value) {
+        return new SpecialBlocksRequirement(this, value, this.specialBlocks);
+    }
+
+    public @NotNull SpecialBlocksRequirement createChildWithBlocks(@Nullable Collection<BlockType> blocks) {
+        return new SpecialBlocksRequirement(this, this.specialBlocksPercentage, blocks);
+    }
+
 
     @Override
     public Optional<Requirement> getParent() {

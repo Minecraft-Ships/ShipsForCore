@@ -8,6 +8,7 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.types.Vessel;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,7 +21,7 @@ public class VesselIdAdapter implements MessageAdapter<Vessel> {
 
     @Override
     public Set<String> examples() {
-        Set<Vessel> vessels = ShipsPlugin.getPlugin().getVessels();
+        Collection<Vessel> vessels = ShipsPlugin.getPlugin().getVessels();
         if (vessels.isEmpty()) {
             return Collections.singleton("ships:watership.sunk");
         }

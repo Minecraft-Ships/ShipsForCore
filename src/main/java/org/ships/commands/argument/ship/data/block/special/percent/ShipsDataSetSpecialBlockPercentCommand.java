@@ -11,12 +11,14 @@ import org.core.command.argument.context.CommandContext;
 import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.ship.data.AbstractShipsDataSetCommand;
-import org.ships.vessel.common.assits.requirement.SpecialBlockRequirement;
-import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.requirement.SpecialBlockRequirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSetCommand {
 
@@ -26,7 +28,12 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
     private static final OptionalArgument<Float> PERCENT_VALUE_ARGUMENT = new OptionalArgument<>(new FloatArgument("value"), (Float) null);
 
     public ShipsDataSetSpecialBlockPercentCommand() {
-        super(new ShipIdArgument<>("ship_id", (source, vessel) -> vessel instanceof SpecialBlockRequirement, vessel -> "No special blocks apply to this ship"));
+        super(new ShipIdArgument<>("ship_id", (source, vessel) -> {
+            if (!(vessel instanceof VesselRequirement requirementVessel)) {
+                return false;
+            }
+            return requirementVessel.getRequirement(SpecialBlocksRequirement.class).isPresent();
+        }, vessel -> "No special blocks apply to this ship"));
     }
 
     @Override
@@ -36,9 +43,14 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
 
     @Override
     protected boolean apply(CommandContext context, Vessel vessel, String[] arguments) {
-        if (!(vessel instanceof SpecialBlockRequirement sbrVessel)) {
+        if (!(vessel instanceof VesselRequirement requirementVessel)) {
             return false;
         }
+        Optional<SpecialBlocksRequirement> opRequirement = requirementVessel.getRequirement(SpecialBlocksRequirement.class);
+        if(opRequirement.isEmpty()){
+            return false;
+        }
+
         Float value = context.getArgument(this, PERCENT_VALUE_ARGUMENT);
         if (value != null) {
             if (value > 100) {
@@ -54,7 +66,9 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
                 return false;
             }
         }
-        sbrVessel.setSpecialBlocksPercent(value);
+        SpecialBlocksRequirement parent = opRequirement.get().getParent().map(r -> (SpecialBlocksRequirement)r).orElseThrow(() -> new RuntimeException("Requirement found on vessel must have parent"));
+        SpecialBlocksRequirement updated = parent.createChildWithPercentage(value);
+        requirementVessel.setRequirement(updated);
         return true;
     }
 }

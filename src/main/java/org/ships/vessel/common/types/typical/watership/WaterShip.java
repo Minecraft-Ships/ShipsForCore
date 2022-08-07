@@ -23,6 +23,7 @@ import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
+import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
@@ -68,6 +69,12 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
+    public Collection<Requirement> getRequirements() {
+        throw new RuntimeException("Not implemented yet");
+
+    }
+
+    @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.meetsRequirements(context);
         if (!context.isStrictMovement()) {
@@ -88,6 +95,12 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         if ((this.getSpecialBlockPercent()!=0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
         }
+    }
+
+    @Override
+    public void setRequirement(Requirement updated) {
+        throw new RuntimeException("Not implemented yet");
+
     }
 
     @Override

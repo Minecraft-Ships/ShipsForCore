@@ -134,4 +134,9 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         }
     }
 
+    @Override
+    public void setRequirement(Requirement updated) {
+throw new RuntimeException("Not implemented yet");
+    }
+
 }

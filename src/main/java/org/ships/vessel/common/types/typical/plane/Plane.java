@@ -31,6 +31,7 @@ import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.vessel.common.assits.*;
 import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
@@ -67,14 +68,14 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     }
 
     public int getFuelConsumption() {
-        if (this.fuelConsumption!=null) {
+        if (this.fuelConsumption != null) {
             return this.fuelConsumption;
         }
         return this.getType().getDefaultFuelConsumption();
     }
 
     public FuelSlot getFuelSlot() {
-        if (this.fuelSlot==null) {
+        if (this.fuelSlot == null) {
             return this.getType().getDefaultFuelSlot();
         }
         return this.fuelSlot;
@@ -117,12 +118,17 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     }
 
     @Override
+    public Collection<Requirement> getRequirements() {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
     public void meetsRequirements(MovementContext context) throws MoveException {
         VesselRequirement.super.meetsRequirements(context);
         if (!context.isStrictMovement()) {
             return;
         }
-        if (this.getFuelConsumption()==0 || (this.getFuelTypes().isEmpty())) {
+        if (this.getFuelConsumption() == 0 || (this.getFuelTypes().isEmpty())) {
             return;
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
@@ -136,13 +142,13 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             }
         }
         List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().isPresent();
         }).filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
         }).filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> type.equals(t.getType())).orElse(false));
         }).collect(Collectors.toList());
         if (acceptedSlots.isEmpty()) {
@@ -156,7 +162,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         if (!context.isStrictMovement()) {
             return;
         }
-        if (this.getFuelConsumption()==0 || (this.getFuelTypes().isEmpty())) {
+        if (this.getFuelConsumption() == 0 || (this.getFuelTypes().isEmpty())) {
             return;
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
@@ -170,35 +176,41 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             }
         }
         List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().isPresent();
         }).filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
-            return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= (this.fuelConsumption==null ? 0:this.fuelConsumption);
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
+            return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= (this.fuelConsumption == null ? 0 : this.fuelConsumption);
         }).filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false));
         }).collect(Collectors.toList());
         if (acceptedSlots.isEmpty()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
         }
         FurnaceInventory inv = acceptedSlots.get(0);
-        Slot slot = this.getFuelSlot()==FuelSlot.TOP ? inv.getSmeltingSlot():inv.getFuelSlot();
+        Slot slot = this.getFuelSlot() == FuelSlot.TOP ? inv.getSmeltingSlot() : inv.getFuelSlot();
         Optional<ItemStack> opItem = slot.getItem();
         if (!opItem.isPresent()) {
             return;
         }
         ItemStack item = opItem.get();
         item = item.copyWithQuantity(item.getQuantity() - this.getFuelConsumption());
-        if (item.getQuantity()==0) {
+        if (item.getQuantity() == 0) {
             item = ItemTypes.AIR.get().getDefaultItemStack();
         }
         slot.setItem(item);
     }
 
     @Override
+    public void setRequirement(Requirement updated) {
+        throw new RuntimeException("Not implemented yet");
+
+    }
+
+    @Override
     public boolean shouldFall() {
-        if (this.getFuelConsumption()==0 || this.getFuelTypes().isEmpty()) {
+        if (this.getFuelConsumption() == 0 || this.getFuelTypes().isEmpty()) {
             return false;
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
@@ -212,13 +224,13 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             }
         }
         List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().isPresent();
         }).filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
         }).filter(i -> {
-            Slot slot = this.getFuelSlot()==FuelSlot.TOP ? i.getSmeltingSlot():i.getFuelSlot();
+            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
             return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
         }).collect(Collectors.toList());
         return acceptedSlots.isEmpty();

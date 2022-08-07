@@ -16,10 +16,7 @@ import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ShipsInfoArgumentCommand implements ArgumentCommand {
@@ -45,11 +42,10 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof CommandViewer)) {
+        if (!(source instanceof CommandViewer viewer)) {
             return true;
         }
-        CommandViewer viewer = (CommandViewer) source;
-        Set<ShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllShipTypes();
+        Collection<ShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllShipTypes();
         viewer.sendMessage(AText.ofPlain("----[Ships]----").withColour(NamedTextColours.YELLOW));
         viewer.sendMessage(AText.ofPlain("Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.getPlugin().getPluginVersion().asString()).withColour(NamedTextColours.GOLD)));
         viewer.sendMessage(AText.ofPlain(ShipsPlugin.PRERELEASE_TAG + " Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.PRERELEASE_VERSION + "").withColour(NamedTextColours.GOLD)));
