@@ -16,13 +16,22 @@ public class MovementInstruction {
     private final @NotNull Consumer<? super Throwable> exception;
     private final @NotNull BasicMovement movementAlgorithm;
 
-    public MovementInstruction(MovementInstructionBuilder builder){
+    public MovementInstruction(MovementInstructionBuilder builder) {
         this.movementAlgorithm = builder.getMovementAlgorithm();
         this.midMoveEvent = builder.getMidMoveEvent();
         this.postMoveEvent = builder.getPostMoveEvent();
         this.strictMovement = builder.isStrictMovement();
         this.exception = builder.getException();
         this.movingBlocks = builder.getMovingBlocks();
+        if (this.movingBlocks.isEmpty()) {
+            throw new IllegalStateException("Moving blocks are required");
+        }
+        if (this.exception == null) {
+            throw new IllegalStateException("Exception is required");
+        }
+        if (this.movementAlgorithm == null) {
+            throw new IllegalStateException("Movement algorithm is required");
+        }
     }
 
     public @NotNull MovingBlockSet getMovingBlocks() {

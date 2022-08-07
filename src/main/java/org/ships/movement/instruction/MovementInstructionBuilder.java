@@ -2,6 +2,7 @@ package org.ships.movement.instruction;
 
 import org.core.vector.type.Vector3;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.movement.Movement;
 import org.ships.movement.MovingBlock;
@@ -60,7 +61,10 @@ public class MovementInstructionBuilder {
         return this;
     }
 
-    public Movement.MidMovement[] getMidMoveEvent() {
+    public @NotNull Movement.MidMovement[] getMidMoveEvent() {
+        if(this.midMoveEvent == null){
+            return new Movement.MidMovement[0];
+        }
         return this.midMoveEvent;
     }
 
@@ -69,7 +73,10 @@ public class MovementInstructionBuilder {
         return this;
     }
 
-    public Movement.PostMovement[] getPostMoveEvent() {
+    public @NotNull Movement.PostMovement[] getPostMoveEvent() {
+        if(this.postMoveEvent == null){
+            return new Movement.PostMovement[0];
+        }
         return this.postMoveEvent;
     }
 
