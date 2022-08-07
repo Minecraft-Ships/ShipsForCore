@@ -286,7 +286,7 @@ public class Movement {
 
     }
 
-    public static class RotateRightAroundPosition extends Movement {
+    public static final class RotateRightAroundPosition extends Movement {
 
         private RotateRightAroundPosition() {
 

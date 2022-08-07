@@ -23,14 +23,15 @@ import java.nio.file.Files;
 import java.time.LocalTime;
 import java.util.ConcurrentModificationException;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class FallExecutor implements Runnable {
+public class FallExecutor implements Consumer<Scheduler> {
 
     public static Scheduler createScheduler() {
         return TranslateCore
                 .getScheduleManager()
                 .schedule()
-                .setExecutor(new FallExecutor())
+                .setRunner(new FallExecutor())
                 .setDelayUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
                 .setDelay(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
                 .setDisplayName("Ships fall scheduler")
@@ -38,7 +39,7 @@ public class FallExecutor implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void accept(Scheduler scheduler) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         try {
             ShipsPlugin

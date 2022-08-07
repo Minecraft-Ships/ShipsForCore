@@ -8,9 +8,11 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.algorthum.movement.BasicMovement;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.Movement;
 import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.MovementInstructionBuilder;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.*;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -69,7 +71,17 @@ public interface ShipsVessel
     @Override
     default void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context,
             Consumer<? super Throwable> exception) {
-        Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context, exception);
+        //Movement.MidMovement.ADD_TO_POSITION.move(this, vector, context, exception);
+        context.setInstruction(new MovementInstructionBuilder()
+                .setAddToMovementBlocks(this.getStructure(), vector)
+                .setException(exception)
+                .setMovementAlgorithm(BasicMovement.SHIPS_SIX)
+                .build()
+        );
+
+        context.move(this);
+
+
     }
 
     @Override
