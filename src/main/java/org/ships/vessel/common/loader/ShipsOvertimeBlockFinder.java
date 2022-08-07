@@ -15,7 +15,12 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -71,13 +76,11 @@ public class ShipsOvertimeBlockFinder {
                 PositionableShipsStructure pss = v.getStructure();
                 Collection<ASyncBlockPosition> collection = pss
                         .getPositions((Function<SyncBlockPosition, ASyncBlockPosition>) (Position::toASync));
-                TranslateCore
-                        .createSchedulerBuilder()
+                TranslateCore.getScheduleManager().schedule()
                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                         .setDelay(0)
                         .setDisplayName("Ship Finder")
-                        .setAsync(true)
-                        .setExecutor(() -> {
+                        .setAsync(true).setRunner((sch) -> {
                             if (collection.parallelStream().anyMatch(p -> p.equals(this.position))) {
                                 consumer.accept(v);
                             }

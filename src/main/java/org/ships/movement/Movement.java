@@ -66,12 +66,12 @@ public class Movement {
                 return;
             }
             Optional<SyncBlockPosition> opAttached = e.getAttachedTo();
-            if (!opAttached.isPresent()) {
+            if (opAttached.isEmpty()) {
                 ShipsPlugin.getPlugin().getDebugFile().addMessage("\tMovement.79 > Failed to find attached");
                 return;
             }
             Optional<MovingBlock> mBlock = context.getMovingStructure().getBefore(opAttached.get());
-            if (!mBlock.isPresent()) {
+            if (mBlock.isEmpty()) {
                 SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
                 Collection<SyncBlockPosition> positions = vessel
                         .getStructure()
@@ -80,12 +80,12 @@ public class Movement {
                         .stream()
                         .filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN))
                         .findAny();
-                if (!opDown.isPresent()) {
+                if (opDown.isEmpty()) {
                     return;
                 }
                 mBlock = context.getMovingStructure().getBefore(opDown.get());
             }
-            if (!mBlock.isPresent()) {
+            if (mBlock.isEmpty()) {
                 ShipsPlugin.getPlugin().getDebugFile().addMessage("\tMovement.93 > Failed to find moving block");
                 return;
             }
@@ -142,7 +142,7 @@ public class Movement {
             Optional<MovingBlock> opLicence = context
                     .getMovingStructure()
                     .get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
-            if (!opLicence.isPresent()) {
+            if (opLicence.isEmpty()) {
                 vessel.set(MovingFlag.class, null);
                 context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
                 exception.accept(
@@ -198,8 +198,7 @@ public class Movement {
                 return;
             }
             context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing requirements:")));
-            if (vessel instanceof VesselRequirement) {
-                VesselRequirement requirement = (VesselRequirement) vessel;
+            if (vessel instanceof VesselRequirement requirement) {
                 try {
                     requirement.processRequirements(context);
                 } catch (MoveException e) {
@@ -245,7 +244,7 @@ public class Movement {
 
     }
 
-    public static class RotateLeftAroundPosition extends Movement {
+    public static final class RotateLeftAroundPosition extends Movement {
 
         private RotateLeftAroundPosition() {
 
@@ -254,7 +253,7 @@ public class Movement {
         public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context,
                 Consumer<? super Throwable> exception) {
             MovingBlockSet set = new MovingBlockSet();
-            vessel.getStructure().getPositions().forEach(s -> {
+            vessel.getStructure().getSyncedPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateLeft(rotateAround);
                 set.add(block);
             });
@@ -296,7 +295,7 @@ public class Movement {
         public void move(Vessel vessel, SyncBlockPosition rotateAround, MovementContext context,
                 Consumer<? super Throwable> exception) {
             MovingBlockSet set = new MovingBlockSet();
-            vessel.getStructure().getPositions().forEach(s -> {
+            vessel.getStructure().getSyncedPositions().forEach(s -> {
                 MovingBlock block = new SetMovingBlock(s, s).rotateRight(rotateAround);
                 set.add(block);
             });
@@ -305,7 +304,7 @@ public class Movement {
             context.setMidMovementProcess(mb -> {
                 BlockDetails blockDetails = mb.getStoredBlockData();
                 Optional<DirectionalData> opDirectional = blockDetails.getDirectionalData();
-                if (!(opDirectional.isPresent())) {
+                if (opDirectional.isEmpty()) {
                     Collection<Direction> opData = blockDetails.getAll(KeyedData.MULTI_DIRECTIONAL);
                     blockDetails.set(KeyedData.MULTI_DIRECTIONAL,
                             opData.stream().map(Direction::getRightAngleRight).collect(Collectors.toSet()));
@@ -324,7 +323,7 @@ public class Movement {
 
     }
 
-    public static class TeleportToPosition extends Movement {
+    public static final class TeleportToPosition extends Movement {
 
         private TeleportToPosition() {
 
@@ -346,7 +345,7 @@ public class Movement {
 
     }
 
-    public static class AddToPosition extends Movement {
+    public static final class AddToPosition extends Movement {
 
         private AddToPosition() {
         }

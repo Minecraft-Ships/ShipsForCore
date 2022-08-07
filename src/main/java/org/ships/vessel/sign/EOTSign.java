@@ -35,14 +35,13 @@ public class EOTSign implements ShipsSign {
             AText.ofPlain("Stop"));
 
     public Collection<Scheduler> getScheduler(Vessel vessel) {
-        return Collections.unmodifiableCollection(this.eot_scheduler.stream().filter(e -> {
+        return this.eot_scheduler.stream().filter(e -> {
             Runnable runnable = e.getExecutor();
-            if (!(runnable instanceof EOTExecutor)) {
+            if (!(runnable instanceof EOTExecutor exe)) {
                 return false;
             }
-            EOTExecutor exe = (EOTExecutor) runnable;
             return exe.getVessel().equals(vessel);
-        }).collect(Collectors.toSet()));
+        }).collect(Collectors.toUnmodifiableSet());
     }
 
     public boolean isAhead(SignTileEntity entity) {
@@ -69,7 +68,7 @@ public class EOTSign implements ShipsSign {
     @Override
     public boolean onSecondClick(@NotNull LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if (!opTile.isPresent()) {
+        if (opTile.isEmpty()) {
             return false;
         }
         LiveTileEntity lte = opTile.get();
@@ -82,17 +81,15 @@ public class EOTSign implements ShipsSign {
                 stes.setText(this.SIGN);
                 this.eot_scheduler.stream().filter(e -> {
                     Runnable runnable = e.getExecutor();
-                    if (!(runnable instanceof EOTExecutor)) {
+                    if (!(runnable instanceof EOTExecutor eotExecutor)) {
                         return false;
                     }
-                    EOTExecutor eotExecutor = (EOTExecutor) runnable;
                     return vessel.equals(eotExecutor.getVessel());
                 }).forEach(Scheduler::cancel);
             } else {
                 stes.setTextAt(1, AText.ofPlain("{Ahead}").withColour(NamedTextColours.GREEN));
                 stes.setTextAt(2, AText.ofPlain("Stop"));
-                Scheduler task = TranslateCore
-                        .createSchedulerBuilder()
+                Scheduler task = TranslateCore.getScheduleManager().schedule()
                         .setDisplayName("EOT: " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                         .setExecutor(new EOTExecutor(player, vessel))
                         .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())

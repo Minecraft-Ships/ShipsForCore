@@ -17,7 +17,7 @@ public interface UnderWaterType extends WaterType {
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         int height = pss.getYSize();
         Collection<Integer> values = new HashSet<>();
-        for (SyncBlockPosition position : pss.getPositions()) {
+        for (SyncBlockPosition position : pss.getSyncedPositions()) {
             if (values.contains(position.getY())) {
                 continue;
             }

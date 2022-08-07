@@ -434,7 +434,7 @@ public class CoreEventListener implements EventListener {
                                             }
                                             AText text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.process(
                                                     currentStructure);
-                                            int blockAmount = (currentStructure.getPositions().size() + 1);
+                                            int blockAmount = (currentStructure.getOriginalRelativePositions().size() + 1);
                                             finalBar.setTitle(text);
                                             finalBar.setValue(blockAmount, trackSize);
                                         })

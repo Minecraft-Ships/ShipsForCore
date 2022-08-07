@@ -132,7 +132,16 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
 
     @Deprecated(forRemoval = true)
     default Collection<SyncBlockPosition> getPositions() {
+        return this.getSyncedPositions();
+    }
+
+    default Collection<SyncBlockPosition> getSyncedPositions() {
         return this.getPositionsRelativeTo(this.getPosition());
+    }
+
+    default Collection<ASyncBlockPosition> getAsyncedPositions() {
+        return this.getPositions(
+                (Function<SyncBlockPosition, ASyncBlockPosition>) Position::toASync);
     }
 
     default <T extends BlockPosition> Collection<T> getPositions(

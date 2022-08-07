@@ -27,7 +27,6 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public interface MovementResult<E> {
 
@@ -232,32 +231,29 @@ public interface MovementResult<E> {
             }
             viewer.sendMessage(text);
 
-            if (!(viewer instanceof LivePlayer)) {
+            if (!(viewer instanceof LivePlayer player)) {
                 return;
             }
 
-            LivePlayer player = (LivePlayer) viewer;
-
-            Scheduler scheduler = TranslateCore
-                    .createSchedulerBuilder()
+            Scheduler scheduler = TranslateCore.getScheduleManager().schedule()
                     .setDisplayName("init display collide")
-                    .setExecutor(() -> {
+                    .setRunner((sch) -> {
                     })
                     .setDelay(0)
                     .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                     .build(ShipsPlugin.getPlugin());
 
-            List<SyncBlockPosition> list = collection.stream().map(Position::toSync).collect(Collectors.toList());
+            List<SyncBlockPosition> list = collection.stream().map(Position::toSync).toList();
 
             boolean toBedrock = false;
-            for (int A = 0; A < 5; A++) {
+            for (int a = 0; a < 5; a++) {
                 final boolean finalToBedrock = toBedrock;
-                scheduler = TranslateCore.createSchedulerBuilder()
+                scheduler = TranslateCore.getScheduleManager().schedule()
                         .setToRunAfter(scheduler)
                         .setDelay(6)
                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                        .setDisplayName("Display Block: " + A)
-                        .setExecutor(() -> list.forEach(bp -> {
+                        .setDisplayName("Display Block: " + a)
+                        .setRunner((sch) -> list.forEach(bp -> {
                             if (finalToBedrock) {
                                 bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player);
                             } else {
@@ -274,9 +270,9 @@ public interface MovementResult<E> {
     class NoSpeedSet implements MovementResult<Integer> {
 
         @Override
-        public void sendMessage(Vessel vessel, CommandViewer player, Integer value) {
+        public void sendMessage(Vessel vessel, CommandViewer viewer, Integer value) {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getNoSpeedSet();
-            player.sendMessage(formatMessage(message, vessel, player));
+            viewer.sendMessage(formatMessage(message, vessel, viewer));
         }
     }
 

@@ -67,7 +67,7 @@ public class ShipsUpdateBlockLoader {
                         .getTileEntity()
                         .orElseThrow(() -> new IllegalStateException("Could not get tile entity"))).load();
         PositionableShipsStructure apss = new AbstractPositionableShipsStructure(block);
-        blocks.getPositions().forEach(apss::addPosition);
+        blocks.getSyncedPositions().forEach(apss::addPosition);
         vessel.setStructure(apss);
         return vessel;
     }

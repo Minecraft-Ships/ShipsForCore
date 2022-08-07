@@ -318,7 +318,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         int specialBlockCount = 0;
         boolean burnerFound = false;
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for (SyncBlockPosition position : this.getStructure().getPositions()) {
+        for (SyncBlockPosition position : this.getStructure().getSyncedPositions()) {
             if (position.getBlockType().equals(BlockTypes.FIRE)) {
                 burnerFound = true;
             }
@@ -337,7 +337,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         if (this.isUsingBurner() && !burnerFound) {
             return true;
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getPositions().size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getOriginalRelativePositions().size());
         if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             return true;
         }
