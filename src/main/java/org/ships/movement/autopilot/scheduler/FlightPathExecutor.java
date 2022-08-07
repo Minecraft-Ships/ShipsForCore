@@ -29,13 +29,13 @@ public class FlightPathExecutor implements Runnable {
         this.vessel = vessel;
     }
 
+    public FlightPathType getVessel() {
+        return this.vessel;
+    }
+
     public FlightPathExecutor setVessel(FlightPathType type) {
         this.vessel = type;
         return this;
-    }
-
-    public FlightPathType getVessel() {
-        return this.vessel;
     }
 
     public Optional<CommandViewer> getViewer() {
@@ -60,10 +60,18 @@ public class FlightPathExecutor implements Runnable {
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
                 ServerBossBar bar = TranslateCore.createBossBar();
                 final ServerBossBar finalBar = bar;
-                this.vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> finalBar.register((LivePlayer) e));
+                this.vessel
+                        .getEntities()
+                        .stream()
+                        .filter(e -> e instanceof LivePlayer)
+                        .forEach(e -> finalBar.register((LivePlayer) e));
                 context.setBar(bar);
             }
-            context.setPostMovement(e -> this.vessel.setFlightPath(this.vessel.getFlightPath().get().createUpdatedPath(this.vessel.getPosition().getPosition(), this.vessel.getFlightPath().get().getEndingPosition())));
+            context.setPostMovement(e -> this.vessel.setFlightPath(this.vessel
+                    .getFlightPath()
+                    .get()
+                    .createUpdatedPath(this.vessel.getPosition().getPosition(),
+                            this.vessel.getFlightPath().get().getEndingPosition())));
             this.vessel.moveTo(this.vessel.getPosition().getWorld().getPosition(opVector.get()), context, exc -> {
                 if (exc instanceof MoveException) {
                     MoveException e = (MoveException) exc;
@@ -73,7 +81,13 @@ public class FlightPathExecutor implements Runnable {
                     if (this.viewer == null && this.vessel instanceof CrewStoredVessel) {
                         CrewStoredVessel vessel = (CrewStoredVessel) this.vessel;
                         vessel.getCrew(CrewPermission.CAPTAIN).forEach(p -> {
-                            LivePlayer player = TranslateCore.getServer().getOnlinePlayers().stream().filter(play -> play.getUniqueId().equals(p)).findAny().get();
+                            LivePlayer player = TranslateCore
+                                    .getServer()
+                                    .getOnlinePlayers()
+                                    .stream()
+                                    .filter(play -> play.getUniqueId().equals(p))
+                                    .findAny()
+                                    .get();
                             e.getMovement().sendMessage(player);
                         });
                     } else {

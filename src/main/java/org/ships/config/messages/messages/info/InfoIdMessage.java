@@ -18,7 +18,10 @@ public class InfoIdMessage implements Message<Vessel> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Id: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.VESSEL_ID.adapterText() + "%").withColour(NamedTextColours.GOLD));
+        return AText
+                .ofPlain("Id: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain("%" + Message.VESSEL_ID.adapterText() + "%").withColour(NamedTextColours.GOLD));
     }
 
     @Override

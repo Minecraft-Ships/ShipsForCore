@@ -33,11 +33,11 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractShipsVessel implements ShipsVessel {
 
-    protected @NotNull PositionableShipsStructure positionableShipsStructure;
     protected final @NotNull Map<UUID, CrewPermission> crewsPermission = new HashMap<>();
     protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
     protected final @NotNull CrewPermission defaultPermission = CrewPermission.DEFAULT;
     protected final @NotNull Map<String, Vector3<Double>> teleportPositions = new HashMap<>();
+    protected @NotNull PositionableShipsStructure positionableShipsStructure;
     protected @NotNull File file;
     protected @NotNull ShipType<? extends AbstractShipsVessel> type;
     protected @Nullable Integer maxSpeed;
@@ -47,7 +47,8 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected boolean isLoading = true;
     protected String cachedName;
 
-    public AbstractShipsVessel(@NotNull LiveTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
+    public AbstractShipsVessel(@NotNull LiveTileEntity licence,
+            @NotNull ShipType<? extends AbstractShipsVessel> type) throws NoLicencePresent {
         this.positionableShipsStructure = new AbstractPositionableShipsStructure(licence.getPosition());
         this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
                 "VesselData/" + this.getType().getId().replaceAll(":", ".") + "/" + this.getName() +
@@ -55,7 +56,8 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this.init(type);
     }
 
-    public AbstractShipsVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition position, @NotNull ShipType<? extends AbstractShipsVessel> type) {
+    public AbstractShipsVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition position,
+            @NotNull ShipType<? extends AbstractShipsVessel> type) {
         this.positionableShipsStructure = new AbstractPositionableShipsStructure(position);
         this.file = new File(
                 ShipsPlugin.getPlugin().getConfigFolder(),
@@ -83,7 +85,8 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     private void init(ShipType<? extends AbstractShipsVessel> type) {
-        ConfigurationStream.ConfigurationFile configuration = TranslateCore.createConfigurationFile(this.file, TranslateCore.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile configuration = TranslateCore.createConfigurationFile(this.file,
+                TranslateCore.getPlatform().getConfigFormat());
         this.file = configuration.getFile();
         this.type = type;
     }
@@ -233,7 +236,8 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                             entry.getKey(),
                             position.getRelative(vec.getX(), vec.getY(), vec.getZ()));
                 })
-                .collect(Collectors.toMap(AbstractMap.SimpleImmutableEntry::getKey, AbstractMap.SimpleImmutableEntry::getValue));
+                .collect(Collectors.toMap(AbstractMap.SimpleImmutableEntry::getKey,
+                        AbstractMap.SimpleImmutableEntry::getValue));
     }
 
     @Override

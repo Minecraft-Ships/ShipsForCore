@@ -68,7 +68,8 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        Set<CrewPermission> permissionsToShow = new HashSet<>(commandContext.getArgument(this, this.SHIP_CREW_PERMISSION_ARGUMENT));
+        Set<CrewPermission> permissionsToShow = new HashSet<>(
+                commandContext.getArgument(this, this.SHIP_CREW_PERMISSION_ARGUMENT));
 
         CrewStoredVessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
 

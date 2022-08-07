@@ -82,7 +82,8 @@ public class AltitudeSign implements ShipsSign {
                 }
 
                 @Override
-                protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+                protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(
+                        PositionableShipsStructure currentStructure, BlockPosition block) {
                     return OvertimeBlockFinderUpdate.BlockFindControl.USE;
                 }
 
@@ -94,14 +95,18 @@ public class AltitudeSign implements ShipsSign {
                         return;
                     }
                     player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
-                    e1.getFoundStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
+                    e1
+                            .getFoundStructure()
+                            .getPositions()
+                            .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                     TranslateCore
                             .getScheduleManager()
                             .schedule()
                             .setDisplayName("Unable to find ships sign")
                             .setDelay(5)
                             .setDelayUnit(TimeUnit.SECONDS)
-                            .setRunner((sch) -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player)))
+                            .setRunner(
+                                    (sch) -> e1.getFoundStructure().getPositions().forEach(bp -> bp.resetBlock(player)))
                             .build(ShipsPlugin.getPlugin())
                             .run();
                 }
@@ -158,7 +163,8 @@ public class AltitudeSign implements ShipsSign {
             }
 
             @Override
-            protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure, BlockPosition block) {
+            protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(
+                    PositionableShipsStructure currentStructure, BlockPosition block) {
                 int foundBlocks = currentStructure.getRelativePositions().size() + 1;
                 if (finalBar != null) {
                     finalBar.setTitle(AText.ofPlain(foundBlocks + " / " + blockLimit));
@@ -220,7 +226,8 @@ public class AltitudeSign implements ShipsSign {
         movement.sendMessage(viewer, (T) value);
     }
 
-    private void onVesselMove(CommandViewer player, BlockPosition position, ServerBossBar bar, int altitude, String line1, Vessel vessel) {
+    private void onVesselMove(CommandViewer player, BlockPosition position, ServerBossBar bar, int altitude,
+            String line1, Vessel vessel) {
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
         if (opFlag.isPresent() && bar != null) {
             if (opFlag.get()) {
@@ -230,7 +237,9 @@ public class AltitudeSign implements ShipsSign {
                 return;
             }
         }
-        MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement()).setPostMovement((e) -> ShipsSign.LOCKED_SIGNS.remove(position));
+        MovementContext context = new MovementContext()
+                .setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement())
+                .setPostMovement((e) -> ShipsSign.LOCKED_SIGNS.remove(position));
         context.setClicked(position);
         vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
             if (bar == null) {

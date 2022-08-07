@@ -47,7 +47,8 @@ public class NoGravityArgumentCommand implements ArgumentCommand {
         }
         LivePlayer player = (LivePlayer) source;
         player.setGravity(true);
-        player.sendMessage(AText.ofPlain("Other plugins maybe disrupted by this fix").withColour(NamedTextColours.YELLOW));
+        player.sendMessage(
+                AText.ofPlain("Other plugins maybe disrupted by this fix").withColour(NamedTextColours.YELLOW));
         return true;
     }
 }

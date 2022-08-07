@@ -59,7 +59,10 @@ public class ExpandedBlockList implements BlockList {
 
     @Override
     public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
-        Optional<BlockInstruction> opBi = this.originalBlocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny();
+        Optional<BlockInstruction> opBi = this.originalBlocks
+                .stream()
+                .filter(b -> b.getType().equals(blockInstruction.getType()))
+                .findAny();
         if (opBi.isPresent()) {
             opBi.get().setCollideType(blockInstruction.getCollideType());
         } else if (this.expandedOn != null) {

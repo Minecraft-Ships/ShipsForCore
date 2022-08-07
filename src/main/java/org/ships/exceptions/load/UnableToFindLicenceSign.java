@@ -11,7 +11,7 @@ public class UnableToFindLicenceSign extends LoadVesselException {
         this.shipsStructure = pss;
     }
 
-    public PositionableShipsStructure getFoundStructure(){
+    public PositionableShipsStructure getFoundStructure() {
         return this.shipsStructure;
     }
 }

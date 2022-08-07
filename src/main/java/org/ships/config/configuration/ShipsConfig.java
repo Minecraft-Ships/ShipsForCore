@@ -25,46 +25,115 @@ import java.util.Set;
 
 public class ShipsConfig implements Config.KnownNodes {
 
-    protected ConfigurationStream.ConfigurationFile file;
-
-    protected final ObjectDedicatedNode<BasicMovement, ConfigurationNode.KnownParser.SingleKnown<BasicMovement>> ADVANCED_MOVEMENT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_MOVEMENT, "Advanced", "Movement", "Default"), "Advanced.Block.Movement");
-    protected final ObjectDedicatedNode<BasicBlockFinder, ConfigurationNode.KnownParser.SingleKnown<BasicBlockFinder>> ADVANCED_BLOCKFINDER = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_BLOCK_FINDER, "Advanced", "BlockFinder", "Default"), "Advanced.Block.Finder");
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_TRACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder", "Track"), "Advanced.Block.Track", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack", "Limit"), "Advanced.Block.Movement.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack", "Delay"), "Advanced.Block.Movement.Stack.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_MOVEMENT_STACK_DELAYUNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced", "Movement", "Stack", "DelayUnit"), "Advanced.Block.Movement.Stack.DelayUnit");
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder", "Stack", "Delay"), "Advanced.Block.Finder.Stack.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_BLOCKFINDER_STACK_DELAYUNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced", "BlockFinder", "Stack", "DelayUnit"), "Advanced.Block.Finder.Stack.DelayUnit");
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder", "Stack", "Limit"), "Advanced.Block.Finder.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_ENTITYFINDER_STACK_LIMIT = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "EntityFinder", "Stack", "Limit"), "Advanced.Entity.Finder.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Delay"), "Running.EOT.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> EOT_DELAY_UNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "EOT", "DelayUnit"), "Running.EOT.DelayUnit");
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_SPEED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Speed"), "Running.EOT.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EOT_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "EOT", "Enabled"), "Running.EOT.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_DELAY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Delay"), "Running.Fall.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> FALL_DELAY_UNIT = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "Falling", "DelayUnit"), "Running.Fall.DelayUnit");
-    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_SPEED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Speed"), "Running.Fall.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> FALL_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "Falling", "Enabled"), "Running.Fall.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LICENCE_SIGN_TEXT_4TH = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Sign", "Licence", "Fourth"), "sign.licence.fourth");
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> VISIBLE_BOSS_BAR = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Bar", "Visible"), "Boss.Bar.Visible", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_AUTO = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Auto"), "Structure.Auto.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_CLICK = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Click"), "Structure.Click.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Movement", "Requirements", "Check", "Max", "BlockType"), "Movement.Requirements.Check.Max.BlockType", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> UPDATE_ENABLED = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Update", "Enabled"), "Update.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
+    @Deprecated(forRemoval = true)
+    public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command",
+                    "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<BasicMovement, ConfigurationNode.KnownParser.SingleKnown<BasicMovement>> ADVANCED_MOVEMENT = new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_MOVEMENT, "Advanced", "Movement",
+                    "Default"), "Advanced.Block.Movement");
+    protected final ObjectDedicatedNode<BasicBlockFinder,
+            ConfigurationNode.KnownParser.SingleKnown<BasicBlockFinder>> ADVANCED_BLOCKFINDER =
+            new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_BLOCK_FINDER, "Advanced",
+                    "BlockFinder", "Default"), "Advanced.Block.Finder");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_TRACK_LIMIT = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder",
+                    "Track"), "Advanced.Block.Track", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_LIMIT = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack",
+                    "Limit"), "Advanced.Block.Movement.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_DELAY = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack",
+                    "Delay"), "Advanced.Block.Movement.Stack.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_MOVEMENT_STACK_DELAYUNIT = new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced",
+                    "Movement", "Stack", "DelayUnit"), "Advanced.Block.Movement.Stack.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_DELAY = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder",
+                    "Stack", "Delay"), "Advanced.Block.Finder.Stack.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_BLOCKFINDER_STACK_DELAYUNIT = new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced",
+                    "BlockFinder", "Stack", "DelayUnit"), "Advanced.Block.Finder.Stack.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_LIMIT = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder",
+                    "Stack", "Limit"), "Advanced.Block.Finder.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_ENTITYFINDER_STACK_LIMIT = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "EntityFinder",
+                    "Stack", "Limit"), "Advanced.Entity.Finder.Stack.Limit", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_DELAY =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Delay"),
+            "Running.EOT.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> EOT_DELAY_UNIT = new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "EOT",
+                    "DelayUnit"), "Running.EOT.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> EOT_SPEED =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "EOT", "Speed"),
+            "Running.EOT.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EOT_ENABLED =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "EOT", "Enabled"),
+            "Running.EOT.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_DELAY =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Delay"),
+            "Running.Fall.Delay", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> FALL_DELAY_UNIT = new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Auto", "Falling",
+                    "DelayUnit"), "Running.Fall.DelayUnit");
+    protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> FALL_SPEED =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Auto", "Falling", "Speed"),
+            "Running.Fall.Speed", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> FALL_ENABLED =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Auto", "Falling", "Enabled"),
+            "Running.Fall.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LICENCE_SIGN_TEXT_4TH = new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Sign", "Licence",
+                    "Fourth"), "sign.licence.fourth");
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> VISIBLE_BOSS_BAR =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Bar", "Visible"),
+            "Boss.Bar.Visible", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_AUTO = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Auto"),
+            "Structure.Auto.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_CLICK = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Click"),
+            "Structure.Click.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Movement", "Requirements",
+                    "Check", "Max", "BlockType"), "Movement.Requirements.Check.Max.BlockType",
+            (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> UPDATE_ENABLED =
+            new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Update", "Enabled"),
+            "Update.Enabled", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final CollectionDedicatedNode<WorldExtent, Set<WorldExtent>,
-            ConfigurationNode.KnownParser.CollectionKnown<WorldExtent>> DISABLED_WORLDS = new CollectionDedicatedNode<>(new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_WORLD, "World", "Disabled"), "worlds.ignore");
-    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LOGIN_COMMAND = new ObjectDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Login", "Command"), "login.command");
+            ConfigurationNode.KnownParser.CollectionKnown<WorldExtent>> DISABLED_WORLDS = new CollectionDedicatedNode<>(
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_WORLD, "World", "Disabled"),
+            "worlds.ignore");
+    protected final ObjectDedicatedNode<String, ConfigurationNode.KnownParser.SingleKnown<String>> LOGIN_COMMAND =
+            new ObjectDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Login", "Command"),
+            "login.command");
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> SIGN_MOVE_SPEED =
             new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Sign",
                     "Move", "Speed"), "sign.move.speed", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_PREVENT_EXPLOSION = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Prevent", "Explosion"), "Structure.Prevent.Explosion", (f, v) -> f.set(v.getKey(), v.getValue()));
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EVENT_LOAD_FAIL_DELETE = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Event", "OnLoad", "Failed", "DeleteFile"), "Event.OnLoad.Failed.DeleteFile", (f, v) -> f.set(v.getKey(), v.getValue()));
-
-    @Deprecated(forRemoval = true)
-    public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command", "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_PREVENT_EXPLOSION = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Prevent",
+                    "Explosion"), "Structure.Prevent.Explosion", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> EVENT_LOAD_FAIL_DELETE = new RawDedicatedNode<>(
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Event", "OnLoad", "Failed",
+                    "DeleteFile"), "Event.OnLoad.Failed.DeleteFile", (f, v) -> f.set(v.getKey(), v.getValue()));
+    protected ConfigurationStream.ConfigurationFile file;
 
     public ShipsConfig() {
-        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Config." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                "Configuration/Config." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modified = false;
         if (!this.file.getFile().exists()) {
@@ -268,7 +337,9 @@ public class ShipsConfig implements Config.KnownNodes {
         if (!file.delete() && exist) {
             throw new IllegalStateException("Failed to create the config. Something went wrong");
         }
-        Optional<ConfigurationStream.ConfigurationFile> opConfig = ShipsPlugin.getPlugin().createConfig("Config.yml", file);
+        Optional<ConfigurationStream.ConfigurationFile> opConfig = ShipsPlugin
+                .getPlugin()
+                .createConfig("Config.yml", file);
         if (opConfig.isPresent()) {
             this.file = opConfig.get();
         } else {

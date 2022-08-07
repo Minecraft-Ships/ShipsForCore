@@ -18,16 +18,14 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
 public class Ships6AsyncBlockFinder implements BasicBlockFinder {
 
-    private Vessel vessel;
     protected int limit;
+    private Vessel vessel;
     private BlockList list;
 
     @Override
@@ -50,7 +48,8 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
+            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         int limit = this.limit;
         TranslateCore
                 .getScheduleManager()
@@ -59,7 +58,8 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(0)
                 .setRunner((scheduler) -> {
-                    PositionableShipsStructure structure = new AbstractPositionableShipsStructure(Position.toSync(position));
+                    PositionableShipsStructure structure = new AbstractPositionableShipsStructure(
+                            Position.toSync(position));
                     Collection<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new HashSet<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
                     int addedBlocks = 1;
@@ -74,19 +74,29 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                 return;
                             }
                             final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
-                            Stream.of(directions).filter(direction -> !posEntry.getValue().equals(direction.getOpposite())).forEach(direction -> {
-                                ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
-                                Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
-                                BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
-                                if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
-                                    if (positions.contains(vector) || finalToProcess.parallelStream().anyMatch(entry -> entry.getKey().equals(block))) {
-                                        return;
-                                    }
-                                    if (next.parallelStream().noneMatch(b -> b.getKey().getPosition().equals(block.getPosition()))) {
-                                        next.add(new AbstractMap.SimpleImmutableEntry<>(block, direction));
-                                    }
-                                }
-                            });
+                            Stream
+                                    .of(directions)
+                                    .filter(direction -> !posEntry.getValue().equals(direction.getOpposite()))
+                                    .forEach(direction -> {
+                                        ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
+                                        Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
+                                        BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
+                                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+                                            if (positions.contains(vector) || finalToProcess
+                                                    .parallelStream()
+                                                    .anyMatch(entry -> entry.getKey().equals(block))) {
+                                                return;
+                                            }
+                                            if (next
+                                                    .parallelStream()
+                                                    .noneMatch(b -> b
+                                                            .getKey()
+                                                            .getPosition()
+                                                            .equals(block.getPosition()))) {
+                                                next.add(new AbstractMap.SimpleImmutableEntry<>(block, direction));
+                                            }
+                                        }
+                                    });
                             OvertimeBlockFinderUpdate.BlockFindControl blockFind =
                                     runAfterFullSearch.onBlockFind(structure, posEntry.getKey());
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {

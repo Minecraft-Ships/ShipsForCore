@@ -56,11 +56,11 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         boolean was = false;
         for (; target < plain.length(); target++) {
             char at = plain.charAt(target);
-            if (at!='!') {
+            if (at != '!') {
                 was = false;
                 continue;
             }
-            if (before!=null) {
+            if (before != null) {
                 if (was) {
                     break;
                 }
@@ -74,7 +74,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
             }
             was = true;
         }
-        if (before==null || target==plain.length() && !plain.endsWith("!!")) {
+        if (before == null || target == plain.length() && !plain.endsWith("!!")) {
             return false;
         }
         String adaptingWithFormat = plain.substring(before, target + 1);
@@ -84,10 +84,10 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         }
         int startAt = adapting.length() - 1;
         for (; startAt >= -1; startAt--) {
-            if (startAt==-1) {
+            if (startAt == -1) {
                 return false;
             }
-            if (adapting.charAt(startAt)=='[') {
+            if (adapting.charAt(startAt) == '[') {
                 break;
             }
         }
@@ -112,11 +112,11 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         boolean was = false;
         for (; target < plain.length(); target++) {
             char at = plain.charAt(target);
-            if (at!='!') {
+            if (at != '!') {
                 was = false;
                 continue;
             }
-            if (before!=null) {
+            if (before != null) {
                 if (was) {
                     break;
                 }
@@ -130,7 +130,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
             }
             was = true;
         }
-        if (before==null || target==plain.length() && !plain.endsWith("!!")) {
+        if (before == null || target == plain.length() && !plain.endsWith("!!")) {
             return message;
         }
         String adaptingWithFormat = plain.substring(before, target + 1);
@@ -140,10 +140,10 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         }
         int startAt = adapting.length() - 1;
         for (; startAt >= -1; startAt--) {
-            if (startAt==-1) {
+            if (startAt == -1) {
                 return message;
             }
-            if (adapting.charAt(startAt)=='[') {
+            if (adapting.charAt(startAt) == '[') {
                 break;
             }
         }
@@ -161,12 +161,20 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
                 .parallelStream()
                 .filter(ma -> {
                     boolean check = ma.containsAdapter("%" + adapterText + "%");
-                    TranslateCore.getConsole().sendMessage(AText.ofPlain("MA: " + ma.adapterText() + ": Check:  " + check).withColour(NamedTextColours.RED));
+                    TranslateCore
+                            .getConsole()
+                            .sendMessage(AText
+                                    .ofPlain("MA: " + ma.adapterText() + ": Check:  " + check)
+                                    .withColour(NamedTextColours.RED));
                     return check;
                 })
                 .map(ma -> {
                     AText process = ma.process(AText.ofPlain("%" + adapterText + "%"), indexedValue);
-                    TranslateCore.getConsole().sendMessage(AText.ofPlain("MA: " + ma.adapterText() + ": Value: " + process.toPlain()).withColour(NamedTextColours.RED));
+                    TranslateCore
+                            .getConsole()
+                            .sendMessage(AText
+                                    .ofPlain("MA: " + ma.adapterText() + ": Value: " + process.toPlain())
+                                    .withColour(NamedTextColours.RED));
                     return process;
                 })
                 .findAny();

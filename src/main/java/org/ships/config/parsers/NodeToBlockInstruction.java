@@ -15,26 +15,42 @@ public class NodeToBlockInstruction implements StringMapParser<BlockInstruction>
 
     @Override
     public Optional<BlockInstruction> parse(Map<String, String> original) {
-        Optional<Map.Entry<String, String>> opBlockType = original.entrySet().stream().filter(e -> e.getKey().equals(NodeToBlockInstruction.this.BLOCK_TYPE)).findAny();
-        Optional<Map.Entry<String, String>> opCollideType = original.entrySet().stream().filter(e -> e.getKey().equals(NodeToBlockInstruction.this.COLLIDE_TYPE)).findAny();
-        Optional<Map.Entry<String, String>> opLimit = original.entrySet().stream().filter(e -> e.getKey().equals(NodeToBlockInstruction.this.BLOCK_LIMIT)).findAny();
-        if(!opBlockType.isPresent()){
+        Optional<Map.Entry<String, String>> opBlockType = original
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().equals(NodeToBlockInstruction.this.BLOCK_TYPE))
+                .findAny();
+        Optional<Map.Entry<String, String>> opCollideType = original
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().equals(NodeToBlockInstruction.this.COLLIDE_TYPE))
+                .findAny();
+        Optional<Map.Entry<String, String>> opLimit = original
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().equals(NodeToBlockInstruction.this.BLOCK_LIMIT))
+                .findAny();
+        if (!opBlockType.isPresent()) {
             return Optional.empty();
         }
         String blockType = opBlockType.get().getValue();
 
         //something wrong with OPBlockType, value of null
-        if(blockType == null){
+        if (blockType == null) {
             return Optional.empty();
         }
 
         Optional<BlockType> opType = Parser.STRING_TO_BLOCK_TYPE.parse(blockType);
-        if(!opType.isPresent()){
+        if (!opType.isPresent()) {
             return Optional.empty();
         }
         BlockInstruction bi = new BlockInstruction(opType.get());
-        opCollideType.flatMap(stringStringEntry -> ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(stringStringEntry.getValue())).ifPresent(bi::setCollideType);
-        opLimit.flatMap(stringLimit -> Parser.STRING_TO_INTEGER.parse(stringLimit.getValue())).ifPresent(bi::setBlockLimit);
+        opCollideType
+                .flatMap(stringStringEntry -> ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(stringStringEntry.getValue()))
+                .ifPresent(bi::setCollideType);
+        opLimit
+                .flatMap(stringLimit -> Parser.STRING_TO_INTEGER.parse(stringLimit.getValue()))
+                .ifPresent(bi::setBlockLimit);
         return Optional.of(bi);
     }
 

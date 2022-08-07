@@ -8,11 +8,27 @@ import org.ships.vessel.common.types.Vessel;
 
 public class ResultEvent implements VesselEvent {
 
+    private final Vessel vessel;
+    private final Result result;
+    public ResultEvent(Vessel vessel, Result result) {
+        this.vessel = vessel;
+        this.result = result;
+    }
+
+    public Result getResult() {
+        return this.result;
+    }
+
+    @Override
+    public Vessel getVessel() {
+        return this.vessel;
+    }
+
     public static class PreRun extends ResultEvent implements Cancellable {
 
-        private boolean isCancelled;
         private final Result.Run run;
         private final MovementContext context;
+        private boolean isCancelled;
 
         public PreRun(Vessel vessel, Result result, Result.Run run, MovementContext context) {
             super(vessel, result);
@@ -37,22 +53,5 @@ public class ResultEvent implements VesselEvent {
         public void setCancelled(boolean value) {
             this.isCancelled = value;
         }
-    }
-
-    private final Vessel vessel;
-    private final Result result;
-
-    public ResultEvent(Vessel vessel, Result result) {
-        this.vessel = vessel;
-        this.result = result;
-    }
-
-    public Result getResult() {
-        return this.result;
-    }
-
-    @Override
-    public Vessel getVessel() {
-        return this.vessel;
     }
 }

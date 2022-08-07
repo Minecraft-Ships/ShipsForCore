@@ -40,7 +40,7 @@ public interface ShipsStructure {
         Integer max = null;
         for (Vector3<Integer> vector : this.getRelativePositions()) {
             int value = function.apply(vector);
-            if (min==null && max==null) {
+            if (min == null && max == null) {
                 max = value;
                 min = value;
                 continue;
@@ -52,7 +52,7 @@ public interface ShipsStructure {
                 max = value;
             }
         }
-        if (min==0 && max==0) {
+        if (min == 0 && max == 0) {
             return 0;
         }
         return max - min;

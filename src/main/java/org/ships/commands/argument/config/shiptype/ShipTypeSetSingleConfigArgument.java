@@ -55,7 +55,7 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
         return this.runGeneric(commandContext, args);
     }
 
-    private <T> boolean runGeneric(CommandContext commandContext, String... args){
+    private <T> boolean runGeneric(CommandContext commandContext, String... args) {
         ShipType<?> type = commandContext.getArgument(this, SHIP_TYPE);
         ConfigurationNode.KnownParser.SingleKnown<T> parser = commandContext.getArgument(this, CONFIG_KEY);
         T value = commandContext.getArgument(this, CONFIG_VALUE);
@@ -63,7 +63,7 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
         file.set(parser, value);
         file.save();
 
-        if(!(commandContext.getSource() instanceof CommandViewer)){
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
             return true;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();

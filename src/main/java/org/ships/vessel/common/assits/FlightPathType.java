@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface FlightPathType extends Vessel {
 
     Optional<FlightPath> getFlightPath();
+
     FlightPathType setFlightPath(FlightPath path);
 }

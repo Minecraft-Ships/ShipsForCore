@@ -34,17 +34,18 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-            if (vessel instanceof Fallable) {
-                return true;
-            }
-            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                User player = (User) source;
-                return crewVessel.getPermission(player.getUniqueId()).canCommand();
-            }
-            return vessel instanceof VesselRequirement;
-        }, vessel -> "Does not have any requirements"), new ExactArgument(this.SHIP_CHECK_ARGUMENT));
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
+                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
+                    if (vessel instanceof Fallable) {
+                        return true;
+                    }
+                    if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
+                        CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
+                        User player = (User) source;
+                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                    }
+                    return vessel instanceof VesselRequirement;
+                }, vessel -> "Does not have any requirements"), new ExactArgument(this.SHIP_CHECK_ARGUMENT));
     }
 
     @Override

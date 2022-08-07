@@ -77,7 +77,8 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
             }
         });
         if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain("Added crew member(s)").withColour(NamedTextColours.AQUA));
+            ((CommandViewer) commandContext.getSource()).sendMessage(
+                    AText.ofPlain("Added crew member(s)").withColour(NamedTextColours.AQUA));
         }
         return true;
     }

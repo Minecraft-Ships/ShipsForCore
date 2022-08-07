@@ -2,8 +2,8 @@ package org.ships.movement;
 
 class PackagedBlockPriority implements BlockPriority {
 
-    private int number;
     private final String name;
+    private int number;
 
     PackagedBlockPriority(String name, int priority) {
         this.number = priority;

@@ -10,7 +10,9 @@ import java.util.Map;
 public interface FileBasedVessel extends Vessel {
 
     File getFile();
+
     Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file);
+
     FileBasedVessel deserializeExtra(ConfigurationStream file);
 
 

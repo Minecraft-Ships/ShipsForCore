@@ -16,18 +16,17 @@ import java.util.function.Predicate;
 
 public class MovingBlockSet extends HashSet<MovingBlock> {
 
-    private MovingBlockSet blocks;
-
     public static final Comparator<MovingBlock> ORDER_ON_PRIORITY = (o1, o2) -> {
         int p1 = o1.getBlockPriority().getPriorityNumber();
         int p2 = o2.getBlockPriority().getPriorityNumber();
-        if (p1==p2) {
+        if (p1 == p2) {
             return 0;
         } else if (p1 > p2) {
             return 1;
         }
         return -1;
     };
+    private MovingBlockSet blocks;
 
     public MovingBlockSet() {
 
@@ -80,7 +79,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public MovingBlockSet getOriginal() {
-        if (this.blocks==null) {
+        if (this.blocks == null) {
             return this;
         }
         return this.blocks;
@@ -118,8 +117,9 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> getBefore(Positionable<?> positionable) {
-        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition) positionable.getPosition()
-                :((SyncExactPosition) positionable.getPosition()).toBlockPosition();
+        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ?
+                (SyncBlockPosition) positionable.getPosition()
+                : ((SyncExactPosition) positionable.getPosition()).toBlockPosition();
         return this.getBefore(position);
     }
 
@@ -128,7 +128,9 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> getAfter(Positionable<?> positionable) {
-        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition) positionable.getPosition():((SyncExactPosition) positionable.getPosition()).toBlockPosition();
+        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ?
+                (SyncBlockPosition) positionable.getPosition() :
+                ((SyncExactPosition) positionable.getPosition()).toBlockPosition();
         return this.getAfter(position);
     }
 
@@ -136,7 +138,8 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
         return this.get(position, MovingBlock::getAfterPosition);
     }
 
-    private Optional<MovingBlock> get(SyncBlockPosition position, Function<? super MovingBlock, ? extends SyncBlockPosition> function) {
+    private Optional<MovingBlock> get(SyncBlockPosition position,
+            Function<? super MovingBlock, ? extends SyncBlockPosition> function) {
         return this.stream().filter(f -> {
             SyncBlockPosition pos = function.apply(f);
             return pos.equals(position);

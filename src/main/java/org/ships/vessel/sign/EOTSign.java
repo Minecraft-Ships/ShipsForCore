@@ -101,7 +101,9 @@ public class EOTSign implements ShipsSign {
                 task.run();
                 this.eot_scheduler.add(task);
             }
-        }, ex -> player.sendMessage(AText.ofPlain("Could not find connected ship (" + ex.getMessage() + ")").withColour(NamedTextColours.RED)));
+        }, ex -> player.sendMessage(AText
+                .ofPlain("Could not find connected ship (" + ex.getMessage() + ")")
+                .withColour(NamedTextColours.RED)));
         return false;
     }
 

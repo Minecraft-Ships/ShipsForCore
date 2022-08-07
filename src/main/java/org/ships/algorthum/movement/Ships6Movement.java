@@ -20,72 +20,6 @@ import java.util.stream.Stream;
 
 public class Ships6Movement implements BasicMovement {
 
-    private static class RemoveBlocks implements Runnable {
-
-        private final List<? extends MovingBlock> toProcess;
-        private final int waterLevel;
-        private final int attempt;
-        private final MovementContext context;
-
-        private RemoveBlocks(int level, int attempt, MovementContext context, List<? extends MovingBlock> blocks) {
-            this.toProcess = blocks;
-            this.waterLevel = level;
-            this.attempt = attempt;
-            this.context = context;
-        }
-
-        @Override
-        public void run() {
-            for (int A = 0; A < this.toProcess.size(); A++) {
-                final int B = A;
-                this.context.getBar().ifPresent(bar -> {
-                    try {
-                        bar.setValue((this.attempt - 1) + B, this.context.getMovingStructure().size());
-                    } catch (IllegalArgumentException ignore) {
-                    }
-                });
-                MovingBlock m = this.toProcess.get(A);
-                if (this.waterLevel >= m.getBeforePosition().getY()) {
-                    m.removeBeforePositionUnderWater();
-                } else {
-                    m.removeBeforePositionOverAir();
-                }
-            }
-        }
-    }
-
-    private static class SetBlocks implements Runnable {
-
-        private final List<? extends MovingBlock> toProcess;
-        private final int attempt;
-        private final MovementContext context;
-        private final int totalBlocks;
-
-
-        private SetBlocks(int attempt, int totalBlocks, MovementContext context, List<? extends MovingBlock> blocks) {
-            this.toProcess = blocks;
-            this.context = context;
-            this.attempt = attempt;
-            this.totalBlocks = totalBlocks;
-        }
-
-        @Override
-        public void run() {
-            for (int A = 0; A < this.toProcess.size(); A++) {
-                MovingBlock m = this.toProcess.get(A);
-                final int B = A;
-                this.context.getBar().ifPresent(bar -> {
-                    try {
-                        bar.setValue(this.attempt * B, (this.totalBlocks * 2) + 1);
-                    } catch (IllegalArgumentException ignore) {
-                    }
-                });
-                Stream.of(this.context.getMidMovementProcess()).forEach(mid -> mid.move(m));
-                m.setMovingTo();
-            }
-        }
-    }
-
     @Override
     public Result move(Vessel vessel, MovementContext context) throws MoveException {
         context.getBar().ifPresent(b -> b.setValue(0));
@@ -179,5 +113,71 @@ public class Ships6Movement implements BasicMovement {
     @Override
     public String getName() {
         return "Ships 6 Movement";
+    }
+
+    private static class RemoveBlocks implements Runnable {
+
+        private final List<? extends MovingBlock> toProcess;
+        private final int waterLevel;
+        private final int attempt;
+        private final MovementContext context;
+
+        private RemoveBlocks(int level, int attempt, MovementContext context, List<? extends MovingBlock> blocks) {
+            this.toProcess = blocks;
+            this.waterLevel = level;
+            this.attempt = attempt;
+            this.context = context;
+        }
+
+        @Override
+        public void run() {
+            for (int A = 0; A < this.toProcess.size(); A++) {
+                final int B = A;
+                this.context.getBar().ifPresent(bar -> {
+                    try {
+                        bar.setValue((this.attempt - 1) + B, this.context.getMovingStructure().size());
+                    } catch (IllegalArgumentException ignore) {
+                    }
+                });
+                MovingBlock m = this.toProcess.get(A);
+                if (this.waterLevel >= m.getBeforePosition().getY()) {
+                    m.removeBeforePositionUnderWater();
+                } else {
+                    m.removeBeforePositionOverAir();
+                }
+            }
+        }
+    }
+
+    private static class SetBlocks implements Runnable {
+
+        private final List<? extends MovingBlock> toProcess;
+        private final int attempt;
+        private final MovementContext context;
+        private final int totalBlocks;
+
+
+        private SetBlocks(int attempt, int totalBlocks, MovementContext context, List<? extends MovingBlock> blocks) {
+            this.toProcess = blocks;
+            this.context = context;
+            this.attempt = attempt;
+            this.totalBlocks = totalBlocks;
+        }
+
+        @Override
+        public void run() {
+            for (int A = 0; A < this.toProcess.size(); A++) {
+                MovingBlock m = this.toProcess.get(A);
+                final int B = A;
+                this.context.getBar().ifPresent(bar -> {
+                    try {
+                        bar.setValue(this.attempt * B, (this.totalBlocks * 2) + 1);
+                    } catch (IllegalArgumentException ignore) {
+                    }
+                });
+                Stream.of(this.context.getMidMovementProcess()).forEach(mid -> mid.move(m));
+                m.setMovingTo();
+            }
+        }
     }
 }

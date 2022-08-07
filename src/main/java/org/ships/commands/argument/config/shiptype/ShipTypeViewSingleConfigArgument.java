@@ -63,7 +63,9 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
             viewer.sendMessage(AText.ofPlain("No Value found at node. Is it for this ShipType?"));
             return true;
         }
-        viewer.sendMessage(AText.ofPlain("Value is '" + parser.getParser().unparse(opResult.get()) + "'").withColour(NamedTextColours.AQUA));
+        viewer.sendMessage(AText
+                .ofPlain("Value is '" + parser.getParser().unparse(opResult.get()) + "'")
+                .withColour(NamedTextColours.AQUA));
         return true;
     }
 }

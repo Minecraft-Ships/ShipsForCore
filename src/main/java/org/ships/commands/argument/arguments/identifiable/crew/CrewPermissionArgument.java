@@ -12,9 +12,9 @@ public class CrewPermissionArgument extends ShipIdentifiableArgument<CrewPermiss
     }
 
     public CrewPermissionArgument(String id,
-                                  Class<CrewPermission> type,
-                                  TriPredicate<? super CommandContext, ?
-                                          super CommandArgumentContext<CrewPermission>, ? super CrewPermission> predicate) {
+            Class<CrewPermission> type,
+            TriPredicate<? super CommandContext, ?
+                    super CommandArgumentContext<CrewPermission>, ? super CrewPermission> predicate) {
         super(id, type, predicate);
     }
 }

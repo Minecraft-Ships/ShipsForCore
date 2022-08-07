@@ -18,7 +18,10 @@ public class InfoSizeMessage implements Message<Vessel> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Current Size: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.VESSEL_SIZE.adapterText() + "%").withColour(NamedTextColours.GOLD));
+        return AText
+                .ofPlain("Current Size: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain("%" + Message.VESSEL_SIZE.adapterText() + "%").withColour(NamedTextColours.GOLD));
     }
 
     @Override

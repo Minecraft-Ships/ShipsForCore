@@ -18,7 +18,10 @@ public class InfoFlagMessage implements Message<VesselFlag<?>> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Flags: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(Message.VESSEL_FLAG_ID.adapterTextFormat()).withColour(NamedTextColours.GOLD));
+        return AText
+                .ofPlain("Flags: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(Message.VESSEL_FLAG_ID.adapterTextFormat()).withColour(NamedTextColours.GOLD));
     }
 
     @Override

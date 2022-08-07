@@ -31,13 +31,13 @@ import java.util.*;
 
 public class WaterShip extends AbstractShipsVessel implements WaterType, Fallable, VesselRequirement {
 
-    protected Float specialBlockPercent;
-    protected Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();
-
     protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
     protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special",
+                    "Type");
+    protected Float specialBlockPercent;
+    protected Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();
 
     public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -50,7 +50,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     public float getSpecialBlockPercent() {
-        if (this.specialBlockPercent==null) {
+        if (this.specialBlockPercent == null) {
             return this.getType().getDefaultSpecialBlockPercent();
         }
         return this.specialBlockPercent;
@@ -80,9 +80,11 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         if (!context.isStrictMovement()) {
             return;
         }
-        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
+        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition,
+                context.getMovingStructure());
         if (!opWaterLevel.isPresent()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND,
+                    Collections.singletonList(BlockTypes.WATER)));
         }
         int specialBlockCount = 0;
         for (MovingBlock movingBlock : context.getMovingStructure()) {
@@ -91,9 +93,15 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
                 specialBlockCount++;
             }
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f) / (context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count()));
-        if ((this.getSpecialBlockPercent()!=0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
+        float specialBlockPercent = ((specialBlockCount * 100.0f) / (context
+                .getMovingStructure()
+                .stream()
+                .filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR))
+                .count()));
+        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT,
+                    new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(),
+                            this.getSpecialBlockPercent(), specialBlockPercent)));
         }
     }
 
@@ -121,7 +129,8 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     @Override
     public @NotNull Map<String, String> getExtraInformation() {
         Map<String, String> map = new HashMap<>();
-        map.put("Special Block", ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
+        map.put("Special Block",
+                ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
         map.put("Required Percent", this.getSpecialBlockPercent() + "");
         return map;
     }
@@ -144,6 +153,6 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
             return true;
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getPositions().size());
-        return (!(this.getSpecialBlockPercent()==0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
+        return (!(this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
     }
 }

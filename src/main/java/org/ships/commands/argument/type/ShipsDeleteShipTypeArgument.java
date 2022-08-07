@@ -68,10 +68,11 @@ public class ShipsDeleteShipTypeArgument implements ArgumentCommand {
                     return false;
                 }
             }).count();
-            if (count!=vessels.size()) {
+            if (count != vessels.size()) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(AText.ofPlain("Could not delete. Could not convert all vessels " +
-                            "into " + type.getOriginType().getId() + ". Did convert " + count));
+                    ((CommandViewer) source).sendMessage(
+                            AText.ofPlain("Could not delete. Could not convert all vessels " +
+                                    "into " + type.getOriginType().getId() + ". Did convert " + count));
                 }
                 return;
             }

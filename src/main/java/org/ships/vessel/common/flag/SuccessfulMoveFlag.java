@@ -5,15 +5,7 @@ import org.core.config.parser.StringParser;
 
 import java.util.Optional;
 
-public class SuccessfulMoveFlag implements VesselFlag<Boolean>{
-
-    public static class Builder extends VesselFlag.Builder<Boolean, SuccessfulMoveFlag> {
-
-        @Override
-        protected SuccessfulMoveFlag buildEmpty() {
-            return new SuccessfulMoveFlag();
-        }
-    }
+public class SuccessfulMoveFlag implements VesselFlag<Boolean> {
 
     private boolean successful;
 
@@ -45,5 +37,13 @@ public class SuccessfulMoveFlag implements VesselFlag<Boolean>{
     @Override
     public String getName() {
         return "Has successfully moved";
+    }
+
+    public static class Builder extends VesselFlag.Builder<Boolean, SuccessfulMoveFlag> {
+
+        @Override
+        protected SuccessfulMoveFlag buildEmpty() {
+            return new SuccessfulMoveFlag();
+        }
     }
 }

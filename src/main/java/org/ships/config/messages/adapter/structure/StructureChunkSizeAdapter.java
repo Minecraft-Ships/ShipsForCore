@@ -7,7 +7,6 @@ import org.ships.vessel.structure.ShipsStructure;
 
 import java.security.SecureRandom;
 import java.util.Collections;
-import java.util.Random;
 import java.util.Set;
 
 public class StructureChunkSizeAdapter implements MessageAdapter<ShipsStructure> {

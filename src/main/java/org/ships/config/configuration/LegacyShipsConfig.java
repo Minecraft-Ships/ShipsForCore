@@ -14,14 +14,25 @@ import java.util.Optional;
 
 public class LegacyShipsConfig implements Config {
 
+    public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_STRUCTURE_LIMITS_AIR_CHECK_GAP =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Structure", "StructureLimits", "airCheckGap");
+    public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Structure", "StructureLimits", "trackLimit");
+    public final ConfigurationNode.KnownParser.SingleKnown<Boolean> LEGACY_SIGN_FORCE_USER_NAME_ON_SIGN =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_BOOLEAN, "Structure", "Signs", "ForceUsernameOnLicenceSign");
+    public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_SIGN_EOT_REPEAT =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Structure", "Signs", "EOT", "repeat");
+    public final ConfigurationNode.KnownParser.SingleKnown<Boolean> LEGACY_SIGN_EOT_ENABLED =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_BOOLEAN, "Structure", "Signs", "EOT", "enabled");
+    public final ConfigurationNode.KnownParser.SingleKnown<Boolean> LEGACY_INVENTORY_KEEP_INVENTORY_OPEN =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_BOOLEAN, "Structure", "Signs", "keepInventorysOpen");
     protected final ConfigurationStream.ConfigurationFile configuration;
-
-    public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_STRUCTURE_LIMITS_AIR_CHECK_GAP = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Structure", "StructureLimits", "airCheckGap");
-    public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Structure", "StructureLimits", "trackLimit");
-    public final ConfigurationNode.KnownParser.SingleKnown<Boolean> LEGACY_SIGN_FORCE_USER_NAME_ON_SIGN = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Signs", "ForceUsernameOnLicenceSign");
-    public final ConfigurationNode.KnownParser.SingleKnown<Integer> LEGACY_SIGN_EOT_REPEAT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Structure", "Signs", "EOT", "repeat");
-    public final ConfigurationNode.KnownParser.SingleKnown<Boolean> LEGACY_SIGN_EOT_ENABLED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Signs", "EOT", "enabled");
-    public final ConfigurationNode.KnownParser.SingleKnown<Boolean> LEGACY_INVENTORY_KEEP_INVENTORY_OPEN = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Signs", "keepInventorysOpen");
 
     public LegacyShipsConfig() {
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Config.yml");
@@ -49,7 +60,9 @@ public class LegacyShipsConfig implements Config {
         Optional<Integer> opTrack = this.getFile().getInteger(this.LEGACY_STRUCTURE_LIMITS_TRACK_LIMIT);
         this.configuration.getFile().delete();
         ShipsConfig config = new ShipsConfig();
-        opForceUsername.ifPresent(b -> config.file.set(config.LICENCE_SIGN_TEXT_4TH.getNode(), Parser.STRING_TO_STRING_PARSER, b ? "%PlayerN%":""));
+        opForceUsername.ifPresent(
+                b -> config.file.set(config.LICENCE_SIGN_TEXT_4TH.getNode(), Parser.STRING_TO_STRING_PARSER,
+                        b ? "%PlayerN%" : ""));
         opEOTRepeat.ifPresent(t -> {
             config.file.set(config.EOT_DELAY.getNode(), t);
             config.file.set(config.EOT_DELAY_UNIT.getNode(), TimeUnit.MINECRAFT_TICKS);

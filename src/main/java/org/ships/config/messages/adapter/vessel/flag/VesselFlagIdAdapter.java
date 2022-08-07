@@ -22,6 +22,8 @@ public class VesselFlagIdAdapter implements MessageAdapter<VesselFlag<?>> {
 
     @Override
     public AText process(AText message, VesselFlag<?> obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(Else.canCast(obj, VesselFlag.Serializable.class, (v) -> v.getId() + ":" + v.serialize(), Identifiable::getId)));
+        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(
+                Else.canCast(obj, VesselFlag.Serializable.class, (v) -> v.getId() + ":" + v.serialize(),
+                        Identifiable::getId)));
     }
 }

@@ -40,7 +40,8 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
         }, v -> "Your crew permission does not allow for commands");
     }
 
-    public ShipIdArgument(String id, BiPredicate<? super CommandSource, ? super Vessel> predicate, Function<? super Vessel, String> failMessage) {
+    public ShipIdArgument(String id, BiPredicate<? super CommandSource, ? super Vessel> predicate,
+            Function<? super Vessel, String> failMessage) {
         this.id = id;
         this.predicate = predicate;
         this.failMessage = failMessage;
@@ -52,7 +53,8 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
     }
 
     @Override
-    public CommandArgumentResult<V> parse(CommandContext context, CommandArgumentContext<V> argument) throws IOException {
+    public CommandArgumentResult<V> parse(CommandContext context, CommandArgumentContext<V> argument) throws
+            IOException {
         String id = context.getCommand()[argument.getFirstArgument()];
         Optional<IdentifiableShip> opVessel = ShipsPlugin
                 .getPlugin()

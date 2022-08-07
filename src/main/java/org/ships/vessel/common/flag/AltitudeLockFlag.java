@@ -7,21 +7,13 @@ import java.util.Optional;
 
 public class AltitudeLockFlag implements VesselFlag<Boolean> {
 
-    public static class Builder extends VesselFlag.Builder<Boolean, AltitudeLockFlag> {
-
-        @Override
-        protected AltitudeLockFlag buildEmpty() {
-            return new AltitudeLockFlag();
-        }
-    }
-
     protected boolean value;
 
-    public AltitudeLockFlag(){
+    public AltitudeLockFlag() {
         this(false);
     }
 
-    public AltitudeLockFlag(boolean value){
+    public AltitudeLockFlag(boolean value) {
         this.value = value;
     }
 
@@ -53,5 +45,13 @@ public class AltitudeLockFlag implements VesselFlag<Boolean> {
     @Override
     public String getName() {
         return "Altitude Lock";
+    }
+
+    public static class Builder extends VesselFlag.Builder<Boolean, AltitudeLockFlag> {
+
+        @Override
+        protected AltitudeLockFlag buildEmpty() {
+            return new AltitudeLockFlag();
+        }
     }
 }

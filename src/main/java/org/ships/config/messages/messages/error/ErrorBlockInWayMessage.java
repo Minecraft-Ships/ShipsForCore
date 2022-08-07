@@ -23,7 +23,10 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " cannot move due to " + Message.asCollectionSingle(Message.LOCATION_ADAPTERS).adapterTextFormat(new MappedAdapter<>(Message.BLOCK_TYPE_NAME, Position::getBlockType), 0) + " in way");
+        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " cannot move due to " + Message
+                .asCollectionSingle(Message.LOCATION_ADAPTERS)
+                .adapterTextFormat(new MappedAdapter<>(Message.BLOCK_TYPE_NAME, Position::getBlockType), 0) +
+                " in way");
     }
 
     @Override

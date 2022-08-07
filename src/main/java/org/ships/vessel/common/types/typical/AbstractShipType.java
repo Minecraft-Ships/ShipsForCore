@@ -22,23 +22,44 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractShipType<V extends Vessel> implements SerializableShipType<V> {
 
-    public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType> SPECIAL_BLOCK_TYPE = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> FUEL_CONSUMPTION = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    public static final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> FUEL_SLOT = new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<ItemType> FUEL_TYPES = new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Max");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Speed", "Altitude");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType> SPECIAL_BLOCK_TYPE =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(
+            Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> FUEL_CONSUMPTION =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    public static final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> FUEL_SLOT =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
+    public static final ConfigurationNode.KnownParser.CollectionKnown<ItemType> FUEL_TYPES =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(
+            Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_BOOLEAN, "Block", "Burner");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Speed", "Max");
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Speed", "Altitude");
     protected final @NotNull String displayName;
     protected final @NotNull Plugin plugin;
     protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>();
     protected final @NotNull BlockType[] types;
     protected final @NotNull ConfigurationStream.ConfigurationFile file;
 
-    public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
+    public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName,
+            @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
         if (types.length == 0) {
             throw new NullPointerException("ShipType constructor failed: Type cannot be empty");
         }
@@ -82,12 +103,18 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
 
     @Override
     public int getDefaultMaxSpeed() {
-        return this.getFile().parse(MAX_SPEED, Parser.STRING_TO_INTEGER).orElseThrow(() -> new IllegalStateException("Could not get max speed from " + this.displayName));
+        return this
+                .getFile()
+                .parse(MAX_SPEED, Parser.STRING_TO_INTEGER)
+                .orElseThrow(() -> new IllegalStateException("Could not get max speed from " + this.displayName));
     }
 
     @Override
     public int getDefaultAltitudeSpeed() {
-        return this.getFile().parse(ALTITUDE_SPEED, Parser.STRING_TO_INTEGER).orElseThrow(() -> new IllegalStateException("Could not get altitude speed from " + this.displayName));
+        return this
+                .getFile()
+                .parse(ALTITUDE_SPEED, Parser.STRING_TO_INTEGER)
+                .orElseThrow(() -> new IllegalStateException("Could not get altitude speed from " + this.displayName));
     }
 
     @Override

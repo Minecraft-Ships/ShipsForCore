@@ -33,6 +33,8 @@ public class ShipsBlockFinder implements ShipsLoader {
         if (opVessel.isPresent()) {
             return opVessel.get();
         }
-        throw new LoadVesselException("Block position is not part of a ship: " + this.position.getX() + ", " + this.position.getY() + ", " + this.position.getZ() + ", " + this.position.getWorld().getName());
+        throw new LoadVesselException(
+                "Block position is not part of a ship: " + this.position.getX() + ", " + this.position.getY() + ", " +
+                        this.position.getZ() + ", " + this.position.getWorld().getName());
     }
 }

@@ -37,9 +37,11 @@ import java.util.stream.Collectors;
 public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     private static final ExactArgument BLOCK_INFO_ARGUMENT = new ExactArgument("blockinfo");
-    private static final OptionalArgument<BlockType> BLOCK_TYPE = new OptionalArgument<>(new BlockTypeArgument("blocktype"), new ParseCommandArgument<BlockType>() {
+    private static final OptionalArgument<BlockType> BLOCK_TYPE = new OptionalArgument<>(
+            new BlockTypeArgument("blocktype"), new ParseCommandArgument<BlockType>() {
         @Override
-        public CommandArgumentResult<BlockType> parse(CommandContext context, CommandArgumentContext<BlockType> argument) {
+        public CommandArgumentResult<BlockType> parse(CommandContext context,
+                CommandArgumentContext<BlockType> argument) {
             if (!(context.getSource() instanceof LivePlayer)) {
                 return null;
             }
@@ -79,7 +81,8 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
         BlockDetails details = bt.getDefaultBlockDetails();
         viewer.sendMessage(AText.ofPlain("---[ID]---"));
         viewer.sendMessage(AText.ofPlain(" |- ID: " + details.getType().getId()));
-        viewer.sendMessage(AText.ofPlain(" |- BlockList-CollideType: " + ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(details.getType()).getCollideType().name()));
+        viewer.sendMessage(AText.ofPlain(" |- BlockList-CollideType: " +
+                ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(details.getType()).getCollideType().name()));
         viewer.sendMessage(AText.ofPlain("---[Keyed Data]---"));
         for (Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()) {
             if (details.getUnspecified(dataClass.getValue()).isPresent()) {
@@ -91,11 +94,13 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
         }
         viewer.sendMessage(AText.ofPlain("---[Priority]---"));
         WorldExtent world = TranslateCore.getServer().getWorlds().iterator().next();
-        BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0), details).getBlockPriority();
+        BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0),
+                details).getBlockPriority();
         viewer.sendMessage(AText.ofPlain(" |- ID: " + priority.getId()));
         viewer.sendMessage(AText.ofPlain(" |- Value: " + priority.getPriorityNumber()));
         viewer.sendMessage(AText.ofPlain("---[Like]---"));
-        String like = ArrayUtils.toString("\n |- ", Identifiable::getName, bt.getLike().parallelStream().limit(5).collect(Collectors.toList()));
+        String like = ArrayUtils.toString("\n |- ", Identifiable::getName,
+                bt.getLike().parallelStream().limit(5).collect(Collectors.toList()));
         viewer.sendMessage(AText.ofPlain("\n |- " + like));
         return true;
     }

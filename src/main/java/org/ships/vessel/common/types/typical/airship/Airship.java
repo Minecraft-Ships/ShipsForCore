@@ -43,25 +43,26 @@ import java.util.stream.Collectors;
 
 public class Airship extends AbstractShipsVessel implements AirType, Fallable, VesselRequirement {
 
+    protected final ConfigurationNode.KnownParser.SingleKnown<Boolean> configBurnerBlock =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special",
+                    "Type");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
+            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel",
+                    "Slot");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     private @Nullable Boolean useBurner;
     private @Nullable Float specialBlockPercent;
     private @Nullable Collection<BlockType> specialBlocks;
     private @Nullable Integer fuelConsumption;
     private @Nullable FuelSlot fuelSlot;
     private @Nullable Collection<ItemType> fuelTypes;
-
-    protected final ConfigurationNode.KnownParser.SingleKnown<Boolean> configBurnerBlock =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
-    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
-    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
-    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
-            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     public Airship(ShipType<? extends Airship> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -92,18 +93,17 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         return this.getSpecialBlocksPercent();
     }
 
+    @Deprecated(forRemoval = true)
+    public @NotNull Airship setSpecialBlockPercent(@Nullable Float percent) {
+        this.setSpecialBlocksPercent(percent);
+        return this;
+    }
+
     public float getSpecialBlocksPercent() {
         return Objects
                 .requireNonNullElseGet(
                         this.specialBlockPercent,
                         () -> this.getType().getDefaultSpecialBlockPercent());
-    }
-
-
-    @Deprecated(forRemoval = true)
-    public @NotNull Airship setSpecialBlockPercent(@Nullable Float percent) {
-        this.setSpecialBlocksPercent(percent);
-        return this;
     }
 
     public void setSpecialBlocksPercent(@Nullable Float percent) {
@@ -191,11 +191,14 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
             }
         }
         if (this.isUsingBurner() && !burnerFound) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_SPECIAL_NAMED_BLOCK_FOUND, "Burner"));
+            throw new MoveException(
+                    new AbstractFailedMovement<>(this, MovementResult.NO_SPECIAL_NAMED_BLOCK_FOUND, "Burner"));
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / context.getMovingStructure().size());
         if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT,
+                    new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(),
+                            this.getSpecialBlockPercent(), specialBlockPercent)));
         }
         if (!(this.getFuelConsumption() == 0 || this.getFuelTypes().isEmpty())) {
             boolean acceptedSlots = furnaceInventories
@@ -203,9 +206,13 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
                     .map(i -> this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot())
                     .filter(slot -> slot.getItem().isPresent())
                     .filter(slot -> slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption())
-                    .anyMatch(slot -> this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false)));
+                    .anyMatch(slot -> this
+                            .getFuelTypes()
+                            .stream()
+                            .anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false)));
             if (!acceptedSlots) {
-                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
+                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
+                        new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
         }
     }
@@ -236,10 +243,14 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
                 return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
             }).filter(i -> {
                 Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-                return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
+                return this
+                        .getFuelTypes()
+                        .stream()
+                        .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
             }).collect(Collectors.toList());
             if (acceptedSlots.isEmpty()) {
-                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
+                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
+                        new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
             FurnaceInventory inv = acceptedSlots.get(0);
             Slot slot = this.getFuelSlot() == FuelSlot.TOP ? inv.getSmeltingSlot() : inv.getFuelSlot();
@@ -314,7 +325,9 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
             if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(position.getBlockType()))) {
                 specialBlockCount++;
             }
-            Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = position.getBlockDetails().get(KeyedData.TILED_ENTITY);
+            Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = position
+                    .getBlockDetails()
+                    .get(KeyedData.TILED_ENTITY);
             if (opTiled.isPresent()) {
                 if (opTiled.get() instanceof FurnaceTileEntitySnapshot) {
                     furnaceInventories.add(((FurnaceTileEntity) opTiled.get()).getInventory());
@@ -337,7 +350,10 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
                 return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
             }).filter(i -> {
                 Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-                return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
+                return this
+                        .getFuelTypes()
+                        .stream()
+                        .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
             }).collect(Collectors.toList());
             return acceptedSlots.isEmpty();
         }

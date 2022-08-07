@@ -7,14 +7,30 @@ import java.util.Optional;
 
 public interface VesselFlag<T> extends Identifiable {
 
+    Optional<T> getValue();
+
+    void setValue(T value);
+
+    StringParser<T> getParser();
+
+    VesselFlag.Builder<T, ? extends VesselFlag<T>> toBuilder();
+
+    interface Serializable<T> extends VesselFlag<T> {
+        String serialize();
+
+        Serializable<T> deserialize(String idWithValue);
+
+        boolean isDeserializable(String idWithValue);
+    }
+
     abstract class Builder<T, F extends VesselFlag<T>> {
 
         protected abstract F buildEmpty();
 
-        public F build(String parse){
+        public F build(String parse) {
             F flag = this.buildEmpty();
             Optional<T> opValue = flag.getParser().parse(parse);
-            if(!opValue.isPresent()){
+            if (!opValue.isPresent()) {
                 throw new IllegalArgumentException("Could not parse \"" + parse + "\"");
             }
             flag.setValue(opValue.get());
@@ -22,15 +38,4 @@ public interface VesselFlag<T> extends Identifiable {
         }
 
     }
-
-    interface Serializable<T> extends VesselFlag<T> {
-        String serialize();
-        Serializable<T> deserialize(String idWithValue);
-        boolean isDeserializable(String idWithValue);
-    }
-
-    Optional<T> getValue();
-    void setValue(T value);
-    StringParser<T> getParser();
-    VesselFlag.Builder<T, ? extends VesselFlag<T>> toBuilder();
 }

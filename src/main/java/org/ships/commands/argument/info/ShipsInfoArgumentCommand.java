@@ -16,7 +16,10 @@ import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ShipsInfoArgumentCommand implements ArgumentCommand {
@@ -26,7 +29,9 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(INFO_ARGUMENT), new OptionalArgument<>(new ExactArgument(SHIP_TYPE_ARGUMENT, false, "shipstype", "stype"), (String) null));
+        return Arrays.asList(new ExactArgument(INFO_ARGUMENT),
+                new OptionalArgument<>(new ExactArgument(SHIP_TYPE_ARGUMENT, false, "shipstype", "stype"),
+                        (String) null));
     }
 
     @Override
@@ -47,12 +52,28 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
         }
         Collection<ShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllShipTypes();
         viewer.sendMessage(AText.ofPlain("----[Ships]----").withColour(NamedTextColours.YELLOW));
-        viewer.sendMessage(AText.ofPlain("Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.getPlugin().getPluginVersion().asString()).withColour(NamedTextColours.GOLD)));
-        viewer.sendMessage(AText.ofPlain(ShipsPlugin.PRERELEASE_TAG + " Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(ShipsPlugin.PRERELEASE_VERSION + "").withColour(NamedTextColours.GOLD)));
-        viewer.sendMessage(AText.ofPlain("Vessel Types: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(shipTypes.size() + "").withColour(NamedTextColours.GOLD)));
-        if (commandContext.getArgument(this, SHIP_TYPE_ARGUMENT)!=null) {
-            List<AText> typeText = shipTypes.stream().map(s -> AText.ofPlain(s.getDisplayName()).withColour(NamedTextColours.GOLD)).collect(Collectors.toList());
-            AText text = ArrayUtils.collect(t -> t, (old, t) -> old.append(AText.ofPlain(" | ").withColour(NamedTextColours.GREEN).append(t)), typeText);
+        viewer.sendMessage(AText
+                .ofPlain("Version: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText
+                        .ofPlain(ShipsPlugin.getPlugin().getPluginVersion().asString())
+                        .withColour(NamedTextColours.GOLD)));
+        viewer.sendMessage(AText
+                .ofPlain(ShipsPlugin.PRERELEASE_TAG + " Version: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(ShipsPlugin.PRERELEASE_VERSION + "").withColour(NamedTextColours.GOLD)));
+        viewer.sendMessage(AText
+                .ofPlain("Vessel Types: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(shipTypes.size() + "").withColour(NamedTextColours.GOLD)));
+        if (commandContext.getArgument(this, SHIP_TYPE_ARGUMENT) != null) {
+            List<AText> typeText = shipTypes
+                    .stream()
+                    .map(s -> AText.ofPlain(s.getDisplayName()).withColour(NamedTextColours.GOLD))
+                    .collect(Collectors.toList());
+            AText text = ArrayUtils.collect(t -> t,
+                    (old, t) -> old.append(AText.ofPlain(" | ").withColour(NamedTextColours.GREEN).append(t)),
+                    typeText);
             viewer.sendMessage(text);
         }
         return true;

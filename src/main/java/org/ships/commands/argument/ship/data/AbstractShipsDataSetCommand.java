@@ -1,18 +1,12 @@
 package org.ships.commands.argument.ship.data;
 
-import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
-import org.core.command.argument.arguments.operation.OptionalArgument;
-import org.core.command.argument.arguments.simple.number.IntegerArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
-import org.core.utils.Else;
 import org.ships.commands.argument.arguments.ShipIdArgument;
-import org.ships.exceptions.NoLicencePresent;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.types.Vessel;
 
@@ -30,10 +24,6 @@ public abstract class AbstractShipsDataSetCommand implements ArgumentCommand {
 
     private final ExactArgument SET_ARGUMENT = new ExactArgument("set");
 
-    protected abstract List<CommandArgument<?>> getExtraArguments();
-
-    protected abstract boolean apply(CommandContext context, Vessel vessel, String[] arguments);
-
     protected AbstractShipsDataSetCommand() {
         this(new ShipIdArgument<>("ship_id"));
     }
@@ -41,6 +31,10 @@ public abstract class AbstractShipsDataSetCommand implements ArgumentCommand {
     protected AbstractShipsDataSetCommand(ShipIdArgument<? extends Vessel> argument) {
         this.SHIP_ID_ARGUMENT = argument;
     }
+
+    protected abstract List<CommandArgument<?>> getExtraArguments();
+
+    protected abstract boolean apply(CommandContext context, Vessel vessel, String[] arguments);
 
     @Override
     public List<CommandArgument<?>> getArguments() {

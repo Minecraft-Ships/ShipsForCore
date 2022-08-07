@@ -25,7 +25,11 @@ public class VesselIdAdapter implements MessageAdapter<Vessel> {
         if (vessels.isEmpty()) {
             return Collections.singleton("ships:watership.sunk");
         }
-        return vessels.stream().filter(v -> v instanceof IdentifiableShip).map(v -> Else.throwOr(NoLicencePresent.class, ((IdentifiableShip) v)::getId, "ships:watership.sunk")).collect(Collectors.toSet());
+        return vessels
+                .stream()
+                .filter(v -> v instanceof IdentifiableShip)
+                .map(v -> Else.throwOr(NoLicencePresent.class, ((IdentifiableShip) v)::getId, "ships:watership.sunk"))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -37,7 +41,8 @@ public class VesselIdAdapter implements MessageAdapter<Vessel> {
                                 Else.canCast(
                                         obj,
                                         IdentifiableShip.class,
-                                        identifiableShip -> Else.throwOr(NoLicencePresent.class, identifiableShip::getId, "Unknown"),
+                                        identifiableShip -> Else.throwOr(NoLicencePresent.class,
+                                                identifiableShip::getId, "Unknown"),
                                         vessel -> Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown")
                                 )
                         )

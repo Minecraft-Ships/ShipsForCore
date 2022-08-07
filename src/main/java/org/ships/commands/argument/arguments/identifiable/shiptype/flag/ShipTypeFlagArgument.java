@@ -17,9 +17,11 @@ import java.util.stream.Collectors;
 public class ShipTypeFlagArgument implements CommandArgument<VesselFlag<?>> {
 
     private final String id;
-    private final BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ? extends ShipType<?>> getter;
+    private final BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ?
+            extends ShipType<?>> getter;
 
-    public ShipTypeFlagArgument(String id, BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ? extends ShipType<?>> getter) {
+    public ShipTypeFlagArgument(String id,
+            BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ? extends ShipType<?>> getter) {
         this.id = id;
         this.getter = getter;
     }
@@ -30,7 +32,8 @@ public class ShipTypeFlagArgument implements CommandArgument<VesselFlag<?>> {
     }
 
     @Override
-    public CommandArgumentResult<VesselFlag<?>> parse(CommandContext context, CommandArgumentContext<VesselFlag<?>> argument) throws IOException {
+    public CommandArgumentResult<VesselFlag<?>> parse(CommandContext context,
+            CommandArgumentContext<VesselFlag<?>> argument) throws IOException {
         String arg = argument.getFocusArgument();
         ShipType<?> type = this
                 .getter
@@ -38,7 +41,10 @@ public class ShipTypeFlagArgument implements CommandArgument<VesselFlag<?>> {
         VesselFlag<?> flag = type
                 .getFlags()
                 .stream()
-                .filter(vf -> vf.getId().equalsIgnoreCase(arg)).findAny().orElseThrow(() -> new IOException("No VesselFlag with that id in vesseltype of " + type.getDisplayName()));
+                .filter(vf -> vf.getId().equalsIgnoreCase(arg))
+                .findAny()
+                .orElseThrow(
+                        () -> new IOException("No VesselFlag with that id in vesseltype of " + type.getDisplayName()));
         return CommandArgumentResult.from(argument, flag);
     }
 

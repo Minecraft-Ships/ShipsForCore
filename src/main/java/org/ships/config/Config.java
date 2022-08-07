@@ -9,16 +9,22 @@ import java.util.Set;
 
 public interface Config {
 
+    ConfigurationStream.ConfigurationFile getFile();
+
+    void recreateFile();
+
     interface KnownNodes extends Config {
 
         <A, V, N extends ConfigurationNode.KnownParser<?, V>> Set<DedicatedNode<A, V, N>> getNodes();
 
-        default Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> getNode(String key){
-            return (Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>>)(Object) this.getNodes().parallelStream().filter(n -> n.getKeyName().equalsIgnoreCase(key)).findAny();
+        default Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>> getNode(
+                String key) {
+            return (Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<String, Object>>>) (Object) this
+                    .getNodes()
+                    .parallelStream()
+                    .filter(n -> n.getKeyName().equalsIgnoreCase(key))
+                    .findAny();
         }
 
     }
-
-    ConfigurationStream.ConfigurationFile getFile();
-    void recreateFile();
 }

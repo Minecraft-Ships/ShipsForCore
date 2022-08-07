@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, V>> implements CommandArgument<DedicatedNode<A, V, N>> {
+public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, V>>
+        implements CommandArgument<DedicatedNode<A, V, N>> {
 
     private final @NotNull Config.KnownNodes config;
     private final @NotNull String id;
@@ -30,7 +31,8 @@ public class ConfigKeyArgument<A, V, N extends ConfigurationNode.KnownParser<?, 
     }
 
     @Override
-    public CommandArgumentResult<DedicatedNode<A, V, N>> parse(CommandContext context, CommandArgumentContext<DedicatedNode<A, V, N>> argument) throws IOException {
+    public CommandArgumentResult<DedicatedNode<A, V, N>> parse(CommandContext context,
+            CommandArgumentContext<DedicatedNode<A, V, N>> argument) throws IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
         Optional<DedicatedNode<Object, Object, ConfigurationNode.KnownParser<?, Object>>> opNode = this
                 .config

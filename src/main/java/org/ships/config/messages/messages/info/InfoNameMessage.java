@@ -18,7 +18,10 @@ public class InfoNameMessage implements Message<Vessel> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Name: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.VESSEL_NAME.adapterText() + "%").withColour(NamedTextColours.GOLD));
+        return AText
+                .ofPlain("Name: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain("%" + Message.VESSEL_NAME.adapterText() + "%").withColour(NamedTextColours.GOLD));
     }
 
     @Override

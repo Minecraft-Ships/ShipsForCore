@@ -24,116 +24,6 @@ import java.util.Optional;
 
 public class Ships6BlockFinder implements BasicBlockFinder {
 
-    private class Overtime {
-
-        private class OvertimeSection {
-
-            private final Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
-            private final Collection<SyncBlockPosition> ret = new ArrayList<>();
-            private final Collection<SyncBlockPosition> process = new ArrayList<>();
-            private final Collection<SyncBlockPosition> ignore = new ArrayList<>();
-            private final Runnable runnable = () -> {
-                for (SyncBlockPosition proc : this.process) {
-                    for (Direction face : this.directions) {
-                        SyncBlockPosition block = proc.getRelative(face);
-                        if (this.ignore.stream().anyMatch(b -> b.equals(block))) {
-                            continue;
-                        }
-                        if (this.ret.stream().anyMatch(b -> b.equals(block))) {
-                            continue;
-                        }
-                        BlockInstruction bi = Ships6BlockFinder.this.list.getBlockInstruction(block.getBlockType());
-                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
-                            this.ret.add(block);
-                        }
-                    }
-                }
-            };
-
-            private OvertimeSection(Collection<? extends SyncBlockPosition> collection, Collection<? extends SyncBlockPosition> ignore) {
-                this.process.addAll(collection);
-                this.ignore.addAll(ignore);
-            }
-
-        }
-
-        private PositionableShipsStructure pss;
-        private List<SyncBlockPosition> process = new ArrayList<>();
-        private List<SyncBlockPosition> ret = new ArrayList<>();
-        private final List<SyncBlockPosition> total = new ArrayList<>();
-        private OvertimeBlockFinderUpdate update;
-        private final Runnable runnable = () -> {
-            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-            Collection<List<SyncBlockPosition>> collections = new ArrayList<>();
-            List<SyncBlockPosition> current = new ArrayList<>();
-            for (SyncBlockPosition syncBlockPosition : this.process) {
-                current.add(syncBlockPosition);
-                if (current.size() >= config.getDefaultFinderStackLimit()) {
-                    collections.add(current);
-                    current = new ArrayList<>();
-                }
-            }
-            collections.add(current);
-
-            Scheduler scheduler = TranslateCore
-                    .getScheduleManager()
-                    .schedule()
-                    .setDelay(config.getDefaultFinderStackDelay())
-                    .setDelayUnit(config.getDefaultFinderStackDelayUnit())
-                    .setRunner((sch) -> {
-                        if ((this.total.size() <= Ships6BlockFinder.this.limit) && (!this.ret.isEmpty())) {
-                            this.process = this.ret;
-                            this.ret = new ArrayList<>();
-
-                            TranslateCore
-                                    .getScheduleManager()
-                                    .schedule().
-                                    setDelay(config.getDefaultFinderStackDelay()).
-                                    setDelayUnit(config.getDefaultFinderStackDelayUnit()).
-                                    setExecutor(this.runnable).
-                                    setDisplayName("Ships 6 ASync Block Finder").
-                                    build(ShipsPlugin.getPlugin()).run();
-                        } else {
-                            this.update.onShipsStructureUpdated(this.pss);
-                        }
-                    })
-                    .setDisplayName("Ships 6 block finder")
-                    .build(ShipsPlugin.getPlugin());
-
-            for (List<SyncBlockPosition> list : collections) {
-                scheduler = TranslateCore
-                        .getScheduleManager()
-                        .schedule()
-                        .setDelay(config.getDefaultFinderStackDelay())
-                        .setDelayUnit(config.getDefaultFinderStackDelayUnit())
-                        .setRunner((sch) -> {
-                            OvertimeSection section = new OvertimeSection(list, this.total);
-                            section.runnable.run();
-                            section.ret.forEach(p -> {
-                                OvertimeBlockFinderUpdate.BlockFindControl blockFind = this.update.onBlockFind(this.pss, p);
-                                if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
-                                    return;
-                                }
-                                this.pss.addPosition(p);
-                                this.ret.add(p);
-                                this.total.add(p);
-                            });
-                        })
-                        .setToRunAfter(scheduler)
-                        .setDisplayName("Ships 6 Block finder")
-                        .build(ShipsPlugin.getPlugin());
-            }
-            scheduler.run();
-        };
-
-        private Overtime(SyncBlockPosition position, OvertimeBlockFinderUpdate update) {
-            this.pss = new AbstractPositionableShipsStructure(position);
-            this.update = update;
-            this.process.add(position);
-        }
-
-    }
-
     protected int limit;
     private BlockList list;
     private Vessel vessel;
@@ -182,7 +72,8 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
+            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch);
         TranslateCore
@@ -228,5 +119,118 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     @Override
     public String getName() {
         return "Ships 6 R2 BlockFinder";
+    }
+
+    private class Overtime {
+
+        private final List<SyncBlockPosition> total = new ArrayList<>();
+        private PositionableShipsStructure pss;
+        private List<SyncBlockPosition> process = new ArrayList<>();
+        private List<SyncBlockPosition> ret = new ArrayList<>();
+        private OvertimeBlockFinderUpdate update;
+        private Overtime(SyncBlockPosition position, OvertimeBlockFinderUpdate update) {
+            this.pss = new AbstractPositionableShipsStructure(position);
+            this.update = update;
+            this.process.add(position);
+        }
+
+        private class OvertimeSection {
+
+            private final Direction[] directions = FourFacingDirection.withYDirections(
+                    FourFacingDirection.getFourFacingDirections());
+            private final Collection<SyncBlockPosition> ret = new ArrayList<>();
+            private final Collection<SyncBlockPosition> process = new ArrayList<>();
+            private final Collection<SyncBlockPosition> ignore = new ArrayList<>();
+            private final Runnable runnable = () -> {
+                for (SyncBlockPosition proc : this.process) {
+                    for (Direction face : this.directions) {
+                        SyncBlockPosition block = proc.getRelative(face);
+                        if (this.ignore.stream().anyMatch(b -> b.equals(block))) {
+                            continue;
+                        }
+                        if (this.ret.stream().anyMatch(b -> b.equals(block))) {
+                            continue;
+                        }
+                        BlockInstruction bi = Ships6BlockFinder.this.list.getBlockInstruction(block.getBlockType());
+                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+                            this.ret.add(block);
+                        }
+                    }
+                }
+            };
+
+            private OvertimeSection(Collection<? extends SyncBlockPosition> collection,
+                    Collection<? extends SyncBlockPosition> ignore) {
+                this.process.addAll(collection);
+                this.ignore.addAll(ignore);
+            }
+
+        }        private final Runnable runnable = () -> {
+            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+            Collection<List<SyncBlockPosition>> collections = new ArrayList<>();
+            List<SyncBlockPosition> current = new ArrayList<>();
+            for (SyncBlockPosition syncBlockPosition : this.process) {
+                current.add(syncBlockPosition);
+                if (current.size() >= config.getDefaultFinderStackLimit()) {
+                    collections.add(current);
+                    current = new ArrayList<>();
+                }
+            }
+            collections.add(current);
+
+            Scheduler scheduler = TranslateCore
+                    .getScheduleManager()
+                    .schedule()
+                    .setDelay(config.getDefaultFinderStackDelay())
+                    .setDelayUnit(config.getDefaultFinderStackDelayUnit())
+                    .setRunner((sch) -> {
+                        if ((this.total.size() <= Ships6BlockFinder.this.limit) && (!this.ret.isEmpty())) {
+                            this.process = this.ret;
+                            this.ret = new ArrayList<>();
+
+                            TranslateCore
+                                    .getScheduleManager()
+                                    .schedule().
+                                    setDelay(config.getDefaultFinderStackDelay()).
+                                    setDelayUnit(config.getDefaultFinderStackDelayUnit()).
+                                    setExecutor(this.runnable).
+                                    setDisplayName("Ships 6 ASync Block Finder").
+                                    build(ShipsPlugin.getPlugin()).run();
+                        } else {
+                            this.update.onShipsStructureUpdated(this.pss);
+                        }
+                    })
+                    .setDisplayName("Ships 6 block finder")
+                    .build(ShipsPlugin.getPlugin());
+
+            for (List<SyncBlockPosition> list : collections) {
+                scheduler = TranslateCore
+                        .getScheduleManager()
+                        .schedule()
+                        .setDelay(config.getDefaultFinderStackDelay())
+                        .setDelayUnit(config.getDefaultFinderStackDelayUnit())
+                        .setRunner((sch) -> {
+                            OvertimeSection section = new OvertimeSection(list, this.total);
+                            section.runnable.run();
+                            section.ret.forEach(p -> {
+                                OvertimeBlockFinderUpdate.BlockFindControl blockFind = this.update.onBlockFind(this.pss,
+                                        p);
+                                if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
+                                    return;
+                                }
+                                this.pss.addPosition(p);
+                                this.ret.add(p);
+                                this.total.add(p);
+                            });
+                        })
+                        .setToRunAfter(scheduler)
+                        .setDisplayName("Ships 6 Block finder")
+                        .build(ShipsPlugin.getPlugin());
+            }
+            scheduler.run();
+        };
+
+
+
     }
 }

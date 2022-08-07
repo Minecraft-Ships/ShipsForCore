@@ -19,7 +19,9 @@ import java.util.Optional;
 public class CancelAutopilotCommand implements ArgumentCommand {
 
     private final ExactArgument SHIP_KEY = new ExactArgument("ship");
-    private final ShipIdArgument<FlightPathType> SHIP = new ShipIdArgument<>("ship id", (s, v) -> v instanceof FlightPathType, v -> "Cannot use " + Else.throwOr(IOException.class, v::getName, "") + " with autopilot");
+    private final ShipIdArgument<FlightPathType> SHIP = new ShipIdArgument<>("ship id",
+            (s, v) -> v instanceof FlightPathType,
+            v -> "Cannot use " + Else.throwOr(IOException.class, v::getName, "") + " with autopilot");
     private final ExactArgument AUTOPILOT = new ExactArgument("autopilot");
     private final ExactArgument CANCEL = new ExactArgument("cancel");
 

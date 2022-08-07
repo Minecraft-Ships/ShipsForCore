@@ -65,7 +65,8 @@ public class ShipRemoveCrewArgumentCommand implements ArgumentCommand {
             map.remove(user.getUniqueId());
         });
         if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain("Removed crew member(s)").withColour(NamedTextColours.AQUA));
+            ((CommandViewer) commandContext.getSource()).sendMessage(
+                    AText.ofPlain("Removed crew member(s)").withColour(NamedTextColours.AQUA));
         }
         return true;
     }

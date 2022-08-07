@@ -33,7 +33,8 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT), new ExactArgument(this.TRACK_ARGUMENT));
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                new ExactArgument(this.TRACK_ARGUMENT));
     }
 
     @Override
@@ -60,11 +61,15 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
         CommandSource source = commandContext.getSource();
         if (!(source instanceof LivePlayer player)) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(AText.ofPlain("Player only command").withColour(NamedTextColours.RED));
+                ((CommandViewer) source).sendMessage(
+                        AText.ofPlain("Player only command").withColour(NamedTextColours.RED));
             }
             return true;
         }
-        vessel.getStructure().getPositions().forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
+        vessel
+                .getStructure()
+                .getPositions()
+                .forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
         TranslateCore
                 .getScheduleManager()
                 .schedule()

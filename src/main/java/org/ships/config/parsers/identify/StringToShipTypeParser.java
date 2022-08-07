@@ -11,6 +11,10 @@ import java.util.stream.Collectors;
 
 public class StringToShipTypeParser extends StringToIdentifiable<ShipType<?>> {
 
+    public StringToShipTypeParser() {
+        super((Class<ShipType<?>>) (Object) ShipType.class);
+    }
+
     public static class StringToHostCloneableShipTypeParser extends StringToIdentifiable<CloneableShipType<?>> {
 
         public StringToHostCloneableShipTypeParser() {
@@ -20,7 +24,11 @@ public class StringToShipTypeParser extends StringToIdentifiable<ShipType<?>> {
         @Override
         public Optional<CloneableShipType<?>> parse(String original) {
             Collection<CloneableShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllCloneableShipTypes();
-            return shipTypes.stream().filter(s -> s.getOriginType().equals(s)).filter(s -> s.getId().equals(original)).findAny();
+            return shipTypes
+                    .stream()
+                    .filter(s -> s.getOriginType().equals(s))
+                    .filter(s -> s.getId().equals(original))
+                    .findAny();
         }
 
         @Override
@@ -28,9 +36,5 @@ public class StringToShipTypeParser extends StringToIdentifiable<ShipType<?>> {
             Collection<CloneableShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllCloneableShipTypes();
             return shipTypes.stream().filter(s -> s.getOriginType().equals(s)).collect(Collectors.toList());
         }
-    }
-
-    public StringToShipTypeParser() {
-        super((Class<ShipType<?>>) (Object) ShipType.class);
     }
 }

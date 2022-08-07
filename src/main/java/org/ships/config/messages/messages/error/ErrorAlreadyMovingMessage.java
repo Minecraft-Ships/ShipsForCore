@@ -17,7 +17,8 @@ public class ErrorAlreadyMovingMessage implements Message<Vessel> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is already moving. Please wait for it to finish");
+        return AText.ofPlain(
+                Message.VESSEL_ID.adapterTextFormat() + " is already moving. Please wait for it to finish");
     }
 
     @Override

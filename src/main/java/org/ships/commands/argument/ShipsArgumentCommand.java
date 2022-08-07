@@ -68,10 +68,17 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
 
         COMMANDS.add(new CreateShipCommand());
 
-        COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config", "configuration"));
-        COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
-        COMMANDS.add(new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config", "configuration"));
-        COMMANDS.add(new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()), "messages"));
+        COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()),
+                "config", "configuration"));
+        COMMANDS.add(
+                new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()),
+                        "messages"));
+        COMMANDS.add(
+                new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config",
+                        "configuration"));
+        COMMANDS.add(
+                new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()),
+                        "messages"));
         COMMANDS.add(new ShipStructureSaveCommand());
 
         COMMANDS.add(new ShipTypeViewSingleConfigArgument());

@@ -13,7 +13,8 @@ public class RawDedicatedNode<V, N extends ConfigurationNode.KnownParser<?, V>> 
     private final String keyName;
     private final BiConsumer<? super ConfigurationStream, ? super Map.Entry<N, V>> consumer;
 
-    public RawDedicatedNode(N node, String keyName, BiConsumer<? super ConfigurationStream, ? super Map.Entry<N, V>> consumer) {
+    public RawDedicatedNode(N node, String keyName,
+            BiConsumer<? super ConfigurationStream, ? super Map.Entry<N, V>> consumer) {
         this.node = node;
         this.keyName = keyName;
         this.consumer = consumer;

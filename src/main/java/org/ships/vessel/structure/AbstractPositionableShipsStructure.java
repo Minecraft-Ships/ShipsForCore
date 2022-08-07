@@ -29,6 +29,57 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         this.position = position;
     }
 
+    private static Optional<BlockPosition> getNextInLine(Position<Integer> pos, Direction direction,
+            Collection<? extends BlockPosition> collections) throws DirectionNotSupported {
+        Vector3<Integer> original = pos.getPosition();
+        Collection<Direction> directions = new ArrayList<>(
+                Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));
+        if (!directions.contains(direction)) {
+            throw new DirectionNotSupported(direction, "");
+        }
+        List<BlockPosition> positions = collections.stream().filter(p -> {
+            Vector3<Integer> vector = p.getPosition();
+            if (vector.getX().equals(original.getX()) && vector.getY().equals(original.getY())) {
+                int oz = original.getZ();
+                int vz = vector.getZ();
+                if (oz < vz && direction.equals(FourFacingDirection.SOUTH)) {
+                    return true;
+                } else if (oz > vz && direction.equals(FourFacingDirection.NORTH)) {
+                    return true;
+                }
+            }
+            if (vector.getZ().equals(original.getZ()) && vector.getY().equals(original.getY())) {
+                int ox = original.getX();
+                int vx = vector.getX();
+                if (ox < vx && direction.equals(FourFacingDirection.EAST)) {
+                    return true;
+                } else if (ox > vx && direction.equals(FourFacingDirection.WEST)) {
+                    return true;
+                }
+            }
+            if (vector.getX().equals(original.getX()) && vector.getZ().equals(original.getZ())) {
+                int oy = original.getY();
+                int vy = vector.getY();
+                if (oy < vy && direction.equals(FourFacingDirection.UP)) {
+                    return true;
+                } else {
+                    return oy > vy && direction.equals(FourFacingDirection.DOWN);
+                }
+            }
+            return false;
+        }).filter(p -> !p.getPosition().equals(original)).collect(Collectors.toList());
+        double min = Double.MAX_VALUE;
+        BlockPosition current = null;
+        for (BlockPosition position : positions) {
+            double distance = position.getPosition().distanceSquared(original);
+            if (min > distance) {
+                min = distance;
+                current = position;
+            }
+        }
+        return Optional.ofNullable(current);
+    }
+
     @Override
     public SyncBlockPosition getPosition() {
         return this.position;
@@ -166,53 +217,6 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     public ShipsStructure setRaw(Collection<? extends Vector3<Integer>> collection) {
         this.vectors = new HashSet<>(collection);
         return this;
-    }
-
-    private static Optional<BlockPosition> getNextInLine(Position<Integer> pos, Direction direction, Collection<? extends BlockPosition> collections) throws DirectionNotSupported {
-        Vector3<Integer> original = pos.getPosition();
-        Collection<Direction> directions = new ArrayList<>(Arrays.asList(Direction.withYDirections(FourFacingDirection.getFourFacingDirections())));
-        if (!directions.contains(direction)) {
-            throw new DirectionNotSupported(direction, "");
-        }
-        List<BlockPosition> positions = collections.stream().filter(p -> {
-            Vector3<Integer> vector = p.getPosition();
-            if (vector.getX().equals(original.getX()) && vector.getY().equals(original.getY())) {
-                int oz = original.getZ();
-                int vz = vector.getZ();
-                if (oz < vz && direction.equals(FourFacingDirection.SOUTH)) {
-                    return true;
-                } else if (oz > vz && direction.equals(FourFacingDirection.NORTH)) {
-                    return true;
-                }
-            }
-            if (vector.getZ().equals(original.getZ()) && vector.getY().equals(original.getY())) {
-                int ox = original.getX();
-                int vx = vector.getX();
-                if (ox < vx && direction.equals(FourFacingDirection.EAST)) {
-                    return true;
-                } else if (ox > vx && direction.equals(FourFacingDirection.WEST)) {
-                    return true;
-                }
-            }
-            if (vector.getX().equals(original.getX()) && vector.getZ().equals(original.getZ())) {
-                int oy = original.getY();
-                int vy = vector.getY();
-                if (oy < vy && direction.equals(FourFacingDirection.UP)) {
-                    return true;
-                } else return oy > vy && direction.equals(FourFacingDirection.DOWN);
-            }
-            return false;
-        }).filter(p -> !p.getPosition().equals(original)).collect(Collectors.toList());
-        double min = Double.MAX_VALUE;
-        BlockPosition current = null;
-        for (BlockPosition position : positions) {
-            double distance = position.getPosition().distanceSquared(original);
-            if (min > distance) {
-                min = distance;
-                current = position;
-            }
-        }
-        return Optional.ofNullable(current);
     }
 
 }

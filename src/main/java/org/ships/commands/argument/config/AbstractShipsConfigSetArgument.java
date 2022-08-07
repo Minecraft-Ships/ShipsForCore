@@ -33,7 +33,7 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
     private final String[] configNames;
 
     public AbstractShipsConfigSetArgument(Supplier<? extends Config.KnownNodes> config, String... configNames) {
-        if (configNames.length==0) {
+        if (configNames.length == 0) {
             throw new IllegalArgumentException("configNames must have at least one value");
         }
         this.config = config;
@@ -47,7 +47,8 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
                 new ExactArgument("set"),
                 new ExactArgument(CONFIG_TYPE, false, this.configNames),
                 new ConfigKeyArgument<>(CONFIG_KEY, this.config.get()),
-                new ConfigKeyValueArgument<>(CONFIG_VALUE, (context, argument) -> context.getArgument(this, CONFIG_KEY)));
+                new ConfigKeyValueArgument<>(CONFIG_VALUE,
+                        (context, argument) -> context.getArgument(this, CONFIG_KEY)));
     }
 
     @Override
@@ -66,11 +67,15 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) context.getSource();
-        DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<String, ?>> node = context.getArgument(this, CONFIG_KEY);
+        DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<String, ?>> node = context.getArgument(this,
+                CONFIG_KEY);
         Object argument = context.getArgument(this, CONFIG_VALUE);
         try {
             this.setNode(context);
-            viewer.sendMessage(AText.ofPlain("Set ").append(AText.ofPlain(node.getKeyName()).withColour(NamedTextColours.AQUA)).append(AText.ofPlain(" as \"" + argument + "\"")));
+            viewer.sendMessage(AText
+                    .ofPlain("Set ")
+                    .append(AText.ofPlain(node.getKeyName()).withColour(NamedTextColours.AQUA))
+                    .append(AText.ofPlain(" as \"" + argument + "\"")));
         } catch (IOException e) {
             viewer.sendMessage(AText.ofPlain("Failed to set value: " + e.getMessage()));
         }
@@ -78,7 +83,8 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
     }
 
     private <T> void setNode(CommandContext context) throws IOException {
-        DedicatedNode<T, T, ? extends ConfigurationNode.KnownParser<String, T>> node = context.getArgument(this, CONFIG_KEY);
+        DedicatedNode<T, T, ? extends ConfigurationNode.KnownParser<String, T>> node = context.getArgument(this,
+                CONFIG_KEY);
         T argument = context.getArgument(this, CONFIG_VALUE);
 
         Config.KnownNodes config = this.config.get();

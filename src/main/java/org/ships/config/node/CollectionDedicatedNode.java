@@ -5,12 +5,14 @@ import org.core.config.ConfigurationStream;
 
 import java.util.Collection;
 
-public class CollectionDedicatedNode <V, K extends Collection<V>, N extends ConfigurationNode.KnownParser.CollectionKnown<V>> implements DedicatedNode<K, V, N> {
+public class CollectionDedicatedNode<V, K extends Collection<V>,
+        N extends ConfigurationNode.KnownParser.CollectionKnown<V>>
+        implements DedicatedNode<K, V, N> {
 
     private final N node;
     private final String name;
 
-    public CollectionDedicatedNode(N node, String name){
+    public CollectionDedicatedNode(N node, String name) {
         this.name = name;
         this.node = node;
     }

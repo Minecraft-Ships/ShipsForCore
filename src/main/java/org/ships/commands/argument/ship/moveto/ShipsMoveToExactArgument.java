@@ -66,7 +66,8 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
         );
     }
 
-    private SuggestionArgument<Integer> createSuggestion(Function<? super Position<? extends Number>, Integer> function) {
+    private SuggestionArgument<Integer> createSuggestion(
+            Function<? super Position<? extends Number>, Integer> function) {
         return new SuggestionArgument<Integer>(new IntegerArgument(this.SHIP_VECTOR_ARGUMENT)) {
             @Override
             public List<String> suggest(CommandContext commandContext, CommandArgumentContext<Integer> argument) {
@@ -95,7 +96,7 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         Vector3<Integer> vector3 = commandContext.getArgument(this, this.SHIP_VECTOR_ARGUMENT);
         WorldExtent world = commandContext.getArgument(this, this.SHIP_WORLD_ARGUMENT);
-        if (world==null) {
+        if (world == null) {
             world = vessel.getPosition().getWorld();
         }
 

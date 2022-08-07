@@ -4,11 +4,11 @@ import org.core.utils.Identifiable;
 
 public class AbstractCrewPermission implements CrewPermission {
 
+    protected final String name;
+    protected final String id;
     protected boolean move;
     protected boolean remove;
     protected boolean command;
-    protected final String name;
-    protected final String id;
 
     public AbstractCrewPermission(String id, String name) {
         this.name = name;

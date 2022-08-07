@@ -29,7 +29,8 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_BLOCK_LIST_ARGUMENT), new ExactArgument(SHIP_VIEW_ARGUMENT), new BlockTypeArgument(SHIP_BLOCK_TYPE_ARGUMENT));
+        return Arrays.asList(new ExactArgument(SHIP_BLOCK_LIST_ARGUMENT), new ExactArgument(SHIP_VIEW_ARGUMENT),
+                new BlockTypeArgument(SHIP_BLOCK_TYPE_ARGUMENT));
     }
 
     @Override

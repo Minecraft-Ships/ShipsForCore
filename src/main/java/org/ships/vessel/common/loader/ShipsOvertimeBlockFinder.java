@@ -42,7 +42,8 @@ public class ShipsOvertimeBlockFinder {
         return this.vessels;
     }
 
-    public void loadOvertime(Consumer<? super Vessel> consumer, Consumer<? super PositionableShipsStructure> exceptionRunner) {
+    public void loadOvertime(Consumer<? super Vessel> consumer,
+            Consumer<? super PositionableShipsStructure> exceptionRunner) {
         TranslateCore
                 .getScheduleManager()
                 .schedule()
@@ -50,11 +51,13 @@ public class ShipsOvertimeBlockFinder {
                 .setDisplayName("Async vessel finder")
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                .setRunner((sch) -> this.loadOvertimeSynced(consumer, exceptionRunner)).build(ShipsPlugin.getPlugin()).run();
+                .setRunner((sch) -> this.loadOvertimeSynced(consumer, exceptionRunner))
+                .build(ShipsPlugin.getPlugin())
+                .run();
     }
 
     public void loadOvertimeSynced(Consumer<? super Vessel> consumer,
-                                   Consumer<? super PositionableShipsStructure> exceptionRunner) {
+            Consumer<? super PositionableShipsStructure> exceptionRunner) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this.getVessels()
                 .parallelStream()
@@ -97,7 +100,8 @@ public class ShipsOvertimeBlockFinder {
             }
 
             @Override
-            public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
+            public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
+                    @NotNull BlockPosition block) {
                 Optional<Map.Entry<Vector3<Integer>, Vessel>> opFirst = vessels
                         .parallelStream()
                         .filter(e -> e.getKey().equals(block.getPosition()))

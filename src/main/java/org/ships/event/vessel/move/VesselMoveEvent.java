@@ -13,6 +13,38 @@ import java.util.Set;
 
 public class VesselMoveEvent implements VesselEvent {
 
+    private final Vessel vessel;
+    private final MovementContext context;
+
+    public VesselMoveEvent(Vessel vessel, MovementContext context) {
+        this.vessel = vessel;
+        this.context = context;
+    }
+
+    public MovementContext getContext() {
+        return this.context;
+    }
+
+    @Deprecated
+    public BasicMovement getMovement() {
+        return this.context.getMovement();
+    }
+
+    @Deprecated
+    public boolean isStrictedMovement() {
+        return this.context.isStrictMovement();
+    }
+
+    @Deprecated
+    public MovingBlockSet getMovingStructure() {
+        return this.context.getMovingStructure();
+    }
+
+    @Override
+    public Vessel getVessel() {
+        return this.vessel;
+    }
+
     public static class Pre extends VesselMoveEvent implements Cancellable {
 
         private boolean cancelled;
@@ -78,37 +110,5 @@ public class VesselMoveEvent implements VesselEvent {
             return this.result;
         }
 
-    }
-
-    private final Vessel vessel;
-    private final MovementContext context;
-
-    public VesselMoveEvent(Vessel vessel, MovementContext context) {
-        this.vessel = vessel;
-        this.context = context;
-    }
-
-    public MovementContext getContext() {
-        return this.context;
-    }
-
-    @Deprecated
-    public BasicMovement getMovement() {
-        return this.context.getMovement();
-    }
-
-    @Deprecated
-    public boolean isStrictedMovement() {
-        return this.context.isStrictMovement();
-    }
-
-    @Deprecated
-    public MovingBlockSet getMovingStructure() {
-        return this.context.getMovingStructure();
-    }
-
-    @Override
-    public Vessel getVessel() {
-        return this.vessel;
     }
 }

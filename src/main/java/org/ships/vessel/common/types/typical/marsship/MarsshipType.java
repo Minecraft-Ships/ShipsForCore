@@ -20,7 +20,8 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 import java.io.File;
 import java.util.Collections;
 
-public class MarsshipType extends AbstractShipType<Marsship> implements CloneableShipType<Marsship>, SpecialBlockShipType<Marsship> {
+public class MarsshipType extends AbstractShipType<Marsship>
+        implements CloneableShipType<Marsship>, SpecialBlockShipType<Marsship> {
 
     public static final String NAME = "Marsship";
 
@@ -34,10 +35,13 @@ public class MarsshipType extends AbstractShipType<Marsship> implements Cloneabl
     }
 
     public MarsshipType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
+        this(ShipsPlugin.getPlugin(), name,
+                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+                BlockTypes.AIR, BlockTypes.WATER);
     }
 
-    public MarsshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {
+    public MarsshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file,
+            BlockType... types) {
         super(plugin, displayName, file, types);
         if (!(plugin.equals(ShipsPlugin.getPlugin()) && displayName.equals(NAME))) {
             String pluginId = plugin.getPluginId();
@@ -67,7 +71,8 @@ public class MarsshipType extends AbstractShipType<Marsship> implements Cloneabl
         this.file.set(MAX_SPEED, 10);
         this.file.set(ALTITUDE_SPEED, 5);
         this.file.set(SPECIAL_BLOCK_PERCENT, 15);
-        this.file.set(SPECIAL_BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE, Collections.singletonList(BlockTypes.DAYLIGHT_DETECTOR));
+        this.file.set(SPECIAL_BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE,
+                Collections.singletonList(BlockTypes.DAYLIGHT_DETECTOR));
     }
 
     @Override

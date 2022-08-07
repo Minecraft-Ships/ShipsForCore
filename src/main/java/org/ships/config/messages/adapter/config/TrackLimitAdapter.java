@@ -18,6 +18,7 @@ public class TrackLimitAdapter implements ConfigAdapter {
     }
 
     public AText process(AText message) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(ShipsPlugin.getPlugin().getConfig().getDefaultTrackSize() + ""));
+        return message.withAllAs(this.adapterTextFormat(),
+                AText.ofPlain(ShipsPlugin.getPlugin().getConfig().getDefaultTrackSize() + ""));
     }
 }

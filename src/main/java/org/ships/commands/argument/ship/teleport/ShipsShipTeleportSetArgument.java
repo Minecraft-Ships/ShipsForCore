@@ -46,7 +46,9 @@ public class ShipsShipTeleportSetArgument implements ArgumentCommand {
                 }, v -> "Ship is not teleport capable"),
                 new ExactArgument(this.SHIP_TELEPORT_ARGUMENT),
                 new ExactArgument(this.SHIP_SET),
-                new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(this.SHIP_LOCATION, new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, v) -> v instanceof TeleportToVessel, v -> "Ship is not teleport capable"), 1), "Default"));
+                new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(this.SHIP_LOCATION,
+                        new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, v) -> v instanceof TeleportToVessel,
+                                v -> "Ship is not teleport capable"), 1), "Default"));
 
     }
 

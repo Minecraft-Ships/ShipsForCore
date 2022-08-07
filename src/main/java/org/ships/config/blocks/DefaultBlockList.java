@@ -13,7 +13,10 @@ import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Stream;
 
@@ -65,7 +68,12 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public BlockList replaceBlockInstruction(BlockInstruction blockInstruction) {
-        BlockInstruction bi = this.blocks.stream().filter(b -> b.getType().equals(blockInstruction.getType())).findAny().orElseThrow(() -> new IllegalArgumentException("Could not find Block instruction for " + blockInstruction.getType().getName()));
+        BlockInstruction bi = this.blocks
+                .stream()
+                .filter(b -> b.getType().equals(blockInstruction.getType()))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Could not find Block instruction for " + blockInstruction.getType().getName()));
         bi.setCollideType(blockInstruction.getCollideType());
         bi.setBlockLimit(blockInstruction.getBlockLimit());
         return this;
@@ -75,7 +83,8 @@ public class DefaultBlockList implements BlockList {
     public synchronized BlockList saveChanges() {
         this.blocks.forEach(b -> {
             String[] idSplit = b.getType().getId().split(":");
-            this.file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]), ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, b);
+            this.file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]),
+                    ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, b);
         });
         this.file.save();
         return this;
@@ -90,16 +99,36 @@ public class DefaultBlockList implements BlockList {
     public synchronized void recreateFile() {
         ConfigurationStream.ConfigurationFile file = this.getFile();
         Collection<BlockType> completedBefore = new HashSet<>();
-        BlockTypes.OAK_SIGN.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.OAK_WALL_SIGN.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.PURPUR_BLOCK.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.ANVIL.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        BlockTypes.BLACK_GLAZED_TERRACOTTA.getLike().forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(CommonBlockGroups.SHULKER_BOX.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(CommonBlockGroups.FENCE.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(CommonBlockGroups.FENCE_GATE.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(CommonBlockGroups.DOOR.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(CommonBlockGroups.PISTON.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_SIGN
+                .getLike()
+                .forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.OAK_WALL_SIGN
+                .getLike()
+                .forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.PURPUR_BLOCK
+                .getLike()
+                .forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.ANVIL
+                .getLike()
+                .forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        BlockTypes.BLACK_GLAZED_TERRACOTTA
+                .getLike()
+                .forEach(w -> this.addToConfig(w, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(CommonBlockGroups.SHULKER_BOX.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(CommonBlockGroups.FENCE.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(CommonBlockGroups.FENCE_GATE.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(CommonBlockGroups.DOOR.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(CommonBlockGroups.PISTON.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
 
         this.addToConfig(BlockTypes.JUKEBOX, BlockInstruction.CollideType.MATERIAL, completedBefore);
         this.addToConfig(BlockTypes.LEVER, BlockInstruction.CollideType.MATERIAL, completedBefore);
@@ -141,27 +170,65 @@ public class DefaultBlockList implements BlockList {
 
         this.addToConfig(BlockTypes.REDSTONE_WIRE, BlockInstruction.CollideType.IGNORE, completedBefore);
 
-        Stream.of(BlockGroups1V13.LOG.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.WOOD_PLANKS.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.BANNER.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.CARPET.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.WOOL.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.BUTTON.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.BED.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.CONCRETE.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.CONCRETE_POWDER.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.SLAB.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.STAIRS.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.POTTED_SAPLING.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.TORCH.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.STAINED_GLASS.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.STAINED_GLASS_PANE.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.TERRACOTTA.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.PRESSURE_PLATE.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
-        Stream.of(BlockGroups1V13.TRAP_DOOR.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.LOG.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.WOOD_PLANKS.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.BANNER.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.CARPET.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.WOOL.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.BUTTON.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.BED.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.CONCRETE.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.CONCRETE_POWDER.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.SLAB.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.STAIRS.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.POTTED_SAPLING.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.TORCH.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.STAINED_GLASS.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.STAINED_GLASS_PANE.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.TERRACOTTA.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.PRESSURE_PLATE.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
+        Stream
+                .of(BlockGroups1V13.TRAP_DOOR.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.MATERIAL, completedBefore));
 
 
-        Stream.of(BlockGroups1V13.SAPLING.getGrouped()).forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.IGNORE, completedBefore));
+        Stream
+                .of(BlockGroups1V13.SAPLING.getGrouped())
+                .forEach(t -> this.addToConfig(t, BlockInstruction.CollideType.IGNORE, completedBefore));
         this.addToConfig(BlockTypes1V13.DANDELION, BlockInstruction.CollideType.IGNORE, completedBefore);
         this.addToConfig(BlockTypes1V13.KELP, BlockInstruction.CollideType.IGNORE, completedBefore);
         this.addToConfig(BlockTypes1V13.REPEATER, BlockInstruction.CollideType.MATERIAL, completedBefore);
@@ -171,16 +238,21 @@ public class DefaultBlockList implements BlockList {
         this.addToConfig(BlockTypes.TALL_SEAGRASS, BlockInstruction.CollideType.IGNORE, completedBefore);
         this.addToConfig(BlockTypes.SEAGRASS, BlockInstruction.CollideType.IGNORE, completedBefore);
 
-        TranslateCore.getPlatform().getBlockTypes().forEach(bt -> this.addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
+        TranslateCore
+                .getPlatform()
+                .getBlockTypes()
+                .forEach(bt -> this.addToConfig(bt, BlockInstruction.CollideType.DETECT_COLLIDE, completedBefore));
         file.save();
     }
 
-    private void addToConfig(BlockType type, BlockInstruction.CollideType collide, Collection<? super BlockType> current) {
+    private void addToConfig(BlockType type, BlockInstruction.CollideType collide,
+            Collection<? super BlockType> current) {
         if (current.stream().anyMatch(c -> c.equals(type))) {
             return;
         }
         String[] idSplit = type.getId().split(":");
-        this.file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]), ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, new BlockInstruction(type).setCollideType(collide));
+        this.file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]),
+                ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, new BlockInstruction(type).setCollideType(collide));
         current.add(type);
     }
 }

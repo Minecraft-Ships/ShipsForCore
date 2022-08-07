@@ -107,7 +107,7 @@ public class BasicFlightSinglePath implements FlightSinglePath {
             direction = -1;
         }
         int current = pos1;
-        while (current!=pos2) {
+        while (current != pos2) {
             list.add(current);
             current = current + direction;
         }

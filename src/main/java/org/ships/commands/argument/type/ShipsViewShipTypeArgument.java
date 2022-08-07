@@ -12,7 +12,10 @@ import org.core.source.viewer.CommandViewer;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 public class ShipsViewShipTypeArgument implements ArgumentCommand {
 

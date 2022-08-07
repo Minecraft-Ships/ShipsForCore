@@ -1,12 +1,10 @@
 package org.ships.vessel.common.requirement;
 
-import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.inventories.snapshots.block.FurnaceInventorySnapshot;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
 import org.core.world.position.block.details.data.keyed.KeyedData;
-import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +31,8 @@ public class FuelRequirement implements Requirement {
         this(parent, null, null, null);
     }
 
-    public FuelRequirement(@Nullable FuelRequirement parent, @Nullable FuelSlot slot, @Nullable Integer takeAmount, @Nullable Collection<ItemType> fuelTypes) {
+    public FuelRequirement(@Nullable FuelRequirement parent, @Nullable FuelSlot slot, @Nullable Integer takeAmount,
+            @Nullable Collection<ItemType> fuelTypes) {
         if (parent == null && (takeAmount == null || slot == null || fuelTypes == null)) {
             throw new IllegalArgumentException("Parent must not be null if any values are null");
         }
@@ -102,13 +101,15 @@ public class FuelRequirement implements Requirement {
         Collection<FurnaceInventorySnapshot> furnaceInventories = this.getInventories(context);
         boolean check = furnaceInventories
                 .parallelStream()
-                .map(inventory -> (this.slot == FuelSlot.TOP ? inventory.getSmeltingSlot() : inventory.getFuelSlot()).getItem())
+                .map(inventory -> (
+                        this.slot == FuelSlot.TOP ? inventory.getSmeltingSlot() : inventory.getFuelSlot()).getItem())
                 .filter(Optional::isPresent)
                 .filter(opItem -> fuelTypes.contains(opItem.get().getType()))
                 .map(opItem -> opItem.get().getQuantity())
                 .anyMatch(amount -> amount >= toTakeAmount);
         if (!check) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(toTakeAmount, fuelTypes)));
+            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_FUEL,
+                    new RequiredFuelMovementData(toTakeAmount, fuelTypes)));
         }
     }
 
@@ -132,7 +133,9 @@ public class FuelRequirement implements Requirement {
             throw new RuntimeException("onCheck was not called first or was in a different schedule");
         }
         Slot slot = opSlot.get();
-        ItemStack stack = slot.getItem().orElseThrow(() -> new RuntimeException("onCheck was not called first or was in a different schedule"));
+        ItemStack stack = slot
+                .getItem()
+                .orElseThrow(() -> new RuntimeException("onCheck was not called first or was in a different schedule"));
         if ((stack.getQuantity() - toTakeAmount) > 0) {
             stack = stack.copyWithQuantity(stack.getQuantity() - toTakeAmount);
         } else {

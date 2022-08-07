@@ -6,12 +6,12 @@ public class LoadVesselException extends IOException {
 
     private final String reason;
 
-    public LoadVesselException(String reason){
+    public LoadVesselException(String reason) {
         super(reason);
         this.reason = reason;
     }
 
-    public String getReason(){
+    public String getReason() {
         return this.reason;
     }
 }

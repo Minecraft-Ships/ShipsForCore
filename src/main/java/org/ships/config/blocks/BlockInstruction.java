@@ -4,32 +4,32 @@ import org.core.world.position.block.BlockType;
 
 public class BlockInstruction {
 
+    protected final BlockType type;
     protected BlockInstruction.CollideType collideType = CollideType.DETECT_COLLIDE;
     protected int blockLimit = -1;
-    protected final BlockType type;
 
-    public BlockInstruction(BlockType type){
+    public BlockInstruction(BlockType type) {
         this.type = type;
     }
 
-    public BlockType getType(){
+    public BlockType getType() {
         return this.type;
     }
 
-    public int getBlockLimit(){
+    public int getBlockLimit() {
         return this.blockLimit;
     }
 
-    public BlockInstruction setBlockLimit(int limit){
+    public BlockInstruction setBlockLimit(int limit) {
         this.blockLimit = limit;
         return this;
     }
 
-    public BlockInstruction.CollideType getCollideType(){
+    public BlockInstruction.CollideType getCollideType() {
         return this.collideType;
     }
 
-    public BlockInstruction setCollideType(BlockInstruction.CollideType collideType){
+    public BlockInstruction setCollideType(BlockInstruction.CollideType collideType) {
         this.collideType = collideType;
         return this;
     }

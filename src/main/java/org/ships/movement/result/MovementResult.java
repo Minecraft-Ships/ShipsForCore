@@ -48,6 +48,29 @@ public interface MovementResult<E> {
     TooManyOfBlock TOO_MANY_OF_BLOCK = new TooManyOfBlock();
     Unknown UNKNOWN = new Unknown();
 
+    static AText formatMessage(String message, Vessel vessel, CommandViewer viewer) {
+        try {
+            message = message.replaceAll("%Vessel Name%", vessel.getName());
+        } catch (NoLicencePresent e) {
+            message = message.replaceAll("%Vessel Name%", "Unknown");
+        }
+        try {
+            if (vessel instanceof IdentifiableShip) {
+                message = message.replaceAll("%Vessel Id%", ((IdentifiableShip) vessel).getId());
+            } else {
+                message = message.replaceAll("%Vessel Id%", vessel.getName().toLowerCase());
+            }
+        } catch (NoLicencePresent e) {
+            message = message.replaceAll("%Vessel Id%", "Unknown");
+        }
+        if (viewer instanceof LivePlayer) {
+            message = message.replaceAll("%Player Name%", ((AbstractHuman<LiveEntity>) viewer).getName());
+        } else {
+            message = message.replaceAll("%Player Name%", "_");
+        }
+        return AText.ofPlain(message);
+    }
+
     void sendMessage(Vessel vessel, CommandViewer viewer, E value);
 
     class OverSized implements MovementResult<Integer> {
@@ -69,7 +92,9 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Integer value) {
-            AText errorMessage = AdventureMessageConfig.ERROR_UNDERSIZED.process(AdventureMessageConfig.ERROR_UNDERSIZED.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(vessel, value));
+            AText errorMessage = AdventureMessageConfig.ERROR_UNDERSIZED.process(
+                    AdventureMessageConfig.ERROR_UNDERSIZED.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()),
+                    new AbstractMap.SimpleImmutableEntry<>(vessel, value));
             viewer.sendMessage(errorMessage);
         }
     }
@@ -78,7 +103,10 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, BlockType value) {
-            AText errorMessage = AdventureMessageConfig.ERROR_TOO_MANY_OF_BLOCK.process(AdventureMessageConfig.ERROR_TOO_MANY_OF_BLOCK.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), new AbstractMap.SimpleImmutableEntry<>(vessel, value));
+            AText errorMessage = AdventureMessageConfig.ERROR_TOO_MANY_OF_BLOCK.process(
+                    AdventureMessageConfig.ERROR_TOO_MANY_OF_BLOCK.parse(
+                            ShipsPlugin.getPlugin().getAdventureMessageConfig()),
+                    new AbstractMap.SimpleImmutableEntry<>(vessel, value));
             viewer.sendMessage(errorMessage);
         }
     }
@@ -87,7 +115,9 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
-            AText errorMessage = AdventureMessageConfig.ERROR_ALREADY_MOVING.process(AdventureMessageConfig.ERROR_ALREADY_MOVING.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), vessel);
+            AText errorMessage = AdventureMessageConfig.ERROR_ALREADY_MOVING.process(
+                    AdventureMessageConfig.ERROR_ALREADY_MOVING.parse(
+                            ShipsPlugin.getPlugin().getAdventureMessageConfig()), vessel);
             viewer.sendMessage(errorMessage);
         }
     }
@@ -96,7 +126,9 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Boolean value) {
-            AText errorMessage = AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.process(AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig()), vessel);
+            AText errorMessage = AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.process(
+                    AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING.parse(
+                            ShipsPlugin.getPlugin().getAdventureMessageConfig()), vessel);
             viewer.sendMessage(errorMessage);
         }
     }
@@ -120,7 +152,10 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredFuelMovementData value) {
-            viewer.sendMessage(AText.ofPlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " + ArrayUtils.toString(", ", t -> t, Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) + " in a single furnace"));
+            viewer.sendMessage(AText.ofPlain("Your ship does not have " + value.getRequiredConsumption() + " fuel of " +
+                    ArrayUtils.toString(", ", t -> t,
+                            Parser.unparseList(Parser.STRING_TO_ITEM_TYPE, value.getAcceptedFuels())) +
+                    " in a single furnace"));
         }
     }
 
@@ -128,7 +163,9 @@ public interface MovementResult<E> {
 
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, RequiredPercentMovementData value) {
-            AText text = AText.ofPlain("Your ship has " + value.getHas() + "% of " + value.getBlockType().getName() + ". You need " + value.getRequired() + "% or more.");
+            AText text = AText.ofPlain(
+                    "Your ship has " + value.getHas() + "% of " + value.getBlockType().getName() + ". You need " +
+                            value.getRequired() + "% or more.");
             viewer.sendMessage(text);
         }
     }
@@ -186,10 +223,12 @@ public interface MovementResult<E> {
         @Override
         public void sendMessage(Vessel vessel, CommandViewer viewer, Collection<BlockPosition> collection) {
             AText text;
-            if (collection.size()==1) {
-                text = AText.ofPlain("Found a single block in the way of " + collection.iterator().next().getBlockType().getName());
+            if (collection.size() == 1) {
+                text = AText.ofPlain(
+                        "Found a single block in the way of " + collection.iterator().next().getBlockType().getName());
             } else {
-                text = AText.ofPlain("Found " + collection.size() + " blocks in the way including " + collection.iterator().next().getBlockType().getName());
+                text = AText.ofPlain("Found " + collection.size() + " blocks in the way including " +
+                        collection.iterator().next().getBlockType().getName());
             }
             viewer.sendMessage(text);
 
@@ -239,29 +278,6 @@ public interface MovementResult<E> {
             String message = ShipsPlugin.getPlugin().getMessageConfig().getNoSpeedSet();
             player.sendMessage(formatMessage(message, vessel, player));
         }
-    }
-
-    static AText formatMessage(String message, Vessel vessel, CommandViewer viewer) {
-        try {
-            message = message.replaceAll("%Vessel Name%", vessel.getName());
-        } catch (NoLicencePresent e) {
-            message = message.replaceAll("%Vessel Name%", "Unknown");
-        }
-        try {
-            if (vessel instanceof IdentifiableShip) {
-                message = message.replaceAll("%Vessel Id%", ((IdentifiableShip) vessel).getId());
-            } else {
-                message = message.replaceAll("%Vessel Id%", vessel.getName().toLowerCase());
-            }
-        } catch (NoLicencePresent e) {
-            message = message.replaceAll("%Vessel Id%", "Unknown");
-        }
-        if (viewer instanceof LivePlayer) {
-            message = message.replaceAll("%Player Name%", ((AbstractHuman<LiveEntity>) viewer).getName());
-        } else {
-            message = message.replaceAll("%Player Name%", "_");
-        }
-        return AText.ofPlain(message);
     }
 
 

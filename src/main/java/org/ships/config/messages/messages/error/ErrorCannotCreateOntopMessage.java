@@ -18,7 +18,9 @@ public class ErrorCannotCreateOntopMessage implements Message<Vessel> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Cannot create your ship ontop of " + Message.VESSEL_NAME.adapterTextFormat()).withColour(NamedTextColours.RED);
+        return AText
+                .ofPlain("Cannot create your ship ontop of " + Message.VESSEL_NAME.adapterTextFormat())
+                .withColour(NamedTextColours.RED);
     }
 
     @Override

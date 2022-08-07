@@ -53,7 +53,8 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
         }
     }
 
-    private PositionableShipsStructure getConnectedBlocks(ASyncBlockPosition position, OvertimeBlockFinderUpdate update) {
+    private PositionableShipsStructure getConnectedBlocks(ASyncBlockPosition position,
+            OvertimeBlockFinderUpdate update) {
         this.blockCount = 0;
         this.shipsStructure = new AbstractPositionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
@@ -76,7 +77,8 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
+            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         TranslateCore
                 .getScheduleManager()
                 .schedule()

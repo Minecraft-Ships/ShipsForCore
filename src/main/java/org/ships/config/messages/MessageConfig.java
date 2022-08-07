@@ -18,21 +18,38 @@ import java.util.Set;
 @Deprecated(forRemoval = true)
 public class MessageConfig implements Config.KnownNodes {
 
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> TOO_MANY =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_STRING_PARSER, "Error", "TooManyOfBlocks");
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPEED_SET =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_STRING_PARSER, "Error", "NoSpeedSet");
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> FAILED_TO_FIND_LICENCE =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_STRING_PARSER, "Error", "FailedToFindLicenceSign");
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPECIAL_BLOCK_FOUND =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_STRING_PARSER, "Error", "NoSpecialBlockFound");
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPECIAL_NAMED_BLOCK_FOUND =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_STRING_PARSER, "Error", "NoSpecialNamedBlockFound");
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> NOT_IN_MOVING_IN =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_STRING_PARSER, "Error", "NotInMovingIn");
+    private static final ConfigurationNode.KnownParser.SingleKnown<String> SYNCED_SHIP =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_STRING_PARSER, "Error", "SyncedShip");
+    private static final ConfigurationNode.KnownParser.SingleKnown<AText> ALTITUDE_FIRST_LINE =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_TEXT, "Sign", "Altitude", "First");
+    private static final ConfigurationNode.KnownParser.SingleKnown<AText> ALTITUDE_SECOND_LINE =
+            new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_TEXT, "Sign", "Altitude", "First");
     private final ConfigurationStream.ConfigurationFile file;
 
-    private static final ConfigurationNode.KnownParser.SingleKnown<String> TOO_MANY = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "TooManyOfBlocks");
-    private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPEED_SET = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "NoSpeedSet");
-    private static final ConfigurationNode.KnownParser.SingleKnown<String> FAILED_TO_FIND_LICENCE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "FailedToFindLicenceSign");
-    private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPECIAL_BLOCK_FOUND = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "NoSpecialBlockFound");
-    private static final ConfigurationNode.KnownParser.SingleKnown<String> NO_SPECIAL_NAMED_BLOCK_FOUND = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "NoSpecialNamedBlockFound");
-    private static final ConfigurationNode.KnownParser.SingleKnown<String> NOT_IN_MOVING_IN = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "NotInMovingIn");
-    private static final ConfigurationNode.KnownParser.SingleKnown<String> SYNCED_SHIP = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_STRING_PARSER, "Error", "SyncedShip");
-
-    private static final ConfigurationNode.KnownParser.SingleKnown<AText> ALTITUDE_FIRST_LINE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_TEXT, "Sign", "Altitude", "First");
-    private static final ConfigurationNode.KnownParser.SingleKnown<AText> ALTITUDE_SECOND_LINE = new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_TEXT, "Sign", "Altitude", "First");
-
     public MessageConfig() {
-        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modifications = false;
         if (!this.file.getString(TOO_MANY).isPresent()) {
@@ -118,8 +135,10 @@ public class MessageConfig implements Config.KnownNodes {
         this.file.set(NO_SPEED_SET, StringParser.STRING_TO_STRING_PARSER, "No Speed Set");
         this.file.set(FAILED_TO_FIND_LICENCE, StringParser.STRING_TO_STRING_PARSER, "Failed to Find Licence Sign");
         this.file.set(NO_SPECIAL_BLOCK_FOUND, StringParser.STRING_TO_STRING_PARSER, "Failed to find %Block Name%");
-        this.file.set(NO_SPECIAL_NAMED_BLOCK_FOUND, StringParser.STRING_TO_STRING_PARSER, "Failed to find %Block Name%");
-        this.file.set(NOT_IN_MOVING_IN, StringParser.STRING_TO_STRING_PARSER, "Must be moving into one of the following blocks: %Block Names%");
+        this.file.set(NO_SPECIAL_NAMED_BLOCK_FOUND, StringParser.STRING_TO_STRING_PARSER,
+                "Failed to find %Block Name%");
+        this.file.set(NOT_IN_MOVING_IN, StringParser.STRING_TO_STRING_PARSER,
+                "Must be moving into one of the following blocks: %Block Names%");
         this.file.save();
     }
 

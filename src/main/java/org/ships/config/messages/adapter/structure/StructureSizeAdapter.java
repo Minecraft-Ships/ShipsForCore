@@ -6,7 +6,6 @@ import org.ships.vessel.structure.ShipsStructure;
 
 import java.security.SecureRandom;
 import java.util.Collections;
-import java.util.Random;
 import java.util.Set;
 
 public class StructureSizeAdapter implements MessageAdapter<ShipsStructure> {
@@ -22,6 +21,7 @@ public class StructureSizeAdapter implements MessageAdapter<ShipsStructure> {
 
     @Override
     public AText process(AText message, ShipsStructure obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(obj.getOriginalRelativePositions().size() + ""));
+        return message.withAllAs(this.adapterTextFormat(),
+                AText.ofPlain(obj.getOriginalRelativePositions().size() + ""));
     }
 }

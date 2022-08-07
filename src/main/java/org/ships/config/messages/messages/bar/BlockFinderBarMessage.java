@@ -18,7 +18,8 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.STRUCTURE_SIZE.adapterTextFormat() + " / " + Message.CONFIG_TRACK_LIMIT.adapterTextFormat());
+        return AText.ofPlain(
+                Message.STRUCTURE_SIZE.adapterTextFormat() + " / " + Message.CONFIG_TRACK_LIMIT.adapterTextFormat());
     }
 
     @Override

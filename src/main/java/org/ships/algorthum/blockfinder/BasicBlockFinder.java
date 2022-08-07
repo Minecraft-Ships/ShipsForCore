@@ -17,7 +17,8 @@ public interface BasicBlockFinder extends Algorithm {
 
     @NotNull BasicBlockFinder init();
 
-    void getConnectedBlocksOvertime(@NotNull BlockPosition position, @NotNull OvertimeBlockFinderUpdate runAfterFullSearch);
+    void getConnectedBlocksOvertime(@NotNull BlockPosition position,
+            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch);
 
     int getBlockLimit();
 

@@ -42,48 +42,6 @@ import java.util.stream.Collectors;
 
 public class LicenceSign implements ShipsSign {
 
-    private static class VesselStructureUpdate implements OvertimeBlockFinderUpdate {
-
-        private final @Nullable ServerBossBar finalBar;
-        private final int totalBlockCount;
-        private final @NotNull CommandViewer messager;
-        private final @NotNull Vessel vessel;
-
-        private VesselStructureUpdate(@NotNull Vessel vessel, int totalBlockCount, @NotNull CommandViewer messager,
-                                      @Nullable ServerBossBar bossBar) {
-            this.messager = messager;
-            this.vessel = vessel;
-            this.finalBar = bossBar;
-            this.totalBlockCount = totalBlockCount;
-        }
-
-        @Override
-        public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-            int originalSize = structure.getOriginalRelativePositions().size();
-            this.vessel.setStructure(structure);
-            this.vessel.save();
-            this.messager.sendMessage(AText.ofPlain("Vessel structure has updated by " + (structure.getOriginalRelativePositions().size() - originalSize)));
-            if (this.finalBar != null) {
-                this.finalBar.deregisterPlayers();
-            }
-        }
-
-        @Override
-        public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
-            if (this.finalBar != null) {
-                int blockCount = currentStructure.getOriginalRelativePositions().size() + 1;
-                this.finalBar.setTitle(AText.ofPlain(blockCount + "/" + this.totalBlockCount));
-                try {
-                    this.finalBar.setValue(blockCount, this.totalBlockCount);
-                } catch (IllegalArgumentException ignore) {
-
-                }
-            }
-            return OvertimeBlockFinderUpdate.BlockFindControl.USE;
-        }
-    }
-
-
     public Optional<Vessel> getShip(SignTileEntity entity) {
         if (!this.isSign(entity)) {
             return Optional.empty();
@@ -211,10 +169,13 @@ public class LicenceSign implements ShipsSign {
                                             + "."
                                             + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
                     if (!file.exists()) {
-                        player.sendMessage(AText.ofPlain("Could not find the file associated with the ship").withColour(NamedTextColours.RED));
+                        player.sendMessage(AText
+                                .ofPlain("Could not find the file associated with the ship")
+                                .withColour(NamedTextColours.RED));
                         return false;
                     }
-                    ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
+                    ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file,
+                            TranslateCore.getPlatform().getConfigFormat());
                     config.set(ShipsFileLoader.META_LOCATION_X, position.getX());
                     config.set(ShipsFileLoader.META_LOCATION_Y, position.getY());
                     config.set(ShipsFileLoader.META_LOCATION_Z, position.getZ());
@@ -252,5 +213,48 @@ public class LicenceSign implements ShipsSign {
     @Override
     public String getName() {
         return "Licence sign";
+    }
+
+    private static class VesselStructureUpdate implements OvertimeBlockFinderUpdate {
+
+        private final @Nullable ServerBossBar finalBar;
+        private final int totalBlockCount;
+        private final @NotNull CommandViewer messager;
+        private final @NotNull Vessel vessel;
+
+        private VesselStructureUpdate(@NotNull Vessel vessel, int totalBlockCount, @NotNull CommandViewer messager,
+                @Nullable ServerBossBar bossBar) {
+            this.messager = messager;
+            this.vessel = vessel;
+            this.finalBar = bossBar;
+            this.totalBlockCount = totalBlockCount;
+        }
+
+        @Override
+        public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
+            int originalSize = structure.getOriginalRelativePositions().size();
+            this.vessel.setStructure(structure);
+            this.vessel.save();
+            this.messager.sendMessage(AText.ofPlain("Vessel structure has updated by " +
+                    (structure.getOriginalRelativePositions().size() - originalSize)));
+            if (this.finalBar != null) {
+                this.finalBar.deregisterPlayers();
+            }
+        }
+
+        @Override
+        public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(
+                @NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
+            if (this.finalBar != null) {
+                int blockCount = currentStructure.getOriginalRelativePositions().size() + 1;
+                this.finalBar.setTitle(AText.ofPlain(blockCount + "/" + this.totalBlockCount));
+                try {
+                    this.finalBar.setValue(blockCount, this.totalBlockCount);
+                } catch (IllegalArgumentException ignore) {
+
+                }
+            }
+            return OvertimeBlockFinderUpdate.BlockFindControl.USE;
+        }
     }
 }

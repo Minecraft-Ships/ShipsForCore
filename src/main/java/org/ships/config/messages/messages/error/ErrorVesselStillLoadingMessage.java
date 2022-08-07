@@ -18,7 +18,10 @@ public class ErrorVesselStillLoadingMessage implements Message<Vessel> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_NAME.adapterTextFormat() + " is loading. All movement controls are locked until it is loaded").withColour(NamedTextColours.RED);
+        return AText
+                .ofPlain(Message.VESSEL_NAME.adapterTextFormat() +
+                        " is loading. All movement controls are locked until it is loaded")
+                .withColour(NamedTextColours.RED);
     }
 
     @Override

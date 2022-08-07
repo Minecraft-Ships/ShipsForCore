@@ -30,6 +30,28 @@ public class Result extends ArrayList<Result.Run> {
             Run.COMMON_SAVE,
             Run.REMOVE_BAR);
 
+    public Result() {
+    }
+
+    public Result(Run... run) {
+        super(Arrays.asList(run));
+    }
+
+    public Result(Collection<? extends Run> collection) {
+        super(collection);
+    }
+
+    public void run(Vessel vessel, MovementContext context) {
+        this.forEach(e -> {
+            ResultEvent.PreRun event = new ResultEvent.PreRun(vessel, this, e, context);
+            TranslateCore.getEventManager().callEvent(event);
+            if (event.isCancelled()) {
+                return;
+            }
+            e.run(vessel, context);
+        });
+    }
+
     public interface Run {
 
         Run COMMON_SET_SUCCESSFUL = (v, c) -> {
@@ -67,7 +89,10 @@ public class Result extends ArrayList<Result.Run> {
         };
 
         Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, c) -> {
-            Optional<MovingBlock> opSign = c.getMovingStructure().getOriginal().get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
+            Optional<MovingBlock> opSign = c
+                    .getMovingStructure()
+                    .getOriginal()
+                    .get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
             if (!opSign.isPresent()) {
                 return;
             }
@@ -76,7 +101,8 @@ public class Result extends ArrayList<Result.Run> {
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> c.getEntities().keySet().forEach(e -> {
             if (e instanceof EntitySnapshot.NoneDestructibleSnapshot) {
-                EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot = (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) e;
+                EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot =
+                        (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) e;
                 snapshot.teleportEntity(true);
             } else {
                 e.getCreatedFrom().ifPresent(LiveEntity::remove);
@@ -91,27 +117,5 @@ public class Result extends ArrayList<Result.Run> {
 
         void run(Vessel vessel, MovementContext context);
 
-    }
-
-    public Result() {
-    }
-
-    public Result(Run... run) {
-        super(Arrays.asList(run));
-    }
-
-    public Result(Collection<? extends Run> collection) {
-        super(collection);
-    }
-
-    public void run(Vessel vessel, MovementContext context) {
-        this.forEach(e -> {
-            ResultEvent.PreRun event = new ResultEvent.PreRun(vessel, this, e, context);
-            TranslateCore.getEventManager().callEvent(event);
-            if (event.isCancelled()) {
-                return;
-            }
-            e.run(vessel, context);
-        });
     }
 }

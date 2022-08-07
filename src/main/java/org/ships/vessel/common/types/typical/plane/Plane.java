@@ -30,7 +30,6 @@ import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.vessel.common.assits.*;
-import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
@@ -40,17 +39,17 @@ import java.util.stream.Collectors;
 
 public class Plane extends AbstractShipsVessel implements AirType, VesselRequirement, Fallable, FlightPathType {
 
+    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
+            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel",
+                    "Slot");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     protected @Nullable Integer fuelConsumption;
     protected @Nullable FuelSlot fuelSlot;
     protected @NotNull Set<ItemType> fuelTypes = new HashSet<>();
     protected @Nullable FlightPath path;
-
-    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
-            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
         super(licence, type);
@@ -149,10 +148,14 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
         }).filter(i -> {
             Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-            return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> type.equals(t.getType())).orElse(false));
+            return this
+                    .getFuelTypes()
+                    .stream()
+                    .anyMatch(type -> slot.getItem().map(t -> type.equals(t.getType())).orElse(false));
         }).collect(Collectors.toList());
         if (acceptedSlots.isEmpty()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
+                    new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
         }
     }
 
@@ -180,13 +183,18 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return slot.getItem().isPresent();
         }).filter(i -> {
             Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-            return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= (this.fuelConsumption == null ? 0 : this.fuelConsumption);
+            return slot.getItem().map(ItemStack::getQuantity).orElse(0) >=
+                    (this.fuelConsumption == null ? 0 : this.fuelConsumption);
         }).filter(i -> {
             Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-            return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false));
+            return this
+                    .getFuelTypes()
+                    .stream()
+                    .anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false));
         }).collect(Collectors.toList());
         if (acceptedSlots.isEmpty()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
+                    new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
         }
         FurnaceInventory inv = acceptedSlots.get(0);
         Slot slot = this.getFuelSlot() == FuelSlot.TOP ? inv.getSmeltingSlot() : inv.getFuelSlot();
@@ -231,7 +239,10 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
         }).filter(i -> {
             Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-            return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
+            return this
+                    .getFuelTypes()
+                    .stream()
+                    .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
         }).collect(Collectors.toList());
         return acceptedSlots.isEmpty();
     }

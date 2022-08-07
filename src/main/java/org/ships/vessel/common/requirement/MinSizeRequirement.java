@@ -28,7 +28,8 @@ public class MinSizeRequirement implements Requirement {
             return this.minSize;
         }
         if (this.parent == null) {
-            throw new RuntimeException("You managed to get passed the constructor check. What you are doing is not supported");
+            throw new RuntimeException(
+                    "You managed to get passed the constructor check. What you are doing is not supported");
         }
         return this.parent.getMinimumSize();
     }
@@ -44,7 +45,8 @@ public class MinSizeRequirement implements Requirement {
         int minSize = this.getMinimumSize();
 
         if (minSize > shipSize) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.UNDER_SIZED, (minSize - shipSize)));
+            throw new MoveException(
+                    new AbstractFailedMovement<>(vessel, MovementResult.UNDER_SIZED, (minSize - shipSize)));
         }
     }
 

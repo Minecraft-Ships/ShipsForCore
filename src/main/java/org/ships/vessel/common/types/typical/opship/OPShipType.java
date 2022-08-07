@@ -19,14 +19,18 @@ import java.io.File;
 public class OPShipType extends AbstractShipType<OPShip> {
 
     public OPShipType() {
-        this("OPShip", new File(ShipsPlugin.getPlugin().getConfigFolder(), "/Configuration/ShipType/OPShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+        this("OPShip", new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                "/Configuration/ShipType/OPShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
     public OPShipType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR);
+        this(ShipsPlugin.getPlugin(), name,
+                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+                BlockTypes.AIR);
     }
 
-    public OPShipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file, BlockType... types) {
+    public OPShipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file,
+            BlockType... types) {
         super(plugin, displayName, file, types);
     }
 

@@ -42,23 +42,24 @@ import java.util.*;
 
 public class Submarine extends AbstractShipsVessel implements UnderWaterType, VesselRequirement {
 
+    protected final ConfigurationNode configBurnerBlock = new ConfigurationNode("Block", "Burner");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special",
+                    "Type");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
+            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
+            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel",
+                    "Slot");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     protected @Nullable Float specialBlockPercent;
     protected @Nullable Collection<BlockType> specialBlocks;
     protected @Nullable Integer fuelConsumption;
     protected @Nullable FuelSlot fuelSlot;
     protected @Nullable Collection<ItemType> fuelTypes;
-
-    protected final ConfigurationNode configBurnerBlock = new ConfigurationNode("Block", "Burner");
-    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
-    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
-    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
-            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
-    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -93,14 +94,14 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         return this.specialBlocks;
     }
 
+    public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
+        this.specialBlocks = types;
+    }
+
     public float getSpecialBlocksPercent() {
         return Objects.requireNonNullElseGet(
                 this.specialBlockPercent,
                 () -> this.getType().getDefaultSpecialBlockPercent());
-    }
-
-    public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
-        this.specialBlocks = types;
     }
 
     public void setSpecialBlocksPercent(@Nullable Float value) {
@@ -136,7 +137,8 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         map.put("Fuel", ArrayUtils.toString(", ", Parser.STRING_TO_ITEM_TYPE::unparse, this.getFuelTypes()));
         map.put("Fuel Consumption", this.getFuelConsumption() + "");
         map.put("Fuel Slot", (this.getFuelSlot().name()));
-        map.put("Special Block", ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
+        map.put("Special Block",
+                ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
         map.put("Required Percent", this.getSpecialBlockPercent() + "");
         return map;
     }
@@ -173,9 +175,11 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         if (!context.isStrictMovement()) {
             return;
         }
-        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
+        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition,
+                context.getMovingStructure());
         if (opWaterLevel.isEmpty()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND,
+                    Collections.singletonList(BlockTypes.WATER)));
         }
         int specialBlocks = 0;
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
@@ -193,9 +197,15 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
             }
             furnaceInventories.add(((FurnaceTileEntity) opTile.get()).getInventory());
         }
-        float specialBlockPercent = ((specialBlocks * 100.0f) / context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count());
+        float specialBlockPercent = ((specialBlocks * 100.0f) / context
+                .getMovingStructure()
+                .stream()
+                .filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR))
+                .count());
         if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT,
+                    new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(),
+                            this.getSpecialBlockPercent(), specialBlockPercent)));
         }
         if (this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())) {
             List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
@@ -206,10 +216,14 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
                 return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
             }).filter(i -> {
                 Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
-                return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
+                return this
+                        .getFuelTypes()
+                        .stream()
+                        .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
             }).toList();
             if (acceptedSlots.isEmpty()) {
-                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
+                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
+                        new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
         }
     }
@@ -220,9 +234,11 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         if (!context.isStrictMovement()) {
             return;
         }
-        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition, context.getMovingStructure());
+        Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition,
+                context.getMovingStructure());
         if (opWaterLevel.isEmpty()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND, Collections.singletonList(BlockTypes.WATER)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND,
+                    Collections.singletonList(BlockTypes.WATER)));
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
         for (MovingBlock movingBlock : context.getMovingStructure()) {
@@ -243,10 +259,14 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
                 return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
             }).filter(i -> {
                 Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? i.getSmeltingSlot() : i.getFuelSlot();
-                return this.getFuelTypes().stream().anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
+                return this
+                        .getFuelTypes()
+                        .stream()
+                        .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
             }).toList();
             if (acceptedSlots.isEmpty()) {
-                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL, new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
+                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
+                        new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
             }
             FurnaceInventory inv = acceptedSlots.get(0);
             Slot slot = this.getFuelSlot() == FuelSlot.BOTTOM ? inv.getSmeltingSlot() : inv.getFuelSlot();

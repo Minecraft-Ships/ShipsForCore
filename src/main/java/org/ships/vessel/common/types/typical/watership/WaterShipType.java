@@ -20,13 +20,13 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
 
-public class WaterShipType extends AbstractShipType<WaterShip> implements CloneableShipType<WaterShip>, SpecialBlockShipType<WaterShip> {
+public class WaterShipType extends AbstractShipType<WaterShip>
+        implements CloneableShipType<WaterShip>, SpecialBlockShipType<WaterShip> {
 
+    public static final String NAME = "Ship";
     private CorePermission moveOwnPermission = Permissions.WATERSHIP_MOVE_OWN;
     private CorePermission moveOtherPermission = Permissions.WATERSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.WATERSHIP_MAKE;
-
-    public static final String NAME = "Ship";
 
     public WaterShipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -34,10 +34,13 @@ public class WaterShipType extends AbstractShipType<WaterShip> implements Clonea
     }
 
     public WaterShipType(@NotNull String name, @NotNull File file) {
-        this(ShipsPlugin.getPlugin(), name, TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR, BlockTypes.WATER);
+        this(ShipsPlugin.getPlugin(), name,
+                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+                BlockTypes.AIR, BlockTypes.WATER);
     }
 
-    public WaterShipType(@NotNull Plugin plugin, @NotNull String displayName, @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
+    public WaterShipType(@NotNull Plugin plugin, @NotNull String displayName,
+            @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
         super(plugin, displayName, file, types);
         if (!(plugin.equals(ShipsPlugin.getPlugin()) && displayName.equals(NAME))) {
             String pluginId = plugin.getPluginId();

@@ -24,7 +24,8 @@ public class SpecialBlocksRequirement implements Requirement {
         this(parent, null, null);
     }
 
-    public SpecialBlocksRequirement(@Nullable SpecialBlocksRequirement parent, @Nullable Float specialBlocksPercentage, @Nullable Collection<BlockType> specialBlocks) {
+    public SpecialBlocksRequirement(@Nullable SpecialBlocksRequirement parent, @Nullable Float specialBlocksPercentage,
+            @Nullable Collection<BlockType> specialBlocks) {
         if (parent == null && (specialBlocks == null || specialBlocksPercentage == null)) {
             throw new IllegalArgumentException("Parent cannot be null if another value is null");
         }
@@ -73,7 +74,9 @@ public class SpecialBlocksRequirement implements Requirement {
 
         int totalPercent = context.getMovingStructure().size() / (int) blocksFound;
         if (totalPercent < percentageRequired) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(specialBlocks.iterator().next(), percentageRequired, totalPercent)));
+            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_PERCENT,
+                    new RequiredPercentMovementData(specialBlocks.iterator().next(), percentageRequired,
+                            totalPercent)));
         }
     }
 

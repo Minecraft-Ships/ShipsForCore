@@ -37,7 +37,6 @@ import org.ships.vessel.sign.LicenceSign;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -56,22 +55,6 @@ public class CreateShipCommand implements ArgumentCommand {
             new ShipIdentifiableArgument<>("ship_type", (Class<ShipType<?>>) (Object) ShipType.class);
     private static final ShipsStructureArgument STRUCTURE = new ShipsStructureArgument("structure");
     private static final StringArgument NAME = new StringArgument("name");
-
-    private record Parse<T>(
-            Function<? super Position<? extends Number>, ? extends T> function) implements ParseCommandArgument<T> {
-
-        @Override
-        public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws IOException {
-            if (!(context.getSource() instanceof Positionable)) {
-                throw new IOException("Player only command assumption for x, y, z and world");
-            }
-            Positionable<? extends Number> positionable = (Positionable<? extends Number>) context.getSource();
-            Position<? extends Number> position = positionable.getPosition();
-            return CommandArgumentResult.from(argument,
-                    this.function.apply(position));
-        }
-
-    }
 
     @Override
     public List<CommandArgument<?>> getArguments() {
@@ -97,16 +80,16 @@ public class CreateShipCommand implements ArgumentCommand {
         ShipType<?> shipType = commandContext.getArgument(this, SHIP_TYPE);
         Structure structure = commandContext.getArgument(this, STRUCTURE);
         String name = commandContext.getArgument(this, NAME);
-        if (x==null) {
+        if (x == null) {
             return false;
         }
-        if (y==null) {
+        if (y == null) {
             return false;
         }
-        if (z==null) {
+        if (z == null) {
             return false;
         }
-        if (world==null) {
+        if (world == null) {
             return false;
         }
         if (name.contains(":")) {
@@ -116,7 +99,7 @@ public class CreateShipCommand implements ArgumentCommand {
         String fullId = shipType.getId() + ":" + name.toLowerCase().replaceAll(" ", "_");
         try {
             new ShipsIDFinder(fullId).load();
-            if(commandContext.getSource() instanceof CommandViewer viewer){
+            if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Ship name already taken"));
             }
             return false;
@@ -175,5 +158,22 @@ public class CreateShipCommand implements ArgumentCommand {
             }
         }
         throw new IllegalStateException("Cannot find licence sign");
+    }
+
+    private record Parse<T>(
+            Function<? super Position<? extends Number>, ? extends T> function) implements ParseCommandArgument<T> {
+
+        @Override
+        public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws
+                IOException {
+            if (!(context.getSource() instanceof Positionable)) {
+                throw new IOException("Player only command assumption for x, y, z and world");
+            }
+            Positionable<? extends Number> positionable = (Positionable<? extends Number>) context.getSource();
+            Position<? extends Number> position = positionable.getPosition();
+            return CommandArgumentResult.from(argument,
+                    this.function.apply(position));
+        }
+
     }
 }

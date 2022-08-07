@@ -24,11 +24,15 @@ public class VesselNameAdapter implements MessageAdapter<Vessel> {
         if (vessels.isEmpty()) {
             return Collections.singleton("Sunk");
         }
-        return vessels.stream().map(v -> Else.throwOr(NoLicencePresent.class, v::getName, "Sunk")).collect(Collectors.toSet());
+        return vessels
+                .stream()
+                .map(v -> Else.throwOr(NoLicencePresent.class, v::getName, "Sunk"))
+                .collect(Collectors.toSet());
     }
 
     @Override
     public AText process(AText message, Vessel obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(Else.throwOr(NoLicencePresent.class, obj::getName, "Unknown")));
+        return message.withAllAs(this.adapterTextFormat(),
+                AText.ofPlain(Else.throwOr(NoLicencePresent.class, obj::getName, "Unknown")));
     }
 }

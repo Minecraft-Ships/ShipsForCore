@@ -63,7 +63,8 @@ public class ViewShipTypeFlagArgument implements ArgumentCommand {
     }
 
     private <F> void sendMessage(CommandViewer viewer, VesselFlag<F> flag) {
-        viewer.sendMessage(AText.ofPlain(flag.getId() + ": " + flag.getValue().map(f -> flag.getParser().unparse(f)).orElse("")));
+        viewer.sendMessage(
+                AText.ofPlain(flag.getId() + ": " + flag.getValue().map(f -> flag.getParser().unparse(f)).orElse("")));
 
     }
 }

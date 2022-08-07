@@ -89,18 +89,27 @@ public class EOTExecutor implements Runnable {
             return;
         }
         if (this.disableOnNoPilot && this.vessel instanceof CrewStoredVessel) {
-            boolean check = this.vessel.getEntities(LivePlayer.class).stream().anyMatch(e -> ((CrewStoredVessel) this.vessel).getPermission(e.getUniqueId()).canMove());
+            boolean check = this.vessel
+                    .getEntities(LivePlayer.class)
+                    .stream()
+                    .anyMatch(e -> ((CrewStoredVessel) this.vessel).getPermission(e.getUniqueId()).canMove());
             if (!check) {
                 return;
             }
         }
-        MovementContext context = new MovementContext().setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+        MovementContext context = new MovementContext().setMovement(
+                ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
         if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
             ServerBossBar bar2 = TranslateCore.createBossBar();
             this.vessel.getEntities(LivePlayer.class).forEach(bar2::register);
             context.setBar(bar2);
         }
-        this.vessel.moveTowards(directionalData.get().getDirection().getOpposite().getAsVector().multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), context, exc -> {
+        this.vessel.moveTowards(directionalData
+                .get()
+                .getDirection()
+                .getOpposite()
+                .getAsVector()
+                .multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), context, exc -> {
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             this.vessel.getEntities().forEach(e -> e.setGravity(true));
             if (exc instanceof MoveException) {

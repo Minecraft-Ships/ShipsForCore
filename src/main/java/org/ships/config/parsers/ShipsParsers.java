@@ -1,6 +1,9 @@
 package org.ships.config.parsers;
 
-import org.ships.config.parsers.identify.*;
+import org.ships.config.parsers.identify.StringToBlockFinder;
+import org.ships.config.parsers.identify.StringToCrewPermission;
+import org.ships.config.parsers.identify.StringToMovement;
+import org.ships.config.parsers.identify.StringToShipTypeParser;
 
 public interface ShipsParsers {
 

@@ -41,7 +41,12 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
         }
         String typeS = this.ste.getTextAt(1).orElseThrow(() -> new RuntimeException("You broke logic")).toPlain();
         Optional<ShipType<?>> opType =
-                ShipsPlugin.getPlugin().getAllShipTypes().stream().filter(st -> st.getDisplayName().equalsIgnoreCase(typeS)).findAny();
+                ShipsPlugin
+                        .getPlugin()
+                        .getAllShipTypes()
+                        .stream()
+                        .filter(st -> st.getDisplayName().equalsIgnoreCase(typeS))
+                        .findAny();
         if (!opType.isPresent()) {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }

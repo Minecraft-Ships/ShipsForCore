@@ -14,12 +14,12 @@ import java.util.function.Consumer;
 
 public class MovementContext {
 
+    protected final Map<EntitySnapshot<? extends LiveEntity>, MovingBlock> entities = new HashMap<>();
     protected ServerBossBar bar;
     protected BlockPosition clicked;
     protected boolean strictMovement;
     protected MovingBlockSet blocks;
     protected BasicMovement movement;
-    protected final Map<EntitySnapshot<? extends LiveEntity>, MovingBlock> entities = new HashMap<>();
     protected Movement.MidMovement[] midMovementProcess = new Movement.MidMovement[0];
     protected Movement.PostMovement[] postMovementProcess = new Movement.PostMovement[0];
     protected Consumer<VesselMoveEvent.Post> post = (e) -> {

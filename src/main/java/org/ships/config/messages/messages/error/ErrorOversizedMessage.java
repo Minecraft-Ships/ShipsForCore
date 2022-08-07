@@ -18,7 +18,8 @@ public class ErrorOversizedMessage implements Message<Map.Entry<Vessel, Integer>
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is over the max size of " + Message.VESSEL_SIZE_ERROR.adapterTextFormat());
+        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is over the max size of " +
+                Message.VESSEL_SIZE_ERROR.adapterTextFormat());
     }
 
     @Override

@@ -3,12 +3,13 @@ package org.ships.config.node;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 
-public class ObjectDedicatedNode <V, N extends ConfigurationNode.KnownParser.SingleKnown<V>> implements DedicatedNode<V, V, N> {
+public class ObjectDedicatedNode<V, N extends ConfigurationNode.KnownParser.SingleKnown<V>>
+        implements DedicatedNode<V, V, N> {
 
     private final N node;
     private final String name;
 
-    public ObjectDedicatedNode(N node, String name){
+    public ObjectDedicatedNode(N node, String name) {
         this.name = name;
         this.node = node;
     }

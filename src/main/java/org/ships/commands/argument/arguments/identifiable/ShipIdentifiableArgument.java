@@ -23,7 +23,8 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
         this(id, type, (c, a, v) -> true);
     }
 
-    public ShipIdentifiableArgument(String id, Class<T> type, TriPredicate<? super CommandContext, ? super CommandArgumentContext<T>, ? super T> predicate) {
+    public ShipIdentifiableArgument(String id, Class<T> type,
+            TriPredicate<? super CommandContext, ? super CommandArgumentContext<T>, ? super T> predicate) {
         this.id = id;
         this.type = type;
         this.predicate = predicate;
@@ -35,7 +36,8 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
     }
 
     @Override
-    public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws IOException {
+    public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws
+            IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
         int number = argument.getFirstArgument() + 1;
         Optional<T> opValue = ShipsPlugin

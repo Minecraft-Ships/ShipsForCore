@@ -20,7 +20,9 @@ public class ErrorTooManyOfBlockMessage implements Message<Map.Entry<Vessel, Blo
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Too many of " + Message.BLOCK_TYPE_NAME.adapterTextFormat() + " found").withColour(NamedTextColours.RED);
+        return AText
+                .ofPlain("Too many of " + Message.BLOCK_TYPE_NAME.adapterTextFormat() + " found")
+                .withColour(NamedTextColours.RED);
     }
 
     @Override

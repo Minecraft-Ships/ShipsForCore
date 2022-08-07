@@ -31,7 +31,10 @@ public class ShipsBlockListSetCollideTypeArgumentCommand implements ArgumentComm
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(SHIP_BLOCK_LIST_ARGUMENT), new ExactArgument(SHIP_SET_ARGUMENT), new ExactArgument(SHIP_COLLIDE_TYPE_ARGUMENT), new EnumArgument<>(SHIP_COLLIDE_VALUE_ARGUMENT, BlockInstruction.CollideType.class), new BlockTypesArgument(SHIP_BLOCK_TYPE_ARGUMENT));
+        return Arrays.asList(new ExactArgument(SHIP_BLOCK_LIST_ARGUMENT), new ExactArgument(SHIP_SET_ARGUMENT),
+                new ExactArgument(SHIP_COLLIDE_TYPE_ARGUMENT),
+                new EnumArgument<>(SHIP_COLLIDE_VALUE_ARGUMENT, BlockInstruction.CollideType.class),
+                new BlockTypesArgument(SHIP_BLOCK_TYPE_ARGUMENT));
     }
 
     @Override
@@ -49,10 +52,16 @@ public class ShipsBlockListSetCollideTypeArgumentCommand implements ArgumentComm
         List<BlockType> blocks = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
         BlockInstruction.CollideType collideType = commandContext.getArgument(this, SHIP_COLLIDE_VALUE_ARGUMENT);
         DefaultBlockList blocklist = ShipsPlugin.getPlugin().getBlockList();
-        blocklist.getBlockList().stream().filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b))).forEach(bi -> blocklist.replaceBlockInstruction(bi.setCollideType(collideType)));
+        blocklist
+                .getBlockList()
+                .stream()
+                .filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b)))
+                .forEach(bi -> blocklist.replaceBlockInstruction(bi.setCollideType(collideType)));
         blocklist.saveChanges();
         if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain(blocks.size() + " have been set to " + collideType.name()).withColour(NamedTextColours.AQUA));
+            ((CommandViewer) commandContext.getSource()).sendMessage(AText
+                    .ofPlain(blocks.size() + " have been set to " + collideType.name())
+                    .withColour(NamedTextColours.AQUA));
         }
         return true;
     }

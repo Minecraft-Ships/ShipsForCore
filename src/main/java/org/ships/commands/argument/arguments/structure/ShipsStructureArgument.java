@@ -26,7 +26,8 @@ public class ShipsStructureArgument implements CommandArgument<Structure> {
     }
 
     @Override
-    public CommandArgumentResult<Structure> parse(CommandContext context, CommandArgumentContext<Structure> argument) throws IOException {
+    public CommandArgumentResult<Structure> parse(CommandContext context,
+            CommandArgumentContext<Structure> argument) throws IOException {
         String t = argument.getFocusArgument();
         Optional<Structure> opStructure = TranslateCore
                 .getPlatform()
@@ -35,7 +36,8 @@ public class ShipsStructureArgument implements CommandArgument<Structure> {
                 .parallel()
                 .filter(structure -> structure.getId().isPresent())
                 .filter(structure -> structure.getPlugin().isPresent())
-                .filter(structure -> t.equalsIgnoreCase(structure.getPlugin().get().getPluginId() + ":" + structure.getId().get()))
+                .filter(structure -> t.equalsIgnoreCase(
+                        structure.getPlugin().get().getPluginId() + ":" + structure.getId().get()))
                 .findAny();
         if (opStructure.isEmpty()) {
             throw new IOException("Unknown structure");

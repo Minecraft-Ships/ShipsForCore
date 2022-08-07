@@ -22,7 +22,8 @@ public interface CrewStoredVessel extends Vessel {
     Map<UUID, CrewPermission> getCrew();
 
     /**
-     * Gets the default crew permission for if the user who interacts with the ship is not specified within the map value above.
+     * Gets the default crew permission for if the user who interacts with the ship is not specified within the map
+     * value above.
      * This is not to be granted to the player in the map.
      *
      * @return the default permission
@@ -52,7 +53,8 @@ public interface CrewStoredVessel extends Vessel {
     default Set<User> getUserCrew(CrewPermission permission) {
         return this.getCrew(permission)
                 .stream()
-                .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(), null))
+                .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(),
+                        null))
                 .filter(Objects::nonNull)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -67,7 +69,8 @@ public interface CrewStoredVessel extends Vessel {
     default Set<User> getUserCrew(String permissionId) {
         return this.getCrew(permissionId)
                 .stream()
-                .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(), null))
+                .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(),
+                        null))
                 .filter(Objects::nonNull)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -81,7 +84,11 @@ public interface CrewStoredVessel extends Vessel {
      */
     default Set<UUID> getCrew(CrewPermission permission) {
         Map<UUID, CrewPermission> permissionMap = this.getCrew();
-        return permissionMap.keySet().stream().filter(u -> permissionMap.get(u).equals(permission)).collect(Collectors.toSet());
+        return permissionMap
+                .keySet()
+                .stream()
+                .filter(u -> permissionMap.get(u).equals(permission))
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -92,6 +99,10 @@ public interface CrewStoredVessel extends Vessel {
      */
     default Set<UUID> getCrew(String permissionId) {
         Map<UUID, CrewPermission> permissionMap = this.getCrew();
-        return permissionMap.keySet().stream().filter(u -> permissionMap.get(u).getId().equals(permissionId)).collect(Collectors.toSet());
+        return permissionMap
+                .keySet()
+                .stream()
+                .filter(u -> permissionMap.get(u).getId().equals(permissionId))
+                .collect(Collectors.toSet());
     }
 }

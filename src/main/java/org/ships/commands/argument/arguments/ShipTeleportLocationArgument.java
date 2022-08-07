@@ -24,39 +24,57 @@ public class ShipTeleportLocationArgument implements CommandArgument<String> {
         this.toVessel = toVessel;
     }
 
+    public static ShipTeleportLocationArgument fromArgumentAt(String id, CommandArgument<TeleportToVessel> argument,
+            int position) {
+        return new ShipTeleportLocationArgument(id, (context, argumentContext) -> {
+            try {
+                return argument.parse(context, new CommandArgumentContext<>(argument, position, context.getCommand()));
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "The argument specified must be before this argument. '" + context.getCommand()[position] +
+                                "' is not a valid ship", e);
+            }
+        });
+    }
+
     @Override
     public String getId() {
         return this.id;
     }
 
     @Override
-    public CommandArgumentResult<String> parse(CommandContext context, CommandArgumentContext<String> argument) throws IOException {
-        TeleportToVessel vessel = this.toVessel.parse(context, new CommandArgumentContext<>(null, argument.getFirstArgument(), context.getCommand())).getValue();
+    public CommandArgumentResult<String> parse(CommandContext context, CommandArgumentContext<String> argument) throws
+            IOException {
+        TeleportToVessel vessel = this.toVessel
+                .parse(context, new CommandArgumentContext<>(null, argument.getFirstArgument(), context.getCommand()))
+                .getValue();
         Set<String> keys = vessel.getTeleportPositions().keySet();
-        Optional<String> opKey = keys.stream().filter(k -> k.equals(context.getCommand()[argument.getFirstArgument()])).findFirst();
+        Optional<String> opKey = keys
+                .stream()
+                .filter(k -> k.equals(context.getCommand()[argument.getFirstArgument()]))
+                .findFirst();
         if (opKey.isPresent()) {
             return CommandArgumentResult.from(argument, opKey.get());
         }
-        throw new IOException("Invalid teleport position of '" + context.getCommand()[argument.getFirstArgument()] + "'");
+        throw new IOException(
+                "Invalid teleport position of '" + context.getCommand()[argument.getFirstArgument()] + "'");
     }
 
     @Override
     public List<String> suggest(CommandContext commandContext, CommandArgumentContext<String> argument) {
         try {
-            TeleportToVessel vessel = this.toVessel.parse(commandContext, new CommandArgumentContext<>(null, argument.getFirstArgument(), commandContext.getCommand())).getValue();
-            return vessel.getTeleportPositions().keySet().stream().filter(k -> k.toLowerCase().startsWith(commandContext.getCommand()[argument.getFirstArgument()])).collect(Collectors.toList());
+            TeleportToVessel vessel = this.toVessel
+                    .parse(commandContext, new CommandArgumentContext<>(null, argument.getFirstArgument(),
+                            commandContext.getCommand()))
+                    .getValue();
+            return vessel
+                    .getTeleportPositions()
+                    .keySet()
+                    .stream()
+                    .filter(k -> k.toLowerCase().startsWith(commandContext.getCommand()[argument.getFirstArgument()]))
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             return Collections.emptyList();
         }
-    }
-
-    public static ShipTeleportLocationArgument fromArgumentAt(String id, CommandArgument<TeleportToVessel> argument, int position) {
-        return new ShipTeleportLocationArgument(id, (context, argumentContext) -> {
-            try {
-                return argument.parse(context, new CommandArgumentContext<>(argument, position, context.getCommand()));
-            } catch (IOException e) {
-                throw new IllegalStateException("The argument specified must be before this argument. '" + context.getCommand()[position] + "' is not a valid ship", e);
-            }
-        });
     }
 }

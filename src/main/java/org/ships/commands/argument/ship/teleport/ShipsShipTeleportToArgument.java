@@ -33,14 +33,18 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                User player = (User) source;
-                return crewVessel.getPermission(player.getUniqueId()).canCommand();
-            }
-            return vessel instanceof TeleportToVessel;
-        }, v -> "Ship is not teleport capable"), new ExactArgument(this.SHIP_TELEPORT_ARGUMENT), new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(this.SHIP_LOCATION, new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, v) -> v instanceof TeleportToVessel, v -> "Ship is not teleport capable"), 1), "Default"));
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
+                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
+                    if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
+                        CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
+                        User player = (User) source;
+                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                    }
+                    return vessel instanceof TeleportToVessel;
+                }, v -> "Ship is not teleport capable"), new ExactArgument(this.SHIP_TELEPORT_ARGUMENT),
+                new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(this.SHIP_LOCATION,
+                        new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, v) -> v instanceof TeleportToVessel,
+                                v -> "Ship is not teleport capable"), 1), "Default"));
     }
 
     @Override
@@ -74,7 +78,7 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
         TeleportToVessel tVessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         String telPos = commandContext.getArgument(this, this.SHIP_LOCATION);
         ExactPosition position = tVessel.getTeleportPositions().get(telPos);
-        if (position==null) {
+        if (position == null) {
             player.sendMessage(AText.ofPlain("Unknown part of ship").withColour(NamedTextColours.RED));
             return false;
         }

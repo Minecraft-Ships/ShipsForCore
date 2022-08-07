@@ -18,7 +18,10 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Default Permission: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.CREW_ID.adapterText() + "%").withColour(NamedTextColours.GOLD));
+        return AText
+                .ofPlain("Default Permission: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain("%" + Message.CREW_ID.adapterText() + "%").withColour(NamedTextColours.GOLD));
     }
 
     @Override

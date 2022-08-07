@@ -34,8 +34,10 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final ErrorUndersizedMessage ERROR_UNDERSIZED = new ErrorUndersizedMessage();
     public static final ErrorTooManyOfBlockMessage ERROR_TOO_MANY_OF_BLOCK = new ErrorTooManyOfBlockMessage();
     public static final ErrorAlreadyMovingMessage ERROR_ALREADY_MOVING = new ErrorAlreadyMovingMessage();
-    public static final ErrorVesselStillLoadingMessage ERROR_VESSEL_STILL_LOADING = new ErrorVesselStillLoadingMessage();
-    public static final ErrorPermissionMissMatchMessage ERROR_PERMISSION_MISS_MATCH = new ErrorPermissionMissMatchMessage();
+    public static final ErrorVesselStillLoadingMessage ERROR_VESSEL_STILL_LOADING =
+            new ErrorVesselStillLoadingMessage();
+    public static final ErrorPermissionMissMatchMessage ERROR_PERMISSION_MISS_MATCH =
+            new ErrorPermissionMissMatchMessage();
     public static final ErrorInvalidShipTypeMessage ERROR_INVALID_SHIP_TYPE = new ErrorInvalidShipTypeMessage();
     public static final ErrorInvalidShipNameMessage ERROR_INVALID_SHIP_NAME = new ErrorInvalidShipNameMessage();
     public static final ErrorCannotCreateOntopMessage ERROR_CANNOT_CREATE_ONTOP = new ErrorCannotCreateOntopMessage();

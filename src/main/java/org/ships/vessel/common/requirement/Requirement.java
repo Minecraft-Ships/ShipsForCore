@@ -1,6 +1,5 @@
 package org.ships.vessel.common.requirement;
 
-import org.core.utils.Identifiable;
 import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.MovementContext;

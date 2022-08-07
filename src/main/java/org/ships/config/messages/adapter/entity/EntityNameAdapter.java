@@ -32,6 +32,7 @@ public class EntityNameAdapter implements MessageAdapter<Entity<?>> {
     @Override
     public AText process(AText message, Entity<?> obj) {
         AText t = obj.getCustomName().orElse(AText.ofPlain(obj.getType().getName()));
-        return message.withAllAs(this.adapterTextFormat(), Else.canCast(obj, Player.class, p -> AText.ofPlain(p.getName()), e -> t));
+        return message.withAllAs(this.adapterTextFormat(),
+                Else.canCast(obj, Player.class, p -> AText.ofPlain(p.getName()), e -> t));
     }
 }

@@ -31,7 +31,7 @@ public interface UnderWaterType extends WaterType {
         Integer lowest = null;
         Integer highest = null;
         for (int value : values) {
-            if (lowest==null) {
+            if (lowest == null) {
                 lowest = value;
                 highest = value;
                 continue;
@@ -43,9 +43,9 @@ public interface UnderWaterType extends WaterType {
                 highest = value;
             }
         }
-        if (highest==null) {
+        if (highest == null) {
             return false;
         }
-        return (highest - lowest)==height;
+        return (highest - lowest) == height;
     }
 }

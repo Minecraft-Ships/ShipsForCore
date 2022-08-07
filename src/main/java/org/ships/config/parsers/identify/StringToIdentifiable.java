@@ -29,7 +29,11 @@ public class StringToIdentifiable<T extends Identifiable> implements StringParse
 
     @Override
     public List<T> getSuggestions(String peek) {
-        return this.getSuggestions().stream().filter(i -> i.getId().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
+        return this
+                .getSuggestions()
+                .stream()
+                .filter(i -> i.getId().toLowerCase().startsWith(peek.toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     @Override

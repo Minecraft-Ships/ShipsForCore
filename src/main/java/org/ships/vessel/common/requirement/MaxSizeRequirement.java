@@ -55,7 +55,8 @@ public class MaxSizeRequirement implements Requirement {
             return;
         }
         if (opMaxSize.getAsInt() < size) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.OVER_SIZED, (size - opMaxSize.getAsInt())));
+            throw new MoveException(
+                    new AbstractFailedMovement<>(vessel, MovementResult.OVER_SIZED, (size - opMaxSize.getAsInt())));
         }
     }
 

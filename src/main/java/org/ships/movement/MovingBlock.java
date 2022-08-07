@@ -15,9 +15,9 @@ public interface MovingBlock {
 
     SyncBlockPosition getBeforePosition();
 
-    SyncBlockPosition getAfterPosition();
-
     MovingBlock setBeforePosition(SyncBlockPosition position);
+
+    SyncBlockPosition getAfterPosition();
 
     MovingBlock setAfterPosition(SyncBlockPosition position);
 

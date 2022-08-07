@@ -11,15 +11,15 @@ import java.util.Set;
 
 public interface FuelledShipType<V extends Vessel> extends ShipType<V> {
 
-    default int getDefaultFuelConsumption(){
+    default int getDefaultFuelConsumption() {
         return this.getFile().getInteger(AbstractShipType.FUEL_CONSUMPTION).orElse(0);
     }
 
-    default FuelSlot getDefaultFuelSlot(){
+    default FuelSlot getDefaultFuelSlot() {
         return this.getFile().parse(AbstractShipType.FUEL_SLOT).orElse(FuelSlot.BOTTOM);
     }
 
-    default Set<ItemType> getDefaultFuelTypes(){
+    default Set<ItemType> getDefaultFuelTypes() {
         return this.getFile().parseCollection(AbstractShipType.FUEL_TYPES, new HashSet<>());
     }
 

@@ -29,13 +29,13 @@ import java.util.*;
 
 public class Marsship extends AbstractShipsVessel implements AirType, VesselRequirement {
 
-    protected @Nullable Float specialBlockPercent;
-    protected @Nullable Collection<BlockType> specialBlocks;
-
     protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
     protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
+            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special",
+                    "Type");
+    protected @Nullable Float specialBlockPercent;
+    protected @Nullable Collection<BlockType> specialBlocks;
 
 
     public Marsship(ShipType<? extends Marsship> type, LiveTileEntity licence) throws NoLicencePresent {
@@ -58,19 +58,14 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         return this.specialBlocks;
     }
 
+    public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
+        this.specialBlocks = types;
+    }
+
     public float getSpecialBlocksPercent() {
         return Objects.requireNonNullElseGet(
                 this.specialBlockPercent,
                 () -> this.getType().getDefaultSpecialBlockPercent());
-    }
-
-    @Override
-    public Collection<Requirement> getRequirements() {
-        throw new RuntimeException("Not implemented");
-    }
-
-    public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
-        this.specialBlocks = types;
     }
 
     public void setSpecialBlocksPercent(@Nullable Float value) {
@@ -78,6 +73,11 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
             throw new IndexOutOfBoundsException("Percent must be between 0 and 100");
         }
         this.specialBlockPercent = value;
+    }
+
+    @Override
+    public Collection<Requirement> getRequirements() {
+        throw new RuntimeException("Not implemented");
     }
 
     public boolean isSpecialBlocksSpecified() {
@@ -95,7 +95,8 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     @Override
     public @NotNull Map<String, String> getExtraInformation() {
         Map<String, String> map = new HashMap<>();
-        map.put("Special Block", ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
+        map.put("Special Block",
+                ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
         map.put("Required Percent", this.getSpecialBlockPercent() + "");
         return map;
     }
@@ -128,15 +129,21 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
                 specialBlocks++;
             }
         }
-        float specialBlockPercent = ((specialBlocks * 100.0f) / context.getMovingStructure().stream().filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR)).count());
+        float specialBlockPercent = ((specialBlocks * 100.0f) / context
+                .getMovingStructure()
+                .stream()
+                .filter(m -> !m.getStoredBlockData().getType().equals(BlockTypes.AIR))
+                .count());
         if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT, new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(), this.getSpecialBlockPercent(), specialBlockPercent)));
+            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT,
+                    new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(),
+                            this.getSpecialBlockPercent(), specialBlockPercent)));
         }
     }
 
     @Override
     public void setRequirement(Requirement updated) {
-throw new RuntimeException("Not implemented yet");
+        throw new RuntimeException("Not implemented yet");
     }
 
 }

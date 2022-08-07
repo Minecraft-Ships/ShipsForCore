@@ -37,9 +37,14 @@ public class BasicFlightPath implements FlightPath {
     @Override
     public List<FlightSinglePath> getPath() {
         List<FlightSinglePath> list = new ArrayList<>();
-        list.add((FlightSinglePath) new BasicFlightSinglePath(this.first, Vector3.valueOf(this.first.getX(), this.second.getY(), this.first.getZ())).setViewer(this.viewer));
-        list.add((FlightSinglePath) new BasicFlightSinglePath(Vector3.valueOf(this.first.getX(), this.second.getY(), this.first.getZ()), Vector3.valueOf(this.second.getX(), this.second.getY(), this.first.getZ())).setViewer(this.viewer));
-        list.add((FlightSinglePath) new BasicFlightSinglePath(Vector3.valueOf(this.second.getX(), this.second.getY(), this.first.getZ()), this.second).setViewer(this.viewer));
+        list.add((FlightSinglePath) new BasicFlightSinglePath(this.first,
+                Vector3.valueOf(this.first.getX(), this.second.getY(), this.first.getZ())).setViewer(this.viewer));
+        list.add((FlightSinglePath) new BasicFlightSinglePath(
+                Vector3.valueOf(this.first.getX(), this.second.getY(), this.first.getZ()),
+                Vector3.valueOf(this.second.getX(), this.second.getY(), this.first.getZ())).setViewer(this.viewer));
+        list.add((FlightSinglePath) new BasicFlightSinglePath(
+                Vector3.valueOf(this.second.getX(), this.second.getY(), this.first.getZ()), this.second).setViewer(
+                this.viewer));
         return list;
     }
 

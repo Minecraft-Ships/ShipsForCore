@@ -18,7 +18,8 @@ import java.util.Objects;
 
 public class ShipsDataSetMaxSpeedCommand extends AbstractShipsDataSetCommand {
 
-    private final OptionalArgument<Integer> SPEED_VALUE_ARGUMENT = new OptionalArgument<>(new IntegerArgument("speed_value"), (Integer) null);
+    private final OptionalArgument<Integer> SPEED_VALUE_ARGUMENT = new OptionalArgument<>(
+            new IntegerArgument("speed_value"), (Integer) null);
     private final ExactArgument SPEED_ARGUMENT = new ExactArgument("speed");
 
 
@@ -36,7 +37,9 @@ public class ShipsDataSetMaxSpeedCommand extends AbstractShipsDataSetCommand {
         vessel.setMaxSpeed(value);
         if (commandContext.getSource() instanceof CommandViewer viewer) {
             int displayValue = Objects.requireNonNullElseGet(value, () -> vessel.getType().getDefaultMaxSpeed());
-            viewer.sendMessage(AText.ofPlain("Updated " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " max speed to " + displayValue));
+            viewer.sendMessage(AText.ofPlain(
+                    "Updated " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " max speed to " +
+                            displayValue));
         }
         return true;
     }

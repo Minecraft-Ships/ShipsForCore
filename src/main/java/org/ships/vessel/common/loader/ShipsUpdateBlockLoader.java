@@ -42,7 +42,8 @@ public class ShipsUpdateBlockLoader {
                     }
 
                     @Override
-                    public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
+                    public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
+                            @NotNull BlockPosition block) {
                         return BlockFindControl.USE;
                     }
                 });
@@ -61,7 +62,10 @@ public class ShipsUpdateBlockLoader {
         }
         SyncBlockPosition block = opBlock.get();
         Vessel vessel =
-                new ShipsLicenceSignFinder((SignTileEntity) opBlock.get().getTileEntity().orElseThrow(() -> new IllegalStateException("Could not get tile entity"))).load();
+                new ShipsLicenceSignFinder((SignTileEntity) opBlock
+                        .get()
+                        .getTileEntity()
+                        .orElseThrow(() -> new IllegalStateException("Could not get tile entity"))).load();
         PositionableShipsStructure apss = new AbstractPositionableShipsStructure(block);
         blocks.getPositions().forEach(apss::addPosition);
         vessel.setStructure(apss);

@@ -6,7 +6,6 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.security.SecureRandom;
 import java.util.Collections;
-import java.util.Random;
 import java.util.Set;
 
 public class VesselSizeAdapter implements MessageAdapter<Vessel> {
@@ -22,6 +21,7 @@ public class VesselSizeAdapter implements MessageAdapter<Vessel> {
 
     @Override
     public AText process(AText message, Vessel obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(obj.getStructure().getOriginalRelativePositions().size() + ""));
+        return message.withAllAs(this.adapterTextFormat(),
+                AText.ofPlain(obj.getStructure().getOriginalRelativePositions().size() + ""));
     }
 }

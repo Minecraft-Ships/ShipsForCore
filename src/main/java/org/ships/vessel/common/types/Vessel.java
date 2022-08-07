@@ -52,41 +52,45 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     int getMaxSpeed();
 
+    @NotNull Vessel setMaxSpeed(@Nullable Integer speed);
+
     boolean isMaxSpeedSpecified();
 
     int getAltitudeSpeed();
+
+    @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed);
 
     boolean isAltitudeSpeedSpecified();
 
     Optional<Integer> getMaxSize();
 
+    @NotNull Vessel setMaxSize(@Nullable Integer size);
+
     boolean isMaxSizeSpecified();
 
     int getMinSize();
 
-    boolean isMinSizeSpecified();
-
-    @NotNull Vessel setMaxSize(@Nullable Integer size);
-
     @NotNull Vessel setMinSize(@Nullable Integer size);
 
-    @NotNull Vessel setMaxSpeed(@Nullable Integer speed);
-
-    @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed);
+    boolean isMinSizeSpecified();
 
     void moveTowards(int x, int y, int z, @NotNull MovementContext context, Consumer<? super Throwable> exception);
 
-    void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context, Consumer<? super Throwable> exception);
+    void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context,
+            Consumer<? super Throwable> exception);
 
-    void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context, Consumer<? super Throwable> exception);
+    void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context,
+            Consumer<? super Throwable> exception);
 
-    void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<? super Throwable> exception);
+    void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context,
+            Consumer<? super Throwable> exception);
 
-    void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<? super Throwable> exception);
-
-    void setLoading(boolean check);
+    void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context,
+            Consumer<? super Throwable> exception);
 
     boolean isLoading();
+
+    void setLoading(boolean check);
 
     void save();
 
@@ -136,7 +140,8 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     }
 
-    default void getEntitiesOvertime(int limit, Predicate<? super LiveEntity> predicate, Consumer<? super LiveEntity> single, Consumer<? super Collection<LiveEntity>> output) {
+    default void getEntitiesOvertime(int limit, Predicate<? super LiveEntity> predicate,
+            Consumer<? super LiveEntity> single, Consumer<? super Collection<LiveEntity>> output) {
         Collection<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>();
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
@@ -189,7 +194,10 @@ public interface Vessel extends Positionable<BlockPosition> {
                                 entities.add(e);
                             } else if (!e.isOnGround()) {
                                 SyncBlockPosition bPos = e.getPosition().toBlockPosition();
-                                if (pss.stream().noneMatch(b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))) {
+                                if (pss
+                                        .stream()
+                                        .noneMatch(
+                                                b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))) {
                                     continue;
                                 }
                                 single.accept(e);
@@ -206,11 +214,13 @@ public interface Vessel extends Positionable<BlockPosition> {
         sched.run();
     }
 
-    default void rotateAnticlockwiseAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception) {
+    default void rotateAnticlockwiseAround(SyncPosition<? extends Number> location, MovementContext context,
+            Consumer<Throwable> exception) {
         this.rotateRightAround(location, context, exception);
     }
 
-    default void rotateClockwiseAround(SyncPosition<? extends Number> location, MovementContext context, Consumer<Throwable> exception) {
+    default void rotateClockwiseAround(SyncPosition<? extends Number> location, MovementContext context,
+            Consumer<Throwable> exception) {
         this.rotateLeftAround(location, context, exception);
     }
 
@@ -219,7 +229,8 @@ public interface Vessel extends Positionable<BlockPosition> {
         return this.getWaterLevel().isEmpty();
     }
 
-    default <T> Optional<Integer> getWaterLevel(Function<? super T, ? extends BlockPosition> function, Collection<T> collection) {
+    default <T> Optional<Integer> getWaterLevel(Function<? super T, ? extends BlockPosition> function,
+            Collection<T> collection) {
         Map<Vector2<Integer>, Integer> height = new HashMap<>();
         int lowest = Integer.MIN_VALUE;
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
@@ -230,7 +241,8 @@ public interface Vessel extends Positionable<BlockPosition> {
                 if (!type.equals(BlockTypes.WATER)) {
                     continue;
                 }
-                Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(), position.getZ() + direction.getAsVector().getZ());
+                Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(),
+                        position.getZ() + direction.getAsVector().getZ());
                 if (!height.containsKey(vector)) {
                     height.put(vector, position.getY());
                     continue;
@@ -248,7 +260,8 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     default Optional<Integer> getWaterLevel() {
         PositionableShipsStructure pss = this.getStructure();
-        return this.getWaterLevel(p -> p, pss.getPositions((Function<? super SyncBlockPosition, ? extends BlockPosition>) Position::toASync));
+        return this.getWaterLevel(p -> p,
+                pss.getPositions((Function<? super SyncBlockPosition, ? extends BlockPosition>) Position::toASync));
     }
 
 }

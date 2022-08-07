@@ -17,7 +17,12 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("%" + Message.VESSEL_INFO_KEY.adapterText() + "%: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%").withColour(NamedTextColours.GOLD));
+        return AText
+                .ofPlain("%" + Message.VESSEL_INFO_KEY.adapterText() + "%: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText
+                        .ofPlain("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%")
+                        .withColour(NamedTextColours.GOLD));
     }
 
     @Override

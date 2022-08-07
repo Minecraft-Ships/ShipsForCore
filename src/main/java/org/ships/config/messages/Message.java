@@ -83,12 +83,18 @@ public interface Message<R> {
     }};
     List<MessageAdapter<EntityType<?, ?>>> ENTITY_TYPE_ADAPTERS = Arrays.asList(ENTITY_TYPE_ID, ENTITY_TYPE_NAME);
 
-    List<MessageAdapter<Entity<?>>> ENTITY_ADAPTERS = new ArrayList<MessageAdapter<Entity<?>>>(){{
+    List<MessageAdapter<Entity<?>>> ENTITY_ADAPTERS = new ArrayList<MessageAdapter<Entity<?>>>() {{
         this.add(ENTITY_NAME);
-        this.addAll(LOCATION_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<Entity<?>, Position<?>>(ma, Entity::getPosition)).collect(Collectors.toSet()));
-        this.addAll(ENTITY_TYPE_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<Entity<?>, EntityType<?, ?>>(ma, Entity::getType)).collect(Collectors.toSet()));
+        this.addAll(LOCATION_ADAPTERS
+                .parallelStream()
+                .map(ma -> new MappedAdapter<Entity<?>, Position<?>>(ma, Entity::getPosition))
+                .collect(Collectors.toSet()));
+        this.addAll(ENTITY_TYPE_ADAPTERS
+                .parallelStream()
+                .map(ma -> new MappedAdapter<Entity<?>, EntityType<?, ?>>(ma, Entity::getType))
+                .collect(Collectors.toSet()));
     }};
-    List<MessageAdapter<ShipsStructure>> STRUCTURE_ADAPTERS = new ArrayList<MessageAdapter<ShipsStructure>>(){{
+    List<MessageAdapter<ShipsStructure>> STRUCTURE_ADAPTERS = new ArrayList<MessageAdapter<ShipsStructure>>() {{
         this.add(STRUCTURE_SIZE);
         this.add(STRUCTURE_CHUNK_SIZE);
     }};
@@ -99,11 +105,24 @@ public interface Message<R> {
         this.add(VESSEL_SPEED);
         this.add(VESSEL_SIZE);
         this.add(VESSEL_ID);
-        this.addAll(STRUCTURE_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<>(ma, Vessel::getStructure)).collect(Collectors.toSet()));
-        this.addAll(LOCATION_ADAPTERS.parallelStream().map(ma -> new MappedAdapter<>(ma, Vessel::getPosition)).collect(Collectors.toSet()));
+        this.addAll(STRUCTURE_ADAPTERS
+                .parallelStream()
+                .map(ma -> new MappedAdapter<>(ma, Vessel::getStructure))
+                .collect(Collectors.toSet()));
+        this.addAll(LOCATION_ADAPTERS
+                .parallelStream()
+                .map(ma -> new MappedAdapter<>(ma, Vessel::getPosition))
+                .collect(Collectors.toSet()));
     }};
 
+    @SafeVarargs
+    static <T> CollectionSingleAdapter<T> asCollectionSingle(MessageAdapter<T>... array) {
+        return asCollectionSingle(Arrays.asList(array));
+    }
 
+    static <T> CollectionSingleAdapter<T> asCollectionSingle(Collection<? extends MessageAdapter<T>> collection) {
+        return new CollectionSingleAdapter<>(collection);
+    }
 
     String[] getPath();
 
@@ -131,15 +150,11 @@ public interface Message<R> {
 
     default Set<String> suggestAdapter(String peek) {
         String peekLower = peek.replaceAll("%", "").toLowerCase();
-        return this.getAdapters().parallelStream().map(a -> a.adapterText().toLowerCase()).filter(a -> a.contains(peekLower)).collect(Collectors.toSet());
-    }
-
-    @SafeVarargs
-    static <T> CollectionSingleAdapter<T> asCollectionSingle(MessageAdapter<T>... array) {
-        return asCollectionSingle(Arrays.asList(array));
-    }
-
-    static <T> CollectionSingleAdapter<T> asCollectionSingle(Collection<? extends MessageAdapter<T>> collection) {
-        return new CollectionSingleAdapter<>(collection);
+        return this
+                .getAdapters()
+                .parallelStream()
+                .map(a -> a.adapterText().toLowerCase())
+                .filter(a -> a.contains(peekLower))
+                .collect(Collectors.toSet());
     }
 }

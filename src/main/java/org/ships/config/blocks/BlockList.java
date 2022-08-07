@@ -11,6 +11,15 @@ import java.util.Optional;
 
 public interface BlockList extends Config {
 
+    static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes) {
+        String[] idSplit = type.getId().split(":");
+        ConfigurationNode.KnownParser.ChildKnown<BlockInstruction> node =
+                new ConfigurationNode.KnownParser.ChildKnown<>(
+                ShipsParsers.NODE_TO_BLOCK_INSTRUCTION,
+                ArrayUtils.join(String.class, extraNodes, new String[]{"BlockList", idSplit[0], idSplit[1]}));
+        return list.getFile().parse(node);
+    }
+
     Collection<BlockInstruction> getBlockList();
 
     Collection<BlockInstruction> reloadBlockList();
@@ -25,12 +34,7 @@ public interface BlockList extends Config {
                 .stream()
                 .filter(b -> b.getType().equals(type))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("BlockType of " + type.getId() + " was not registered at runtime."));
-    }
-
-    static Optional<BlockInstruction> getBlockInstruction(BlockList list, BlockType type, String... extraNodes) {
-        String[] idSplit = type.getId().split(":");
-        ConfigurationNode.KnownParser.ChildKnown<BlockInstruction> node = new ConfigurationNode.KnownParser.ChildKnown<>(ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, ArrayUtils.join(String.class, extraNodes, new String[]{"BlockList", idSplit[0], idSplit[1]}));
-        return list.getFile().parse(node);
+                .orElseThrow(
+                        () -> new RuntimeException("BlockType of " + type.getId() + " was not registered at runtime."));
     }
 }

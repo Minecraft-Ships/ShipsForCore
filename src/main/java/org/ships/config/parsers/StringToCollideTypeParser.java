@@ -12,8 +12,8 @@ public class StringToCollideTypeParser implements StringParser.Suggestible<Block
 
     @Override
     public Optional<BlockInstruction.CollideType> parse(String original) {
-        for (BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()){
-            if(collideType.name().equalsIgnoreCase(original) || collideType.name().charAt(0) == original.charAt(0)){
+        for (BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()) {
+            if (collideType.name().equalsIgnoreCase(original) || collideType.name().charAt(0) == original.charAt(0)) {
                 return Optional.of(collideType);
             }
         }
@@ -27,7 +27,11 @@ public class StringToCollideTypeParser implements StringParser.Suggestible<Block
 
     @Override
     public List<BlockInstruction.CollideType> getSuggestions(String peek) {
-        return this.getSuggestions().stream().filter(ct -> ct.name().toLowerCase().startsWith(peek.toLowerCase())).collect(Collectors.toList());
+        return this
+                .getSuggestions()
+                .stream()
+                .filter(ct -> ct.name().toLowerCase().startsWith(peek.toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     @Override

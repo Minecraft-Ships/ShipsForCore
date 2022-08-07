@@ -9,7 +9,6 @@ import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Collection;
 import java.util.Optional;
 
 public class SpecialBlockRequirement implements Requirement {
@@ -23,7 +22,8 @@ public class SpecialBlockRequirement implements Requirement {
         this(parent, null, null, name);
     }
 
-    public SpecialBlockRequirement(@Nullable SpecialBlockRequirement parent, @Nullable BlockType type, @Nullable Integer amount, @Nullable String name) {
+    public SpecialBlockRequirement(@Nullable SpecialBlockRequirement parent, @Nullable BlockType type,
+            @Nullable Integer amount, @Nullable String name) {
         if (parent == null && (type == null || amount == null)) {
             throw new IllegalArgumentException("parent cannot be null if another value is");
         }
@@ -70,9 +70,14 @@ public class SpecialBlockRequirement implements Requirement {
         BlockType requiredType = this.getBlock();
         int amount = this.getAmount();
 
-        long found = context.getMovingStructure().parallelStream().map(moving -> moving.getStoredBlockData().getType().equals(requiredType)).count();
+        long found = context
+                .getMovingStructure()
+                .parallelStream()
+                .map(moving -> moving.getStoredBlockData().getType().equals(requiredType))
+                .count();
         if (found > amount) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NO_SPECIAL_NAMED_BLOCK_FOUND, this.getDisplayName().orElse(requiredType.getName())));
+            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NO_SPECIAL_NAMED_BLOCK_FOUND,
+                    this.getDisplayName().orElse(requiredType.getName())));
         }
     }
 

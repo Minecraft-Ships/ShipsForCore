@@ -12,14 +12,6 @@ import java.util.regex.Pattern;
 
 public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vector3<Double>>> {
 
-    public static class Builder extends VesselFlag.Builder<Map<UUID, Vector3<Double>>, PlayerStatesFlag> {
-
-        @Override
-        protected PlayerStatesFlag buildEmpty() {
-            return new PlayerStatesFlag();
-        }
-    }
-
     private Map<UUID, Vector3<Double>> playerStates = new HashMap<>();
 
     @Override
@@ -55,7 +47,8 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
                         String[] entry = pair.split(": ");
                         UUID uuid = UUID.fromString(entry[0]);
                         String[] vectorPoints = entry[1].split(Pattern.quote("||"));
-                        Vector3<Double> vector = Vector3.valueOf(Double.parseDouble(vectorPoints[0]), Double.parseDouble(vectorPoints[1]), Double.parseDouble(vectorPoints[2]));
+                        Vector3<Double> vector = Vector3.valueOf(Double.parseDouble(vectorPoints[0]),
+                                Double.parseDouble(vectorPoints[1]), Double.parseDouble(vectorPoints[2]));
                         map.put(uuid, vector);
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -66,7 +59,9 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
 
             @Override
             public String unparse(Map<UUID, Vector3<Double>> value) {
-                return ArrayUtils.toString(", ", e -> e.getKey().toString() + ": " + e.getValue().getX() + "||" + e.getValue().getY() + "||" + e.getValue().getZ(), value.entrySet());
+                return ArrayUtils.toString(", ",
+                        e -> e.getKey().toString() + ": " + e.getValue().getX() + "||" + e.getValue().getY() + "||" +
+                                e.getValue().getZ(), value.entrySet());
             }
         };
     }
@@ -91,5 +86,13 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
     public boolean isDeserializable(String idWithValue) {
         Optional<Map<UUID, Vector3<Double>>> opMap = this.getParser().parse(idWithValue);
         return opMap.filter(uuidVector3Map -> !uuidVector3Map.isEmpty()).isPresent();
+    }
+
+    public static class Builder extends VesselFlag.Builder<Map<UUID, Vector3<Double>>, PlayerStatesFlag> {
+
+        @Override
+        protected PlayerStatesFlag buildEmpty() {
+            return new PlayerStatesFlag();
+        }
     }
 }

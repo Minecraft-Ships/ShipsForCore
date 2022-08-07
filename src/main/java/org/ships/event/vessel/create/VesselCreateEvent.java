@@ -10,7 +10,32 @@ public class VesselCreateEvent implements VesselEvent {
 
     private final Vessel vessel;
 
+    protected VesselCreateEvent(Vessel vessel) {
+        this.vessel = vessel;
+    }
+
+    @Override
+    public Vessel getVessel() {
+        return this.vessel;
+    }
+
     public abstract static class Pre extends VesselCreateEvent implements Cancellable {
+
+        private boolean cancelled;
+
+        public Pre(Vessel vessel) {
+            super(vessel);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return this.cancelled;
+        }
+
+        @Override
+        public void setCancelled(boolean value) {
+            this.cancelled = value;
+        }
 
         public static class BySign extends Pre implements EntityEvent<LivePlayer> {
 
@@ -26,26 +51,13 @@ public class VesselCreateEvent implements VesselEvent {
                 return this.player;
             }
         }
-
-        private boolean cancelled;
-
-        public Pre(Vessel vessel) {
-            super(vessel);
-        }
-
-
-        @Override
-        public boolean isCancelled() {
-            return this.cancelled;
-        }
-
-        @Override
-        public void setCancelled(boolean value) {
-            this.cancelled = value;
-        }
     }
 
     public abstract static class Post extends VesselCreateEvent {
+
+        public Post(Vessel vessel) {
+            super(vessel);
+        }
 
         public static class BySign extends Post implements EntityEvent<LivePlayer> {
 
@@ -61,18 +73,5 @@ public class VesselCreateEvent implements VesselEvent {
                 return this.player;
             }
         }
-
-        public Post(Vessel vessel) {
-            super(vessel);
-        }
-    }
-
-    protected VesselCreateEvent(Vessel vessel) {
-        this.vessel = vessel;
-    }
-
-    @Override
-    public Vessel getVessel() {
-        return this.vessel;
     }
 }

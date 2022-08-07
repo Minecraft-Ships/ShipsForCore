@@ -143,18 +143,22 @@ public class MoveSign implements ShipsSign {
         }
         int max = ship.getMaxSpeed();
         if (finalSpeed > max && originalSpeed < finalSpeed) {
-            player.sendMessage(AText.ofPlain("Speed error: Your speed cannot go higher").withColour(NamedTextColours.RED));
+            player.sendMessage(
+                    AText.ofPlain("Speed error: Your speed cannot go higher").withColour(NamedTextColours.RED));
         } else if (finalSpeed < -max && originalSpeed > finalSpeed) {
-            player.sendMessage(AText.ofPlain("Speed error: Your speed cannot go lower").withColour(NamedTextColours.RED));
+            player.sendMessage(
+                    AText.ofPlain("Speed error: Your speed cannot go lower").withColour(NamedTextColours.RED));
         } else {
             lste.setTextAt(3, AText.ofPlain(String.valueOf(finalSpeed)));
         }
     }
 
-    private void onVesselMove(CommandViewer player, SyncBlockPosition position, int speed, MovementContext context, Vessel vessel, Consumer<Throwable> throwableConsumer) {
+    private void onVesselMove(CommandViewer player, SyncBlockPosition position, int speed, MovementContext context,
+            Vessel vessel, Consumer<Throwable> throwableConsumer) {
         if (speed > vessel.getMaxSpeed() || speed < -vessel.getMaxSpeed()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
-            player.sendMessage(AText.ofPlain("Speed error: Your ship cannot move that fast").withColour(NamedTextColours.RED));
+            player.sendMessage(
+                    AText.ofPlain("Speed error: Your ship cannot move that fast").withColour(NamedTextColours.RED));
             context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
             return;
         }

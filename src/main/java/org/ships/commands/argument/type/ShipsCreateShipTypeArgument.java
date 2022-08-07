@@ -53,7 +53,8 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        CloneableShipType<?> type = ((CloneableShipType<?>) commandContext.getArgument(this, CLONEABLE_SHIP_TYPE)).getOriginType();
+        CloneableShipType<?> type = ((CloneableShipType<?>) commandContext.getArgument(this,
+                CLONEABLE_SHIP_TYPE)).getOriginType();
         List<String> names = commandContext.getArgument(this, NEW_SHIP_TYPE_NAME);
         names.forEach(name -> {
             File file = new File(ShipsPlugin
@@ -73,8 +74,9 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
             file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
             if (file.exists()) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(AText.ofPlain("Custom ShipType " + name + " has already been " +
-                            "created"));
+                    ((CommandViewer) source).sendMessage(
+                            AText.ofPlain("Custom ShipType " + name + " has already been " +
+                                    "created"));
                 }
                 return;
             }
@@ -83,7 +85,8 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
                 Files.copy(type.getFile().getFile().toPath(), file.toPath());
             } catch (IOException e) {
                 if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(AText.ofPlain(name + " failed to created file. " + e.getMessage()));
+                    ((CommandViewer) source).sendMessage(
+                            AText.ofPlain(name + " failed to created file. " + e.getMessage()));
                 }
                 e.printStackTrace();
             }

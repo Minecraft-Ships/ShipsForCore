@@ -17,7 +17,12 @@ public class BlockTypeNameAdapter implements MessageAdapter<BlockType> {
 
     @Override
     public Set<String> examples() {
-        return TranslateCore.getPlatform().getBlockTypes().stream().map(Identifiable::getName).collect(Collectors.toSet());
+        return TranslateCore
+                .getPlatform()
+                .getBlockTypes()
+                .stream()
+                .map(Identifiable::getName)
+                .collect(Collectors.toSet());
     }
 
     @Override

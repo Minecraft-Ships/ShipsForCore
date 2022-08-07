@@ -26,7 +26,8 @@ public class FindAirOvertimeBlockFinderUpdate implements OvertimeBlockFinderUpda
     }
 
     @Override
-    public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
+    public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
+            @NotNull BlockPosition block) {
         return this.update.onBlockFind(currentStructure, block);
     }
 }

@@ -261,10 +261,19 @@ public class ShipsPlugin implements CorePlugin {
 
     public void getLoadedMessages() {
         ConsoleSource source = TranslateCore.getConsole();
-        source.sendMessage(AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
-        source.sendMessage(AText.ofPlain("Ships Version: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain(this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-" + PRERELEASE_VERSION)));
-        source.sendMessage(AText.ofPlain("Vessels: ").withColour(NamedTextColours.AQUA).append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
-        source.sendMessage(AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
+        source.sendMessage(
+                AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
+        source.sendMessage(AText
+                .ofPlain("Ships Version: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(
+                        this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-" + PRERELEASE_VERSION)));
+        source.sendMessage(AText
+                .ofPlain("Vessels: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
+        source.sendMessage(
+                AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
     }
 
     public void loadVesselTypeFlagData() {
@@ -287,7 +296,11 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     public <T extends Identifiable> Collection<T> getAll(Class<T> class1) {
-        return this.identifiables.parallelStream().filter(class1::isInstance).map(t -> (T) t).collect(Collectors.toSet());
+        return this.identifiables
+                .parallelStream()
+                .filter(class1::isInstance)
+                .map(t -> (T) t)
+                .collect(Collectors.toSet());
     }
 
     public Collection<ShipType<?>> getAllShipTypes() {

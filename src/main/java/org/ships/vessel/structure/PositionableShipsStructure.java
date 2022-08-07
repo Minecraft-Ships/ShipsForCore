@@ -16,7 +16,6 @@ import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -94,13 +93,13 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     }
 
     @Deprecated(forRemoval = true)
-    default <T> Collection<T> getAllLike(Function<SyncBlockPosition, ? extends T> function){
+    default <T> Collection<T> getAllLike(Function<SyncBlockPosition, ? extends T> function) {
         return this.getAllLike(s -> s, function);
     }
 
     default <P extends BlockPosition, T> Collection<T> getAllLike(Function<? super SyncBlockPosition, P> toPos,
-                                                                  Function<P, ?
-            extends T> function) {
+            Function<P, ?
+                    extends T> function) {
         return this.getPositions(toPos).stream().map(function).collect(Collectors.toUnmodifiableSet());
     }
 
@@ -110,7 +109,7 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     }
 
     default <T extends BlockPosition> Collection<T> getAll(BlockType type,
-                                                           Function<? super SyncBlockPosition, ? extends T> function) {
+            Function<? super SyncBlockPosition, ? extends T> function) {
         return Collections.unmodifiableCollection(this.getPositions(function).stream()
                 .filter(p -> p.getBlockType().equals(type))
                 .collect(Collectors.toSet()));
@@ -136,7 +135,8 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
         return this.getPositionsRelativeTo(this.getPosition());
     }
 
-    default <T extends BlockPosition> Collection<T> getPositions(Function<? super SyncBlockPosition, ? extends T> function) {
+    default <T extends BlockPosition> Collection<T> getPositions(
+            Function<? super SyncBlockPosition, ? extends T> function) {
         return ShipsStructure.super.getPositionsRelativeTo(function.apply(this.getPosition()));
     }
 }

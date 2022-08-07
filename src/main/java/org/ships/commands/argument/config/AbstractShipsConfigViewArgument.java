@@ -30,7 +30,7 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
     private final String[] configNames;
 
     public AbstractShipsConfigViewArgument(Supplier<? extends Config.KnownNodes> config, String... configNames) {
-        if (configNames.length==0) {
+        if (configNames.length == 0) {
             throw new IllegalArgumentException("configNames must have at least one value");
         }
         this.config = config;
@@ -62,9 +62,13 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
             return false;
         }
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>> node = commandContext.getArgument(this, CONFIG_KEY);
+        DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>> node = commandContext.getArgument(this,
+                CONFIG_KEY);
         String value = this.readUnknownNode(node);
-        viewer.sendMessage(AText.ofPlain("\"" + node.getKeyName() + "\"").withColour(NamedTextColours.AQUA).append(AText.ofPlain(value)));
+        viewer.sendMessage(AText
+                .ofPlain("\"" + node.getKeyName() + "\"")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(value)));
         return true;
     }
 
