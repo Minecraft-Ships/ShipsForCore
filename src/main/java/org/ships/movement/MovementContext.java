@@ -9,6 +9,7 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
@@ -16,6 +17,9 @@ import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.instruction.MovementInstruction;
+import org.ships.movement.instruction.actions.MidMovement;
+import org.ships.movement.instruction.actions.PostMovement;
+import org.ships.movement.instruction.details.MovementDetails;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
@@ -27,119 +31,80 @@ import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MovementContext {
 
-    private final Map<EntitySnapshot<? extends LiveEntity>, MovingBlock> entities = new HashMap<>();
-    private ServerBossBar bar;
-    private BlockPosition clicked;
-    //protected boolean strictMovement;
-    //protected MovingBlockSet blocks;
-    //protected BasicMovement movement;
-    //protected Movement.MidMovement[] midMovementProcess = new Movement.MidMovement[0];
-    //protected Movement.PostMovement[] postMovementProcess = new Movement.PostMovement[0];
-    //protected Consumer<VesselMoveEvent.Post> post = (e) -> {
-    //};
-    private MovementInstruction instructions;
+    private final @NotNull Map<EntitySnapshot<? extends LiveEntity>, MovingBlock> entities = new HashMap<>();
+    private final @NotNull MovementDetails details;
+    private final @NotNull MovementInstruction instructions;
 
-    public void setInstruction(MovementInstruction instruction) {
+    public MovementContext(@NotNull MovementDetails details, @NotNull MovementInstruction instruction) {
+        this.details = details;
         this.instructions = instruction;
     }
 
     public Optional<BlockPosition> getClicked() {
-        return Optional.ofNullable(this.clicked);
+        return this.details.getClickedBlock();
     }
 
-    public MovementContext setClicked(BlockPosition position) {
-        this.clicked = position;
-        return this;
-    }
-
-    public Optional<ServerBossBar> getBar() {
-        return Optional.ofNullable(this.bar);
-    }
-
-    public MovementContext setBar(ServerBossBar bar) {
-        this.bar = bar;
-        return this;
+    public Optional<ServerBossBar> getBossBar() {
+        return this.details.getBossBar();
     }
 
     public boolean isStrictMovement() {
-        //return this.strictMovement;
         return this.instructions.isStrictMovement();
     }
 
-    @Deprecated
-    public MovementContext setStrictMovement(boolean check) {
-        //this.strictMovement = check;
-        return this;
-    }
-
     public MovingBlockSet getMovingStructure() {
-        //return this.blocks;
-
         return this.instructions.getMovingBlocks();
     }
 
-    @Deprecated
-    public MovementContext setMovingStructure(MovingBlockSet set) {
-        //this.blocks = set;
-        return this;
-    }
-
-    public BasicMovement getMovement() {
-        //return this.movement;
-
+    public @NotNull BasicMovement getMovement() {
         return this.instructions.getMovementAlgorithm();
     }
 
-    @Deprecated
-    public MovementContext setMovement(BasicMovement movement) {
-        //this.movement = movement;
-        return this;
+    public BiConsumer<MovementContext, ? super Throwable> getException() {
+        return this.details.getException();
     }
 
-    public Map<EntitySnapshot<? extends LiveEntity>, MovingBlock> getEntities() {
+    public @NotNull Map<EntitySnapshot<? extends LiveEntity>, MovingBlock> getEntities() {
         return this.entities;
     }
 
-    public Movement.PostMovement[] getPostMovementProcess() {
-        //return this.postMovementProcess;
-        return this.instructions.getPostMoveEvent();
+    public PostMovement[] getPostMovementProcess() {
+        PostMovement[] instructPost = this.instructions.getPostMoveEvent();
+        PostMovement[] detailsPost = this.details.getPostMovementEvents();
+        PostMovement[] ret = new PostMovement[instructPost.length + detailsPost.length];
+        int i = 0;
+        for (; i < instructPost.length; i++) {
+            ret[i] = instructPost[i];
+            i++;
+        }
+        for (; (i - instructPost.length) < detailsPost.length; i++) {
+            ret[i - instructPost.length] = detailsPost[i];
+            i++;
+        }
+        return ret;
     }
 
-    @Deprecated
-    public MovementContext setPostMovementProcess(Movement.PostMovement... postMovement) {
-        //this.postMovementProcess = postMovement;
-        return this;
-    }
-
-    public Movement.MidMovement[] getMidMovementProcess() {
-        //return this.midMovementProcess;
-        return this.instructions.getMidMoveEvent();
-    }
-
-    @Deprecated
-    public MovementContext setMidMovementProcess(Movement.MidMovement... midMovement) {
-        //this.midMovementProcess = midMovement;
-        return this;
-    }
-
-    @Deprecated
-    public Consumer<VesselMoveEvent.Post> getPostMovement() {
-        //return this.post;
-        return (post) -> {
-            Arrays.stream(this.instructions.getPostMoveEvent()).forEach(post1 -> post1.postMove(post.getVessel()));
-        };
-    }
-
-    @Deprecated
-    public MovementContext setPostMovement(Consumer<VesselMoveEvent.Post> consumer) {
-        //this.post = consumer;
-        return this;
+    public MidMovement[] getMidMovementProcess() {
+        MidMovement[] instructMid = this.instructions.getMidMoveEvent();
+        MidMovement[] detailsMid = this.details.getMidMovementEvents();
+        MidMovement[] ret = new MidMovement[instructMid.length + detailsMid.length];
+        int i = 0;
+        for (; i < instructMid.length; i++) {
+            ret[i] = instructMid[i];
+            i++;
+        }
+        for (; (i - instructMid.length) < detailsMid.length; i++) {
+            ret[i - instructMid.length] = detailsMid[i];
+            i++;
+        }
+        return ret;
     }
 
     public void move(Vessel vessel) {
@@ -155,12 +120,10 @@ public class MovementContext {
             try {
                 this.movePostEntity(vessel, entities);
             } catch (Throwable e) {
-                if (this.bar != null) {
-                    this.bar.deregisterPlayers();
-                }
+                this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
                 vessel.set(new MovingFlag());
                 entities.forEach(entity -> entity.setGravity(true));
-                this.instructions.getException().accept(e);
+                this.getException().accept(this, e);
 
                 if (e instanceof MoveException) {
                     return;
@@ -171,29 +134,41 @@ public class MovementContext {
     }
 
     private void movePostEntity(Vessel vessel, Collection<LiveEntity> entities) throws Exception {
-        if (this.bar != null) {
-            this.bar.setValue(100);
-            this.bar.setTitle(AText.ofPlain("Processing: Pre"));
-        }
+        this.getBossBar().ifPresent(bossBar -> {
+            bossBar.setValue(100);
+            bossBar.setTitle(AText.ofPlain("Processing: Pre"));
+        });
+
         if (this.isPreMoveEventCancelled(vessel)) {
             return;
         }
+        this.getBossBar().ifPresent(bossBar -> {
+            bossBar.setTitle(AText.ofPlain("Checking requirements: Sign"));
+            bossBar.setValue(25);
+        });
         if (vessel instanceof SignBasedVessel signBasedVessel) {
             this.isLicenceSignValid(signBasedVessel);
         }
+        this.getBossBar().ifPresent(bossBar -> {
+            bossBar.setTitle(AText.ofPlain("Checking requirements: Vessel specific"));
+            bossBar.setValue(50);
+        });
         if (vessel instanceof VesselRequirement vesselRequirement) {
             this.isRequirementsValid(vesselRequirement);
         }
-        if (this.bar != null) {
-            this.bar.setTitle(AText.ofPlain("Checking requirements: Collide"));
-        }
+        this.getBossBar().ifPresent(bossBar -> {
+            bossBar.setTitle(AText.ofPlain("Checking requirements: Collide"));
+            bossBar.setValue(75);
+        });
+
         this.isClearFromColliding(vessel);
         if (vessel instanceof VesselRequirement vesselRequirement) {
             this.processRequirements(vesselRequirement);
         }
-        if (this.bar != null) {
-            this.bar.setTitle(AText.ofPlain("Processing: Movement setup"));
-        }
+        this.getBossBar().ifPresent(bossBar -> {
+            bossBar.setValue(100);
+            bossBar.setTitle(AText.ofPlain("Processing: Movement setup"));
+        });
         this.processMovement(vessel);
     }
 
@@ -203,24 +178,19 @@ public class MovementContext {
             throw new Exception("MoveEvent Main was cancelled");
         }
         this.entities.keySet().forEach(e -> e.getCreatedFrom().ifPresent(entity -> entity.setGravity(false)));
-        if (this.bar != null) {
-            this.bar.setTitle(AText.ofPlain("Processing: Moving"));
-        }
-        this.instructions.getMovingBlocks().applyMovingBlocks();
-        Result result = this.instructions.getMovementAlgorithm().move(vessel, this);
-        if (this.bar != null) {
-            this.bar.setTitle(AText.ofPlain("Processing: Post Moving"));
-        }
+        this.getBossBar().ifPresent(bossBar -> bossBar.setTitle(AText.ofPlain("Processing: Moving")));
+
+        this.getMovingStructure().applyMovingBlocks();
+        Result result = this.getMovement().move(vessel, this);
+        this.getBossBar().ifPresent(bossBar -> bossBar.setTitle(AText.ofPlain("Processing: Post Moving")));
         result.run(vessel, this);
-        for (Movement.PostMovement postMovement : this.instructions.getPostMoveEvent()) {
+        for (PostMovement postMovement : this.getPostMovementProcess()) {
             postMovement.postMove(vessel);
         }
     }
 
     private void processRequirements(VesselRequirement vessel) throws MoveException {
-        if (this.bar != null) {
-            this.bar.setTitle(AText.ofPlain("Processing requirements:"));
-        }
+        AText.ofPlain("Processing: Requirements");
         vessel.finishRequirements(this);
     }
 
@@ -261,9 +231,6 @@ public class MovementContext {
     }
 
     private void isRequirementsValid(VesselRequirement vessel) throws MoveException {
-        if (this.bar != null) {
-            this.bar.setTitle(AText.ofPlain("Checking requirements:"));
-        }
         vessel.checkRequirements(this);
     }
 
@@ -285,12 +252,8 @@ public class MovementContext {
         if (!TranslateCore.getPlatform().callEvent(preEvent).isCancelled()) {
             return false;
         }
-        if (this.bar != null) {
-            this.bar.deregisterPlayers();
-        }
-        if (this.clicked != null) {
-            ShipsSign.LOCKED_SIGNS.remove(this.clicked);
-        }
+        this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+        this.getClicked().ifPresent(ShipsSign.LOCKED_SIGNS::remove);
         vessel.set(MovingFlag.class, null);
         return true;
 
@@ -319,15 +282,13 @@ public class MovementContext {
                 if (opDown.isEmpty()) {
                     return;
                 }
-                mBlock = this.instructions.getMovingBlocks().getBefore(opDown.get());
+                mBlock = this.getMovingStructure().getBefore(opDown.get());
             }
             if (mBlock.isEmpty()) {
                 return;
             }
             this.entities.put(snapshot, mBlock.get());
-            if (this.bar != null) {
-                this.bar.setTitle(AText.ofPlain("Collecting entities: " + this.entities.size()));
-            }
+            this.getBossBar().ifPresent(bossBar -> AText.ofPlain("Collecting entities: " + this.entities.size()));
         }, after);
     }
 
@@ -336,10 +297,9 @@ public class MovementContext {
         if (opMoving.isEmpty()) {
             return false;
         }
-        if (this.bar != null) {
-            this.bar.deregisterPlayers();
-        }
-        this.instructions.getException().accept(new MoveException(
+
+        this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+        this.getException().accept(this, new MoveException(
                 new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_MOVING_ALREADY, true)));
         return true;
     }
@@ -348,12 +308,10 @@ public class MovementContext {
         if (!vessel.isLoading()) {
             return false;
         }
-        if (this.bar != null) {
-            this.bar.deregisterPlayers();
-        }
-        this.instructions
+        this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+        this
                 .getException()
-                .accept(new MoveException(
+                .accept(this, new MoveException(
                         new AbstractFailedMovement<>(vessel, MovementResult.VESSEL_STILL_LOADING, null)));
         return true;
 

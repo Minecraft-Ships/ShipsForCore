@@ -60,7 +60,7 @@ public class Result extends ArrayList<Result.Run> {
             v.set(flag);
         };
 
-        Run REMOVE_BAR = (v, c) -> c.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+        Run REMOVE_BAR = (v, c) -> c.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
 
         Run COMMON_TELEPORT_ENTITIES = (v, c) -> c.getEntities().forEach((entity, value) -> {
             double pitch = entity.getPitch();

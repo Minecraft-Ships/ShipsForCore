@@ -88,6 +88,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         return this.specialBlockPercent != null;
     }
 
+    @Override
     public @NotNull MarsshipType getType() {
         return (MarsshipType) super.getType();
     }

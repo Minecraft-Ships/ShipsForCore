@@ -9,7 +9,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.MoveException;
-import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.FailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
@@ -66,8 +66,16 @@ public class EOTExecutor implements Runnable {
 
     public Optional<SyncBlockPosition> getSign() {
         Collection<SyncBlockPosition> blocks = this.getVessel().getStructure().getAll(SignTileEntity.class);
-        EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
-        return blocks.stream().filter(b -> sign.isSign((SignTileEntity) b.getTileEntity().get())).findFirst();
+        EOTSign sign = ShipsPlugin
+                .getPlugin()
+                .get(EOTSign.class)
+                .orElseThrow(() -> new RuntimeException("Could not find eot sign rules"));
+        return blocks
+                .stream()
+                .filter(b -> sign.isSign((SignTileEntity) b
+                        .getTileEntity()
+                        .orElseThrow(() -> new RuntimeException("Matched sign but couldnt convert to sign"))))
+                .findFirst();
     }
 
     @Override
@@ -80,12 +88,12 @@ public class EOTExecutor implements Runnable {
             }
         }
         Optional<SyncBlockPosition> opSign = this.getSign();
-        if (!opSign.isPresent()) {
+        if (opSign.isEmpty()) {
             return;
         }
         SyncBlockPosition b = opSign.get();
         Optional<DirectionalData> directionalData = b.getBlockDetails().getDirectionalData();
-        if (!directionalData.isPresent()) {
+        if (directionalData.isEmpty()) {
             return;
         }
         if (this.disableOnNoPilot && this.vessel instanceof CrewStoredVessel) {
@@ -97,29 +105,30 @@ public class EOTExecutor implements Runnable {
                 return;
             }
         }
-        MovementContext context = new MovementContext().setMovement(
-                ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
+        MovementDetailsBuilder builder = new MovementDetailsBuilder();
         if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-            ServerBossBar bar2 = TranslateCore.createBossBar();
-            this.vessel.getEntities(LivePlayer.class).forEach(bar2::register);
-            context.setBar(bar2);
+            ServerBossBar bossBar = TranslateCore.createBossBar();
+            this.vessel.getEntities(LivePlayer.class).forEach(bossBar::register);
+            builder.setBossBar(bossBar);
         }
-        this.vessel.moveTowards(directionalData
-                .get()
-                .getDirection()
-                .getOpposite()
-                .getAsVector()
-                .multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), context, exc -> {
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+
+        builder.setException((context, exc) -> {
+            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             this.vessel.getEntities().forEach(e -> e.setGravity(true));
-            if (exc instanceof MoveException) {
-                MoveException e = (MoveException) exc;
+            if (exc instanceof MoveException e) {
                 if (e.getMovement() instanceof MovementResult.VesselMovingAlready) {
                     return;
                 }
                 this.sendError(e.getMovement());
             }
         });
+
+        this.vessel.moveTowards(directionalData
+                .get()
+                .getDirection()
+                .getOpposite()
+                .getAsVector()
+                .multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), builder.build());
 
     }
 

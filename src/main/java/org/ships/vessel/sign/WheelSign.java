@@ -8,28 +8,25 @@ import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class WheelSign implements ShipsSign {
 
-    public final List<AText> SIGN = Arrays.asList(
-            AText.ofPlain("[Wheel]").withColour(NamedTextColours.YELLOW),
+    public static final List<AText> SIGN = List.of(AText.ofPlain("[Wheel]").withColour(NamedTextColours.YELLOW),
             AText.ofPlain("\\\\||//").withColour(NamedTextColours.RED),
             AText.ofPlain("==||==").withColour(NamedTextColours.RED),
-            AText.ofPlain("//||\\\\").withColour(NamedTextColours.RED)
-    );
+            AText.ofPlain("//||\\\\").withColour(NamedTextColours.RED));
 
     @Override
     public boolean isSign(List<? extends AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(this.SIGN.get(0));
+        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
 
     }
 
     @Override
     public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(this.SIGN);
+        stes.setText(SIGN);
         return stes;
     }
 
@@ -57,12 +54,12 @@ public class WheelSign implements ShipsSign {
         if (player.isSneaking()) {
             return false;
         }
-        SignUtil.onMovement(position, player, ((context, vessel, exception) -> {
+        SignUtil.onMovement(position, player, ((details, vessel) -> {
             if (left) {
-                vessel.rotateLeftAround(vessel.getPosition(), context, exception);
-            } else {
-                vessel.rotateRightAround(vessel.getPosition(), context, exception);
+                vessel.rotateLeftAround(vessel.getPosition(), details);
+                return;
             }
+            vessel.rotateRightAround(vessel.getPosition(), details);
         }));
         return false;
     }

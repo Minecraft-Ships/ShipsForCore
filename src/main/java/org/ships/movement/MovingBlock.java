@@ -8,6 +8,7 @@ import org.core.world.position.block.entity.container.ContainerTileEntity;
 import org.core.world.position.flags.physics.ApplyPhysicsFlags;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -29,11 +30,10 @@ public interface MovingBlock {
 
     default MovingBlock removeBeforePosition(SyncBlockPosition pos) {
         Optional<LiveTileEntity> opLive = pos.getTileEntity();
-        if (!opLive.isPresent()) {
+        if (opLive.isEmpty()) {
             return this;
         }
-        if (opLive.get() instanceof ContainerTileEntity) {
-            ContainerTileEntity cte = (ContainerTileEntity) opLive.get();
+        if (opLive.get() instanceof ContainerTileEntity cte) {
             cte.getInventory().getSlots().forEach(s -> s.setItem(null));
         }
         return this;
@@ -45,7 +45,7 @@ public interface MovingBlock {
         return this;
     }
 
-    default MovingBlock rotateLeft(SyncBlockPosition position) {
+    default MovingBlock rotateLeft(@NotNull BlockPosition position) {
         int shift = position.getX() - position.getZ();
         int symmetry = position.getZ();
         BlockPosition p = this.getAfterPosition();
@@ -56,7 +56,7 @@ public interface MovingBlock {
         return this;
     }
 
-    default MovingBlock rotateRight(SyncBlockPosition position) {
+    default MovingBlock rotateRight(@NotNull BlockPosition position) {
         int shift = position.getX() - position.getZ();
         int symmetry = position.getX();
         BlockPosition p = this.getAfterPosition();

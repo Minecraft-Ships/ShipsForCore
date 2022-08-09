@@ -24,11 +24,10 @@ import org.core.world.boss.ServerBossBar;
 import org.core.world.position.Positionable;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
-import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -102,9 +101,7 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
 
 
         SyncBlockPosition position = Position.toSync(Position.toBlock(world.getPosition(vector3)));
-        MovementContext context = new MovementContext();
-        BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
-        context.setMovement(movement);
+        MovementDetailsBuilder builder = new MovementDetailsBuilder();
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int trackLimit = config.getDefaultTrackSize();
 
@@ -114,16 +111,13 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
                 bar.register((LivePlayer) commandContext.getSource());
             }
             bar.setTitle(AText.ofPlain("0 / " + trackLimit));
-            context.setBar(bar);
+            builder.setBossBar(bar);
         }
-
-        vessel.moveTo(position, context, (exc) -> {
+        builder.setException((context, exc) -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-            if (exc instanceof MoveException) {
-                MoveException e = (MoveException) exc;
-                if (commandContext.getSource() instanceof CommandViewer) {
-                    CommandViewer viewer = (CommandViewer) commandContext.getSource();
+            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+            if (exc instanceof MoveException e) {
+                if (commandContext.getSource() instanceof CommandViewer viewer) {
                     this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
                 }
             } else {
@@ -135,6 +129,8 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
                 }
             });
         });
+
+        vessel.moveTo(position, builder.build());
         return true;
     }
 

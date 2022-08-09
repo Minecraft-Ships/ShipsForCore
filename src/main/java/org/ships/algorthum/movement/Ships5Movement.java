@@ -4,6 +4,7 @@ import org.core.TranslateCore;
 import org.core.world.position.impl.BlockPosition;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.movement.*;
+import org.ships.movement.instruction.actions.PostMovement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
 
@@ -35,13 +36,12 @@ public class Ships5Movement implements BasicMovement {
             Stream.of(context.getMidMovementProcess()).forEach(mid -> mid.move(m));
             m.setMovingTo();
         }
-        for (Movement.PostMovement movement : context.getPostMovementProcess()) {
+        for (PostMovement movement : context.getPostMovementProcess()) {
             movement.postMove(vessel);
         }
         vessel.set(MovingFlag.class, null);
         VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
         TranslateCore.getPlatform().callEvent(eventPost);
-        context.getPostMovement().accept(eventPost);
         return Result.DEFAULT_RESULT;
     }
 

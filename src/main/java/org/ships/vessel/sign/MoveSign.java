@@ -7,7 +7,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -16,8 +15,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
-import org.ships.algorthum.movement.BasicMovement;
-import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsOvertimeBlockFinder;
 import org.ships.vessel.common.types.Vessel;
@@ -26,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class MoveSign implements ShipsSign {
@@ -106,7 +103,7 @@ public class MoveSign implements ShipsSign {
     @Override
     public boolean onSecondClick(@NotNull LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if (!opTile.isPresent()) {
+        if (opTile.isEmpty()) {
             return false;
         }
         LiveTileEntity lte = opTile.get();
@@ -114,9 +111,9 @@ public class MoveSign implements ShipsSign {
             return false;
         }
         SignTileEntity lste = (SignTileEntity) lte;
-        SignUtil.onMovement(position, player, (context, vessel, throwableConsumer) -> {
+        SignUtil.onMovement(position, player, (details, vessel) -> {
             int speed = lste.getTextAt(3).map(text -> Integer.parseInt(text.toPlain())).orElse(1);
-            this.onVesselMove(player, position, speed, context, vessel, throwableConsumer);
+            this.onVesselMove(player, position, speed, details.toBuilder(), vessel);
         });
         return true;
     }
@@ -153,27 +150,30 @@ public class MoveSign implements ShipsSign {
         }
     }
 
-    private void onVesselMove(CommandViewer player, SyncBlockPosition position, int speed, MovementContext context,
-            Vessel vessel, Consumer<Throwable> throwableConsumer) {
+    private void onVesselMove(CommandViewer player, SyncBlockPosition position, int speed,
+            MovementDetailsBuilder builder,
+            Vessel vessel) {
         if (speed > vessel.getMaxSpeed() || speed < -vessel.getMaxSpeed()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
             player.sendMessage(
                     AText.ofPlain("Speed error: Your ship cannot move that fast").withColour(NamedTextColours.RED));
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+            if (builder.getBossBar() != null) {
+                builder.getBossBar().deregisterPlayers();
+            }
             return;
         }
         Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
-        if (!opDirectional.isPresent()) {
+        if (opDirectional.isEmpty()) {
             ShipsSign.LOCKED_SIGNS.remove(position);
             player.sendMessage(AText.ofPlain("Unknown error: " + position.getBlockType().getId() + " is not " +
                     "directional").withColour(NamedTextColours.RED));
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+            if (builder.getBossBar() != null) {
+                builder.getBossBar().deregisterPlayers();
+            }
             return;
         }
         Vector3<Integer> direction = opDirectional.get().getDirection().getOpposite().getAsVector().multiply(speed);
-        BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
-        context.setMovement(movement);
-        context.setClicked(position);
-        vessel.moveTowards(direction, context, throwableConsumer);
+        builder.setClickedBlock(position);
+        vessel.moveTowards(direction, builder.build());
     }
 }

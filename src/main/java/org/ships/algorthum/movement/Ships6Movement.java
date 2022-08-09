@@ -7,6 +7,7 @@ import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.*;
+import org.ships.movement.instruction.actions.PostMovement;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
@@ -22,7 +23,7 @@ public class Ships6Movement implements BasicMovement {
 
     @Override
     public Result move(Vessel vessel, MovementContext context) throws MoveException {
-        context.getBar().ifPresent(b -> b.setValue(0));
+        context.getBossBar().ifPresent(b -> b.setValue(0));
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
@@ -31,7 +32,7 @@ public class Ships6Movement implements BasicMovement {
         //List<MovingBlock> currentlyRemoving = new ArrayList<>();
         for (int A = 0; A < blocks.size(); A++) {
             final int B = A;
-            context.getBar().ifPresent(bar -> bar.setValue(B, blocks.size() * 3));
+            context.getBossBar().ifPresent(bar -> bar.setValue(B, blocks.size() * 3));
             MovingBlock block = blocks.get(A);
             if (currentlyAdding.size() >= config.getDefaultMovementStackLimit()) {
                 blocksToProcess.add(currentlyAdding);
@@ -52,13 +53,12 @@ public class Ships6Movement implements BasicMovement {
                 .schedule()
                 .setDisplayName("Post Movement")
                 .setRunner((sch) -> {
-                    context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing: Post movement")));
-                    for (Movement.PostMovement movement : context.getPostMovementProcess()) {
+                    context.getBossBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing: Post movement")));
+                    for (PostMovement movement : context.getPostMovementProcess()) {
                         movement.postMove(vessel);
                     }
                     VesselMoveEvent.Post eventPost = new VesselMoveEvent.Post(vessel, context, Result.DEFAULT_RESULT);
                     TranslateCore.getPlatform().callEvent(eventPost);
-                    context.getPostMovement().accept(eventPost);
                     Result result = new Result(Result.DEFAULT_RESULT);
                     result.remove(Result.Run.COMMON_TELEPORT_ENTITIES);
                     result.run(vessel, context);
@@ -133,7 +133,7 @@ public class Ships6Movement implements BasicMovement {
         public void run() {
             for (int A = 0; A < this.toProcess.size(); A++) {
                 final int B = A;
-                this.context.getBar().ifPresent(bar -> {
+                this.context.getBossBar().ifPresent(bar -> {
                     try {
                         bar.setValue((this.attempt - 1) + B, this.context.getMovingStructure().size());
                     } catch (IllegalArgumentException ignore) {
@@ -169,7 +169,7 @@ public class Ships6Movement implements BasicMovement {
             for (int A = 0; A < this.toProcess.size(); A++) {
                 MovingBlock m = this.toProcess.get(A);
                 final int B = A;
-                this.context.getBar().ifPresent(bar -> {
+                this.context.getBossBar().ifPresent(bar -> {
                     try {
                         bar.setValue(this.attempt * B, (this.totalBlocks * 2) + 1);
                     } catch (IllegalArgumentException ignore) {

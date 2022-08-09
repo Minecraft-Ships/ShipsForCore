@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.Fallable;
@@ -23,6 +24,7 @@ import java.nio.file.Files;
 import java.time.LocalTime;
 import java.util.ConcurrentModificationException;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class FallExecutor implements Consumer<Scheduler> {
@@ -65,26 +67,26 @@ public class FallExecutor implements Consumer<Scheduler> {
                         if (!v.shouldFall()) {
                             return;
                         }
-                        MovementContext context = new MovementContext().setMovement(config.getDefaultMovement());
+                        MovementDetailsBuilder builder = new MovementDetailsBuilder();
                         if (config.isBossBarVisible()) {
-                            ServerBossBar bar =
-                                    TranslateCore.createBossBar().setTitle(AText.ofPlain("Failling"));
+                            ServerBossBar bossBar =
+                                    TranslateCore.createBossBar().setTitle(AText.ofPlain("Falling"));
                             v
                                     .getEntities()
                                     .stream()
                                     .filter(e -> e instanceof LivePlayer)
-                                    .forEach(e -> bar.register((LivePlayer) e));
-                            context.setBar(bar);
+                                    .forEach(e -> bossBar.register((LivePlayer) e));
+                            builder.setBossBar(bossBar);
                         }
-                        context.setPostMovementProcess(vessel -> vessel.set(new CooldownFlag(
+                        builder.setPostMovementEvents(vessel -> vessel.set(new CooldownFlag(
                                 new TimeRange((int) config.getFallingDelayUnit().toTicks(config.getFallingDelay())))));
-                        v.moveTowards(0, -(ShipsPlugin.getPlugin().getConfig().getFallingSpeed()), 0, context, exc -> {
-                            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+                        BiConsumer<MovementContext, ? super Throwable> exception = (context, exc) -> {
+                            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
                             v.getEntities().forEach(e -> e.setGravity(true));
                             if (!(exc instanceof MoveException e)) {
                                 return;
                             }
-                            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+                            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
                             if (!e.getMovement().getResult().equals(MovementResult.COLLIDE_DETECTED)) {
                                 return;
                             }
@@ -98,9 +100,10 @@ public class FallExecutor implements Consumer<Scheduler> {
                             }
                             ShipsPlugin.getPlugin().unregisterVessel(v);
                             v.getPosition().destroy();
+                        };
 
-
-                        });
+                        builder.setException(exception);
+                        v.moveTowards(0, -(ShipsPlugin.getPlugin().getConfig().getFallingSpeed()), 0, builder.build());
 
                     });
         } catch (ConcurrentModificationException ignore) {

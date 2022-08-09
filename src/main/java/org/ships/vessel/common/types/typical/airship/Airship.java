@@ -159,6 +159,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         return this.fuelTypes;
     }
 
+    @Override
     public @NotNull AirshipType getType() {
         return (AirshipType) super.getType();
     }

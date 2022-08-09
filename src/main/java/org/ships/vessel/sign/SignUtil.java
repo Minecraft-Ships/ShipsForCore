@@ -21,6 +21,8 @@ import org.ships.exceptions.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetails;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
@@ -29,16 +31,19 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.AbstractMap;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public interface SignUtil {
 
-    static void postMovementReady(MovementContext context, Vessel vessel, LivePlayer player, SyncBlockPosition position,
+    static void postMovementReady(MovementDetailsBuilder details, Vessel vessel, LivePlayer player,
+            SyncBlockPosition position,
             MovementReady ready) {
-        if (vessel instanceof CrewStoredVessel) {
-            context.getBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Checking permissions")));
-            CrewStoredVessel stored = (CrewStoredVessel) vessel;
+        if (vessel instanceof CrewStoredVessel stored) {
+            if (details.getBossBar() != null) {
+                details.getBossBar().setTitle(AText.ofPlain("Checking permissions"));
+            }
+
             if (!((stored.getPermission(player.getUniqueId()).canMove() &&
                     player.hasPermission(stored.getType().getMoveOwnPermission())) ||
                     player.hasPermission(stored.getType().getMoveOtherPermission()))) {
@@ -55,18 +60,18 @@ public interface SignUtil {
                                     stored.getType().getMoveOtherPermission().getPermissionValue()));
                 }
                 ShipsSign.LOCKED_SIGNS.remove(position);
-                context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+                if (details.getBossBar() != null) {
+                    details.getBossBar().deregisterPlayers();
+                }
                 return;
             }
         }
-        context.setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement());
-        context.setClicked(position);
+        details.setClickedBlock(position);
 
-        Consumer<Throwable> exception = (exc) -> {
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+        BiConsumer<MovementContext, Throwable> exception = (context, exc) -> {
+            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             ShipsSign.LOCKED_SIGNS.remove(position);
-            if (exc instanceof MoveException) {
-                MoveException e = (MoveException) exc;
+            if (exc instanceof MoveException e) {
                 sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
             }
             context.getEntities().keySet().forEach(s -> {
@@ -76,7 +81,9 @@ public interface SignUtil {
             });
         };
 
-        ready.onMovementReady(context, vessel, exception);
+        details.setException(exception);
+
+        ready.onMovementReady(details.build(), vessel);
     }
 
     static <T> void sendErrorMessage(@NotNull CommandViewer viewer, @NotNull FailedMovement<T> movement,
@@ -86,35 +93,34 @@ public interface SignUtil {
 
     static void onMovement(SyncBlockPosition sign, LivePlayer player, MovementReady movement) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        MovementContext context = new MovementContext();
-        context.setPostMovement(e -> ShipsSign.LOCKED_SIGNS.remove(sign));
+        MovementDetailsBuilder builder = new MovementDetailsBuilder();
         if (config.isBossBarVisible()) {
-            ServerBossBar bar = TranslateCore.createBossBar();
-            //TODO - Set bar message
-            bar.setTitle(AText.ofPlain("Starting block getter"));
-            bar.register(player);
-            context.setBar(bar);
+            ServerBossBar bossBar = TranslateCore.createBossBar();
+            //TODO - Set bossBar message
+            bossBar.setTitle(AText.ofPlain("Starting block getter"));
+            bossBar.register(player);
+            builder.setBossBar(bossBar);
         }
         ShipsSign.LOCKED_SIGNS.add(sign);
-        new OnOvertimeAutoUpdate(sign, context, player, movement, config.getDefaultTrackSize()).loadOvertime();
+        new OnOvertimeAutoUpdate(sign, builder, player, movement, config.getDefaultTrackSize()).loadOvertime();
 
     }
 
     interface MovementReady {
 
-        void onMovementReady(MovementContext context, Vessel vessel, Consumer<Throwable> throwableConsumer);
+        void onMovementReady(MovementDetails context, Vessel vessel);
     }
 
     class OnOvertimeAutoUpdate extends ShipsOvertimeUpdateBlockLoader {
 
-        private final MovementContext context;
+        private final MovementDetailsBuilder context;
         private final int trackLimit;
         private final LivePlayer player;
         private final MovementReady movementReady;
 
-        public OnOvertimeAutoUpdate(SyncBlockPosition sign, MovementContext context, LivePlayer player,
+        public OnOvertimeAutoUpdate(SyncBlockPosition position, MovementDetailsBuilder context, LivePlayer player,
                 MovementReady ready, int trackLimit) {
-            super(sign, ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating());
+            super(position, ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating());
             this.context = context;
             this.trackLimit = trackLimit;
             this.player = player;
@@ -129,11 +135,11 @@ public interface SignUtil {
         @Override
         protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure,
                 BlockPosition block) {
-            if (this.context.getBar().isPresent()) {
-                ServerBossBar bar = this.context.getBar().get();
+            if (this.context.getBossBar() != null) {
+                ServerBossBar bossBar = this.context.getBossBar();
                 int foundBlocks = currentStructure.getRelativePositions().size() + 1;
                 try {
-                    bar.setValue(foundBlocks, this.trackLimit);
+                    bossBar.setValue(foundBlocks, this.trackLimit);
                 } catch (IllegalArgumentException ignore) {
                 }
             }
@@ -143,29 +149,30 @@ public interface SignUtil {
         @Override
         protected void onExceptionThrown(LoadVesselException e) {
             ShipsSign.LOCKED_SIGNS.remove(this.original);
-            this.context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-            if (e instanceof UnableToFindLicenceSign) {
-                UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
-                this.player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
-                e1
-                        .getFoundStructure()
-                        .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
-                        .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
-                TranslateCore
-                        .getScheduleManager()
-                        .schedule()
-                        .setDelay(5)
-                        .setDisplayName("bedrock reset")
-                        .setDelayUnit(TimeUnit.SECONDS)
-                        .setExecutor(() -> e1
-                                .getFoundStructure()
-                                .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
-                                .forEach(bp -> bp.resetBlock(this.player)))
-                        .build(ShipsPlugin.getPlugin())
-                        .run();
-            } else {
-                this.player.sendMessage(AText.ofPlain(e.getReason()).withColour(NamedTextColours.RED));
+            if (this.context.getBossBar() != null) {
+                this.context.getBossBar().deregisterPlayers();
             }
+            if (!(e instanceof UnableToFindLicenceSign e1)) {
+                this.player.sendMessage(AText.ofPlain(e.getReason()).withColour(NamedTextColours.RED));
+                return;
+            }
+            this.player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
+            e1
+                    .getFoundStructure()
+                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
+                    .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
+            TranslateCore
+                    .getScheduleManager()
+                    .schedule()
+                    .setDelay(5)
+                    .setDisplayName("bedrock reset")
+                    .setDelayUnit(TimeUnit.SECONDS)
+                    .setRunner((sch) -> e1
+                            .getFoundStructure()
+                            .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
+                            .forEach(bp -> bp.resetBlock(this.player)))
+                    .build(ShipsPlugin.getPlugin())
+                    .run();
         }
     }
 }

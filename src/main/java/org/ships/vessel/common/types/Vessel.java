@@ -19,11 +19,10 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
-import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetails;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -41,6 +40,7 @@ public interface Vessel extends Positionable<BlockPosition> {
     @NotNull PositionableShipsStructure getStructure();
 
     void setStructure(@NotNull PositionableShipsStructure pss);
+
 
     @NotNull ShipType<? extends Vessel> getType();
 
@@ -74,19 +74,15 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     boolean isMinSizeSpecified();
 
-    void moveTowards(int x, int y, int z, @NotNull MovementContext context, Consumer<? super Throwable> exception);
+    void moveTowards(int x, int y, int z, @NotNull MovementDetails details);
 
-    void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementContext context,
-            Consumer<? super Throwable> exception);
+    void moveTowards(@NotNull Vector3<Integer> vector, @NotNull MovementDetails details);
 
-    void moveTo(@NotNull SyncPosition<? extends Number> location, @NotNull MovementContext context,
-            Consumer<? super Throwable> exception);
+    void moveTo(@NotNull BlockPosition location, @NotNull MovementDetails details);
 
-    void rotateRightAround(SyncPosition<? extends Number> location, MovementContext context,
-            Consumer<? super Throwable> exception);
+    void rotateRightAround(@NotNull BlockPosition location, @NotNull MovementDetails details);
 
-    void rotateLeftAround(SyncPosition<? extends Number> location, MovementContext context,
-            Consumer<? super Throwable> exception);
+    void rotateLeftAround(@NotNull BlockPosition location, @NotNull MovementDetails details);
 
     boolean isLoading();
 
@@ -175,7 +171,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                     .setDisplayName("\tentity getter " + A)
                     .setDelay(1)
                     .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                    .setExecutor(() -> {
+                    .setRunner((sch) -> {
                         int c = (B * limit);
                         for (int to = 0; to < limit; to++) {
                             if ((c + to) >= entities2.size()) {
@@ -186,7 +182,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                                 continue;
                             }
                             Optional<SyncBlockPosition> opPosition = e.getAttachedTo();
-                            if (!opPosition.isPresent()) {
+                            if (opPosition.isEmpty()) {
                                 continue;
                             }
                             if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
@@ -214,14 +210,12 @@ public interface Vessel extends Positionable<BlockPosition> {
         sched.run();
     }
 
-    default void rotateAnticlockwiseAround(SyncPosition<? extends Number> location, MovementContext context,
-            Consumer<Throwable> exception) {
-        this.rotateRightAround(location, context, exception);
+    default void rotateAnticlockwiseAround(@NotNull BlockPosition location, @NotNull MovementDetails details) {
+        this.rotateRightAround(location, details);
     }
 
-    default void rotateClockwiseAround(SyncPosition<? extends Number> location, MovementContext context,
-            Consumer<Throwable> exception) {
-        this.rotateLeftAround(location, context, exception);
+    default void rotateClockwiseAround(@NotNull BlockPosition location, @NotNull MovementDetails details) {
+        this.rotateLeftAround(location, details);
     }
 
     @Deprecated(forRemoval = true)

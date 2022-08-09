@@ -16,11 +16,10 @@ import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
-import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -67,9 +66,7 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
             vector3 = Vector3.valueOf(-vector3.getX(), -vector3.getY(), -vector3.getZ());
         }
         SyncBlockPosition position = vessel.getPosition();
-        MovementContext context = new MovementContext();
-        BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
-        context.setMovement(movement);
+        MovementDetailsBuilder builder = new MovementDetailsBuilder();
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int trackLimit = config.getDefaultTrackSize();
 
@@ -79,17 +76,17 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
                 bar.register((LivePlayer) commandContext.getSource());
             }
             bar.setTitle(AText.ofPlain("0 / " + trackLimit));
-            context.setBar(bar);
+            builder.setBossBar(bar);
         }
 
-        vessel.moveTowards(vector3, context, (exc) -> {
+        builder.setException((context, exc) -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             if (exc instanceof MoveException) {
                 MoveException e = (MoveException) exc;
                 if (commandContext.getSource() instanceof CommandViewer) {
                     CommandViewer viewer = (CommandViewer) commandContext.getSource();
-                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                    sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
                 }
             } else {
                 exc.printStackTrace();
@@ -100,6 +97,9 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
                 }
             });
         });
+
+        vessel.moveTowards(vector3, builder.build());
+
         return true;
     }
 

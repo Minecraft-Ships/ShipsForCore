@@ -23,6 +23,7 @@ import org.ships.exceptions.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
@@ -33,7 +34,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class AltitudeSign implements ShipsSign {
 
@@ -152,11 +153,11 @@ public class AltitudeSign implements ShipsSign {
         }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int blockLimit = config.getDefaultTrackSize();
-        ServerBossBar bar = null;
+        ServerBossBar bossBar = null;
         if (config.isBossBarVisible()) {
-            bar = TranslateCore.createBossBar().setTitle(AText.ofPlain("0 / " + blockLimit)).register(player);
+            bossBar = TranslateCore.createBossBar().setTitle(AText.ofPlain("0 / " + blockLimit)).register(player);
         }
-        final ServerBossBar finalBar = bar;
+        final ServerBossBar finalBar = bossBar;
         final int finalAltitude = altitude;
         ShipsSign.LOCKED_SIGNS.add(position);
         new ShipsOvertimeUpdateBlockLoader(position, config.isStructureAutoUpdating()) {
@@ -226,32 +227,30 @@ public class AltitudeSign implements ShipsSign {
         movement.sendMessage(viewer, (T) value);
     }
 
-    private void onVesselMove(CommandViewer player, BlockPosition position, ServerBossBar bar, int altitude,
+    private void onVesselMove(CommandViewer player, BlockPosition position, ServerBossBar bossBar, int altitude,
             String line1, Vessel vessel) {
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
-        if (opFlag.isPresent() && bar != null) {
+        if (opFlag.isPresent() && bossBar != null) {
             if (opFlag.get()) {
-                bar.deregisterPlayers();
+                bossBar.deregisterPlayers();
                 player.sendMessage(AText.ofPlain("The altitude is locked on this ship"));
                 ShipsSign.LOCKED_SIGNS.remove(position);
                 return;
             }
         }
-        MovementContext context = new MovementContext()
-                .setMovement(ShipsPlugin.getPlugin().getConfig().getDefaultMovement())
-                .setPostMovement((e) -> ShipsSign.LOCKED_SIGNS.remove(position));
-        context.setClicked(position);
+        MovementDetailsBuilder builder = new MovementDetailsBuilder();
+        builder.setBossBar(bossBar);
+        builder.setClickedBlock(position);
         vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
-            if (bar == null) {
+            if (bossBar == null) {
                 return;
             }
-            bar.register((LivePlayer) e);
-            context.setBar(bar);
+            bossBar.register((LivePlayer) e);
         });
 
-        Consumer<Throwable> exception = (exc) -> {
+        BiConsumer<MovementContext, Throwable> exception = (context, exc) -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
+            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             context
                     .getEntities()
                     .keySet()
@@ -265,10 +264,12 @@ public class AltitudeSign implements ShipsSign {
             FailedMovement<?> movement = e.getMovement();
             this.sendErrorMessage(player, movement, movement.getValue().orElse(null));
         };
+
+        builder.setException(exception);
         if (line1.startsWith("{")) {
-            vessel.moveTowards(0, altitude, 0, context, exception);
+            vessel.moveTowards(0, altitude, 0, builder.build());
         } else {
-            vessel.moveTowards(0, -altitude, 0, context, exception);
+            vessel.moveTowards(0, -altitude, 0, builder.build());
         }
     }
 }

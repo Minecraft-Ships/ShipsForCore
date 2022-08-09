@@ -14,11 +14,11 @@ import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.MoveException;
 import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -27,7 +27,7 @@ import org.ships.vessel.sign.ShipsSign;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class ShipsMoveToRotateArgument implements ArgumentCommand {
 
@@ -64,9 +64,7 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         String rotate = commandContext.getArgument(this, this.SHIP_ROTATION_ARGUMENT);
         SyncBlockPosition position = vessel.getPosition();
-        MovementContext context = new MovementContext();
-        BasicMovement movement = ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
-        context.setMovement(movement);
+        MovementDetailsBuilder builder = new MovementDetailsBuilder();
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int trackLimit = config.getDefaultTrackSize();
 
@@ -76,16 +74,14 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
                 bar.register((LivePlayer) commandContext.getSource());
             }
             bar.setTitle(AText.ofPlain("0 / " + trackLimit));
-            context.setBar(bar);
+            builder.setBossBar(bar);
         }
 
-        Consumer<Throwable> exceptionSupplier = (exc) -> {
+        BiConsumer<MovementContext, Throwable> exceptionSupplier = (context, exc) -> {
             ShipsSign.LOCKED_SIGNS.remove(position);
-            context.getBar().ifPresent(ServerBossBar::deregisterPlayers);
-            if (exc instanceof MoveException) {
-                MoveException e = (MoveException) exc;
-                if (commandContext.getSource() instanceof CommandViewer) {
-                    CommandViewer viewer = (CommandViewer) commandContext.getSource();
+            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+            if (exc instanceof MoveException e) {
+                if (commandContext.getSource() instanceof CommandViewer viewer) {
                     this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
                 }
             } else {
@@ -98,12 +94,14 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
             });
         };
 
+        builder.setException(exceptionSupplier);
+
         switch (rotate) {
             case "right":
-                vessel.rotateRightAround(position, context, exceptionSupplier);
+                vessel.rotateRightAround(position, builder.build());
                 break;
             case "left":
-                vessel.rotateLeftAround(position, context, exceptionSupplier);
+                vessel.rotateLeftAround(position, builder.build());
                 break;
         }
 

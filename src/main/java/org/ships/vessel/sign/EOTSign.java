@@ -21,21 +21,18 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @deprecated Will be replaced with completely rewritten EOT sign
- */
-@Deprecated(forRemoval = true)
 public class EOTSign implements ShipsSign {
 
-    private final Collection<Scheduler> eot_scheduler = new HashSet<>();
+    private final Collection<Scheduler> eotScheduler = new HashSet<>();
 
     private final List<AText> SIGN = Arrays.asList(
             AText.ofPlain("[EOT]").withColour(NamedTextColours.YELLOW),
             AText.ofPlain("Ahead").withColour(NamedTextColours.GREEN),
             AText.ofPlain("Stop"));
 
+    @Deprecated(forRemoval = true)
     public Collection<Scheduler> getScheduler(Vessel vessel) {
-        return this.eot_scheduler.stream().filter(e -> {
+        return this.eotScheduler.stream().filter(e -> {
             Runnable runnable = e.getExecutor();
             if (!(runnable instanceof EOTExecutor exe)) {
                 return false;
@@ -79,7 +76,7 @@ public class EOTSign implements ShipsSign {
         new ShipsUpdateBlockLoader(position).loadOvertime(vessel -> {
             if (stes.getTextAt(1).isPresent() && stes.getTextAt(1).get().toPlain().contains("{")) {
                 stes.setText(this.SIGN);
-                this.eot_scheduler.stream().filter(e -> {
+                this.eotScheduler.stream().filter(e -> {
                     Runnable runnable = e.getExecutor();
                     if (!(runnable instanceof EOTExecutor eotExecutor)) {
                         return false;
@@ -96,7 +93,7 @@ public class EOTSign implements ShipsSign {
                         .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
                         .build(ShipsPlugin.getPlugin());
                 task.run();
-                this.eot_scheduler.add(task);
+                this.eotScheduler.add(task);
             }
         }, ex -> player.sendMessage(AText
                 .ofPlain("Could not find connected ship (" + ex.getMessage() + ")")

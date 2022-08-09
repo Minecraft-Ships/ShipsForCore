@@ -5,9 +5,10 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
-import org.ships.config.configuration.ShipsConfig;
+import org.core.world.position.impl.Position;
+import org.core.world.position.impl.sync.SyncPosition;
 import org.ships.exceptions.MoveException;
-import org.ships.movement.MovementContext;
+import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.MovementResult;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
@@ -49,37 +50,34 @@ public class FlightPathExecutor implements Runnable {
 
     @Override
     public void run() {
-        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         this.vessel.getFlightPath().ifPresent(fp -> {
             Optional<Vector3<Integer>> opVector = fp.getNext();
-            if (!opVector.isPresent()) {
+            if (opVector.isEmpty()) {
                 this.vessel.setFlightPath(null);
                 return;
             }
-            MovementContext context = new MovementContext().setMovement(config.getDefaultMovement());
+            MovementDetailsBuilder builder = new MovementDetailsBuilder();
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-                ServerBossBar bar = TranslateCore.createBossBar();
-                final ServerBossBar finalBar = bar;
+                ServerBossBar bossBar = TranslateCore.createBossBar();
+                final ServerBossBar finalBar = bossBar;
                 this.vessel
                         .getEntities()
                         .stream()
                         .filter(e -> e instanceof LivePlayer)
                         .forEach(e -> finalBar.register((LivePlayer) e));
-                context.setBar(bar);
+                builder.setBossBar(bossBar);
             }
-            context.setPostMovement(e -> this.vessel.setFlightPath(this.vessel
+            builder.setPostMovementEvents(e -> this.vessel.setFlightPath(this.vessel
                     .getFlightPath()
                     .get()
                     .createUpdatedPath(this.vessel.getPosition().getPosition(),
                             this.vessel.getFlightPath().get().getEndingPosition())));
-            this.vessel.moveTo(this.vessel.getPosition().getWorld().getPosition(opVector.get()), context, exc -> {
-                if (exc instanceof MoveException) {
-                    MoveException e = (MoveException) exc;
+            builder.setException((context, exc) -> {
+                if (exc instanceof MoveException e) {
                     if (e.getMovement() instanceof MovementResult.VesselMovingAlready) {
                         return;
                     }
-                    if (this.viewer == null && this.vessel instanceof CrewStoredVessel) {
-                        CrewStoredVessel vessel = (CrewStoredVessel) this.vessel;
+                    if (this.viewer == null && this.vessel instanceof CrewStoredVessel vessel) {
                         vessel.getCrew(CrewPermission.CAPTAIN).forEach(p -> {
                             LivePlayer player = TranslateCore
                                     .getServer()
@@ -97,6 +95,8 @@ public class FlightPathExecutor implements Runnable {
                     this.vessel.getEntities().forEach(e -> e.setGravity(true));
                 }
             });
+            SyncPosition<Integer> position = this.vessel.getPosition().getWorld().getPosition(opVector.get());
+            this.vessel.moveTo(Position.toBlock(position), builder.build());
         });
     }
 }
