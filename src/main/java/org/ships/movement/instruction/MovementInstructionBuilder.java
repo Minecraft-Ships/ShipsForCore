@@ -11,6 +11,7 @@ import org.ships.movement.MovingBlockSet;
 import org.ships.movement.SetMovingBlock;
 import org.ships.movement.instruction.actions.MidMovement;
 import org.ships.movement.instruction.actions.PostMovement;
+import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.function.Function;
@@ -116,7 +117,10 @@ public class MovementInstructionBuilder {
         return this;
     }
 
-    public BasicMovement getMovementAlgorithm() {
+    public @NotNull BasicMovement getMovementAlgorithm() {
+        if(this.movementAlgorithm == null){
+            return ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
+        }
         return this.movementAlgorithm;
     }
 
