@@ -13,6 +13,7 @@ import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.types.Vessel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -35,13 +36,13 @@ public abstract class AbstractShipsDataViewCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        List<CommandArgument<?>> arguments = Arrays.asList(
+        List<CommandArgument<?>> arguments = new ArrayList<>(Arrays.asList(
                 SHIP_ARGUMENT,
                 SHIP_ID_ARGUMENT,
                 DATA_ARGUMENT,
                 SPEED_ARGUMENT,
                 VIEW_ARGUMENT
-        );
+        ));
         arguments.addAll(this.getExtraArguments());
         return arguments;
     }
