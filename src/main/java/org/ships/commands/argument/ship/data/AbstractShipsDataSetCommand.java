@@ -10,6 +10,7 @@ import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.types.Vessel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -38,12 +39,12 @@ public abstract class AbstractShipsDataSetCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        List<CommandArgument<?>> originalCommands = Arrays.asList(
+        List<CommandArgument<?>> originalCommands = new ArrayList<>(Arrays.asList(
                 SHIP_ARGUMENT,
                 SHIP_ID_ARGUMENT,
                 DATA_ARGUMENT,
                 SET_ARGUMENT
-        );
+        ));
         originalCommands.addAll(this.getExtraArguments());
         return originalCommands;
     }
