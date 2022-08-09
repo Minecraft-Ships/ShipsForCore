@@ -39,10 +39,9 @@ public class MovementInstructionBuilder {
             BlockPosition position) {
         SyncBlockPosition syncedBlock = Position.toSync(position);
         Vector3<Integer> blockPos = syncedBlock.getPosition();
-
         return this.setMovementBlocks(structure, block -> {
             Vector3<Integer> rel = block.getPosition().minus(blockPos);
-            return new SetMovingBlock(block, block.getRelative(rel));
+            return new SetMovingBlock(block, syncedBlock.getRelative(rel));
         });
     }
 
@@ -118,7 +117,7 @@ public class MovementInstructionBuilder {
     }
 
     public @NotNull BasicMovement getMovementAlgorithm() {
-        if(this.movementAlgorithm == null){
+        if (this.movementAlgorithm == null) {
             return ShipsPlugin.getPlugin().getConfig().getDefaultMovement();
         }
         return this.movementAlgorithm;
