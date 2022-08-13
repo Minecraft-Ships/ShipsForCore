@@ -34,7 +34,9 @@ import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.UnderWaterType;
 import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.requirement.FuelRequirement;
 import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
@@ -55,11 +57,18 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
                     "Slot");
     protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
             new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
-    protected @Nullable Float specialBlockPercent;
-    protected @Nullable Collection<BlockType> specialBlocks;
-    protected @Nullable Integer fuelConsumption;
-    protected @Nullable FuelSlot fuelSlot;
-    protected @Nullable Collection<ItemType> fuelTypes;
+    protected @Deprecated
+    @Nullable Float specialBlockPercent;
+    protected @Deprecated
+    @Nullable Collection<BlockType> specialBlocks;
+    protected @Deprecated
+    @Nullable Integer fuelConsumption;
+    protected @Deprecated
+    @Nullable FuelSlot fuelSlot;
+    protected @Deprecated
+    @Nullable Collection<ItemType> fuelTypes;
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
     public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -69,61 +78,61 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         super(ste, position, type);
     }
 
+    public SpecialBlocksRequirement getSpecialBlocksRequirement() {
+        return this
+                .getRequirement(SpecialBlocksRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a Special blocks requirement"));
+    }
+
+    public FuelRequirement getFuelRequirement() {
+        return this
+                .getRequirement(FuelRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a fuel requirement"));
+    }
+
+    @Deprecated(forRemoval = true)
     public float getSpecialBlockPercent() {
         return this.getSpecialBlocksPercent();
     }
 
     public int getFuelConsumption() {
-        if (this.fuelConsumption == null) {
-            return this.getType().getDefaultFuelConsumption();
-        }
-        return this.fuelConsumption;
+        return this.getFuelRequirement().getConsumption();
     }
 
     public FuelSlot getFuelSlot() {
-        if (this.fuelSlot == null) {
-            return this.getType().getDefaultFuelSlot();
-        }
-        return this.fuelSlot;
+        return this.getFuelRequirement().getFuelSlot();
     }
 
     public @NotNull Collection<BlockType> getSpecialBlocks() {
-        if (this.specialBlocks == null) {
-            return this.getType().getDefaultSpecialBlockType();
-        }
-        return this.specialBlocks;
+        return this.getSpecialBlocksRequirement().getBlocks();
     }
 
     public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
-        this.specialBlocks = types;
+        SpecialBlocksRequirement requirement = this.getSpecialBlocksRequirement();
+        SpecialBlocksRequirement copy = requirement.createCopyWithBlocks(types);
+        this.setRequirement(copy);
     }
 
     public float getSpecialBlocksPercent() {
-        return Objects.requireNonNullElseGet(
-                this.specialBlockPercent,
-                () -> this.getType().getDefaultSpecialBlockPercent());
+        return this.getSpecialBlocksRequirement().getPercentage();
     }
 
     public void setSpecialBlocksPercent(@Nullable Float value) {
-        if (value != null && (value < 0 || value > 100)) {
-            throw new IndexOutOfBoundsException("Percentage can only be between 0 and 100");
-        }
-        this.specialBlockPercent = value;
+        SpecialBlocksRequirement requirement = this.getSpecialBlocksRequirement();
+        SpecialBlocksRequirement copy = requirement.createCopyWithPercentage(value);
+        this.setRequirement(copy);
     }
 
     public boolean isSpecialBlocksSpecified() {
-        return this.specialBlocks != null;
+        return this.getSpecialBlocksRequirement().isBlocksSpecified();
     }
 
     public boolean isSpecialBlocksPercentSpecified() {
-        return this.specialBlockPercent != null;
+        return this.getSpecialBlocksRequirement().isPercentageSpecified();
     }
 
     public @NotNull Collection<ItemType> getFuelTypes() {
-        if (this.fuelTypes == null) {
-            return this.getType().getDefaultFuelTypes();
-        }
-        return this.fuelTypes;
+        return this.getFuelRequirement().getFuelTypes();
     }
 
     @Override
@@ -285,7 +294,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
 
     @Override
     public void setRequirement(Requirement updated) {
-        throw new RuntimeException("Not implemented yet");
-
+        this.getRequirement(updated.getClass()).ifPresent(req -> this.requirements.remove(req));
+        this.requirements.add(updated);
     }
 }

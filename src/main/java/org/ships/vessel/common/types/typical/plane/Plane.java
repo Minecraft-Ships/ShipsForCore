@@ -30,6 +30,7 @@ import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
 import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.vessel.common.assits.*;
+import org.ships.vessel.common.requirement.FuelRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
@@ -46,10 +47,16 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
                     "Slot");
     protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
             new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
-    protected @Nullable Integer fuelConsumption;
-    protected @Nullable FuelSlot fuelSlot;
-    protected @NotNull Set<ItemType> fuelTypes = new HashSet<>();
-    protected @Nullable FlightPath path;
+    protected @Deprecated
+    @Nullable Integer fuelConsumption;
+    protected @Deprecated
+    @Nullable FuelSlot fuelSlot;
+    protected @Deprecated
+    @NotNull Set<ItemType> fuelTypes = new HashSet<>();
+    protected @Deprecated
+    @Nullable FlightPath path;
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
     public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
         super(licence, type);
@@ -59,25 +66,22 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         super(ste, position, type);
     }
 
-    public Set<ItemType> getFuelTypes() {
-        if (this.fuelTypes.isEmpty()) {
-            return this.getType().getDefaultFuelTypes();
-        }
-        return this.fuelTypes;
+    public FuelRequirement getFuelRequirement() {
+        return this
+                .getRequirement(FuelRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Plane is missing fuel requirement"));
+    }
+
+    public Collection<ItemType> getFuelTypes() {
+        return this.getFuelRequirement().getFuelTypes();
     }
 
     public int getFuelConsumption() {
-        if (this.fuelConsumption != null) {
-            return this.fuelConsumption;
-        }
-        return this.getType().getDefaultFuelConsumption();
+        return this.getFuelRequirement().getConsumption();
     }
 
     public FuelSlot getFuelSlot() {
-        if (this.fuelSlot == null) {
-            return this.getType().getDefaultFuelSlot();
-        }
-        return this.fuelSlot;
+        return this.getFuelRequirement().getFuelSlot();
     }
 
     @Override
@@ -118,7 +122,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
 
     @Override
     public Collection<Requirement> getRequirements() {
-        throw new RuntimeException("Not implemented yet");
+        return Collections.unmodifiableCollection(this.requirements);
     }
 
     @Override
@@ -152,7 +156,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
                     .getFuelTypes()
                     .stream()
                     .anyMatch(type -> slot.getItem().map(t -> type.equals(t.getType())).orElse(false));
-        }).collect(Collectors.toList());
+        }).toList();
         if (acceptedSlots.isEmpty()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
                     new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
@@ -191,7 +195,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
                     .getFuelTypes()
                     .stream()
                     .anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false));
-        }).collect(Collectors.toList());
+        }).toList();
         if (acceptedSlots.isEmpty()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
                     new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
@@ -199,7 +203,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         FurnaceInventory inv = acceptedSlots.get(0);
         Slot slot = this.getFuelSlot() == FuelSlot.TOP ? inv.getSmeltingSlot() : inv.getFuelSlot();
         Optional<ItemStack> opItem = slot.getItem();
-        if (!opItem.isPresent()) {
+        if (opItem.isEmpty()) {
             return;
         }
         ItemStack item = opItem.get();
@@ -212,8 +216,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
 
     @Override
     public void setRequirement(Requirement updated) {
-        throw new RuntimeException("Not implemented yet");
-
+        this.getRequirement(updated.getClass()).ifPresent(req -> this.requirements.remove(req));
     }
 
     @Override
@@ -243,7 +246,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
                     .getFuelTypes()
                     .stream()
                     .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
-        }).collect(Collectors.toList());
+        }).toList();
         return acceptedSlots.isEmpty();
     }
 

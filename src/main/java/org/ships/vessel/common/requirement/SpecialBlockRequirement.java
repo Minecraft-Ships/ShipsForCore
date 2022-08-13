@@ -92,7 +92,21 @@ public class SpecialBlockRequirement implements Requirement {
     }
 
     @Override
+    public @NotNull Requirement createCopy() {
+        return new SpecialBlockRequirement(this.parent, this.blockType, this.amount, this.displayName);
+    }
+
+    public @NotNull SpecialBlockRequirement createCopyWithAmount(@Nullable Integer amount) {
+        return new SpecialBlockRequirement(this.parent, this.blockType, amount, this.displayName);
+    }
+
+    @Override
     public Optional<Requirement> getParent() {
         return Optional.ofNullable(this.parent);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.getAmount() == 0;
     }
 }

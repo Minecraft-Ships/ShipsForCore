@@ -8,14 +8,23 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 import java.util.HashSet;
 import java.util.Set;
 
-@Deprecated(forRemoval = true)
 public interface SpecialBlockShipType<V extends Vessel> extends ShipType<V> {
 
+    @Deprecated(forRemoval = true)
     default float getDefaultSpecialBlockPercent() {
+        return this.getDefaultSpecialBlocksPercent();
+    }
+
+    default float getDefaultSpecialBlocksPercent() {
         return this.getFile().getDouble(AbstractShipType.SPECIAL_BLOCK_PERCENT).orElse(0.0).floatValue();
     }
 
+    @Deprecated(forRemoval = true)
     default Set<BlockType> getDefaultSpecialBlockType() {
+        return this.getDefaultSpecialBlockTypes();
+    }
+
+    default Set<BlockType> getDefaultSpecialBlockTypes() {
         return this.getFile().parseCollection(AbstractShipType.SPECIAL_BLOCK_TYPE, new HashSet<>());
     }
 

@@ -145,12 +145,40 @@ public class FuelRequirement implements Requirement {
     }
 
     @Override
-    public @NotNull Requirement createChild() {
+    public @NotNull FuelRequirement createChild() {
         return new FuelRequirement(this);
+    }
+
+    @Override
+    public @NotNull FuelRequirement createCopy() {
+        return new FuelRequirement(this.parent, this.slot, this.takeAmount, this.fuelTypes);
+    }
+
+    public @NotNull FuelRequirement createCopyWithSlot(@Nullable FuelSlot slot) {
+        return new FuelRequirement(this.parent, slot, this.takeAmount, this.fuelTypes);
+    }
+
+    public @NotNull FuelRequirement createCopyWithConsumption(@Nullable Integer amount) {
+        return new FuelRequirement(this.parent, this.slot, amount, this.fuelTypes);
+    }
+
+    public @NotNull FuelRequirement createCopyWithFuel(Collection<ItemType> items) {
+        return new FuelRequirement(this.parent, this.slot, this.takeAmount, items);
     }
 
     @Override
     public Optional<Requirement> getParent() {
         return Optional.ofNullable(this.parent);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        if (this.getFuelTypes().isEmpty()) {
+            return false;
+        }
+        if (this.getConsumption() == 0) {
+            return false;
+        }
+        return true;
     }
 }

@@ -22,6 +22,7 @@ import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
@@ -34,8 +35,12 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
             new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special",
                     "Type");
-    protected @Nullable Float specialBlockPercent;
-    protected @Nullable Collection<BlockType> specialBlocks;
+    protected @Deprecated
+    @Nullable Float specialBlockPercent;
+    protected @Deprecated
+    @Nullable Collection<BlockType> specialBlocks;
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
 
     public Marsship(ShipType<? extends Marsship> type, LiveTileEntity licence) throws NoLicencePresent {
@@ -46,46 +51,48 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         super(ste, position, type);
     }
 
+    public SpecialBlocksRequirement getSpecialBlocksRequirement() {
+        return this
+                .getRequirement(SpecialBlocksRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Marsship is missing the special blocks requirement"));
+    }
+
     @Deprecated(forRemoval = true)
     public float getSpecialBlockPercent() {
         return this.getSpecialBlocksPercent();
     }
 
     public Collection<BlockType> getSpecialBlocks() {
-        if (this.specialBlocks == null) {
-            return this.getType().getDefaultSpecialBlockType();
-        }
-        return this.specialBlocks;
+        return this.getSpecialBlocksRequirement().getBlocks();
     }
 
     public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
-        this.specialBlocks = types;
+        SpecialBlocksRequirement requirement = this.getSpecialBlocksRequirement();
+        SpecialBlocksRequirement requirementCopy = requirement.createCopyWithBlocks(types);
+        this.setRequirement(requirementCopy);
     }
 
     public float getSpecialBlocksPercent() {
-        return Objects.requireNonNullElseGet(
-                this.specialBlockPercent,
-                () -> this.getType().getDefaultSpecialBlockPercent());
+        return this.getSpecialBlocksRequirement().getPercentage();
     }
 
     public void setSpecialBlocksPercent(@Nullable Float value) {
-        if (value != null && (value < 0 || value > 100)) {
-            throw new IndexOutOfBoundsException("Percent must be between 0 and 100");
-        }
-        this.specialBlockPercent = value;
+        SpecialBlocksRequirement requirement = this.getSpecialBlocksRequirement();
+        SpecialBlocksRequirement requirementCopy = requirement.createCopyWithPercentage(value);
+        this.setRequirement(requirementCopy);
     }
 
     @Override
     public Collection<Requirement> getRequirements() {
-        throw new RuntimeException("Not implemented");
+        return Collections.unmodifiableCollection(this.requirements);
     }
 
     public boolean isSpecialBlocksSpecified() {
-        return this.specialBlocks != null;
+        return this.getSpecialBlocksRequirement().isBlocksSpecified();
     }
 
     public boolean isSpecialBlocksPercentSpecified() {
-        return this.specialBlockPercent != null;
+        return this.getSpecialBlocksRequirement().isPercentageSpecified();
     }
 
     @Override
@@ -144,7 +151,8 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
 
     @Override
     public void setRequirement(Requirement updated) {
-        throw new RuntimeException("Not implemented yet");
+        this.getRequirement(updated.getClass()).ifPresent(req -> this.requirements.remove(req));
+        this.requirements.add(updated);
     }
 
 }

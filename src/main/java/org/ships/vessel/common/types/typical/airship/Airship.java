@@ -34,7 +34,10 @@ import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.requirement.FuelRequirement;
 import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlockRequirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
@@ -57,12 +60,8 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
                     "Slot");
     protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
             new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
-    private @Nullable Boolean useBurner;
-    private @Nullable Float specialBlockPercent;
-    private @Nullable Collection<BlockType> specialBlocks;
-    private @Nullable Integer fuelConsumption;
-    private @Nullable FuelSlot fuelSlot;
-    private @Nullable Collection<ItemType> fuelTypes;
+
+    private final Collection<Requirement> requirements = new HashSet<>();
 
     public Airship(ShipType<? extends Airship> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -72,20 +71,42 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         super(ste, position, type);
     }
 
+
+    public void setBurner(@Nullable Boolean check) {
+        SpecialBlockRequirement requirement = this.getSpecialBlockRequirement();
+        SpecialBlockRequirement copyRequirement = requirement.createCopyWithAmount((check != null && check) ? 1 : 0);
+        this.setRequirement(copyRequirement);
+    }
+
+    public SpecialBlocksRequirement getSpecialBlocksRequirement() {
+        return this
+                .getRequirement(SpecialBlocksRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Airship is missing the special blocks requirement"));
+    }
+
+    public SpecialBlockRequirement getSpecialBlockRequirement() {
+        return this
+                .getRequirement(SpecialBlockRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Airship is missing the special single block requirement"));
+    }
+
+    public FuelRequirement getFuelRequirement() {
+        return this
+                .getRequirement(FuelRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Airship is missing the fuel requirement"));
+    }
+
     @Override
     public Collection<Requirement> getRequirements() {
-        throw new RuntimeException("Not implemented");
+        return Collections.unmodifiableCollection(this.requirements);
     }
 
     public boolean isUsingBurner() {
-        if (this.useBurner == null) {
-            return this.getType().isUsingBurner();
-        }
-        return this.useBurner;
+        return this.getSpecialBlockRequirement().isEnabled();
     }
 
     public boolean isSpecialBlocksPercentSpecified() {
-        return this.specialBlockPercent != null;
+        return this.getSpecialBlocksRequirement().isPercentageSpecified();
     }
 
     @Deprecated(forRemoval = true)
@@ -100,63 +121,59 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
     }
 
     public float getSpecialBlocksPercent() {
-        return Objects
-                .requireNonNullElseGet(
-                        this.specialBlockPercent,
-                        () -> this.getType().getDefaultSpecialBlockPercent());
+        return this.getSpecialBlocksRequirement().getPercentage();
     }
 
     public void setSpecialBlocksPercent(@Nullable Float percent) {
-        if (percent != null && (percent > 100 || percent < 0)) {
-            throw new IndexOutOfBoundsException(percent + " must be between 0 and 100");
-        }
-        this.specialBlockPercent = percent;
+        SpecialBlocksRequirement requirement = this.getSpecialBlocksRequirement();
+        SpecialBlocksRequirement copyRequirement = requirement.createCopyWithPercentage(percent);
+        this.setRequirement(copyRequirement);
     }
 
     public int getFuelConsumption() {
-        return Objects.requireNonNullElseGet(this.fuelConsumption, () -> this.getType().getDefaultFuelConsumption());
+        return this.getFuelRequirement().getConsumption();
     }
 
     public @NotNull Airship setFuelConsumption(@Nullable Integer fuel) {
-        if (fuel != null && fuel < 0) {
-            throw new IndexOutOfBoundsException("Fuel cannot be less then 0");
-        }
-        this.fuelConsumption = fuel;
+        FuelRequirement requirement = this.getFuelRequirement();
+        FuelRequirement copyRequirement = requirement.createCopyWithConsumption(fuel);
+        this.setRequirement(copyRequirement);
         return this;
     }
 
     public FuelSlot getFuelSlot() {
-        if (this.fuelSlot == null) {
-            return this.getType().getDefaultFuelSlot();
-        }
-        return this.fuelSlot;
+        return this.getFuelRequirement().getFuelSlot();
     }
 
     public Airship setFuelSlot(FuelSlot check) {
-        this.fuelSlot = check;
+        FuelRequirement requirement = this.getFuelRequirement();
+        FuelRequirement copyRequirement = requirement.createCopyWithSlot(check);
+        this.setRequirement(copyRequirement);
         return this;
     }
 
     public Collection<BlockType> getSpecialBlocks() {
-        if (this.specialBlocks == null) {
-            return this.getType().getDefaultSpecialBlockType();
-        }
-        return this.specialBlocks;
+        return this.getSpecialBlocksRequirement().getBlocks();
     }
 
     public void setSpecialBlocks(@Nullable Collection<BlockType> types) {
-        this.specialBlocks = types;
+        SpecialBlocksRequirement requirement = this.getSpecialBlocksRequirement();
+        SpecialBlocksRequirement copyRequirement = requirement.createCopyWithBlocks(types);
+        this.setRequirement(copyRequirement);
     }
 
     public boolean isSpecialBlocksSpecified() {
-        return this.specialBlocks != null;
+        return this.getSpecialBlocksRequirement().isBlocksSpecified();
     }
 
     public Collection<ItemType> getFuelTypes() {
-        if (this.fuelTypes == null) {
-            return this.getType().getDefaultFuelTypes();
-        }
-        return this.fuelTypes;
+        return this.getFuelRequirement().getFuelTypes();
+    }
+
+    public void setFuelTypes(@Nullable Collection<ItemType> types) {
+        FuelRequirement requirement = this.getFuelRequirement();
+        FuelRequirement copyRequirement = requirement.createCopyWithFuel(types);
+        this.setRequirement(copyRequirement);
     }
 
     @Override
@@ -248,7 +265,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
                         .getFuelTypes()
                         .stream()
                         .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
-            }).collect(Collectors.toList());
+            }).toList();
             if (acceptedSlots.isEmpty()) {
                 throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
                         new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
@@ -256,7 +273,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
             FurnaceInventory inv = acceptedSlots.get(0);
             Slot slot = this.getFuelSlot() == FuelSlot.TOP ? inv.getSmeltingSlot() : inv.getFuelSlot();
             Optional<ItemStack> opItem = slot.getItem();
-            if (!opItem.isPresent()) {
+            if (opItem.isEmpty()) {
                 return;
             }
             ItemStack item = opItem.get();
@@ -270,7 +287,8 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
 
     @Override
     public void setRequirement(Requirement updated) {
-        throw new RuntimeException("Not implemented yet");
+        this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
+        this.requirements.add(updated);
     }
 
     @Override
@@ -287,12 +305,12 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
 
     @Override
     public AbstractShipsVessel deserializeExtra(ConfigurationStream file) {
-        file.getBoolean(this.configBurnerBlock).ifPresent(v -> this.useBurner = v);
-        file.getDouble(this.configSpecialBlockPercent).ifPresent(v -> this.specialBlockPercent = v.floatValue());
-        file.getInteger(this.configFuelConsumption).ifPresent(v -> this.fuelConsumption = v);
-        this.fuelTypes = file.parseCollection(this.configFuelTypes, new HashSet<>());
-        this.specialBlocks = file.parseCollection(this.configSpecialBlockType, new HashSet<>());
-        this.fuelSlot = file.parse(this.configFuelSlot).orElse(null);
+        file.getBoolean(this.configBurnerBlock).ifPresent(this::setBurner);
+        file.getDouble(this.configSpecialBlockPercent).ifPresent(v -> this.setSpecialBlocksPercent(v.floatValue()));
+        file.getInteger(this.configFuelConsumption).ifPresent(this::setFuelConsumption);
+        this.setFuelTypes(file.parseCollection(this.configFuelTypes, new HashSet<>()));
+        this.setFuelSlot(file.parse(this.configFuelSlot).orElse(null));
+        this.setSpecialBlocks(file.parseCollection(this.configSpecialBlockType, new HashSet<>()));
         return this;
     }
 
@@ -338,7 +356,8 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         if (this.isUsingBurner() && !burnerFound) {
             return true;
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getOriginalRelativePositions().size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f) /
+                this.getStructure().getOriginalRelativePositions().size());
         if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
             return true;
         }
@@ -355,7 +374,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
                         .getFuelTypes()
                         .stream()
                         .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
-            }).collect(Collectors.toList());
+            }).toList();
             return acceptedSlots.isEmpty();
         }
         return false;

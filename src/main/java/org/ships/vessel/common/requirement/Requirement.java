@@ -17,5 +17,9 @@ public interface Requirement {
 
     @NotNull Requirement createChild();
 
+    @NotNull Requirement createCopy();
+
     Optional<Requirement> getParent();
+
+    boolean isEnabled();
 }

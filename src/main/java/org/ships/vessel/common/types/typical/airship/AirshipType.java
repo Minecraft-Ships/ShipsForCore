@@ -19,21 +19,31 @@ import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
 import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.requirement.FuelRequirement;
+import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlockRequirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 public class AirshipType extends AbstractShipType<Airship>
         implements CloneableShipType<Airship>, SpecialBlockShipType<Airship>, FuelledShipType<Airship> {
+
+    private final Collection<Requirement> requirements = new HashSet<>();
 
     public AirshipType() {
         this("Airship", new File(ShipsPlugin.getPlugin().getConfigFolder(),
                 "/Configuration/ShipType/Airship." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
     }
 
-    public AirshipType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name,
+    public AirshipType(String displayName, File file) {
+        this(ShipsPlugin.getPlugin(), displayName,
                 TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
                 BlockTypes.AIR);
     }
@@ -67,6 +77,20 @@ public class AirshipType extends AbstractShipType<Airship>
         this.file.set(FUEL_TYPES, ArrayUtils.ofSet(ItemTypes.COAL.get(), ItemTypes1V13.CHARCOAL.get()));
         this.file.set(MAX_SPEED, 10);
         this.file.set(ALTITUDE_SPEED, 5);
+    }
+
+    @Override
+    public Collection<Requirement> getDefaultRequirements() {
+        if (this.requirements.isEmpty()) {
+            Requirement burnerRequirement = new SpecialBlockRequirement(null, BlockTypes.FIRE,
+                    this.isUsingBurner() ? 1 : 0, "Burner");
+            Requirement woolRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                    this.getDefaultSpecialBlockTypes());
+            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                    this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
+            this.requirements.addAll(List.of(burnerRequirement, woolRequirement, fuelRequirement));
+        }
+        return Collections.unmodifiableCollection(this.requirements);
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
@@ -36,8 +37,10 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
             new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special",
                     "Type");
-    protected Float specialBlockPercent;
-    protected Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();
+    protected @Deprecated Float specialBlockPercent;
+    protected @Deprecated Set<BlockType> specialBlocks = ShipType.WATERSHIP.getDefaultSpecialBlockType();
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
     public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -50,17 +53,17 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     public float getSpecialBlockPercent() {
-        if (this.specialBlockPercent == null) {
-            return this.getType().getDefaultSpecialBlockPercent();
-        }
-        return this.specialBlockPercent;
+        return this.getSpecialBlocksRequirement().getPercentage();
     }
 
-    public Set<BlockType> getSpecialBlocks() {
-        if (this.specialBlocks.isEmpty()) {
-            return this.getType().getDefaultSpecialBlockType();
-        }
-        return this.specialBlocks;
+    public @NotNull SpecialBlocksRequirement getSpecialBlocksRequirement() {
+        return this
+                .getRequirement(SpecialBlocksRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Watership does not have a requirement for special blocks"));
+    }
+
+    public @NotNull Collection<BlockType> getSpecialBlocks() {
+        return this.getSpecialBlocksRequirement().getBlocks();
     }
 
     @Override
@@ -69,9 +72,8 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
-    public Collection<Requirement> getRequirements() {
-        throw new RuntimeException("Not implemented yet");
-
+    public @NotNull Collection<Requirement> getRequirements() {
+        return Collections.unmodifiableCollection(this.requirements);
     }
 
     @Override
@@ -82,7 +84,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         }
         Optional<Integer> opWaterLevel = this.getWaterLevel(MovingBlock::getAfterPosition,
                 context.getMovingStructure());
-        if (!opWaterLevel.isPresent()) {
+        if (opWaterLevel.isEmpty()) {
             throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NO_MOVING_TO_FOUND,
                     Collections.singletonList(BlockTypes.WATER)));
         }
@@ -107,8 +109,12 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
 
     @Override
     public void setRequirement(Requirement updated) {
-        throw new RuntimeException("Not implemented yet");
-
+        this.requirements
+                .parallelStream()
+                .filter(r -> r.getClass().getName().equals(updated.getClass().getName()))
+                .findAny()
+                .ifPresent(requ -> this.requirements.remove(requ));
+        this.requirements.add(updated);
     }
 
     @Override
@@ -152,7 +158,8 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         if (!inWater) {
             return true;
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().getOriginalRelativePositions().size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f) /
+                this.getStructure().getOriginalRelativePositions().size());
         return (!(this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
     }
 }

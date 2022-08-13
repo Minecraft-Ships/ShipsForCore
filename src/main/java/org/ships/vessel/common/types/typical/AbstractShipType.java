@@ -9,12 +9,13 @@ import org.core.inventory.item.ItemType;
 import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
-import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.SerializableShipType;
 import org.ships.vessel.common.flag.VesselFlag;
+import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.Vessel;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -24,38 +25,38 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
 
     public static final ConfigurationNode.KnownParser.CollectionKnown<BlockType> SPECIAL_BLOCK_TYPE =
             new ConfigurationNode.KnownParser.CollectionKnown<>(
-            Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
+                    Parser.STRING_TO_BLOCK_TYPE, "Special", "Block", "Type");
     public static final ConfigurationNode.KnownParser.SingleKnown<Double> SPECIAL_BLOCK_PERCENT =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
+                    Parser.STRING_TO_DOUBLE, "Special", "Block", "Percent");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> FUEL_CONSUMPTION =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+                    Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
     public static final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> FUEL_SLOT =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
+                    new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
     public static final ConfigurationNode.KnownParser.CollectionKnown<ItemType> FUEL_TYPES =
             new ConfigurationNode.KnownParser.CollectionKnown<>(
-            Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
+                    Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_BOOLEAN, "Block", "Burner");
+                    Parser.STRING_TO_BOOLEAN, "Block", "Burner");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
+                    Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
+                    Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_INTEGER, "Speed", "Max");
+                    Parser.STRING_TO_INTEGER, "Speed", "Max");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED =
             new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_INTEGER, "Speed", "Altitude");
-    protected final @NotNull String displayName;
-    protected final @NotNull Plugin plugin;
-    protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>();
-    protected final @NotNull BlockType[] types;
+                    Parser.STRING_TO_INTEGER, "Speed", "Altitude");
+    private final @NotNull String displayName;
+    private final @NotNull Plugin plugin;
+    private final @NotNull Set<VesselFlag<?>> flags = new HashSet<>();
+    private final @NotNull BlockType[] ignoredTypes;
     protected final @NotNull ConfigurationStream.ConfigurationFile file;
 
     public AbstractShipType(@NotNull Plugin plugin, @NotNull String displayName,
@@ -65,7 +66,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
         }
         this.plugin = plugin;
         this.displayName = displayName;
-        this.types = types;
+        this.ignoredTypes = types;
         this.file = file;
     }
 
@@ -80,6 +81,8 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
 
     protected abstract void createDefault(@NotNull ConfigurationStream.ConfigurationFile file);
 
+    public abstract Collection<Requirement> getDefaultRequirements();
+
     @Override
     public @NotNull String getDisplayName() {
         return this.displayName;
@@ -91,14 +94,17 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     }
 
     @Override
-    @Deprecated(forRemoval = true)
-    public @NotNull ExpandedBlockList getDefaultBlockList() {
-        throw new RuntimeException("Use normal blockList now");
-    }
-
-    @Override
     public @NotNull ConfigurationStream.ConfigurationFile getFile() {
         return this.file;
+    }
+
+    public <R extends Requirement> Optional<R> getDefaultRequirement(Class<R> clazz) {
+        return this
+                .getDefaultRequirements()
+                .parallelStream()
+                .filter(req -> clazz.isInstance(clazz))
+                .findAny()
+                .map(req -> (R) req);
     }
 
     @Override
@@ -129,7 +135,7 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
 
     @Override
     public BlockType[] getIgnoredTypes() {
-        return this.types;
+        return this.ignoredTypes;
     }
 
     @Override

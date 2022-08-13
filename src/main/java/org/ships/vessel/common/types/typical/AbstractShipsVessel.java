@@ -19,9 +19,11 @@ import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.assits.TeleportToVessel;
+import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
+import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
@@ -42,8 +44,10 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected @NotNull ShipType<? extends AbstractShipsVessel> type;
     protected @Nullable Integer maxSpeed;
     protected @Nullable Integer altitudeSpeed;
-    protected @Nullable Integer maxSize;
-    protected @Nullable Integer minSize;
+    protected @Deprecated
+    @Nullable Integer maxSize;
+    protected @Deprecated
+    @Nullable Integer minSize;
     protected boolean isLoading = true;
     protected String cachedName;
 
@@ -89,6 +93,21 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 TranslateCore.getPlatform().getConfigFormat());
         this.file = configuration.getFile();
         this.type = type;
+        if (!(this instanceof VesselRequirement requirement)) {
+            //this if check will be removed when the OPShip is removed
+            return;
+        }
+        if (!(type instanceof AbstractShipType<?> shipsType)) {
+            //requirements may become standard
+            return;
+        }
+        shipsType
+                .getDefaultRequirements()
+                .stream()
+                .map(Requirement::createChild)
+                .forEach(requirement::setRequirement);
+
+
     }
 
     @Override

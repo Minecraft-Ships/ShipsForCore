@@ -9,7 +9,6 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
-import org.ships.config.blocks.ExpandedBlockList;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.typical.airship.AirshipType;
 import org.ships.vessel.common.types.typical.marsship.MarsshipType;
@@ -34,9 +33,6 @@ public interface ShipType<T extends Vessel> extends Identifiable {
     @NotNull String getDisplayName();
 
     @NotNull Plugin getPlugin();
-
-    @Deprecated(forRemoval = true)
-    @NotNull ExpandedBlockList getDefaultBlockList();
 
     int getDefaultMaxSpeed();
 
