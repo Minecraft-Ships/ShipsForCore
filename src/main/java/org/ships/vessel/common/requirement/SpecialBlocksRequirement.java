@@ -82,6 +82,11 @@ public class SpecialBlocksRequirement implements Requirement {
                 .map(MovingBlock::getStoredBlockData)
                 .filter(block -> specialBlocks.contains(block.getType()))
                 .count();
+        if (blocksFound == 0) {
+            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_PERCENT,
+                    new RequiredPercentMovementData(specialBlocks.iterator().next(), percentageRequired,
+                            0)));
+        }
 
         int totalPercent = context.getMovingStructure().size() / (int) blocksFound;
         if (totalPercent < percentageRequired) {
