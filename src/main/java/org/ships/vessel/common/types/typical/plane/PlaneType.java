@@ -13,12 +13,18 @@ import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
+import org.ships.vessel.common.requirement.FuelRequirement;
+import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 public class PlaneType extends AbstractShipType<Plane> implements FuelledShipType<Plane> {
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
     public PlaneType() {
         this("Plane", new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -43,6 +49,15 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
         this.file.set(FUEL_SLOT, "Bottom");
         this.file.set(ALTITUDE_SPEED, 5);
         this.file.set(FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK.get()));
+    }
+
+    @Override
+    public Collection<Requirement> getDefaultRequirements() {
+        if(this.requirements.isEmpty()){
+            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(), this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
+            this.requirements.add(fuelRequirement);
+        }
+        return this.requirements;
     }
 
     @Override

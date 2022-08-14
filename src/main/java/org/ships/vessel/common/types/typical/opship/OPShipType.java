@@ -11,9 +11,12 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 
 @Deprecated(forRemoval = true)
 public class OPShipType extends AbstractShipType<OPShip> {
@@ -38,6 +41,11 @@ public class OPShipType extends AbstractShipType<OPShip> {
     protected void createDefault(ConfigurationStream.@NotNull ConfigurationFile file) {
         this.file.set(MAX_SPEED, 10);
         this.file.set(ALTITUDE_SPEED, 5);
+    }
+
+    @Override
+    public Collection<Requirement> getDefaultRequirements() {
+        return Collections.emptyList();
     }
 
     @Override

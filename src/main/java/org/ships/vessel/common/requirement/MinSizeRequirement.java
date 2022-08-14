@@ -57,11 +57,22 @@ public class MinSizeRequirement implements Requirement {
 
     @Override
     public @NotNull Requirement createChild() {
-        return null;
+        return new MinSizeRequirement(this, null);
+    }
+
+    @Override
+    public @NotNull Requirement createCopy() {
+        return new MinSizeRequirement(this.parent, this.minSize);
     }
 
     @Override
     public Optional<Requirement> getParent() {
         return Optional.empty();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        int size = this.getMinimumSize();
+        return size > 0;
     }
 }

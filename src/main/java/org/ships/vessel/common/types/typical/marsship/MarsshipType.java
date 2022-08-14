@@ -14,11 +14,15 @@ import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 public class MarsshipType extends AbstractShipType<Marsship>
         implements CloneableShipType<Marsship>, SpecialBlockShipType<Marsship> {
@@ -28,6 +32,8 @@ public class MarsshipType extends AbstractShipType<Marsship>
     private CorePermission moveOwnPermission = Permissions.MARSSHIP_MOVE_OWN;
     private CorePermission moveOtherPermission = Permissions.MARSSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.MARSSHIP_MAKE;
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
     public MarsshipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -73,6 +79,16 @@ public class MarsshipType extends AbstractShipType<Marsship>
         this.file.set(SPECIAL_BLOCK_PERCENT, 15);
         this.file.set(SPECIAL_BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE,
                 Collections.singletonList(BlockTypes.DAYLIGHT_DETECTOR));
+    }
+
+    @Override
+    public Collection<Requirement> getDefaultRequirements() {
+        if (this.requirements.isEmpty()) {
+            Requirement daylightDetector = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                    this.getDefaultSpecialBlockTypes());
+            this.requirements.add(daylightDetector);
+        }
+        return this.requirements;
     }
 
     @Override

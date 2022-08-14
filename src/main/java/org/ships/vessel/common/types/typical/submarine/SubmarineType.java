@@ -15,13 +15,20 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
 import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.requirement.FuelRequirement;
+import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 public class SubmarineType extends AbstractShipType<Submarine>
         implements SpecialBlockShipType<Submarine>, FuelledShipType<Submarine> {
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
     public SubmarineType() {
         this("Submarine", new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -48,6 +55,17 @@ public class SubmarineType extends AbstractShipType<Submarine>
         this.file.set(FUEL_TYPES, Collections.singleton(ItemTypes.COAL_BLOCK.get()));
         this.file.set(MAX_SPEED, 10);
         this.file.set(ALTITUDE_SPEED, 5);
+    }
+
+    @Override
+    public Collection<Requirement> getDefaultRequirements() {
+        if(this.requirements.isEmpty()){
+            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(), this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
+            Requirement specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(), this.getDefaultSpecialBlockTypes());
+            this.requirements.add(fuelRequirement);
+            this.requirements.add(specialBlocksRequirement);
+        }
+        return this.requirements;
     }
 
     @Override

@@ -70,6 +70,11 @@ public class MaxSizeRequirement implements Requirement {
         return new MaxSizeRequirement(this);
     }
 
+    @Override
+    public @NotNull Requirement createCopy() {
+        return new MaxSizeRequirement(this.parent, this.maxSize);
+    }
+
     public Requirement createChild(@Nullable Integer value) {
         return new MaxSizeRequirement(this, value);
     }
@@ -77,5 +82,11 @@ public class MaxSizeRequirement implements Requirement {
     @Override
     public Optional<Requirement> getParent() {
         return Optional.ofNullable(this.parent);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        OptionalInt opSize = this.getMaxSize();
+        return opSize.isPresent() && opSize.getAsInt() != 0 && opSize.getAsInt() != Integer.MAX_VALUE;
     }
 }

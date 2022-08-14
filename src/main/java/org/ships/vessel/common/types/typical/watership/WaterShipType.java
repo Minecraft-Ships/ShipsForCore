@@ -15,10 +15,14 @@ import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.requirement.Requirement;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashSet;
 
 public class WaterShipType extends AbstractShipType<WaterShip>
         implements CloneableShipType<WaterShip>, SpecialBlockShipType<WaterShip> {
@@ -27,6 +31,8 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     private CorePermission moveOwnPermission = Permissions.WATERSHIP_MOVE_OWN;
     private CorePermission moveOtherPermission = Permissions.WATERSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.WATERSHIP_MAKE;
+
+    private Collection<Requirement> requirements = new HashSet<>();
 
     public WaterShipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -81,6 +87,16 @@ public class WaterShipType extends AbstractShipType<WaterShip>
         this.file.set(ALTITUDE_SPEED, 5);
         this.file.set(SPECIAL_BLOCK_PERCENT, 25);
         this.file.set(SPECIAL_BLOCK_TYPE, ArrayUtils.ofSet(BlockGroups1V13.WOOL.getGrouped()));
+    }
+
+    @Override
+    public Collection<Requirement> getDefaultRequirements() {
+        if (this.requirements.isEmpty()) {
+            Requirement requirement = new SpecialBlocksRequirement(null,
+                    this.getDefaultSpecialBlocksPercent(), this.getDefaultSpecialBlockTypes());
+            this.requirements.add(requirement);
+        }
+        return this.requirements;
     }
 
     @Override
