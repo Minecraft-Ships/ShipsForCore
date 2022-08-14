@@ -45,10 +45,12 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
 
     public Marsship(ShipType<? extends Marsship> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
+        this.initRequirements();
     }
 
     public Marsship(ShipType<? extends Marsship> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
+        this.initRequirements();
     }
 
     public SpecialBlocksRequirement getSpecialBlocksRequirement() {

@@ -72,10 +72,12 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
 
     public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
+        this.initRequirements();
     }
 
     public Submarine(ShipType<? extends Submarine> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
+        this.initRequirements();
     }
 
     public SpecialBlocksRequirement getSpecialBlocksRequirement() {

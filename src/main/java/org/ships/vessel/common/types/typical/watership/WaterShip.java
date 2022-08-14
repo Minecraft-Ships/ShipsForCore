@@ -45,11 +45,13 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
         this.flags.add(new AltitudeLockFlag(true));
+        this.initRequirements();
     }
 
     public WaterShip(ShipType<WaterShip> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
         this.flags.add(new AltitudeLockFlag(true));
+        this.initRequirements();
     }
 
     public float getSpecialBlockPercent() {

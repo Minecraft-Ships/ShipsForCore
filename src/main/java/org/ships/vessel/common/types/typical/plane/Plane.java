@@ -60,10 +60,12 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
 
     public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
         super(licence, type);
+        this.initRequirements();
     }
 
     public Plane(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends Plane> type) {
         super(ste, position, type);
+        this.initRequirements();
     }
 
     public FuelRequirement getFuelRequirement() {

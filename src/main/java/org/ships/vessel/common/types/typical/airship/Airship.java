@@ -65,10 +65,12 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
 
     public Airship(ShipType<? extends Airship> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
+        this.initRequirements();
     }
 
     public Airship(ShipType<? extends Airship> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
+        this.initRequirements();
     }
 
 

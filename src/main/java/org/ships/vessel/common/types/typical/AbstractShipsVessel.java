@@ -93,11 +93,15 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 TranslateCore.getPlatform().getConfigFormat());
         this.file = configuration.getFile();
         this.type = type;
+
+    }
+
+    protected void initRequirements() {
         if (!(this instanceof VesselRequirement requirement)) {
             //this if check will be removed when the OPShip is removed
             return;
         }
-        if (!(type instanceof AbstractShipType<?> shipsType)) {
+        if (!(this.type instanceof AbstractShipType<?> shipsType)) {
             //requirements may become standard
             return;
         }
@@ -106,7 +110,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 .stream()
                 .map(Requirement::createChild)
                 .forEach(requirement::setRequirement);
-
 
     }
 
