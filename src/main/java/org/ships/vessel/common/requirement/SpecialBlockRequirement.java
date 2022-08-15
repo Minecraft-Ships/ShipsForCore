@@ -75,7 +75,7 @@ public class SpecialBlockRequirement implements Requirement {
                 .parallelStream()
                 .map(moving -> moving.getStoredBlockData().getType().equals(requiredType))
                 .count();
-        if (found > amount) {
+        if (found < amount) {
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NO_SPECIAL_NAMED_BLOCK_FOUND,
                     this.getDisplayName().orElse(requiredType.getName())));
         }

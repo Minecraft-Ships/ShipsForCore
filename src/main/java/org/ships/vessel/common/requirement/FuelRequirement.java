@@ -1,11 +1,10 @@
 package org.ships.vessel.common.requirement;
 
-import org.core.inventory.inventories.snapshots.block.FurnaceInventorySnapshot;
+import org.core.inventory.inventories.live.block.LiveFurnaceInventory;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
-import org.core.world.position.block.details.data.keyed.KeyedData;
-import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
+import org.core.world.position.block.entity.container.furnace.LiveFurnaceTileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.MoveException;
@@ -80,14 +79,14 @@ public class FuelRequirement implements Requirement {
         return false;
     }
 
-    private Collection<FurnaceInventorySnapshot> getInventories(MovementContext context) {
+    private Collection<LiveFurnaceInventory> getInventories(MovementContext context) {
         return context
                 .getMovingStructure()
                 .parallelStream()
-                .map(movingBlock -> movingBlock.getStoredBlockData().get(KeyedData.TILED_ENTITY))
+                .map(movingBlock -> movingBlock.getBeforePosition().getTileEntity())
                 .filter(Optional::isPresent)
-                .filter(opTileEntity -> opTileEntity.get() instanceof FurnaceTileEntity)
-                .map(opTileEntity -> ((FurnaceTileEntity) opTileEntity.get()).getInventory().createSnapshot())
+                .filter(opTileEntity -> opTileEntity.get() instanceof LiveFurnaceTileEntity)
+                .map(opTileEntity -> ((LiveFurnaceTileEntity) opTileEntity.get()).getInventory())
                 .collect(Collectors.toSet());
     }
 
@@ -98,7 +97,7 @@ public class FuelRequirement implements Requirement {
         if (fuelTypes.isEmpty() || toTakeAmount == 0) {
             return;
         }
-        Collection<FurnaceInventorySnapshot> furnaceInventories = this.getInventories(context);
+        Collection<LiveFurnaceInventory> furnaceInventories = this.getInventories(context);
         boolean check = furnaceInventories
                 .parallelStream()
                 .map(inventory -> (
@@ -120,7 +119,7 @@ public class FuelRequirement implements Requirement {
         if (fuelTypes.isEmpty() || toTakeAmount == 0) {
             return;
         }
-        Collection<FurnaceInventorySnapshot> furnaceInventories = this.getInventories(context);
+        Collection<LiveFurnaceInventory> furnaceInventories = this.getInventories(context);
 
         Optional<Slot> opSlot = furnaceInventories
                 .parallelStream()
@@ -176,9 +175,6 @@ public class FuelRequirement implements Requirement {
         if (this.getFuelTypes().isEmpty()) {
             return false;
         }
-        if (this.getConsumption() == 0) {
-            return false;
-        }
-        return true;
+        return this.getConsumption() != 0;
     }
 }

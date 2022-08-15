@@ -1,5 +1,6 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +13,9 @@ import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.TreeSet;
 
 public class SpecialBlocksRequirement implements Requirement {
 
@@ -73,9 +76,9 @@ public class SpecialBlocksRequirement implements Requirement {
 
     @Override
     public void onCheckRequirement(@NotNull MovementContext context, @NotNull Vessel vessel) throws MoveException {
-        Collection<BlockType> specialBlocks = this.getBlocks();
+        TreeSet<BlockType> specialBlocks = new TreeSet<>(Comparator.comparing(Identifiable::getName));
+        specialBlocks.addAll(this.getBlocks());
         float percentageRequired = this.getPercentage();
-
         long blocksFound = context
                 .getMovingStructure()
                 .parallelStream()
@@ -84,15 +87,15 @@ public class SpecialBlocksRequirement implements Requirement {
                 .count();
         if (blocksFound == 0) {
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_PERCENT,
-                    new RequiredPercentMovementData(specialBlocks.iterator().next(), percentageRequired,
+                    new RequiredPercentMovementData(specialBlocks.first(), percentageRequired,
                             0)));
         }
 
-        int totalPercent = context.getMovingStructure().size() / (int) blocksFound;
+        double totalPercent = (blocksFound * 100.0) / context.getMovingStructure().size();
         if (totalPercent < percentageRequired) {
             throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_PERCENT,
                     new RequiredPercentMovementData(specialBlocks.iterator().next(), percentageRequired,
-                            totalPercent)));
+                            (int) totalPercent)));
         }
     }
 
