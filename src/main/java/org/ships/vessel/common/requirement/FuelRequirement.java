@@ -18,6 +18,7 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FuelRequirement implements Requirement {
 
@@ -79,15 +80,14 @@ public class FuelRequirement implements Requirement {
         return false;
     }
 
-    private Collection<LiveFurnaceInventory> getInventories(MovementContext context) {
+    private Stream<LiveFurnaceInventory> getInventories(MovementContext context) {
         return context
                 .getMovingStructure()
-                .parallelStream()
+                .stream()
                 .map(movingBlock -> movingBlock.getBeforePosition().getTileEntity())
                 .filter(Optional::isPresent)
                 .filter(opTileEntity -> opTileEntity.get() instanceof LiveFurnaceTileEntity)
-                .map(opTileEntity -> ((LiveFurnaceTileEntity) opTileEntity.get()).getInventory())
-                .collect(Collectors.toSet());
+                .map(opTileEntity -> ((LiveFurnaceTileEntity) opTileEntity.get()).getInventory());
     }
 
     @Override
@@ -97,7 +97,7 @@ public class FuelRequirement implements Requirement {
         if (fuelTypes.isEmpty() || toTakeAmount == 0) {
             return;
         }
-        Collection<LiveFurnaceInventory> furnaceInventories = this.getInventories(context);
+        Collection<LiveFurnaceInventory> furnaceInventories = this.getInventories(context).collect(Collectors.toSet());
         boolean check = furnaceInventories
                 .parallelStream()
                 .map(inventory -> (
@@ -119,10 +119,9 @@ public class FuelRequirement implements Requirement {
         if (fuelTypes.isEmpty() || toTakeAmount == 0) {
             return;
         }
-        Collection<LiveFurnaceInventory> furnaceInventories = this.getInventories(context);
+        Stream<LiveFurnaceInventory> furnaceInventories = this.getInventories(context);
 
         Optional<Slot> opSlot = furnaceInventories
-                .parallelStream()
                 .map(inventory -> (this.slot == FuelSlot.TOP ? inventory.getSmeltingSlot() : inventory.getFuelSlot()))
                 .filter(slot -> slot.getItem().isPresent())
                 .filter(slot -> fuelTypes.contains(slot.getItem().get().getType()))

@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 15.0;
+    public static final double PRERELEASE_VERSION = 15.1;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
@@ -59,7 +59,7 @@ public class ShipsPlugin implements CorePlugin {
     private ShipsConfig config;
     private DebugFile debugFile;
     private Object launcher;
-    private boolean shutdown = false;
+    private boolean shutdown;
 
     public ShipsPlugin() {
         plugin = this;

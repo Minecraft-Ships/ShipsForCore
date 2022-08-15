@@ -23,6 +23,7 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
 import org.ships.movement.BlockPriority;
 import org.ships.movement.SetMovingBlock;
 import org.ships.permissions.Permissions;
@@ -38,16 +39,19 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     private static final ExactArgument BLOCK_INFO_ARGUMENT = new ExactArgument("blockinfo");
     private static final OptionalArgument<BlockType> BLOCK_TYPE = new OptionalArgument<>(
-            new BlockTypeArgument("blocktype"), new ParseCommandArgument<BlockType>() {
+            new BlockTypeArgument("blocktype"), new ParseCommandArgument<>() {
         @Override
         public CommandArgumentResult<BlockType> parse(CommandContext context,
                 CommandArgumentContext<BlockType> argument) {
-            if (!(context.getSource() instanceof LivePlayer)) {
-                return null;
+            if (!(context.getSource() instanceof LivePlayer player)) {
+                return CommandArgumentResult.from(argument, 0, null);
             }
-            LivePlayer player = (LivePlayer) context.getSource();
             Optional<BlockPosition> opBlockType = player.getBlockLookingAt();
-            return opBlockType.map(pos -> new CommandArgumentResult<>(0, pos.getBlockType())).orElse(null);
+            return CommandArgumentResult.from(
+                    argument,
+                    0,
+                    opBlockType.map(Position::getBlockType).orElse(null)
+            );
         }
     });
 
@@ -68,10 +72,9 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer)) {
+        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer) commandContext.getSource();
         BlockType bt = commandContext.getArgument(this, BLOCK_TYPE);
         if (bt == null) {
             viewer.sendMessage(AText.ofPlain("BlockType id isn't valid").withColour(NamedTextColours.RED));
