@@ -40,7 +40,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     protected @Deprecated
     @Nullable Collection<BlockType> specialBlocks;
 
-    private Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement> requirements = new HashSet<>();
 
 
     public Marsship(ShipType<? extends Marsship> type, LiveTileEntity licence) throws NoLicencePresent {
@@ -153,7 +153,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
 
     @Override
     public void setRequirement(Requirement updated) {
-        this.getRequirement(updated.getClass()).ifPresent(req -> this.requirements.remove(req));
+        this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }
 

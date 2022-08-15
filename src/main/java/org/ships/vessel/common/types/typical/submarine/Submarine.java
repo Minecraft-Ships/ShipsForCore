@@ -68,7 +68,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
     protected @Deprecated
     @Nullable Collection<ItemType> fuelTypes;
 
-    private Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement> requirements = new HashSet<>();
 
     public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);

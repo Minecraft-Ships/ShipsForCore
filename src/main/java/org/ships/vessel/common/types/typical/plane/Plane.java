@@ -219,6 +219,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     @Override
     public void setRequirement(Requirement updated) {
         this.getRequirement(updated.getClass()).ifPresent(req -> this.requirements.remove(req));
+        this.requirements.add(updated);
     }
 
     @Override
