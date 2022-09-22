@@ -39,33 +39,35 @@ public class EOTExecutor implements Consumer<Scheduler> {
         return this.player;
     }
 
-
-    @Override
-    public void accept(Scheduler scheduler) {
+    public Optional<LiveSignTileEntity> getSign() {
         Optional<Vector3<Integer>> opFlagValue = this.vessel.get(EotFlag.class).flatMap(EotFlag::getValue);
         if (opFlagValue.isEmpty()) {
-            if (scheduler instanceof Scheduler.Native nativeScheduler) {
-                nativeScheduler.cancel();
-            }
-            return;
+            return Optional.empty();
         }
         Vector3<Integer> eotRelative = opFlagValue.get();
         SyncBlockPosition mainPosition = this.vessel.getStructure().getPosition();
         SyncBlockPosition eotSignLocation = mainPosition.getRelative(eotRelative);
         Optional<LiveTileEntity> opTileEntity = eotSignLocation.getTileEntity();
         if (opTileEntity.isEmpty()) {
-            if (scheduler instanceof Scheduler.Native nativeScheduler) {
-                nativeScheduler.cancel();
-            }
-            return;
+            return Optional.empty();
         }
         LiveTileEntity tileEntity = opTileEntity.get();
         if (!(tileEntity instanceof LiveSignTileEntity liveSignTileEntity)) {
+            return Optional.empty();
+        }
+        return Optional.of(liveSignTileEntity);
+    }
+
+    @Override
+    public void accept(Scheduler scheduler) {
+        Optional<LiveSignTileEntity> opLiveSignTileEntity = this.getSign();
+        if (opLiveSignTileEntity.isEmpty()) {
             if (scheduler instanceof Scheduler.Native nativeScheduler) {
                 nativeScheduler.cancel();
             }
             return;
         }
+        LiveSignTileEntity liveSignTileEntity = opLiveSignTileEntity.get();
 
         EOTSign signTools = ShipsPlugin
                 .getPlugin()
@@ -83,7 +85,10 @@ public class EOTExecutor implements Consumer<Scheduler> {
             }
             return;
         }
-        Optional<DirectionalData> opDirectionalData = eotSignLocation.getBlockDetails().getDirectionalData();
+        Optional<DirectionalData> opDirectionalData = liveSignTileEntity
+                .getPosition()
+                .getBlockDetails()
+                .getDirectionalData();
         if (opDirectionalData.isEmpty()) {
             if (scheduler instanceof Scheduler.Native nativeScheduler) {
                 nativeScheduler.cancel();

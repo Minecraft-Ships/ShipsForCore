@@ -60,18 +60,10 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
         EOTSign sign = ShipsPlugin.getPlugin().get(EOTSign.class).get();
         if (!enabled) {
             sign.getScheduler(vessel).forEach(s -> {
-                EOTExecutor exe = (EOTExecutor) s.getExecutor();
-                exe.getSign().ifPresent(b -> {
-                    Optional<LiveTileEntity> opTileEntity = b.getTileEntity();
-                    if (!opTileEntity.isPresent()) {
-                        return;
-                    }
-                    if (!(opTileEntity.get() instanceof LiveSignTileEntity)) {
-                        return;
-                    }
-                    SignTileEntity lste = (SignTileEntity) opTileEntity.get();
-                    lste.setTextAt(1, AText.ofPlain("Ahead"));
-                    lste.setTextAt(2, AText.ofPlain("{Stop}"));
+                EOTExecutor exe = (EOTExecutor) s.getRunner();
+                exe.getSign().ifPresent(liveSignTileEntity -> {
+                    liveSignTileEntity.setTextAt(1, AText.ofPlain("Ahead"));
+                    liveSignTileEntity.setTextAt(2, AText.ofPlain("{Stop}"));
                 });
                 s.cancel();
             });
