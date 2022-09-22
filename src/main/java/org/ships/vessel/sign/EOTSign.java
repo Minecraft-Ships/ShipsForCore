@@ -5,6 +5,7 @@ import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
+import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -13,31 +14,33 @@ import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.NoLicencePresent;
+import org.ships.exceptions.load.LoadVesselException;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class EOTSign implements ShipsSign {
-
-    private final Collection<Scheduler> eotScheduler = new HashSet<>();
 
     private final List<AText> SIGN = Arrays.asList(
             AText.ofPlain("[EOT]").withColour(NamedTextColours.YELLOW),
             AText.ofPlain("Ahead").withColour(NamedTextColours.GREEN),
             AText.ofPlain("Stop"));
 
-    @Deprecated(forRemoval = true)
     public Collection<Scheduler> getScheduler(Vessel vessel) {
-        return this.eotScheduler.stream().filter(e -> {
-            Runnable runnable = e.getExecutor();
-            if (!(runnable instanceof EOTExecutor exe)) {
+        return TranslateCore.getScheduleManager().getSchedules().stream().filter(e -> {
+            Consumer<Scheduler> consumer = e.getRunner();
+            if (!(consumer instanceof EOTExecutor runner)) {
                 return false;
             }
-            return exe.getVessel().equals(vessel);
+            return runner.getVessel().equals(vessel);
         }).collect(Collectors.toUnmodifiableSet());
     }
 
@@ -62,6 +65,29 @@ public class EOTSign implements ShipsSign {
         return false;
     }
 
+    private Consumer<Vessel> onLoad(LivePlayer player, SignTileEntity stes) {
+        return (vessel) -> {
+            if (!this.isAhead(stes)) {
+                return;
+            }
+            stes.setTextAt(1, AText.ofPlain("{Ahead}").withColour(NamedTextColours.GREEN));
+            stes.setTextAt(2, AText.ofPlain("Stop"));
+
+            TranslateCore.getScheduleManager().schedule()
+                    .setDisplayName("EOT: " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
+                    .setRunner(new EOTExecutor(vessel, player))
+                    .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
+                    .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
+                    .build(ShipsPlugin.getPlugin()).run();
+        };
+    }
+
+    private Consumer<LoadVesselException> onException(CommandViewer player) {
+        return ex -> player.sendMessage(AText
+                .ofPlain("Could not find connected ship (" + ex.getMessage() + ")")
+                .withColour(NamedTextColours.RED));
+    }
+
     @Override
     public boolean onSecondClick(@NotNull LivePlayer player, SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
@@ -69,35 +95,10 @@ public class EOTSign implements ShipsSign {
             return false;
         }
         LiveTileEntity lte = opTile.get();
-        if (!(lte instanceof LiveSignTileEntity)) {
+        if (!(lte instanceof LiveSignTileEntity stes)) {
             return false;
         }
-        SignTileEntity stes = (SignTileEntity) lte;
-        new ShipsUpdateBlockLoader(position).loadOvertime(vessel -> {
-            if (stes.getTextAt(1).isPresent() && stes.getTextAt(1).get().toPlain().contains("{")) {
-                stes.setText(this.SIGN);
-                this.eotScheduler.stream().filter(e -> {
-                    Runnable runnable = e.getExecutor();
-                    if (!(runnable instanceof EOTExecutor eotExecutor)) {
-                        return false;
-                    }
-                    return vessel.equals(eotExecutor.getVessel());
-                }).forEach(Scheduler::cancel);
-            } else {
-                stes.setTextAt(1, AText.ofPlain("{Ahead}").withColour(NamedTextColours.GREEN));
-                stes.setTextAt(2, AText.ofPlain("Stop"));
-                Scheduler task = TranslateCore.getScheduleManager().schedule()
-                        .setDisplayName("EOT: " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
-                        .setExecutor(new EOTExecutor(player, vessel))
-                        .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
-                        .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
-                        .build(ShipsPlugin.getPlugin());
-                task.run();
-                this.eotScheduler.add(task);
-            }
-        }, ex -> player.sendMessage(AText
-                .ofPlain("Could not find connected ship (" + ex.getMessage() + ")")
-                .withColour(NamedTextColours.RED)));
+        new ShipsUpdateBlockLoader(position).loadOvertime(this.onLoad(player, stes), this.onException(player));
         return false;
     }
 
