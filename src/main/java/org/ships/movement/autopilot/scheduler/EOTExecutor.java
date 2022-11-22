@@ -115,7 +115,6 @@ public class EOTExecutor implements Consumer<Scheduler> {
             }
         });
 
-
         this.vessel.moveTowards(directionalData
                 .getDirection()
                 .getOpposite()

@@ -5,6 +5,7 @@ import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
+import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -32,7 +33,7 @@ public class EOTSign implements ShipsSign {
     private final List<AText> SIGN = Arrays.asList(
             AText.ofPlain("[EOT]").withColour(NamedTextColours.YELLOW),
             AText.ofPlain("Ahead").withColour(NamedTextColours.GREEN),
-            AText.ofPlain("Stop"));
+            AText.ofPlain("{Stop}"));
 
     public Collection<Scheduler> getScheduler(Vessel vessel) {
         return TranslateCore.getScheduleManager().getSchedules().stream().filter(e -> {
@@ -65,20 +66,46 @@ public class EOTSign implements ShipsSign {
         return false;
     }
 
-    private Consumer<Vessel> onLoad(LivePlayer player, SignTileEntity stes) {
+    private Consumer<Vessel> onLoad(LivePlayer player, LiveSignTileEntity stes) {
         return (vessel) -> {
-            if (!this.isAhead(stes)) {
-                return;
-            }
-            stes.setTextAt(1, AText.ofPlain("{Ahead}").withColour(NamedTextColours.GREEN));
-            stes.setTextAt(2, AText.ofPlain("Stop"));
+            TranslateCore
+                    .getScheduleManager()
+                    .schedule()
+                    .setDelay(0)
+                    .setDisplayName("Back to Synced")
+                    .setRunner((thisSch) -> {
+                        if (this.isAhead(stes)) {
+                            stes.setTextAt(1, AText.ofPlain("Ahead"));
+                            stes.setTextAt(2, AText.ofPlain("{Stop}"));
 
-            TranslateCore.getScheduleManager().schedule()
-                    .setDisplayName("EOT: " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
-                    .setRunner(new EOTExecutor(vessel, player))
-                    .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
-                    .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
-                    .build(ShipsPlugin.getPlugin()).run();
+                            this
+                                    .getScheduler(vessel)
+                                    .parallelStream()
+                                    .filter(sch -> sch.getRunner() instanceof EOTExecutor)
+                                    .filter(sch -> ((EOTExecutor) sch.getRunner()).getSign().isPresent())
+                                    .filter(sch -> ((EOTExecutor) sch.getRunner())
+                                            .getSign()
+                                            .get()
+                                            .getPosition()
+                                            .equals(stes.getPosition()))
+                                    .forEach(sch -> {
+                                        if (sch instanceof Scheduler.Native nati) {
+                                            nati.cancel();
+                                        }
+                                    });
+                            return;
+                        }
+                        stes.setTextAt(1, AText.ofPlain("{Ahead}").withColour(NamedTextColours.GREEN));
+                        stes.setTextAt(2, AText.ofPlain("Stop"));
+
+                        TranslateCore.getScheduleManager().schedule()
+                                .setDisplayName(
+                                        "EOT: " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
+                                .setRunner(new EOTExecutor(vessel, player))
+                                .setIteration(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
+                                .setIterationUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
+                                .build(ShipsPlugin.getPlugin()).run();
+                    }).setDelayUnit(TimeUnit.MINECRAFT_TICKS).build(ShipsPlugin.getPlugin()).run();
         };
     }
 

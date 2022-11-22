@@ -1,3 +1,7 @@
+jdk:
+  - openjdk17
 before_install:
-  - sdk install java 16.0.2-open
-  - sdk use java 16.0.2-open
+  - source "$HOME/.sdkman/bin/sdkman-init.sh"
+  - sdk update
+  - sdk install java 17.0.5.hs-adpt
+  - sdk use java 17.0.5.hs-adpt
