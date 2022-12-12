@@ -49,7 +49,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+                                           @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         int limit = this.limit;
         TranslateCore
                 .getScheduleManager()
@@ -64,9 +64,9 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
                     int addedBlocks = 1;
                     toProcess.add(new AbstractMap.SimpleImmutableEntry<>(Position.toASync(position),
-                            FourFacingDirection.NONE));
+                                                                         FourFacingDirection.NONE));
                     while (!toProcess.isEmpty() && addedBlocks < limit && !ShipsPlugin.getPlugin().isShuttingDown()) {
-                        Set<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
+                        Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
                         Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
                         for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
 
@@ -97,8 +97,8 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                             }
                                         }
                                     });
-                            OvertimeBlockFinderUpdate.BlockFindControl blockFind =
-                                    runAfterFullSearch.onBlockFind(structure, posEntry.getKey());
+                            OvertimeBlockFinderUpdate.BlockFindControl blockFind = runAfterFullSearch.onBlockFind(
+                                    structure, posEntry.getKey());
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 continue;
                             }

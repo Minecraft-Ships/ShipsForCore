@@ -6,6 +6,11 @@ import org.core.adventureText.format.NamedTextColours;
 import org.core.command.CommandRegister;
 import org.core.platform.plugin.CorePlugin;
 import org.core.platform.plugin.details.CorePluginVersion;
+import org.core.platform.update.PluginUpdate;
+import org.core.platform.update.bukkit.DevBukkitUpdateChecker;
+import org.core.platform.update.bukkit.DevBukkitUpdateOption;
+import org.core.platform.update.result.FailedResult;
+import org.core.platform.update.result.SuccessfulResult;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.ConsoleSource;
@@ -46,7 +51,7 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 15.1;
+    public static final double PRERELEASE_VERSION = 15.2;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
@@ -155,7 +160,27 @@ public class ShipsPlugin implements CorePlugin {
 
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         if (config.isUpdateEnabled()) {
-            System.err.println("Updating has been disabled");
+            TranslateCore.getPlatform().getUpdateChecker(DevBukkitUpdateChecker.ID).ifPresent(devBukkit -> {
+                devBukkit.checkForUpdate(new DevBukkitUpdateOption(36846)).thenAcceptAsync((result) -> {
+                    if (result instanceof FailedResult failed) {
+                        System.err.println("Failed to update: " + failed);
+                        return;
+                    }
+                    SuccessfulResult successfulResult = (SuccessfulResult) result;
+                    PluginUpdate context = successfulResult.getUpdate();
+                    String fullVersionName = context.getName();
+                    String currentVersionName =
+                            "Ships -B " + this.getPluginVersion().asString() + " R2 " + PRERELEASE_TAG + " "
+                                    + PRERELEASE_VERSION;
+                    if (fullVersionName.equals(currentVersionName)) {
+                        return;
+                    }
+                    System.out.println("An update can be downloaded");
+                    System.out.println("\tName: " + fullVersionName);
+                    System.out.println("\tFor Minecraft: " + context.getVersion());
+                    System.out.println("\tDownload At: " + context.getDownloadURL().toExternalForm());
+                });
+            });
         }
     }
 
@@ -205,23 +230,21 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     public void loadConverts() {
-        this
-                .getAll(VesselConverter.class)
-                .forEach(c -> {
-                    File folder = c.getFolder();
-                    File[] files = folder.listFiles();
-                    if (files == null) {
-                        return;
-                    }
-                    Stream.of(files).filter(f -> !f.isDirectory()).forEach(f -> {
-                        try {
-                            this.registerVessel(c.convert(f));
-                        } catch (IOException e) {
-                            System.err.println("Error converting vessel with " + c.getId() + " at: " + f.getPath());
-                            e.printStackTrace();
-                        }
-                    });
-                });
+        this.getAll(VesselConverter.class).forEach(c -> {
+            File folder = c.getFolder();
+            File[] files = folder.listFiles();
+            if (files == null) {
+                return;
+            }
+            Stream.of(files).filter(f -> !f.isDirectory()).forEach(f -> {
+                try {
+                    this.registerVessel(c.convert(f));
+                } catch (IOException e) {
+                    System.err.println("Error converting vessel with " + c.getId() + " at: " + f.getPath());
+                    e.printStackTrace();
+                }
+            });
+        });
     }
 
     private void init() {
@@ -264,14 +287,16 @@ public class ShipsPlugin implements CorePlugin {
         source.sendMessage(
                 AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
         source.sendMessage(AText
-                .ofPlain("Ships Version: ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText.ofPlain(
-                        this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-" + PRERELEASE_VERSION)));
+                                   .ofPlain("Ships Version: ")
+                                   .withColour(NamedTextColours.AQUA)
+                                   .append(AText.ofPlain(this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-"
+                                                                 + PRERELEASE_VERSION)));
         source.sendMessage(AText
-                .ofPlain("Vessels: ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText.ofPlain("" + this.vessels.size()).withColour(NamedTextColours.YELLOW)));
+                                   .ofPlain("Vessels: ")
+                                   .withColour(NamedTextColours.AQUA)
+                                   .append(AText
+                                                   .ofPlain("" + this.vessels.size())
+                                                   .withColour(NamedTextColours.YELLOW)));
         source.sendMessage(
                 AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
     }

@@ -9,15 +9,17 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
@@ -29,7 +31,7 @@ public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                new ExactArgument(this.SHIP_UNLOCK_ARGUMENT));
+                             new ExactArgument(this.SHIP_UNLOCK_ARGUMENT));
     }
 
     @Override
@@ -46,23 +48,23 @@ public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
-        Set<SyncBlockPosition> set = vessel
-                .getStructure()
-                .getPositions()
-                .stream()
-                .filter(p -> ShipsSign.LOCKED_SIGNS.stream().anyMatch(p1 -> p1.equals(p)))
+        Collection<SyncBlockPosition> set = vessel.getStructure().getAll(LiveSignTileEntity.class);
+        Collection<BlockPosition> collection = ShipsSign.LOCKED_SIGNS
+                .parallelStream()
+                .filter(block -> set.parallelStream().anyMatch(sign -> sign.equals(block)))
                 .collect(Collectors.toSet());
-        if (set.isEmpty()) {
+        if (collection.isEmpty()) {
             if (source instanceof CommandViewer) {
                 ((CommandViewer) source).sendMessage(AText.ofPlain("Cleared all locked signs"));
             }
             ShipsSign.LOCKED_SIGNS.clear();
             return true;
         }
+        boolean successful = ShipsSign.LOCKED_SIGNS.removeAll(collection);
         if (source instanceof CommandViewer) {
-            ((CommandViewer) source).sendMessage(AText.ofPlain("Cleared all (" + set.size() + ") locked signs"));
+            ((CommandViewer) source).sendMessage(AText.ofPlain(
+                    (successful ? "Cleared " : "Failed to clear") + " all (" + set.size() + ") locked signs: "));
         }
-        set.forEach(ShipsSign.LOCKED_SIGNS::remove);
         return true;
     }
 }

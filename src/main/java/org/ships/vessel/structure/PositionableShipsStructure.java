@@ -3,6 +3,7 @@ package org.ships.vessel.structure;
 import org.core.utils.Bounds;
 import org.core.vector.type.Vector3;
 import org.core.world.ChunkExtent;
+import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.TileEntity;
@@ -12,8 +13,10 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.vessel.sign.ShipsSign;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -23,20 +26,24 @@ import java.util.stream.Collectors;
 
 public interface PositionableShipsStructure extends ShipsStructure, Positionable<SyncBlockPosition> {
 
-    PositionableShipsStructure setPosition(SyncBlockPosition pos);
+    PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos);
+
+    Collection<Vector3<Integer>> getOutsideBlocks(@NotNull FourFacingDirection direction);
 
     @Deprecated
     PositionableShipsStructure addAir();
 
     void addAir(Consumer<? super PositionableShipsStructure> onComplete);
 
+    default Collection<Vector3<Integer>> getOutsideBlocks() {
+        return Arrays
+                .stream(FourFacingDirection.getFourFacingDirections())
+                .flatMap(direction -> this.getOutsideBlocks((FourFacingDirection) direction).stream())
+                .collect(Collectors.toSet());
+    }
+
     default Bounds<Integer> getBounds() {
-        Set<Vector3<Integer>> positions =
-                this
-                        .getPositionsRelativeTo(Position.toASync(this.getPosition()))
-                        .parallelStream()
-                        .map(Position::getPosition)
-                        .collect(Collectors.toSet());
+        Set<Vector3<Integer>> positions = this.getOutsideBlocks().parallelStream().collect(Collectors.toSet());
         if (positions.isEmpty()) {
             throw new IllegalStateException("No structure found");
         }
@@ -72,12 +79,11 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
 
     default Set<ChunkExtent> getChunks() {
         Collection<ASyncBlockPosition> positions = this.getPositionsRelativeTo(Position.toASync(this.getPosition()));
-        Set<Vector3<Integer>> vector3Set = positions.parallelStream()
+        Set<Vector3<Integer>> vector3Set = positions
+                .parallelStream()
                 .map(Position::getChunkPosition)
                 .collect(Collectors.toUnmodifiableSet());
-        return vector3Set.stream()
-                .map(pos -> this.getPosition().getWorld().loadChunk(pos))
-                .collect(Collectors.toSet());
+        return vector3Set.stream().map(pos -> this.getPosition().getWorld().loadChunk(pos)).collect(Collectors.toSet());
     }
 
     default boolean addPosition(BlockPosition position) {
@@ -98,8 +104,7 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     }
 
     default <P extends BlockPosition, T> Collection<T> getAllLike(Function<? super SyncBlockPosition, P> toPos,
-            Function<P, ?
-                    extends T> function) {
+                                                                  Function<P, ? extends T> function) {
         return this.getPositions(toPos).stream().map(function).collect(Collectors.toUnmodifiableSet());
     }
 
@@ -109,25 +114,34 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     }
 
     default <T extends BlockPosition> Collection<T> getAll(BlockType type,
-            Function<? super SyncBlockPosition, ? extends T> function) {
-        return Collections.unmodifiableCollection(this.getPositions(function).stream()
-                .filter(p -> p.getBlockType().equals(type))
-                .collect(Collectors.toSet()));
+                                                           Function<? super SyncBlockPosition, ? extends T> function) {
+        return Collections.unmodifiableCollection(this
+                                                          .getPositions(function)
+                                                          .stream()
+                                                          .filter(p -> p.getBlockType().equals(type))
+                                                          .collect(Collectors.toSet()));
     }
 
     default Collection<SyncBlockPosition> getAll(Class<? extends TileEntity> class1) {
-        return Collections.unmodifiableCollection(this.getPositionsRelativeTo(this).stream()
-                .filter(p -> p.getTileEntity().isPresent())
-                .filter(p -> class1.isInstance(p.getTileEntity().get()))
-                .collect(Collectors.toSet()));
+        return Collections.unmodifiableCollection(this
+                                                          .getPositionsRelativeTo(this)
+                                                          .stream()
+                                                          .filter(p -> p.getTileEntity().isPresent())
+                                                          .filter(p -> class1.isInstance(p.getTileEntity().get()))
+                                                          .collect(Collectors.toSet()));
     }
 
     default Collection<SyncBlockPosition> getAll(ShipsSign sign) {
-        return Collections.unmodifiableCollection(this.getPositions().stream()
-                .filter(b -> b.getTileEntity().isPresent())
-                .filter(b -> b.getTileEntity().get() instanceof LiveSignTileEntity)
-                .filter(b -> sign.isSign((SignTileEntity) b.getTileEntity().get()))
-                .collect(Collectors.toSet()));
+        return Collections.unmodifiableCollection(this
+                                                          .getPositions()
+                                                          .stream()
+                                                          .filter(b -> b.getTileEntity().isPresent())
+                                                          .filter(b -> b
+                                                                  .getTileEntity()
+                                                                  .get() instanceof LiveSignTileEntity)
+                                                          .filter(b -> sign.isSign(
+                                                                  (SignTileEntity) b.getTileEntity().get()))
+                                                          .collect(Collectors.toSet()));
     }
 
     @Deprecated(forRemoval = true)
@@ -140,12 +154,10 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
     }
 
     default Collection<ASyncBlockPosition> getAsyncedPositions() {
-        return this.getPositions(
-                (Function<SyncBlockPosition, ASyncBlockPosition>) Position::toASync);
+        return this.getPositions((Function<SyncBlockPosition, ASyncBlockPosition>) Position::toASync);
     }
 
-    default <T extends BlockPosition> Collection<T> getPositions(
-            Function<? super SyncBlockPosition, ? extends T> function) {
+    default <T extends BlockPosition> Collection<T> getPositions(Function<? super SyncBlockPosition, ? extends T> function) {
         return ShipsStructure.super.getPositionsRelativeTo(function.apply(this.getPosition()));
     }
 }

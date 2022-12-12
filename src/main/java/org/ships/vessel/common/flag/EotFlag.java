@@ -2,12 +2,24 @@ package org.ships.vessel.common.flag;
 
 import org.core.config.parser.StringParser;
 import org.core.vector.type.Vector3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class EotFlag implements VesselFlag<Vector3<Integer>> {
 
-    private Vector3<Integer> relative;
+    private @Nullable Vector3<Integer> relative;
+    private @Nullable UUID whoChanged;
+
+    public EotFlag(@Nullable UUID whoChanged, @Nullable Vector3<Integer> relative) {
+        this.relative = relative;
+        this.whoChanged = whoChanged;
+    }
+
+    public Optional<UUID> getWhoClicked() {
+        return Optional.ofNullable(this.whoChanged);
+    }
 
     @Override
     public Optional<Vector3<Integer>> getValue() {
@@ -42,8 +54,8 @@ public class EotFlag implements VesselFlag<Vector3<Integer>> {
     public static class Builder extends VesselFlag.Builder<Vector3<Integer>, EotFlag> {
 
         @Override
-        protected EotFlag buildEmpty() {
-            return new EotFlag();
+        public EotFlag buildEmpty() {
+            return new EotFlag(null, null);
         }
     }
 }

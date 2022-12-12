@@ -3,11 +3,15 @@ package org.ships.movement;
 import org.core.TranslateCore;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
+import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.move.ResultEvent;
+import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.flag.EotFlag;
 import org.ships.vessel.common.flag.SuccessfulMoveFlag;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
@@ -20,15 +24,11 @@ import java.util.Optional;
 
 public class Result extends ArrayList<Result.Run> {
 
-    public static final Result DEFAULT_RESULT = new Result(
-            Run.COMMON_TELEPORT_ENTITIES,
-            Run.COMMON_RESET_GRAVITY,
-            Run.COMMON_SET_POSITION_OF_LICENCE_SIGN,
-            Run.COMMON_SET_NEW_POSITIONS,
-            Run.COMMON_SPAWN_ENTITIES,
-            Run.COMMON_SET_SUCCESSFUL,
-            Run.COMMON_SAVE,
-            Run.REMOVE_BAR);
+    public static final Result DEFAULT_RESULT = new Result(Run.COMMON_TELEPORT_ENTITIES, Run.COMMON_RESET_GRAVITY,
+                                                           Run.COMMON_SET_POSITION_OF_LICENCE_SIGN,
+                                                           Run.COMMON_SET_NEW_POSITIONS, Run.COMMON_SPAWN_ENTITIES,
+                                                           Run.COMMON_SET_SUCCESSFUL, Run.COMMON_SAVE, Run.REMOVE_BAR,
+                                                           Run.COMMON_RERUN_EOT);
 
     public Result() {
     }
@@ -53,6 +53,34 @@ public class Result extends ArrayList<Result.Run> {
     }
 
     public interface Run {
+
+        Run COMMON_RERUN_EOT = (v, c) -> {
+            Optional<EotFlag> opEOTFlag = v.get(EotFlag.class);
+            if (opEOTFlag.isEmpty()) {
+                return;
+            }
+            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+            int delay = config.getEOTDelay();
+            TimeUnit unit = config.getEOTDelayUnit();
+            TranslateCore
+                    .getScheduleManager()
+                    .schedule()
+                    .setDelay(delay)
+                    .setDelayUnit(unit)
+                    .setDisplayName("Repeating display name")
+                    .setRunner(new EOTExecutor(v, opEOTFlag
+                            .get()
+                            .getWhoClicked()
+                            .flatMap(uuid -> TranslateCore
+                                    .getServer()
+                                    .getOnlinePlayers()
+                                    .parallelStream()
+                                    .filter(p -> p.getUniqueId().equals(uuid))
+                                    .findAny())
+                            .orElse(null)))
+                    .build(ShipsPlugin.getPlugin())
+                    .run();
+        };
 
         Run COMMON_SET_SUCCESSFUL = (v, c) -> {
             SuccessfulMoveFlag flag = v.get(SuccessfulMoveFlag.class).orElse(new SuccessfulMoveFlag());
@@ -92,25 +120,28 @@ public class Result extends ArrayList<Result.Run> {
             Optional<MovingBlock> opSign = c
                     .getMovingStructure()
                     .getOriginal()
-                    .get(ShipsPlugin.getPlugin().get(LicenceSign.class).get());
-            if (!opSign.isPresent()) {
+                    .get(ShipsPlugin
+                                 .getPlugin()
+                                 .get(LicenceSign.class)
+                                 .orElseThrow(
+                                         () -> new RuntimeException("Cannot find licence sign, is it registered")));
+            if (opSign.isEmpty()) {
                 return;
             }
             v.getStructure().setPosition(opSign.get().getAfterPosition());
         };
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> c.getEntities().keySet().forEach(e -> {
-            if (e instanceof EntitySnapshot.NoneDestructibleSnapshot) {
-                EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot =
-                        (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) e;
+            if (e instanceof EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot) {
                 snapshot.teleportEntity(true);
-            } else {
-                e.getCreatedFrom().ifPresent(LiveEntity::remove);
-                try {
-                    e.spawnEntity();
-                } catch (IllegalStateException ignored) {
-                }
+                return;
             }
+            e.getCreatedFrom().ifPresent(LiveEntity::remove);
+            try {
+                e.spawnEntity();
+            } catch (IllegalStateException ignored) {
+            }
+
         });
 
         Run COMMON_SAVE = (v, c) -> v.save();

@@ -9,11 +9,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Deprecated
 public interface ShipsStructure {
 
-    Set<Vector3<Integer>> getRelativePositions();
+    Collection<Vector3<Integer>> getRelativePositions();
 
-    Set<Vector3<Integer>> getOriginalRelativePositions();
+    Collection<Vector3<Integer>> getOriginalRelativePositions();
 
     boolean addPosition(Vector3<Integer> add);
 

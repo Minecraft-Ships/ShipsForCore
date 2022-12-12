@@ -19,7 +19,7 @@ Advanced:
 Auto:
   EOT:
     Speed: 2
-    Delay: 1
+    Delay: 3
     DelayUnit: SECONDS
     Enabled: false
   Falling:
