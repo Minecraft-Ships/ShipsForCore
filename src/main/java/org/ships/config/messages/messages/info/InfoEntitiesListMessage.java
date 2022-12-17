@@ -28,7 +28,7 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
     @Override
     public AText process(AText text, Entity<?> obj) {
         for (MessageAdapter<Entity<?>> adapter : this.getExactAdapters()) {
-            text = adapter.process(text, obj);
+            text = adapter.process(obj, text);
         }
         return text;
 

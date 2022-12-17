@@ -18,12 +18,12 @@ import java.util.Optional;
 public abstract class AbstractShipsDataSetCommand implements ArgumentCommand {
 
 
-    private final ExactArgument SHIP_ARGUMENT = new ExactArgument("ship");
+    private static final ExactArgument SHIP_ARGUMENT = new ExactArgument("ship");
     private final ShipIdArgument<? extends Vessel> SHIP_ID_ARGUMENT;
 
-    private final ExactArgument DATA_ARGUMENT = new ExactArgument("data");
+    private static final ExactArgument DATA_ARGUMENT = new ExactArgument("data");
 
-    private final ExactArgument SET_ARGUMENT = new ExactArgument("set");
+    private static final ExactArgument SET_ARGUMENT = new ExactArgument("set");
 
     protected AbstractShipsDataSetCommand() {
         this(new ShipIdArgument<>("ship_id"));
@@ -39,12 +39,8 @@ public abstract class AbstractShipsDataSetCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        List<CommandArgument<?>> originalCommands = new ArrayList<>(Arrays.asList(
-                SHIP_ARGUMENT,
-                SHIP_ID_ARGUMENT,
-                DATA_ARGUMENT,
-                SET_ARGUMENT
-        ));
+        List<CommandArgument<?>> originalCommands = new ArrayList<>(
+                Arrays.asList(this.SHIP_ARGUMENT, this.SHIP_ID_ARGUMENT, this.DATA_ARGUMENT, this.SET_ARGUMENT));
         originalCommands.addAll(this.getExtraArguments());
         return originalCommands;
     }

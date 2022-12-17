@@ -11,7 +11,7 @@ import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlockSet;
 import org.ships.movement.SetMovingBlock;

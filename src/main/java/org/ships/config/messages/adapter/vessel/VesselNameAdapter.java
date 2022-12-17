@@ -2,6 +2,7 @@ package org.ships.config.messages.adapter.vessel;
 
 import org.core.adventureText.AText;
 import org.core.utils.Else;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.plugin.ShipsPlugin;
@@ -31,8 +32,7 @@ public class VesselNameAdapter implements MessageAdapter<Vessel> {
     }
 
     @Override
-    public AText process(AText message, Vessel obj) {
-        return message.withAllAs(this.adapterTextFormat(),
-                AText.ofPlain(Else.throwOr(NoLicencePresent.class, obj::getName, "Unknown")));
+    public AText process(@NotNull Vessel obj) {
+        return AText.ofPlain(Else.throwOr(NoLicencePresent.class, obj::getName, "Unknown"));
     }
 }

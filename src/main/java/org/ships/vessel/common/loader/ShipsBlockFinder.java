@@ -2,7 +2,6 @@ package org.ships.vessel.common.loader;
 
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.async.ASyncBlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -15,12 +14,7 @@ public class ShipsBlockFinder implements ShipsLoader {
 
     protected final BlockPosition position;
 
-    @Deprecated(forRemoval = true)
-    public ShipsBlockFinder(SyncBlockPosition position) {
-        this.position = position;
-    }
-
-    protected ShipsBlockFinder(BlockPosition position) {
+    public ShipsBlockFinder(BlockPosition position) {
         this.position = position;
     }
 
@@ -35,7 +29,7 @@ public class ShipsBlockFinder implements ShipsLoader {
             return opVessel.get();
         }
         throw new LoadVesselException(
-                "Block position is not part of a ship: " + this.position.getX() + ", " + this.position.getY() + ", " +
-                        this.position.getZ() + ", " + this.position.getWorld().getName());
+                "Block position is not part of a ship: " + this.position.getX() + ", " + this.position.getY() + ", "
+                        + this.position.getZ() + ", " + this.position.getWorld().getName());
     }
 }

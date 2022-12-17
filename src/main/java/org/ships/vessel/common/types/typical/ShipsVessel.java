@@ -7,6 +7,7 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.NoLicencePresent;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.MovementInstructionBuilder;
 import org.ships.movement.instruction.actions.MidMovements;
@@ -67,7 +68,11 @@ public interface ShipsVessel
                 .setAddToMovementBlocks(this.getStructure(), x, y, z)
                 .setStrictMovement(strict)
                 .build());
-        context.move(this);
+        try {
+            context.move(this);
+        } catch (MoveException e) {
+            details.getException().accept(context, e);
+        }
     }
 
     @Override
@@ -77,7 +82,11 @@ public interface ShipsVessel
                 .setAddToMovementBlocks(this.getStructure(), vector)
                 .setStrictMovement(strict)
                 .build());
-        context.move(this);
+        try {
+            context.move(this);
+        } catch (MoveException e) {
+            details.getException().accept(context, e);
+        }
 
 
     }
@@ -87,7 +96,11 @@ public interface ShipsVessel
         MovementContext context = new MovementContext(details, new MovementInstructionBuilder()
                 .setTeleportToMovementBlocks(this.getStructure(), location)
                 .build());
-        context.move(this);
+        try {
+            context.move(this);
+        } catch (MoveException e) {
+            details.getException().accept(context, e);
+        }
     }
 
     @Override
@@ -96,7 +109,11 @@ public interface ShipsVessel
                 .setRotateRightAroundPosition(this.getStructure(), location)
                 .setMidMoveEvent(MidMovements.ROTATE_BLOCKS_RIGHT)
                 .build());
-        context.move(this);
+        try {
+            context.move(this);
+        } catch (MoveException e) {
+            details.getException().accept(context, e);
+        }
     }
 
     @Override
@@ -105,7 +122,11 @@ public interface ShipsVessel
                 .setRotateLeftAroundPosition(this.getStructure(), location)
                 .setMidMoveEvent(MidMovements.ROTATE_BLOCKS_LEFT)
                 .build());
-        context.move(this);
+        try {
+            context.move(this);
+        } catch (MoveException e) {
+            details.getException().accept(context, e);
+        }
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.ships.vessel.common.requirement;
 
 import org.jetbrains.annotations.NotNull;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.types.Vessel;
 

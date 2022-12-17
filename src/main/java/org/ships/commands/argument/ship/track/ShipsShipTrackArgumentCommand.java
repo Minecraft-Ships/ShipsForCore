@@ -34,7 +34,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                new ExactArgument(this.TRACK_ARGUMENT));
+                             new ExactArgument(this.TRACK_ARGUMENT));
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
         }
         vessel
                 .getStructure()
-                .getPositions()
+                .getSyncedPositions()
                 .forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
         TranslateCore
                 .getScheduleManager()
@@ -76,10 +76,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
                 .setDisplayName("ShipsTrack:" + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                 .setDelay(10)
                 .setDelayUnit(TimeUnit.SECONDS)
-                .setExecutor(() -> vessel
-                        .getStructure()
-                        .getPositions()
-                        .forEach(bp -> bp.resetBlock(player)))
+                .setRunner((sch) -> vessel.getStructure().getSyncedPositions().forEach(bp -> bp.resetBlock(player)))
                 .build(ShipsPlugin.getPlugin())
                 .run();
         return true;

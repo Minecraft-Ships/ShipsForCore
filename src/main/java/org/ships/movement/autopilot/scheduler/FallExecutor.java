@@ -8,7 +8,7 @@ import org.core.utils.time.TimeRange;
 import org.core.world.boss.ServerBossBar;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.MovementResult;

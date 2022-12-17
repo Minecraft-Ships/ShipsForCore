@@ -21,6 +21,10 @@ public class EotFlag implements VesselFlag<Vector3<Integer>> {
         return Optional.ofNullable(this.whoChanged);
     }
 
+    public void setWhoClicked(@Nullable UUID uuid) {
+        this.whoChanged = uuid;
+    }
+
     @Override
     public Optional<Vector3<Integer>> getValue() {
         return Optional.ofNullable(this.relative);

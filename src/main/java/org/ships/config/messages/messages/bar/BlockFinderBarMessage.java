@@ -5,7 +5,6 @@ import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
 import org.ships.vessel.structure.PositionableShipsStructure;
-import org.ships.vessel.structure.ShipsStructure;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,11 +31,11 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
 
     @Override
     public AText process(AText text, PositionableShipsStructure obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }
-        for (MessageAdapter<ShipsStructure> adapter : Message.STRUCTURE_ADAPTERS) {
-            text = adapter.process(text, obj);
+        for (MessageAdapter<PositionableShipsStructure> adapter : Message.STRUCTURE_ADAPTERS) {
+            text = adapter.process(obj, text);
         }
         return text;
     }

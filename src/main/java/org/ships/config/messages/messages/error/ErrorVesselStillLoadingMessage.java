@@ -19,8 +19,8 @@ public class ErrorVesselStillLoadingMessage implements Message<Vessel> {
     @Override
     public AText getDefault() {
         return AText
-                .ofPlain(Message.VESSEL_NAME.adapterTextFormat() +
-                        " is loading. All movement controls are locked until it is loaded")
+                .ofPlain(Message.VESSEL_NAME.adapterTextFormat()
+                                 + " is loading. All movement controls are locked until it is loaded")
                 .withColour(NamedTextColours.RED);
     }
 
@@ -37,7 +37,7 @@ public class ErrorVesselStillLoadingMessage implements Message<Vessel> {
             text = adapter.process(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(text, obj);
+            text = adapter.process(obj, text);
         }
         return text;
     }

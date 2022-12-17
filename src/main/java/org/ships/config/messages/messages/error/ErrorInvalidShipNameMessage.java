@@ -29,9 +29,9 @@ public class ErrorInvalidShipNameMessage implements Message<String> {
 
     @Override
     public AText process(AText text, String obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }
-        return Message.INVALID_NAME.process(text, obj);
+        return Message.INVALID_NAME.process(obj, text);
     }
 }

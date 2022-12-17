@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 public class AdventureMessageConfig implements Config.KnownNodes {
 
+    public static final ErrorFailedInMovement ERROR_FAILED_IN_MOVEMENT = new ErrorFailedInMovement();
     public static final InfoNameMessage INFO_NAME = new InfoNameMessage();
     public static final InfoIdMessage INFO_ID = new InfoIdMessage();
     public static final InfoMaxSpeedMessage INFO_MAX_SPEED = new InfoMaxSpeedMessage();
@@ -34,10 +35,8 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final ErrorUndersizedMessage ERROR_UNDERSIZED = new ErrorUndersizedMessage();
     public static final ErrorTooManyOfBlockMessage ERROR_TOO_MANY_OF_BLOCK = new ErrorTooManyOfBlockMessage();
     public static final ErrorAlreadyMovingMessage ERROR_ALREADY_MOVING = new ErrorAlreadyMovingMessage();
-    public static final ErrorVesselStillLoadingMessage ERROR_VESSEL_STILL_LOADING =
-            new ErrorVesselStillLoadingMessage();
-    public static final ErrorPermissionMissMatchMessage ERROR_PERMISSION_MISS_MATCH =
-            new ErrorPermissionMissMatchMessage();
+    public static final ErrorVesselStillLoadingMessage ERROR_VESSEL_STILL_LOADING = new ErrorVesselStillLoadingMessage();
+    public static final ErrorPermissionMissMatchMessage ERROR_PERMISSION_MISS_MATCH = new ErrorPermissionMissMatchMessage();
     public static final ErrorInvalidShipTypeMessage ERROR_INVALID_SHIP_TYPE = new ErrorInvalidShipTypeMessage();
     public static final ErrorInvalidShipNameMessage ERROR_INVALID_SHIP_NAME = new ErrorInvalidShipNameMessage();
     public static final ErrorCannotCreateOntopMessage ERROR_CANNOT_CREATE_ONTOP = new ErrorCannotCreateOntopMessage();
@@ -45,6 +44,12 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final BlockFinderBarMessage BAR_BLOCK_FINDER_ON_FIND = new BlockFinderBarMessage();
     public static final ErrorBlockInWayMessage ERROR_BLOCK_IN_WAY = new ErrorBlockInWayMessage();
 
+    public static final ErrorNoSpeedSetMessage ERROR_NO_SPEED_SET = new ErrorNoSpeedSetMessage();
+    public static final ErrorNotMovingOnMessage ERROR_NOT_MOVING_ON = new ErrorNotMovingOnMessage();
+    public static final ErrorCollideDetectedMessage ERROR_COLLIDE_DETECTED = new ErrorCollideDetectedMessage();
+    public static final ErrorFailedToFindLicenceSignMessage ERROR_FAILED_TO_FIND_LICENCE_SIGN = new ErrorFailedToFindLicenceSignMessage();
+
+    public static final ErrorFailedToFindNamedBlockMessage ERROR_FAILED_TO_FIND_NAMED_BLOCK = new ErrorFailedToFindNamedBlockMessage();
     private final ConfigurationStream.ConfigurationFile file;
     private final Collection<Message<?>> messages = new HashSet<>();
 
@@ -69,16 +74,23 @@ public class AdventureMessageConfig implements Config.KnownNodes {
         this.messages.add(ERROR_INVALID_SHIP_NAME);
         this.messages.add(ERROR_CANNOT_CREATE_ONTOP);
         this.messages.add(ERROR_SHIPS_SIGN_IS_MOVING);
-        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "Configuration/Messages." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+        this.messages.add(ERROR_BLOCK_IN_WAY);
+        this.messages.add(ERROR_NO_SPEED_SET);
+        this.messages.add(ERROR_FAILED_TO_FIND_NAMED_BLOCK);
+        File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Messages." + TranslateCore
+                .getPlatform()
+                .getConfigFormat()
+                .getFileType()[0]);
         this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
         this.recreateFile();
     }
 
     @Override
     public Set<DedicatedNode<AText, AText, ConfigurationNode.KnownParser.SingleKnown<AText>>> getNodes() {
-        return this.messages.stream().map(m -> new ObjectDedicatedNode<>(m.getKnownPath(), String.join(
-                ".", m.getPath()))).collect(Collectors.toSet());
+        return this.messages
+                .stream()
+                .map(m -> new ObjectDedicatedNode<>(m.getKnownPath(), String.join(".", m.getPath())))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -90,7 +102,7 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public void recreateFile() {
         this.messages
                 .stream()
-                .filter(m -> !this.file.getString(m.getKnownPath()).isPresent())
+                .filter(m -> this.file.getString(m.getKnownPath()).isEmpty())
                 .forEach(m -> this.file.set(m.getKnownPath(), m.getDefault()));
         this.file.save();
     }

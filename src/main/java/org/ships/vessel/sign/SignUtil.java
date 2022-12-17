@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.movement.MovementContext;

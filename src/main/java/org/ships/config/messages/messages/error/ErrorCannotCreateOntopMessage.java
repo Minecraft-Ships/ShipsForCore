@@ -32,11 +32,11 @@ public class ErrorCannotCreateOntopMessage implements Message<Vessel> {
 
     @Override
     public AText process(AText text, Vessel obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(text, obj);
+            text = adapter.process(obj, text);
         }
         return text;
     }

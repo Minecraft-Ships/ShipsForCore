@@ -25,8 +25,8 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
     public AText getDefault() {
         return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " cannot move due to " + Message
                 .asCollectionSingle(Message.LOCATION_ADAPTERS)
-                .adapterTextFormat(new MappedAdapter<>(Message.BLOCK_TYPE_NAME, Position::getBlockType), 0) +
-                " in way");
+                .adapterTextFormat(new MappedAdapter<>(Message.BLOCK_TYPE_NAME, Position::getBlockType), 0)
+                                     + " in way");
     }
 
     @Override
@@ -41,9 +41,9 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
     public AText process(AText text, Map.Entry<Vessel, Collection<BlockPosition>> obj) {
         text = Message
                 .asCollectionSingle(Message.LOCATION_ADAPTERS)
-                .process(text, obj.getValue().parallelStream().collect(Collectors.toSet()));
+                .process(obj.getValue().parallelStream().collect(Collectors.toSet()), text);
         for (MessageAdapter<Vessel> ma : Message.VESSEL_ADAPTERS) {
-            text = ma.process(text, obj.getKey());
+            text = ma.process(obj.getKey(), text);
         }
         return text;
     }

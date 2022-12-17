@@ -1,12 +1,14 @@
 package org.ships.config.messages.adapter.config;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 
 import java.util.Collections;
 import java.util.Set;
 
-public class TrackLimitAdapter implements ConfigAdapter {
+public class TrackLimitAdapter implements ConfigAdapter<Integer> {
     @Override
     public String adapterText() {
         return "Config Track Limit";
@@ -17,8 +19,13 @@ public class TrackLimitAdapter implements ConfigAdapter {
         return Collections.singleton(ShipsPlugin.getPlugin().getConfig().getDefaultTrackSize() + "");
     }
 
-    public AText process(AText message) {
-        return message.withAllAs(this.adapterTextFormat(),
-                AText.ofPlain(ShipsPlugin.getPlugin().getConfig().getDefaultTrackSize() + ""));
+    @Override
+    public AText process(@NotNull Integer obj) {
+        return AText.ofPlain(obj + "");
+    }
+
+    @Override
+    public AText process(@NotNull ShipsConfig config) {
+        return AText.ofPlain(config.getDefaultTrackSize() + "");
     }
 }

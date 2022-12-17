@@ -2,7 +2,7 @@ package org.ships.vessel.common.requirement;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;
@@ -66,17 +66,22 @@ public class MaxSizeRequirement implements Requirement {
     }
 
     @Override
-    public @NotNull Requirement createChild() {
+    public @NotNull MaxSizeRequirement createChild() {
         return new MaxSizeRequirement(this);
     }
 
+    public MaxSizeRequirement createChild(@Nullable Integer value) {
+        return new MaxSizeRequirement(this, value);
+    }
+
+
     @Override
-    public @NotNull Requirement createCopy() {
+    public @NotNull MaxSizeRequirement createCopy() {
         return new MaxSizeRequirement(this.parent, this.maxSize);
     }
 
-    public Requirement createChild(@Nullable Integer value) {
-        return new MaxSizeRequirement(this, value);
+    public @NotNull MaxSizeRequirement createCopy(Integer value) {
+        return new MaxSizeRequirement(this.parent, value);
     }
 
     @Override

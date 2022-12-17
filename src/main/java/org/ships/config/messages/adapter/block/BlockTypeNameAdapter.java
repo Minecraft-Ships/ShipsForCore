@@ -4,6 +4,7 @@ import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.Set;
@@ -26,7 +27,7 @@ public class BlockTypeNameAdapter implements MessageAdapter<BlockType> {
     }
 
     @Override
-    public AText process(AText message, BlockType obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(obj.getName()));
+    public AText process(@NotNull BlockType obj) {
+        return AText.ofPlain(obj.getName());
     }
 }

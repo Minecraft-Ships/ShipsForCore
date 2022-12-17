@@ -6,12 +6,10 @@ import org.core.config.parser.Parser;
 import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemType;
-import org.core.inventory.item.ItemTypes;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntity;
@@ -22,14 +20,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.MoveException;
 import org.ships.exceptions.NoLicencePresent;
-import org.ships.movement.MovementContext;
-import org.ships.movement.MovingBlock;
-import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.MovementResult;
-import org.ships.movement.result.data.RequiredFuelMovementData;
-import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
@@ -111,17 +102,6 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         return this.getSpecialBlocksRequirement().isPercentageSpecified();
     }
 
-    @Deprecated(forRemoval = true)
-    public float getSpecialBlockPercent() {
-        return this.getSpecialBlocksPercent();
-    }
-
-    @Deprecated(forRemoval = true)
-    public @NotNull Airship setSpecialBlockPercent(@Nullable Float percent) {
-        this.setSpecialBlocksPercent(percent);
-        return this;
-    }
-
     public float getSpecialBlocksPercent() {
         return this.getSpecialBlocksRequirement().getPercentage();
     }
@@ -184,110 +164,6 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
     }
 
     @Override
-    @Deprecated(forRemoval = true)
-    public void meetsRequirements(MovementContext context) throws MoveException {
-        VesselRequirement.super.meetsRequirements(context);
-        if (!context.isStrictMovement()) {
-            return;
-        }
-        int specialBlockCount = 0;
-        boolean burnerFound = false;
-        Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for (MovingBlock movingBlock : context.getMovingStructure()) {
-            SyncBlockPosition blockPosition = movingBlock.getBeforePosition();
-            BlockType positionType = blockPosition.getBlockType();
-            BlockDetails details = movingBlock.getStoredBlockData();
-            if (blockPosition.getBlockType().equals(BlockTypes.FIRE)) {
-                burnerFound = true;
-            }
-            if (this.getSpecialBlocks().parallelStream().anyMatch(b -> b.equals(positionType))) {
-                specialBlockCount++;
-            }
-            Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
-            if (opTiled.isPresent()) {
-                if (opTiled.get() instanceof FurnaceTileEntitySnapshot ftes) {
-                    furnaceInventories.add(ftes.getInventory());
-                }
-            }
-        }
-        if (this.isUsingBurner() && !burnerFound) {
-            throw new MoveException(
-                    new AbstractFailedMovement<>(this, MovementResult.NO_SPECIAL_NAMED_BLOCK_FOUND, "Burner"));
-        }
-        float specialBlockPercent = ((specialBlockCount * 100.0f) / context.getMovingStructure().size());
-        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
-            throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_PERCENT,
-                    new RequiredPercentMovementData(this.getSpecialBlocks().iterator().next(),
-                            this.getSpecialBlockPercent(), specialBlockPercent)));
-        }
-        if (!(this.getFuelConsumption() == 0 || this.getFuelTypes().isEmpty())) {
-            boolean acceptedSlots = furnaceInventories
-                    .stream()
-                    .map(i -> this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot())
-                    .filter(slot -> slot.getItem().isPresent())
-                    .filter(slot -> slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption())
-                    .anyMatch(slot -> this
-                            .getFuelTypes()
-                            .stream()
-                            .anyMatch(type -> slot.getItem().map(t -> t.getType().equals(type)).orElse(false)));
-            if (!acceptedSlots) {
-                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
-                        new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
-            }
-        }
-    }
-
-    @Override
-    @Deprecated(forRemoval = true)
-    public void processRequirements(MovementContext context) throws MoveException {
-        VesselRequirement.super.processRequirements(context);
-        if (!context.isStrictMovement()) {
-            return;
-        }
-        Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for (MovingBlock movingBlock : context.getMovingStructure()) {
-            BlockDetails details = movingBlock.getStoredBlockData();
-            Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = details.get(KeyedData.TILED_ENTITY);
-            if (opTiled.isPresent()) {
-                if (opTiled.get() instanceof FurnaceTileEntitySnapshot) {
-                    furnaceInventories.add(((FurnaceTileEntity) opTiled.get()).getInventory());
-                }
-            }
-        }
-        if (!(this.getFuelConsumption() == 0 && this.getFuelTypes().isEmpty())) {
-            List<FurnaceInventory> acceptedSlots = furnaceInventories.stream().filter(i -> {
-                Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-                return slot.getItem().isPresent();
-            }).filter(i -> {
-                Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-                return slot.getItem().map(ItemStack::getQuantity).orElse(0) >= this.getFuelConsumption();
-            }).filter(i -> {
-                Slot slot = this.getFuelSlot() == FuelSlot.TOP ? i.getSmeltingSlot() : i.getFuelSlot();
-                return this
-                        .getFuelTypes()
-                        .stream()
-                        .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
-            }).toList();
-            if (acceptedSlots.isEmpty()) {
-                throw new MoveException(new AbstractFailedMovement<>(this, MovementResult.NOT_ENOUGH_FUEL,
-                        new RequiredFuelMovementData(this.getFuelConsumption(), this.getFuelTypes())));
-            }
-            FurnaceInventory inv = acceptedSlots.get(0);
-            Slot slot = this.getFuelSlot() == FuelSlot.TOP ? inv.getSmeltingSlot() : inv.getFuelSlot();
-            Optional<ItemStack> opItem = slot.getItem();
-            if (opItem.isEmpty()) {
-                return;
-            }
-            ItemStack item = opItem.get();
-            item = item.copyWithQuantity(item.getQuantity() - this.getFuelConsumption());
-            if (item.getQuantity() == 0) {
-                item = ItemTypes.AIR.get().getDefaultItemStack();
-            }
-            slot.setItem(item);
-        }
-    }
-
-    @Override
     public void setRequirement(Requirement updated) {
         this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
@@ -298,7 +174,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configBurnerBlock, this.isUsingBurner());
         map.put(this.configSpecialBlockType, this.getSpecialBlocks());
-        map.put(this.configSpecialBlockPercent, this.getSpecialBlockPercent());
+        map.put(this.configSpecialBlockPercent, this.getSpecialBlocksPercent());
         map.put(this.configFuelConsumption, this.getFuelConsumption());
         map.put(this.configFuelSlot, this.getFuelSlot());
         map.put(this.configFuelTypes, this.getFuelTypes());
@@ -329,7 +205,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         map.put("Fuel Slot", this.getFuelSlot().name());
         map.put("Special Block", this.getSpecialBlocks().stream().map(Parser.STRING_TO_BLOCK_TYPE::unparse
         ).collect(Collectors.joining(", ")));
-        map.put("Required Percent", this.getSpecialBlockPercent() + "");
+        map.put("Required Percent", this.getSpecialBlocksPercent() + "");
         map.put("Requires Burner", this.isUsingBurner() + "");
         return map;
     }
@@ -360,7 +236,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) /
                 this.getStructure().getOriginalRelativePositions().size());
-        if ((this.getSpecialBlockPercent() != 0) && specialBlockPercent <= this.getSpecialBlockPercent()) {
+        if ((this.getSpecialBlocksPercent() != 0) && specialBlockPercent <= this.getSpecialBlocksPercent()) {
             return true;
         }
         if (this.getFuelConsumption() != 0 && (!this.getFuelTypes().isEmpty())) {

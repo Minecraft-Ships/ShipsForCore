@@ -10,18 +10,8 @@ import java.util.Set;
 
 public interface SpecialBlockShipType<V extends Vessel> extends ShipType<V> {
 
-    @Deprecated(forRemoval = true)
-    default float getDefaultSpecialBlockPercent() {
-        return this.getDefaultSpecialBlocksPercent();
-    }
-
     default float getDefaultSpecialBlocksPercent() {
         return this.getFile().getDouble(AbstractShipType.SPECIAL_BLOCK_PERCENT).orElse(0.0).floatValue();
-    }
-
-    @Deprecated(forRemoval = true)
-    default Set<BlockType> getDefaultSpecialBlockType() {
-        return this.getDefaultSpecialBlockTypes();
     }
 
     default Set<BlockType> getDefaultSpecialBlockTypes() {

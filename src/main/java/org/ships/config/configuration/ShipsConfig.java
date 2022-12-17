@@ -25,10 +25,6 @@ import java.util.Set;
 
 public class ShipsConfig implements Config.KnownNodes {
 
-    @Deprecated(forRemoval = true)
-    public final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> ALPHA_COMMAND_USE_LEGACY = new RawDedicatedNode<>(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "AlphaOnly", "Command",
-                    "UseLegacy"), "Alpha.Commands.Legacy", (f, v) -> f.set(v.getKey(), v.getValue()));
     protected final ObjectDedicatedNode<BasicMovement, ConfigurationNode.KnownParser.SingleKnown<BasicMovement>> ADVANCED_MOVEMENT = new ObjectDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(ShipsParsers.STRING_TO_MOVEMENT, "Advanced", "Movement",
                     "Default"), "Advanced.Block.Movement");

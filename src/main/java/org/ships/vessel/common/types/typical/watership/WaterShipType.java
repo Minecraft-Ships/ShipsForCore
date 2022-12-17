@@ -32,32 +32,39 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     private CorePermission moveOtherPermission = Permissions.WATERSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.WATERSHIP_MAKE;
 
-    private Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement> requirements = new HashSet<>();
 
     public WaterShipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "/Configuration/ShipType/Watership." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+                            "/Configuration/ShipType/Watership." + TranslateCore
+                                    .getPlatform()
+                                    .getConfigFormat()
+                                    .getFileType()[0]));
     }
 
     public WaterShipType(@NotNull String name, @NotNull File file) {
         this(ShipsPlugin.getPlugin(), name,
-                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
-                BlockTypes.AIR, BlockTypes.WATER);
+             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR,
+             BlockTypes.WATER);
     }
 
-    public WaterShipType(@NotNull Plugin plugin, @NotNull String displayName,
-            @NotNull ConfigurationStream.ConfigurationFile file, BlockType... types) {
+    public WaterShipType(@NotNull Plugin plugin,
+                         @NotNull String displayName,
+                         @NotNull ConfigurationStream.ConfigurationFile file,
+                         BlockType... types) {
         super(plugin, displayName, file, types);
         if (!(plugin.equals(ShipsPlugin.getPlugin()) && displayName.equals(NAME))) {
             String pluginId = plugin.getPluginId();
             String name = displayName.toLowerCase().replace(" ", "");
-            this.moveOwnPermission = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "move",
-                    "own",
-                    pluginId, name));
-            this.moveOtherPermission = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "move",
-                    "other", pluginId, name));
-            this.makePermission = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "make",
-                    pluginId, name));
+            this.moveOwnPermission = TranslateCore
+                    .getPlatform()
+                    .register(new CorePermission(true, "ships", "move", "own", pluginId, name));
+            this.moveOtherPermission = TranslateCore
+                    .getPlatform()
+                    .register(new CorePermission(false, "ships", "move", "other", pluginId, name));
+            this.makePermission = TranslateCore
+                    .getPlatform()
+                    .register(new CorePermission(false, "ships", "make", pluginId, name));
         }
     }
 
@@ -92,8 +99,8 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     @Override
     public Collection<Requirement> getDefaultRequirements() {
         if (this.requirements.isEmpty()) {
-            Requirement requirement = new SpecialBlocksRequirement(null,
-                    this.getDefaultSpecialBlocksPercent(), this.getDefaultSpecialBlockTypes());
+            Requirement requirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                                                                   this.getDefaultSpecialBlockTypes());
             this.requirements.add(requirement);
         }
         return this.requirements;

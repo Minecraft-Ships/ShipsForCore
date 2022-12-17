@@ -18,8 +18,8 @@ public class ErrorOversizedMessage implements Message<Map.Entry<Vessel, Integer>
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is over the max size of " +
-                Message.VESSEL_SIZE_ERROR.adapterTextFormat());
+        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is over the max size of "
+                                     + Message.VESSEL_SIZE_ERROR.adapterTextFormat());
     }
 
     @Override
@@ -37,9 +37,9 @@ public class ErrorOversizedMessage implements Message<Map.Entry<Vessel, Integer>
             text = adapter.process(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(text, obj.getKey());
+            text = adapter.process(obj.getKey(), text);
         }
-        return Message.VESSEL_SIZE_ERROR.process(text, obj.getValue());
+        return Message.VESSEL_SIZE_ERROR.process(obj.getValue(), text);
 
     }
 }

@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.instruction.details.MovementDetails;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.assits.shiptype.SizedShipType;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -62,14 +63,30 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     boolean isAltitudeSpeedSpecified();
 
-    Optional<Integer> getMaxSize();
+    @Deprecated(forRemoval = true)
+    default Optional<Integer> getMaxSize() {
+        ShipType<?> type = this.getType();
+        if (!(type instanceof SizedShipType<?> sizedType)) {
+            return Optional.empty();
+        }
+        return sizedType.getMaxSize();
+    }
 
+    @Deprecated(forRemoval = true)
     @NotNull Vessel setMaxSize(@Nullable Integer size);
 
     boolean isMaxSizeSpecified();
 
-    int getMinSize();
+    @Deprecated(forRemoval = true)
+    default int getMinSize() {
+        ShipType<?> type = this.getType();
+        if (!(type instanceof SizedShipType<?> sizedType)) {
+            return 0;
+        }
+        return sizedType.getMinSize();
+    }
 
+    @Deprecated(forRemoval = true)
     @NotNull Vessel setMinSize(@Nullable Integer size);
 
     boolean isMinSizeSpecified();
@@ -115,29 +132,25 @@ public interface Vessel extends Positionable<BlockPosition> {
         this.getStructure().getChunks().stream().map(Extent::getEntities).forEach(entities::addAll);
         entities = entities.stream().filter(e -> {
             Optional<SyncBlockPosition> opTo = e.getAttachedTo();
-            return opTo
-                    .filter(syncBlockPosition -> bounds.contains(syncBlockPosition.getPosition()))
+            return opTo.filter(syncBlockPosition -> bounds.contains(syncBlockPosition.getPosition())).isPresent();
+        }).collect(Collectors.toSet());
+        Collection<ASyncBlockPosition> blocks = this
+                .getStructure()
+                .getPositions((Function<? super SyncBlockPosition, ? extends ASyncBlockPosition>) Position::toASync);
+        return entities.stream().filter(check).filter(e -> {
+            Optional<SyncBlockPosition> opBlock = e.getAttachedTo();
+            //noinspection EqualsBetweenInconvertibleTypes
+            return opBlock
+                    .filter(syncBlockPosition -> blocks.parallelStream().anyMatch(b -> b.equals(syncBlockPosition)))
                     .isPresent();
         }).collect(Collectors.toSet());
-        Collection<ASyncBlockPosition> blocks = this.getStructure().getPositions((Function<? super SyncBlockPosition,
-                ? extends ASyncBlockPosition>) Position::toASync);
-        return entities.stream()
-                .filter(check)
-                .filter(e -> {
-                    Optional<SyncBlockPosition> opBlock = e.getAttachedTo();
-                    //noinspection EqualsBetweenInconvertibleTypes
-                    return opBlock
-                            .filter(syncBlockPosition -> blocks
-                                    .parallelStream()
-                                    .anyMatch(b -> b.equals(syncBlockPosition)))
-                            .isPresent();
-                })
-                .collect(Collectors.toSet());
 
     }
 
-    default void getEntitiesOvertime(int limit, Predicate<? super LiveEntity> predicate,
-            Consumer<? super LiveEntity> single, Consumer<? super Collection<LiveEntity>> output) {
+    default void getEntitiesOvertime(int limit,
+                                     Predicate<? super LiveEntity> predicate,
+                                     Consumer<? super LiveEntity> single,
+                                     Consumer<? super Collection<LiveEntity>> output) {
         Collection<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>();
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
@@ -161,8 +174,9 @@ public interface Vessel extends Positionable<BlockPosition> {
             output.accept(entities);
             return;
         }
-        Collection<SyncBlockPosition> pss = this.getStructure().getPositions((Function<? super SyncBlockPosition, ?
-                extends SyncBlockPosition>) s -> s);
+        Collection<SyncBlockPosition> pss = this
+                .getStructure()
+                .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
         for (int A = 0; A < fin; A++) {
             final int B = A;
             sched = TranslateCore
@@ -218,13 +232,8 @@ public interface Vessel extends Positionable<BlockPosition> {
         this.rotateLeftAround(location, details);
     }
 
-    @Deprecated(forRemoval = true)
-    default boolean isInWater() {
-        return this.getWaterLevel().isEmpty();
-    }
-
     default <T> Optional<Integer> getWaterLevel(Function<? super T, ? extends BlockPosition> function,
-            Collection<T> collection) {
+                                                Collection<T> collection) {
         Map<Vector2<Integer>, Integer> height = new HashMap<>();
         int lowest = Integer.MIN_VALUE;
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
@@ -236,7 +245,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                     continue;
                 }
                 Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(),
-                        position.getZ() + direction.getAsVector().getZ());
+                                                          position.getZ() + direction.getAsVector().getZ());
                 if (!height.containsKey(vector)) {
                     height.put(vector, position.getY());
                     continue;
@@ -254,8 +263,8 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     default Optional<Integer> getWaterLevel() {
         PositionableShipsStructure pss = this.getStructure();
-        return this.getWaterLevel(p -> p,
-                pss.getPositions((Function<? super SyncBlockPosition, ? extends BlockPosition>) Position::toASync));
+        return this.getWaterLevel(p -> p, pss.getPositions(
+                (Function<? super SyncBlockPosition, ? extends BlockPosition>) Position::toASync));
     }
 
 }

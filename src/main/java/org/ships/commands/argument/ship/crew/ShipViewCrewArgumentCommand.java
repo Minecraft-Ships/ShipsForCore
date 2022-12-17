@@ -64,11 +64,10 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer)) {
+        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        Set<CrewPermission> permissionsToShow = new HashSet<>(
+        Collection<CrewPermission> permissionsToShow = new HashSet<>(
                 commandContext.getArgument(this, this.SHIP_CREW_PERMISSION_ARGUMENT));
 
         CrewStoredVessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);

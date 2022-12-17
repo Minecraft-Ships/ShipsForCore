@@ -1,6 +1,7 @@
 package org.ships.config.messages.adapter.vessel.error;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.security.SecureRandom;
@@ -19,7 +20,7 @@ public class VesselSizeErrorAdapter implements MessageAdapter<Integer> {
     }
 
     @Override
-    public AText process(AText message, Integer obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(obj.toString()));
+    public AText process(@NotNull Integer obj) {
+        return AText.ofPlain(obj.toString());
     }
 }

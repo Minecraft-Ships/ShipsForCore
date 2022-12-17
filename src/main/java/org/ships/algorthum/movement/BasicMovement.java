@@ -1,7 +1,7 @@
 package org.ships.algorthum.movement;
 
 import org.ships.algorthum.Algorithm;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.Result;
 import org.ships.vessel.common.types.Vessel;

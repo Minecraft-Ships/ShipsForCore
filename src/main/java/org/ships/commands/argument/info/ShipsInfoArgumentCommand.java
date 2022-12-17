@@ -71,9 +71,15 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
                     .stream()
                     .map(s -> AText.ofPlain(s.getDisplayName()).withColour(NamedTextColours.GOLD))
                     .collect(Collectors.toList());
-            AText text = ArrayUtils.collect(t -> t,
-                    (old, t) -> old.append(AText.ofPlain(" | ").withColour(NamedTextColours.GREEN).append(t)),
-                    typeText);
+            AText text = null;
+            for(ShipType<?> shipType : shipTypes){
+                AText displayName = AText.ofPlain(shipType.getDisplayName()).withColour(NamedTextColours.GOLD);
+                if(text == null){
+                    text = displayName;
+                    continue;
+                }
+                text = text.append(AText.ofPlain(" | ").withColour(NamedTextColours.GREEN)).append(displayName);
+            }
             viewer.sendMessage(text);
         }
         return true;

@@ -33,7 +33,7 @@ public class MarsshipType extends AbstractShipType<Marsship>
     private CorePermission moveOtherPermission = Permissions.MARSSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.MARSSHIP_MAKE;
 
-    private Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement> requirements = new HashSet<>();
 
     public MarsshipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),

@@ -28,21 +28,26 @@ import java.util.HashSet;
 public class SubmarineType extends AbstractShipType<Submarine>
         implements SpecialBlockShipType<Submarine>, FuelledShipType<Submarine> {
 
-    private Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement> requirements = new HashSet<>();
 
     public SubmarineType() {
         this("Submarine", new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "/Configuration/ShipType/Submarine." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+                                   "/Configuration/ShipType/Submarine." + TranslateCore
+                                           .getPlatform()
+                                           .getConfigFormat()
+                                           .getFileType()[0]));
     }
 
     public SubmarineType(String name, File file) {
         this(ShipsPlugin.getPlugin(), name,
-                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
-                BlockTypes.AIR, BlockTypes.WATER);
+             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR,
+             BlockTypes.WATER);
     }
 
-    public SubmarineType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file,
-            BlockType... types) {
+    public SubmarineType(Plugin plugin,
+                         String displayName,
+                         ConfigurationStream.ConfigurationFile file,
+                         BlockType... types) {
         super(plugin, displayName, file, types);
     }
 
@@ -59,9 +64,13 @@ public class SubmarineType extends AbstractShipType<Submarine>
 
     @Override
     public Collection<Requirement> getDefaultRequirements() {
-        if(this.requirements.isEmpty()){
-            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(), this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
-            Requirement specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(), this.getDefaultSpecialBlockTypes());
+        if (this.requirements.isEmpty()) {
+            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                                                              this.getDefaultFuelConsumption(),
+                                                              this.getDefaultFuelTypes());
+            Requirement specialBlocksRequirement = new SpecialBlocksRequirement(null,
+                                                                                this.getDefaultSpecialBlocksPercent(),
+                                                                                this.getDefaultSpecialBlockTypes());
             this.requirements.add(fuelRequirement);
             this.requirements.add(specialBlocksRequirement);
         }

@@ -349,7 +349,8 @@ public class CoreEventListener implements EventListener {
             }
             try {
                 for (Direction direction : FourFacingDirection.getFourFacingDirections()) {
-                    Vessel vessel = new ShipsBlockFinder(event.getPosition().getRelative(direction)).load();
+                    SyncBlockPosition position = event.getPosition().getRelative(direction);
+                    Vessel vessel = new ShipsBlockFinder(position).load();
                     event.getEntity().sendMessage(AdventureMessageConfig.ERROR_CANNOT_CREATE_ONTOP.process(vessel));
                     event.setCancelled(true);
                     return;

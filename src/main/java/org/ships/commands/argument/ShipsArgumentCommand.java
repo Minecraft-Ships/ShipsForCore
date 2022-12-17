@@ -20,8 +20,6 @@ import org.ships.commands.argument.create.CreateShipCommand;
 import org.ships.commands.argument.fix.NoGravityArgumentCommand;
 import org.ships.commands.argument.help.ShipsHelpArgumentCommand;
 import org.ships.commands.argument.info.ShipsInfoArgumentCommand;
-import org.ships.commands.argument.ship.autopilot.CancelAutopilotCommand;
-import org.ships.commands.argument.ship.autopilot.DeployAutopilotCommand;
 import org.ships.commands.argument.ship.crew.ShipAddCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipRemoveCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipViewCrewArgumentCommand;
@@ -42,6 +40,7 @@ import org.ships.commands.argument.type.ShipsDeleteShipTypeArgument;
 import org.ships.commands.argument.type.ShipsViewShipTypeArgument;
 import org.ships.commands.argument.type.flag.ModifyShipTypeFlagArgument;
 import org.ships.commands.argument.type.flag.ViewShipTypeFlagArgument;
+import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
 import java.util.HashSet;
@@ -69,16 +68,16 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new CreateShipCommand());
 
         COMMANDS.add(new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()),
-                "config", "configuration"));
+                                                         "config", "configuration"));
         COMMANDS.add(
                 new AbstractShipsConfigViewArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()),
-                        "messages"));
+                                                    "messages"));
         COMMANDS.add(
                 new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getConfig()), "config",
-                        "configuration"));
+                                                   "configuration"));
         COMMANDS.add(
                 new AbstractShipsConfigSetArgument(new Singleton<>(() -> ShipsPlugin.getPlugin().getMessageConfig()),
-                        "messages"));
+                                                   "messages"));
         COMMANDS.add(new ShipStructureSaveCommand());
 
         COMMANDS.add(new ShipTypeViewSingleConfigArgument());
@@ -95,8 +94,6 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new ShipViewCrewArgumentCommand());
         COMMANDS.add(new ShipAddCrewArgumentCommand());
         COMMANDS.add(new ShipRemoveCrewArgumentCommand());
-        COMMANDS.add(new CancelAutopilotCommand());
-        COMMANDS.add(new DeployAutopilotCommand());
 
         COMMANDS.add(new ShipsCreateShipTypeArgument());
         COMMANDS.add(new ShipsViewShipTypeArgument());
@@ -125,7 +122,7 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
     @Override
     public boolean hasPermission(CommandSource source) {
         if (source instanceof LivePlayer) {
-            return ((LivePlayer) source).hasPermission("ships.cmd.ships");
+            return ((LivePlayer) source).hasPermission(Permissions.CMD_SHIPS);
         }
         return true;
     }

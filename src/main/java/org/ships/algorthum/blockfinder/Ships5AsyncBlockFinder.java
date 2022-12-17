@@ -22,7 +22,7 @@ import java.util.Optional;
 public class Ships5AsyncBlockFinder implements BasicBlockFinder {
 
     private int blockLimit;
-    private int blockCount = 0;
+    private int blockCount;
     private PositionableShipsStructure shipsStructure;
     private Vessel vessel;
     private BlockList list;
@@ -54,7 +54,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     }
 
     private PositionableShipsStructure getConnectedBlocks(ASyncBlockPosition position,
-            OvertimeBlockFinderUpdate update) {
+                                                          OvertimeBlockFinderUpdate update) {
         this.blockCount = 0;
         this.shipsStructure = new AbstractPositionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
@@ -78,7 +78,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+                                           @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         TranslateCore
                 .getScheduleManager()
                 .schedule()

@@ -24,21 +24,26 @@ import java.util.HashSet;
 
 public class PlaneType extends AbstractShipType<Plane> implements FuelledShipType<Plane> {
 
-    private Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement> requirements = new HashSet<>();
 
     public PlaneType() {
         this("Plane", new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "/Configuration/ShipType/Plane." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+                               "/Configuration/ShipType/Plane." + TranslateCore
+                                       .getPlatform()
+                                       .getConfigFormat()
+                                       .getFileType()[0]));
     }
 
     public PlaneType(String name, File file) {
         this(ShipsPlugin.getPlugin(), name,
-                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
-                BlockTypes.AIR);
+             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+             BlockTypes.AIR);
     }
 
-    public PlaneType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file,
-            BlockType... types) {
+    public PlaneType(Plugin plugin,
+                     String displayName,
+                     ConfigurationStream.ConfigurationFile file,
+                     BlockType... types) {
         super(plugin, displayName, file, types);
     }
 
@@ -53,8 +58,10 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
 
     @Override
     public Collection<Requirement> getDefaultRequirements() {
-        if(this.requirements.isEmpty()){
-            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(), this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
+        if (this.requirements.isEmpty()) {
+            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                                                              this.getDefaultFuelConsumption(),
+                                                              this.getDefaultFuelTypes());
             this.requirements.add(fuelRequirement);
         }
         return this.requirements;

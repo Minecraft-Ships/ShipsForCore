@@ -8,20 +8,16 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
-import org.ships.movement.autopilot.FlightPath;
 import org.ships.vessel.common.assits.AirType;
-import org.ships.vessel.common.assits.FlightPathType;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Deprecated(forRemoval = true)
-public class OPShip extends AbstractShipsVessel implements AirType, FlightPathType {
-
-    protected @Nullable FlightPath flightPath;
+public class OPShip extends AbstractShipsVessel implements AirType {
 
     public OPShip(LiveTileEntity licence, ShipType<? extends OPShip> origin) throws NoLicencePresent {
         super(licence, origin);
@@ -32,12 +28,12 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
     }
 
     @Override
-    public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
+    public @NotNull Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(@NotNull ConfigurationStream file) {
         return new HashMap<>();
     }
 
     @Override
-    public AbstractShipsVessel deserializeExtra(ConfigurationStream file) {
+    public @NotNull AbstractShipsVessel deserializeExtra(@NotNull ConfigurationStream file) {
         return this;
     }
 
@@ -47,13 +43,22 @@ public class OPShip extends AbstractShipsVessel implements AirType, FlightPathTy
     }
 
     @Override
-    public Optional<FlightPath> getFlightPath() {
-        return Optional.ofNullable(this.flightPath);
+    public @NotNull Vessel setMaxSize(@Nullable Integer size) {
+        return this;
     }
 
     @Override
-    public FlightPathType setFlightPath(FlightPath path) {
-        this.flightPath = path;
+    public boolean isMaxSizeSpecified() {
+        return false;
+    }
+
+    @Override
+    public @NotNull Vessel setMinSize(@Nullable Integer size) {
         return this;
+    }
+
+    @Override
+    public boolean isMinSizeSpecified() {
+        return false;
     }
 }

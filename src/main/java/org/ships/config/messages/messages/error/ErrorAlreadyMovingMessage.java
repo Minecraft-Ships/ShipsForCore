@@ -34,7 +34,7 @@ public class ErrorAlreadyMovingMessage implements Message<Vessel> {
             text = adapter.process(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(text, obj);
+            text = adapter.process(obj, text);
         }
         return text;
     }

@@ -2,12 +2,12 @@ package org.ships.vessel.common.requirement;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.MoveException;
+import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
-import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.MovementResult;
 import org.ships.vessel.common.types.Vessel;
 
+import java.util.AbstractMap;
 import java.util.Optional;
 
 public class MinSizeRequirement implements Requirement {
@@ -45,8 +45,8 @@ public class MinSizeRequirement implements Requirement {
         int minSize = this.getMinimumSize();
 
         if (minSize > shipSize) {
-            throw new MoveException(
-                    new AbstractFailedMovement<>(vessel, MovementResult.UNDER_SIZED, (minSize - shipSize)));
+            throw new MoveException(context, AdventureMessageConfig.ERROR_UNDERSIZED,
+                                    new AbstractMap.SimpleImmutableEntry<>(vessel, minSize - shipSize));
         }
     }
 
@@ -56,13 +56,21 @@ public class MinSizeRequirement implements Requirement {
     }
 
     @Override
-    public @NotNull Requirement createChild() {
+    public @NotNull MinSizeRequirement createChild() {
         return new MinSizeRequirement(this, null);
+    }
+
+    public @NotNull MinSizeRequirement createChild(Integer size) {
+        return new MinSizeRequirement(this, size);
     }
 
     @Override
     public @NotNull Requirement createCopy() {
         return new MinSizeRequirement(this.parent, this.minSize);
+    }
+
+    public @NotNull MinSizeRequirement createCopy(Integer size) {
+        return new MinSizeRequirement(this.parent, size);
     }
 
     @Override
@@ -74,5 +82,9 @@ public class MinSizeRequirement implements Requirement {
     public boolean isEnabled() {
         int size = this.getMinimumSize();
         return size > 0;
+    }
+
+    public boolean isMinSizeSpecified() {
+        return this.minSize != null;
     }
 }

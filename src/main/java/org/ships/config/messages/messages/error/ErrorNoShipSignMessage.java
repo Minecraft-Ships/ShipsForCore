@@ -24,12 +24,8 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
         return AText
                 .ofPlain("Cannot find ")
                 .withColour(NamedTextColours.RED)
-                .append(AText
-                        .ofPlain("[Ships]")
-                        .withColour(NamedTextColours.YELLOW))
-                .append(AText
-                        .ofPlain(" sign")
-                        .withColour(NamedTextColours.RED));
+                .append(AText.ofPlain("[Ships]").withColour(NamedTextColours.YELLOW))
+                .append(AText.ofPlain(" sign").withColour(NamedTextColours.RED));
     }
 
     @Override
@@ -43,7 +39,7 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
 
     @Override
     public AText process(AText text, PositionableShipsStructure obj) {
-        Collection<Position<?>> positions = obj.getPositions().parallelStream().collect(Collectors.toSet());
+        Collection<Position<?>> positions = obj.getAsyncedPositions().parallelStream().collect(Collectors.toSet());
         for (CollectionSingleAdapter<Position<?>> adapter : this.getExactAdapters()) {
             text = adapter.process(text, positions);
         }

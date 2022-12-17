@@ -7,6 +7,7 @@ import org.core.entity.living.human.AbstractHuman;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.Player;
 import org.core.utils.Else;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.Collection;
@@ -30,9 +31,8 @@ public class EntityNameAdapter implements MessageAdapter<Entity<?>> {
     }
 
     @Override
-    public AText process(AText message, Entity<?> obj) {
+    public AText process(@NotNull Entity<?> obj) {
         AText t = obj.getCustomName().orElse(AText.ofPlain(obj.getType().getName()));
-        return message.withAllAs(this.adapterTextFormat(),
-                Else.canCast(obj, Player.class, p -> AText.ofPlain(p.getName()), e -> t));
+        return Else.canCast(obj, Player.class, p -> AText.ofPlain(p.getName()), e -> t);
     }
 }

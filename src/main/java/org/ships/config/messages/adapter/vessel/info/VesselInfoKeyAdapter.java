@@ -1,6 +1,7 @@
 package org.ships.config.messages.adapter.vessel.info;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.Collections;
@@ -18,7 +19,7 @@ public class VesselInfoKeyAdapter implements MessageAdapter<String> {
     }
 
     @Override
-    public AText process(AText message, String obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(obj));
+    public AText process(@NotNull String obj) {
+        return AText.ofPlain(obj);
     }
 }

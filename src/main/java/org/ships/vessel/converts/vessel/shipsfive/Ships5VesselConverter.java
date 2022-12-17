@@ -73,7 +73,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
                     ((Airship) vessel).setFuelConsumption(consumption);
                 }
                 if (percent != null) {
-                    ((Airship) vessel).setSpecialBlockPercent(percent.floatValue());
+                    ((Airship) vessel).setSpecialBlocksPercent(percent.floatValue());
                 }
                 break;
             default:

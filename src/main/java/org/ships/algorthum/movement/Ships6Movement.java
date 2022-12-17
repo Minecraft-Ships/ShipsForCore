@@ -4,12 +4,14 @@ import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.schedule.Scheduler;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.event.vessel.move.VesselMoveEvent;
-import org.ships.exceptions.MoveException;
-import org.ships.movement.*;
+import org.ships.exceptions.move.MoveException;
+import org.ships.movement.MovementContext;
+import org.ships.movement.MovingBlock;
+import org.ships.movement.MovingBlockSet;
+import org.ships.movement.Result;
 import org.ships.movement.instruction.actions.PostMovement;
-import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
@@ -17,6 +19,7 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class Ships6Movement implements BasicMovement {
@@ -27,9 +30,7 @@ public class Ships6Movement implements BasicMovement {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
-        //List<List<MovingBlock>> blocksToRemove = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
-        //List<MovingBlock> currentlyRemoving = new ArrayList<>();
         for (int A = 0; A < blocks.size(); A++) {
             final int B = A;
             context.getBossBar().ifPresent(bar -> bar.setValue(B, blocks.size() * 3));
@@ -63,14 +64,15 @@ public class Ships6Movement implements BasicMovement {
                     result.remove(Result.Run.COMMON_TELEPORT_ENTITIES);
                     result.run(vessel, context);
                     vessel.set(MovingFlag.class, null);
-                }).build(ShipsPlugin.getPlugin());
+                })
+                .build(ShipsPlugin.getPlugin());
         for (int A = 0; A < blocksToProcess.size(); A++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = TranslateCore
                     .getScheduleManager()
                     .schedule()
                     .setDisplayName("Set Block")
-                    .setExecutor(new SetBlocks(A, total, context, blocks2))
+                    .setRunner(new SetBlocks(A, total, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())
                     .setDelayUnit(config.getDefaultMovementStackDelayUnit())
@@ -91,14 +93,14 @@ public class Ships6Movement implements BasicMovement {
                     .getScheduleManager()
                     .schedule()
                     .setDisplayName("Remove Blocxds67ytyk")
-                    .setExecutor(new RemoveBlocks(waterLevel, A, context, blocks2))
+                    .setRunner(new RemoveBlocks(waterLevel, A, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())
                     .setDelayUnit(config.getDefaultMovementStackDelayUnit())
                     .build(ShipsPlugin.getPlugin());
         }
         if (scheduler == null) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.UNKNOWN, null));
+            throw new MoveException(context, AdventureMessageConfig.ERROR_FAILED_IN_MOVEMENT, vessel);
         }
         scheduler.run();
 
@@ -115,7 +117,7 @@ public class Ships6Movement implements BasicMovement {
         return "Ships 6 Movement";
     }
 
-    private static class RemoveBlocks implements Runnable {
+    private static class RemoveBlocks implements Consumer<Scheduler> {
 
         private final List<? extends MovingBlock> toProcess;
         private final int waterLevel;
@@ -130,7 +132,7 @@ public class Ships6Movement implements BasicMovement {
         }
 
         @Override
-        public void run() {
+        public void accept(Scheduler scheduler) {
             for (int A = 0; A < this.toProcess.size(); A++) {
                 final int B = A;
                 this.context.getBossBar().ifPresent(bar -> {
@@ -149,7 +151,7 @@ public class Ships6Movement implements BasicMovement {
         }
     }
 
-    private static class SetBlocks implements Runnable {
+    private static class SetBlocks implements Consumer<Scheduler> {
 
         private final List<? extends MovingBlock> toProcess;
         private final int attempt;
@@ -165,7 +167,7 @@ public class Ships6Movement implements BasicMovement {
         }
 
         @Override
-        public void run() {
+        public void accept(Scheduler scheduler) {
             for (int A = 0; A < this.toProcess.size(); A++) {
                 MovingBlock m = this.toProcess.get(A);
                 final int B = A;

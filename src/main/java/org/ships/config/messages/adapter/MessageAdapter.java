@@ -1,6 +1,7 @@
 package org.ships.config.messages.adapter;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
@@ -10,7 +11,12 @@ public interface MessageAdapter<T> {
 
     Set<String> examples();
 
-    AText process(AText message, T obj);
+    AText process(@NotNull T obj);
+
+    default AText process(@NotNull T obj, @NotNull AText message) {
+        AText mapped = this.process(obj);
+        return message.withAllAs(this.adapterTextFormat(), mapped);
+    }
 
     default String adapterTextFormat() {
         return "%" + this.adapterText() + "%";

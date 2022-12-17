@@ -2,6 +2,7 @@ package org.ships.config.messages.messages.info;
 
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.vessel.common.types.Vessel;
@@ -29,15 +30,16 @@ public class InfoNameMessage implements Message<Vessel> {
         return new HashSet<>(this.getExactAdapters());
     }
 
+    @Override
+    public AText process(@NotNull AText text, Vessel obj) {
+        for (MessageAdapter<Vessel> adapter : this.getExactAdapters()) {
+            text = adapter.process(obj, text);
+        }
+        return text;
+    }
+
     public Set<MessageAdapter<Vessel>> getExactAdapters() {
         return Collections.singleton(Message.VESSEL_NAME);
     }
 
-    @Override
-    public AText process(AText text, Vessel obj) {
-        for (MessageAdapter<Vessel> adapter : this.getExactAdapters()) {
-            text = adapter.process(text, obj);
-        }
-        return text;
-    }
 }

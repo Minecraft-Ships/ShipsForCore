@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class Ships6BlockFinder implements BasicBlockFinder {
 
@@ -73,7 +74,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+                                           @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch);
         TranslateCore
@@ -81,7 +82,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                 .schedule()
                 .setDelay(config.getDefaultFinderStackDelay())
                 .setDelayUnit(config.getDefaultFinderStackDelayUnit())
-                .setExecutor(overtime.runnable)
+                .setRunner(overtime.runnable)
                 .setDisplayName("Ships 6 block finder")
                 .build(ShipsPlugin.getPlugin())
                 .run();
@@ -128,6 +129,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         private List<SyncBlockPosition> process = new ArrayList<>();
         private List<SyncBlockPosition> ret = new ArrayList<>();
         private OvertimeBlockFinderUpdate update;
+
         private Overtime(SyncBlockPosition position, OvertimeBlockFinderUpdate update) {
             this.pss = new AbstractPositionableShipsStructure(position);
             this.update = update;
@@ -141,7 +143,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             private final Collection<SyncBlockPosition> ret = new ArrayList<>();
             private final Collection<SyncBlockPosition> process = new ArrayList<>();
             private final Collection<SyncBlockPosition> ignore = new ArrayList<>();
-            private final Runnable runnable = () -> {
+            private final Consumer<Scheduler> runnable = (sch) -> {
                 for (SyncBlockPosition proc : this.process) {
                     for (Direction face : this.directions) {
                         SyncBlockPosition block = proc.getRelative(face);
@@ -160,12 +162,14 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             };
 
             private OvertimeSection(Collection<? extends SyncBlockPosition> collection,
-                    Collection<? extends SyncBlockPosition> ignore) {
+                                    Collection<? extends SyncBlockPosition> ignore) {
                 this.process.addAll(collection);
                 this.ignore.addAll(ignore);
             }
 
-        }        private final Runnable runnable = () -> {
+        }
+
+        private final Consumer<Scheduler> runnable = (sch) -> {
             ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
             Collection<List<SyncBlockPosition>> collections = new ArrayList<>();
             List<SyncBlockPosition> current = new ArrayList<>();
@@ -183,19 +187,20 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                     .schedule()
                     .setDelay(config.getDefaultFinderStackDelay())
                     .setDelayUnit(config.getDefaultFinderStackDelayUnit())
-                    .setRunner((sch) -> {
+                    .setRunner((sch1) -> {
                         if ((this.total.size() <= Ships6BlockFinder.this.limit) && (!this.ret.isEmpty())) {
                             this.process = this.ret;
                             this.ret = new ArrayList<>();
 
                             TranslateCore
                                     .getScheduleManager()
-                                    .schedule().
-                                    setDelay(config.getDefaultFinderStackDelay()).
-                                    setDelayUnit(config.getDefaultFinderStackDelayUnit()).
-                                    setExecutor(this.runnable).
-                                    setDisplayName("Ships 6 ASync Block Finder").
-                                    build(ShipsPlugin.getPlugin()).run();
+                                    .schedule()
+                                    .setDelay(config.getDefaultFinderStackDelay())
+                                    .setDelayUnit(config.getDefaultFinderStackDelayUnit())
+                                    .setRunner(this.runnable)
+                                    .setDisplayName("Ships 6 ASync Block Finder")
+                                    .build(ShipsPlugin.getPlugin())
+                                    .run();
                         } else {
                             this.update.onShipsStructureUpdated(this.pss);
                         }
@@ -209,12 +214,12 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                         .schedule()
                         .setDelay(config.getDefaultFinderStackDelay())
                         .setDelayUnit(config.getDefaultFinderStackDelayUnit())
-                        .setRunner((sch) -> {
+                        .setRunner((scheduler2) -> {
                             OvertimeSection section = new OvertimeSection(list, this.total);
-                            section.runnable.run();
+                            section.runnable.accept(scheduler2);
                             section.ret.forEach(p -> {
                                 OvertimeBlockFinderUpdate.BlockFindControl blockFind = this.update.onBlockFind(this.pss,
-                                        p);
+                                                                                                               p);
                                 if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                     return;
                                 }
@@ -229,7 +234,6 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             }
             scheduler.run();
         };
-
 
 
     }

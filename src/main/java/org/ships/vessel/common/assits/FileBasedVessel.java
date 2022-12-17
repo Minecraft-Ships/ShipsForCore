@@ -2,6 +2,7 @@ package org.ships.vessel.common.assits;
 
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
+import org.jetbrains.annotations.NotNull;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.File;
@@ -9,11 +10,11 @@ import java.util.Map;
 
 public interface FileBasedVessel extends Vessel {
 
-    File getFile();
+    @NotNull File getFile();
 
-    Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file);
+    @NotNull Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(@NotNull ConfigurationStream file);
 
-    FileBasedVessel deserializeExtra(ConfigurationStream file);
+    @NotNull FileBasedVessel deserializeExtra(@NotNull ConfigurationStream file);
 
 
 }

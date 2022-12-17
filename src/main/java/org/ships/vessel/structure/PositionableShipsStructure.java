@@ -18,7 +18,6 @@ import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -98,55 +97,37 @@ public interface PositionableShipsStructure extends ShipsStructure, Positionable
         return this.removePosition(next.minus(original));
     }
 
-    @Deprecated(forRemoval = true)
-    default <T> Collection<T> getAllLike(Function<SyncBlockPosition, ? extends T> function) {
-        return this.getAllLike(s -> s, function);
-    }
-
     default <P extends BlockPosition, T> Collection<T> getAllLike(Function<? super SyncBlockPosition, P> toPos,
                                                                   Function<P, ? extends T> function) {
         return this.getPositions(toPos).stream().map(function).collect(Collectors.toUnmodifiableSet());
     }
 
-    @Deprecated(forRemoval = true)
-    default Collection<SyncBlockPosition> getAll(BlockType type) {
-        return this.getAll(type, p -> p);
-    }
-
     default <T extends BlockPosition> Collection<T> getAll(BlockType type,
                                                            Function<? super SyncBlockPosition, ? extends T> function) {
-        return Collections.unmodifiableCollection(this
-                                                          .getPositions(function)
-                                                          .stream()
-                                                          .filter(p -> p.getBlockType().equals(type))
-                                                          .collect(Collectors.toSet()));
+        return this
+                .getPositions(function)
+                .stream()
+                .filter(p -> p.getBlockType().equals(type))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     default Collection<SyncBlockPosition> getAll(Class<? extends TileEntity> class1) {
-        return Collections.unmodifiableCollection(this
-                                                          .getPositionsRelativeTo(this)
-                                                          .stream()
-                                                          .filter(p -> p.getTileEntity().isPresent())
-                                                          .filter(p -> class1.isInstance(p.getTileEntity().get()))
-                                                          .collect(Collectors.toSet()));
+        return this
+                .getPositionsRelativeTo(this)
+                .stream()
+                .filter(p -> p.getTileEntity().isPresent())
+                .filter(p -> class1.isInstance(p.getTileEntity().get()))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     default Collection<SyncBlockPosition> getAll(ShipsSign sign) {
-        return Collections.unmodifiableCollection(this
-                                                          .getPositions()
-                                                          .stream()
-                                                          .filter(b -> b.getTileEntity().isPresent())
-                                                          .filter(b -> b
-                                                                  .getTileEntity()
-                                                                  .get() instanceof LiveSignTileEntity)
-                                                          .filter(b -> sign.isSign(
-                                                                  (SignTileEntity) b.getTileEntity().get()))
-                                                          .collect(Collectors.toSet()));
-    }
-
-    @Deprecated(forRemoval = true)
-    default Collection<SyncBlockPosition> getPositions() {
-        return this.getSyncedPositions();
+        return this
+                .getSyncedPositions()
+                .stream()
+                .filter(b -> b.getTileEntity().isPresent())
+                .filter(b -> b.getTileEntity().get() instanceof LiveSignTileEntity)
+                .filter(b -> sign.isSign((SignTileEntity) b.getTileEntity().get()))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     default Collection<SyncBlockPosition> getSyncedPositions() {

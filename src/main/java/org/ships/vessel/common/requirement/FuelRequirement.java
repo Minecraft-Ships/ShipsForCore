@@ -7,7 +7,7 @@ import org.core.inventory.parts.Slot;
 import org.core.world.position.block.entity.container.furnace.LiveFurnaceTileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.result.AbstractFailedMovement;
 import org.ships.movement.result.MovementResult;

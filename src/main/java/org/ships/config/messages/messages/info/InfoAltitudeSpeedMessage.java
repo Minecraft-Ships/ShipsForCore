@@ -2,6 +2,7 @@ package org.ships.config.messages.messages.info;
 
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
@@ -22,8 +23,8 @@ public class InfoAltitudeSpeedMessage implements Message<Vessel> {
                 .ofPlain("Max Altitude Speed: ")
                 .withColour(NamedTextColours.AQUA)
                 .append(AText
-                        .ofPlain("%" + Message.VESSEL_SPEED.adapterText() + "%")
-                        .withColour(NamedTextColours.GOLD));
+                                .ofPlain("%" + Message.VESSEL_SPEED.adapterText() + "%")
+                                .withColour(NamedTextColours.GOLD));
     }
 
     @Override
@@ -34,10 +35,10 @@ public class InfoAltitudeSpeedMessage implements Message<Vessel> {
     }
 
     @Override
-    public AText process(AText text, Vessel obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+    public AText process(@NotNull AText text, Vessel obj) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }
-        return Message.VESSEL_SIZE.process(text, obj);
+        return Message.VESSEL_SIZE.process(obj, text);
     }
 }

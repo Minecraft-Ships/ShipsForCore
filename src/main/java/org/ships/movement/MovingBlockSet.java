@@ -36,48 +36,6 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
         super(collection);
     }
 
-    public void applyMovingBlocks() {
-        /*this.blocks = new MovingBlockSet(this);
-        Iterator<MovingBlock> iter = this.iterator();
-        Set<MovingBlock> remove = new HashSet<>();
-        while(iter.hasNext()){
-            MovingBlock mb = iter.next();
-            if(mb.getAfterPosition().getTileEntity().isPresent()){
-                continue;
-            }
-            if(mb.getAfterPosition().getBlockDetails().getDirectionalData().isPresent()){
-                continue;
-            }
-            if(mb.getAfterPosition().getBlockDetails().get(KeyedData.MULTI_DIRECTIONAL).isPresent()){
-                continue;
-            }
-            boolean pass;
-            do {
-                pass = false;
-                for (MovingBlock block : this) {
-                    if (mb.getAfterPosition().equals(block.getBeforePosition())) {
-                        if(mb.getAfterPosition().getTileEntity().isPresent()){
-                            continue;
-                        }
-                        if(mb.getAfterPosition().getBlockDetails().getDirectionalData().isPresent()){
-                            continue;
-                        }
-                        if(mb.getAfterPosition().getBlockDetails().get(KeyedData.MULTI_DIRECTIONAL).isPresent()){
-                            continue;
-                        }
-                        if(mb.getStoredBlockData().equals(block.getStoredBlockData())){
-                            mb.setAfterPosition(block.getAfterPosition());
-                            remove.add(block);
-                            pass = true;
-                            break;
-                        }
-                    }
-                }
-            } while (pass);
-        }
-        this.removeAll(remove);*/
-    }
-
     public MovingBlockSet getOriginal() {
         if (this.blocks == null) {
             return this;
@@ -100,14 +58,13 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     public Optional<MovingBlock> get(ShipsSign sign) {
         return this.get(bd -> {
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiledEntity = bd.get(KeyedData.TILED_ENTITY);
-            if (!(opTiledEntity.isPresent())) {
+            if (opTiledEntity.isEmpty()) {
                 return false;
             }
             TileEntitySnapshot<? extends TileEntity> snapshot = opTiledEntity.get();
-            if (!(snapshot instanceof SignTileEntity)) {
+            if (!(snapshot instanceof SignTileEntity ste)) {
                 return false;
             }
-            SignTileEntity ste = (SignTileEntity) snapshot;
             return sign.isSign(ste);
         });
     }
@@ -117,9 +74,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> getBefore(Positionable<?> positionable) {
-        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ?
-                (SyncBlockPosition) positionable.getPosition()
-                : ((SyncExactPosition) positionable.getPosition()).toBlockPosition();
+        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition) positionable.getPosition() : ((SyncExactPosition) positionable.getPosition()).toBlockPosition();
         return this.getBefore(position);
     }
 
@@ -128,9 +83,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     public Optional<MovingBlock> getAfter(Positionable<?> positionable) {
-        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ?
-                (SyncBlockPosition) positionable.getPosition() :
-                ((SyncExactPosition) positionable.getPosition()).toBlockPosition();
+        SyncBlockPosition position = positionable.getPosition() instanceof SyncBlockPosition ? (SyncBlockPosition) positionable.getPosition() : ((SyncExactPosition) positionable.getPosition()).toBlockPosition();
         return this.getAfter(position);
     }
 
@@ -139,7 +92,7 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
     }
 
     private Optional<MovingBlock> get(SyncBlockPosition position,
-            Function<? super MovingBlock, ? extends SyncBlockPosition> function) {
+                                      Function<? super MovingBlock, ? extends SyncBlockPosition> function) {
         return this.stream().filter(f -> {
             SyncBlockPosition pos = function.apply(f);
             return pos.equals(position);

@@ -7,6 +7,7 @@ import org.core.entity.Entity;
 import org.core.entity.EntityType;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.Position;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.block.BlockTypeIdAdapter;
 import org.ships.config.messages.adapter.block.BlockTypeNameAdapter;
@@ -19,6 +20,7 @@ import org.ships.config.messages.adapter.misc.CollectionSingleAdapter;
 import org.ships.config.messages.adapter.misc.InvalidNameAdapter;
 import org.ships.config.messages.adapter.misc.MappedAdapter;
 import org.ships.config.messages.adapter.permission.PermissionNodeAdapter;
+import org.ships.config.messages.adapter.specific.NamedBlockNameAdapter;
 import org.ships.config.messages.adapter.structure.StructureChunkSizeAdapter;
 import org.ships.config.messages.adapter.structure.StructureSizeAdapter;
 import org.ships.config.messages.adapter.vessel.VesselIdAdapter;
@@ -34,7 +36,7 @@ import org.ships.config.messages.adapter.vessel.info.VesselInfoKeyAdapter;
 import org.ships.config.messages.adapter.vessel.info.VesselInfoValueAdapter;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.structure.ShipsStructure;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -70,49 +72,49 @@ public interface Message<R> {
     StructureChunkSizeAdapter STRUCTURE_CHUNK_SIZE = new StructureChunkSizeAdapter();
     StructureSizeAdapter STRUCTURE_SIZE = new StructureSizeAdapter();
 
+    NamedBlockNameAdapter NAMED_BLOCK_NAME = new NamedBlockNameAdapter();
     TrackLimitAdapter CONFIG_TRACK_LIMIT = new TrackLimitAdapter();
 
-    List<ConfigAdapter> CONFIG_ADAPTERS = Collections.singletonList(CONFIG_TRACK_LIMIT);
+    List<ConfigAdapter<?>> CONFIG_ADAPTERS = Collections.singletonList(CONFIG_TRACK_LIMIT);
     List<MessageAdapter<BlockType>> BLOCK_TYPE_ADAPTERS = Arrays.asList(BLOCK_TYPE_ID, BLOCK_TYPE_NAME);
     List<MessageAdapter<Position<?>>> LOCATION_ADAPTERS = new ArrayList<MessageAdapter<Position<?>>>() {{
-        this.addAll(
-                BLOCK_TYPE_ADAPTERS
-                        .parallelStream()
-                        .map(ma -> new MappedAdapter<Position<?>, BlockType>(ma, (Position::getBlockType)))
-                        .collect(Collectors.toSet()));
+        this.addAll(BLOCK_TYPE_ADAPTERS
+                            .parallelStream()
+                            .map(ma -> new MappedAdapter<Position<?>, BlockType>(ma, (Position::getBlockType)))
+                            .collect(Collectors.toSet()));
     }};
     List<MessageAdapter<EntityType<?, ?>>> ENTITY_TYPE_ADAPTERS = Arrays.asList(ENTITY_TYPE_ID, ENTITY_TYPE_NAME);
 
     List<MessageAdapter<Entity<?>>> ENTITY_ADAPTERS = new ArrayList<MessageAdapter<Entity<?>>>() {{
         this.add(ENTITY_NAME);
         this.addAll(LOCATION_ADAPTERS
-                .parallelStream()
-                .map(ma -> new MappedAdapter<Entity<?>, Position<?>>(ma, Entity::getPosition))
-                .collect(Collectors.toSet()));
+                            .parallelStream()
+                            .map(ma -> new MappedAdapter<Entity<?>, Position<?>>(ma, Entity::getPosition))
+                            .collect(Collectors.toSet()));
         this.addAll(ENTITY_TYPE_ADAPTERS
-                .parallelStream()
-                .map(ma -> new MappedAdapter<Entity<?>, EntityType<?, ?>>(ma, Entity::getType))
-                .collect(Collectors.toSet()));
+                            .parallelStream()
+                            .map(ma -> new MappedAdapter<Entity<?>, EntityType<?, ?>>(ma, Entity::getType))
+                            .collect(Collectors.toSet()));
     }};
-    List<MessageAdapter<ShipsStructure>> STRUCTURE_ADAPTERS = new ArrayList<MessageAdapter<ShipsStructure>>() {{
+    List<MessageAdapter<PositionableShipsStructure>> STRUCTURE_ADAPTERS = new ArrayList<>() {{
         this.add(STRUCTURE_SIZE);
         this.add(STRUCTURE_CHUNK_SIZE);
     }};
 
 
-    List<MessageAdapter<Vessel>> VESSEL_ADAPTERS = new ArrayList<MessageAdapter<Vessel>>() {{
+    List<MessageAdapter<Vessel>> VESSEL_ADAPTERS = new ArrayList<>() {{
         this.add(VESSEL_NAME);
         this.add(VESSEL_SPEED);
         this.add(VESSEL_SIZE);
         this.add(VESSEL_ID);
         this.addAll(STRUCTURE_ADAPTERS
-                .parallelStream()
-                .map(ma -> new MappedAdapter<>(ma, Vessel::getStructure))
-                .collect(Collectors.toSet()));
+                            .parallelStream()
+                            .map(ma -> new MappedAdapter<>(ma, Vessel::getStructure))
+                            .collect(Collectors.toSet()));
         this.addAll(LOCATION_ADAPTERS
-                .parallelStream()
-                .map(ma -> new MappedAdapter<>(ma, Vessel::getPosition))
-                .collect(Collectors.toSet()));
+                            .parallelStream()
+                            .map(ma -> new MappedAdapter<>(ma, Vessel::getPosition))
+                            .collect(Collectors.toSet()));
     }};
 
     @SafeVarargs
@@ -128,9 +130,9 @@ public interface Message<R> {
 
     AText getDefault();
 
-    Set<MessageAdapter<?>> getAdapters();
+    Collection<MessageAdapter<?>> getAdapters();
 
-    AText process(AText text, R obj);
+    AText process(@NotNull AText text, R obj);
 
     default AText process(R obj) {
         return this.process(this.parse(), obj);
@@ -148,7 +150,7 @@ public interface Message<R> {
         return this.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig());
     }
 
-    default Set<String> suggestAdapter(String peek) {
+    default Collection<String> suggestAdapter(String peek) {
         String peekLower = peek.replaceAll("%", "").toLowerCase();
         return this
                 .getAdapters()

@@ -41,7 +41,7 @@ public class ErrorPermissionMissMatchMessage implements Message<Map.Entry<LivePl
             text = adapter.process(text);
         }
         for (MessageAdapter<Entity<?>> adapter : Message.ENTITY_ADAPTERS) {
-            text = adapter.process(text, obj.getKey());
+            text = adapter.process(obj.getKey(), text);
         }
         return text;
     }

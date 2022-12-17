@@ -21,8 +21,8 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
                 .ofPlain("%" + Message.VESSEL_INFO_KEY.adapterText() + "%: ")
                 .withColour(NamedTextColours.AQUA)
                 .append(AText
-                        .ofPlain("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%")
-                        .withColour(NamedTextColours.GOLD));
+                                .ofPlain("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%")
+                                .withColour(NamedTextColours.GOLD));
     }
 
     @Override
@@ -39,8 +39,8 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
 
     @Override
     public AText process(AText text, Map.Entry<String, String> obj) {
-        text = Message.VESSEL_INFO_VALUE.process(text, obj.getKey());
-        text = Message.VESSEL_INFO_KEY.process(text, obj.getValue());
+        text = Message.VESSEL_INFO_VALUE.process(obj.getKey(), text);
+        text = Message.VESSEL_INFO_KEY.process(obj.getValue(), text);
         return text;
     }
 

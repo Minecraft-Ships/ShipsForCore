@@ -36,7 +36,7 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
     @Override
     public AText process(AText text, CrewPermission obj) {
         for (MessageAdapter<CrewPermission> adapter : this.getExactAdapters()) {
-            text = adapter.process(text, obj);
+            text = adapter.process(obj, text);
         }
         return text;
     }

@@ -36,14 +36,14 @@ public class ErrorTooManyOfBlockMessage implements Message<Map.Entry<Vessel, Blo
 
     @Override
     public AText process(AText text, Map.Entry<Vessel, BlockType> obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(text, obj.getKey());
+            text = adapter.process(obj.getKey(), text);
         }
         for (MessageAdapter<BlockType> adapter : Message.BLOCK_TYPE_ADAPTERS) {
-            text = adapter.process(text, obj.getValue());
+            text = adapter.process(obj.getValue(), text);
         }
         return text;
     }

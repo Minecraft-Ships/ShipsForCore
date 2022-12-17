@@ -19,8 +19,8 @@ public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is under the min size of " +
-                Message.VESSEL_SIZE_ERROR.adapterTextFormat());
+        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is under the min size of "
+                                     + Message.VESSEL_SIZE_ERROR.adapterTextFormat());
     }
 
     @Override
@@ -42,10 +42,10 @@ public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer
             text = adapter.process(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(text, obj.getKey());
+            text = adapter.process(obj.getKey(), text);
         }
         for (MessageAdapter<Integer> adapter : this.getErrorAdapters()) {
-            text = adapter.process(text, obj.getValue());
+            text = adapter.process(obj.getValue(), text);
         }
         return text;
     }

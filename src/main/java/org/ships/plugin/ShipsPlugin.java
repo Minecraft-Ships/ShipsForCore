@@ -12,7 +12,6 @@ import org.core.platform.update.bukkit.DevBukkitUpdateOption;
 import org.core.platform.update.result.FailedResult;
 import org.core.platform.update.result.SuccessfulResult;
 import org.core.schedule.Scheduler;
-import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.ConsoleSource;
 import org.core.utils.Identifiable;
 import org.core.world.structure.StructureFileBuilder;
@@ -31,7 +30,6 @@ import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.movement.BlockPriority;
 import org.ships.movement.autopilot.scheduler.FallExecutor;
 import org.ships.permissions.vessel.CrewPermission;
-import org.ships.plugin.patches.AutoRunPatches;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.flag.PlayerStatesFlag;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -97,15 +95,6 @@ public class ShipsPlugin implements CorePlugin {
             Scheduler fallScheduler = FallExecutor.createScheduler();
             fallScheduler.run();
         }
-        TranslateCore
-                .getScheduleManager()
-                .schedule()
-                .setDisplayName("Ships no gravity fix")
-                .setIteration(1)
-                .setIterationUnit(TimeUnit.SECONDS)
-                .setExecutor(AutoRunPatches.NO_GRAVITY_FIX)
-                .build(this)
-                .run();
         this.init2();
     }
 
@@ -369,10 +358,6 @@ public class ShipsPlugin implements CorePlugin {
     public void unregister(Identifiable... identifiables) {
         Arrays.asList(identifiables).forEach(this.identifiables::remove);
     }
-
-    /*public void register(CrewPermission... permissions) {
-        this.defaultPermissions.addAll(Arrays.asList(permissions));
-    }*/
 
     public void register(@NotNull String id, @NotNull VesselFlag.Builder<?, ?> flag) {
         this.vesselFlags.put(id, flag);

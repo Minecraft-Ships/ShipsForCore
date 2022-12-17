@@ -59,16 +59,6 @@ public interface ShipsStructure {
         return max - min;
     }
 
-    @Deprecated(forRemoval = true)
-    default <T extends BlockPosition> Collection<T> getPositions(Positionable<? extends T> positionable) {
-        return this.getPositions(positionable.getPosition());
-    }
-
-    @Deprecated(forRemoval = true)
-    default <T extends BlockPosition> Collection<T> getPositions(T position) {
-        return this.getPositionsRelativeTo(position);
-    }
-
     default <T extends BlockPosition> Collection<T> getPositionsRelativeTo(Positionable<? extends T> positionable) {
         return this.getPositionsRelativeTo(positionable.getPosition());
     }

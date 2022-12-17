@@ -3,6 +3,7 @@ package org.ships.config.messages.adapter.misc;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.*;
@@ -41,8 +42,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
 
     @Override
     public Set<String> examples() {
-        return this
-                .adapters
+        return this.adapters
                 .parallelStream()
                 .flatMap(ma -> ma.examples().parallelStream())
                 .map(example -> "!!" + example + "[1]!!")
@@ -93,10 +93,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         }
         String adapterText = adapting.substring(0, startAt);
 
-        return this
-                .adapters
-                .parallelStream()
-                .anyMatch(ma -> ma.containsAdapter(adapterText));
+        return this.adapters.parallelStream().anyMatch(ma -> ma.containsAdapter(adapterText));
     }
 
     @Override
@@ -105,7 +102,13 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
     }
 
     @Override
-    public AText process(AText message, Collection<T> obj) {
+    @Deprecated
+    public AText process(@NotNull Collection<T> obj) {
+        return this.process(obj, AText.ofPlain(this.examples().iterator().next()));
+    }
+
+    @Override
+    public AText process(@NotNull Collection<T> obj, @NotNull AText message) {
         String plain = message.toPlain();
         int target = 0;
         Integer before = null;
@@ -156,36 +159,29 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         List<T> list = new ArrayList<>(obj);
         String adapterText = adapting.substring(0, startAt);
         T indexedValue = list.get(index);
-        Optional<AText> opReplacement = this
-                .adapters
-                .parallelStream()
-                .filter(ma -> {
-                    boolean check = ma.containsAdapter("%" + adapterText + "%");
-                    TranslateCore
-                            .getConsole()
-                            .sendMessage(AText
-                                    .ofPlain("MA: " + ma.adapterText() + ": Check:  " + check)
-                                    .withColour(NamedTextColours.RED));
-                    return check;
-                })
-                .map(ma -> {
-                    AText process = ma.process(AText.ofPlain("%" + adapterText + "%"), indexedValue);
-                    TranslateCore
-                            .getConsole()
-                            .sendMessage(AText
-                                    .ofPlain("MA: " + ma.adapterText() + ": Value: " + process.toPlain())
-                                    .withColour(NamedTextColours.RED));
-                    return process;
-                })
-                .findAny();
+        Optional<AText> opReplacement = this.adapters.parallelStream().filter(ma -> {
+            boolean check = ma.containsAdapter("%" + adapterText + "%");
+            TranslateCore
+                    .getConsole()
+                    .sendMessage(AText
+                                         .ofPlain("MA: " + ma.adapterText() + ": Check:  " + check)
+                                         .withColour(NamedTextColours.RED));
+            return check;
+        }).map(ma -> {
+            AText process = ma.process(indexedValue, AText.ofPlain("%" + adapterText + "%"));
+            TranslateCore
+                    .getConsole()
+                    .sendMessage(AText
+                                         .ofPlain("MA: " + ma.adapterText() + ": Value: " + process.toPlain())
+                                         .withColour(NamedTextColours.RED));
+            return process;
+        }).findAny();
 
         TranslateCore.getConsole().sendMessage(AText.ofPlain("Message: " + message.toPlain()));
         TranslateCore.getConsole().sendMessage(AText.ofPlain("Found: " + opReplacement.map(AText::toPlain)));
         TranslateCore.getConsole().sendMessage(AText.ofPlain("Changing: " + adaptingWithFormat));
 
-        AText result = opReplacement
-                .map(text -> message.withAllAs(adaptingWithFormat, text))
-                .orElse(message);
+        AText result = opReplacement.map(text -> message.withAllAs(adaptingWithFormat, text)).orElse(message);
         TranslateCore.getConsole().sendMessage(AText.ofPlain("Result: ").append(result));
         return result;
 

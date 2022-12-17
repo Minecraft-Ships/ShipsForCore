@@ -1,15 +1,15 @@
 package org.ships.config.messages.adapter.structure;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.vessel.structure.PositionableShipsStructure;
-import org.ships.vessel.structure.ShipsStructure;
 
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Set;
 
-public class StructureChunkSizeAdapter implements MessageAdapter<ShipsStructure> {
+public class StructureChunkSizeAdapter implements MessageAdapter<PositionableShipsStructure> {
     @Override
     public String adapterText() {
         return "Structure Chunk Size";
@@ -21,11 +21,7 @@ public class StructureChunkSizeAdapter implements MessageAdapter<ShipsStructure>
     }
 
     @Override
-    public AText process(AText message, ShipsStructure obj) {
-        if (!(obj instanceof PositionableShipsStructure)) {
-            return message.withAllAs(this.adapterTextFormat(), AText.ofPlain("Unknown"));
-        }
-        PositionableShipsStructure structure = (PositionableShipsStructure) obj;
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(structure.getChunks().size() + ""));
+    public AText process(@NotNull PositionableShipsStructure obj) {
+        return AText.ofPlain(obj.getChunks().size() + "");
     }
 }

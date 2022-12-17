@@ -18,7 +18,7 @@ import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.exceptions.MoveException;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
@@ -39,13 +39,10 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(this.SHIP_ARGUMENT),
-                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
-                new ExactArgument(this.SHIP_ADDITION_ARGUMENT, false, "add", "minus"),
-                new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT)
-        );
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                             new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
+                             new ExactArgument(this.SHIP_ADDITION_ARGUMENT, false, "add", "minus"),
+                             new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT));
     }
 
     @Override
@@ -84,9 +81,8 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             if (exc instanceof MoveException) {
                 MoveException e = (MoveException) exc;
-                if (commandContext.getSource() instanceof CommandViewer) {
-                    CommandViewer viewer = (CommandViewer) commandContext.getSource();
-                    sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                if (commandContext.getSource() instanceof CommandViewer viewer) {
+                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
                 }
             } else {
                 exc.printStackTrace();

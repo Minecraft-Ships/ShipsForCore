@@ -22,8 +22,8 @@ public class InfoMaxSpeedMessage implements Message<Vessel> {
                 .ofPlain("Max Speed: ")
                 .withColour(NamedTextColours.AQUA)
                 .append(AText
-                        .ofPlain("%" + Message.VESSEL_SPEED.adapterText() + "%")
-                        .withColour(NamedTextColours.GOLD));
+                                .ofPlain("%" + Message.VESSEL_SPEED.adapterText() + "%")
+                                .withColour(NamedTextColours.GOLD));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class InfoMaxSpeedMessage implements Message<Vessel> {
     @Override
     public AText process(AText text, Vessel obj) {
         for (MessageAdapter<Vessel> adapter : this.getExactAdapters()) {
-            text = adapter.process(text, obj);
+            text = adapter.process(obj, text);
         }
         return text;
     }

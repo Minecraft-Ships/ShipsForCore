@@ -37,7 +37,7 @@ public class InfoFlagMessage implements Message<VesselFlag<?>> {
     @Override
     public AText process(AText text, VesselFlag<?> obj) {
         for (MessageAdapter<VesselFlag<?>> adapter : this.getExactAdapters()) {
-            text = adapter.process(text, obj);
+            text = adapter.process(obj, text);
         }
         return text;
     }

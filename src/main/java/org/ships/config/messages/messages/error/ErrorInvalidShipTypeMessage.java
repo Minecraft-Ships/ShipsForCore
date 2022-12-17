@@ -31,6 +31,6 @@ public class ErrorInvalidShipTypeMessage implements Message<String> {
         for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }
-        return Message.INVALID_NAME.process(text, obj);
+        return Message.INVALID_NAME.process(obj, text);
     }
 }

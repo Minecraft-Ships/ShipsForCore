@@ -97,7 +97,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     @Deprecated
-    public PositionableShipsStructure setPosition(SyncBlockPosition pos) {
+    public PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos) {
         this.position = pos;
         return this;
     }

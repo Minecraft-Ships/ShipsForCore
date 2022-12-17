@@ -2,6 +2,7 @@ package org.ships.config.messages.adapter.entity.type;
 
 import org.core.adventureText.AText;
 import org.core.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.Collections;
@@ -19,7 +20,7 @@ public class EntityTypeNameAdapter implements MessageAdapter<EntityType<?, ?>> {
     }
 
     @Override
-    public AText process(AText message, EntityType<?, ?> obj) {
-        return message.withAllAs(this.adapterTextFormat(), AText.ofPlain(obj.getName()));
+    public AText process(@NotNull EntityType<?, ?> obj) {
+        return AText.ofPlain(obj.getName());
     }
 }
