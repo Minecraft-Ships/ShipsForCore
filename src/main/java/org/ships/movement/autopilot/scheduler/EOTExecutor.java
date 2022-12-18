@@ -9,10 +9,9 @@ import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
-import org.ships.movement.result.FailedMovement;
-import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.EotFlag;
 import org.ships.vessel.common.types.Vessel;
@@ -108,21 +107,17 @@ public class EOTExecutor implements Consumer<Scheduler> {
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             this.vessel.getEntities().forEach(e -> e.setGravity(true));
             if (exc instanceof MoveException e) {
-                if (e.getMovement() instanceof MovementResult.VesselMovingAlready) {
+                if (e.getDisplayMessage().equals(AdventureMessageConfig.ERROR_ALREADY_MOVING)) {
                     return;
                 }
-                this.sendError(e.getMovement());
+                this.player.sendMessage(e.getErrorMessageText());
             }
         });
 
         this.vessel.moveTowards(directionalData
-                .getDirection()
-                .getOpposite()
-                .getAsVector()
-                .multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), builder.build());
-    }
-
-    private <T> void sendError(FailedMovement<T> failedMovement) {
-        failedMovement.sendMessage(this.player, failedMovement.getValue().orElse(null));
+                                        .getDirection()
+                                        .getOpposite()
+                                        .getAsVector()
+                                        .multiply(ShipsPlugin.getPlugin().getConfig().getEOTSpeed()), builder.build());
     }
 }

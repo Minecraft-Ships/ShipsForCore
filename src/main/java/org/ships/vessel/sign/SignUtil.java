@@ -7,23 +7,19 @@ import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
-import org.core.source.viewer.CommandViewer;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
-import org.ships.exceptions.move.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.details.MovementDetails;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
-import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
@@ -36,30 +32,36 @@ import java.util.function.Function;
 
 public interface SignUtil {
 
-    static void postMovementReady(MovementDetailsBuilder details, Vessel vessel, LivePlayer player,
-            SyncBlockPosition position,
-            MovementReady ready) {
+    static void postMovementReady(MovementDetailsBuilder details,
+                                  Vessel vessel,
+                                  LivePlayer player,
+                                  SyncBlockPosition position,
+                                  MovementReady ready) {
         if (vessel instanceof CrewStoredVessel stored) {
             if (details.getBossBar() != null) {
                 details.getBossBar().setTitle(AText.ofPlain("Checking permissions"));
             }
 
-            if (!((stored.getPermission(player.getUniqueId()).canMove() &&
-                    player.hasPermission(stored.getType().getMoveOwnPermission())) ||
-                    player.hasPermission(stored.getType().getMoveOtherPermission()))) {
+            if (!((stored.getPermission(player.getUniqueId()).canMove() && player.hasPermission(
+                    stored.getType().getMoveOwnPermission())) || player.hasPermission(
+                    stored.getType().getMoveOtherPermission()))) {
                 if (!stored.getPermission(player.getUniqueId()).canMove()) {
                     AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
                             new AbstractMap.SimpleImmutableEntry<>(player, "Vessel crew rank"));
                 } else if (!player.hasPermission(stored.getType().getMoveOwnPermission())) {
                     AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
-                            new AbstractMap.SimpleImmutableEntry<>(player,
-                                    stored.getType().getMoveOwnPermission().getPermissionValue()));
+                            new AbstractMap.SimpleImmutableEntry<>(player, stored
+                                    .getType()
+                                    .getMoveOwnPermission()
+                                    .getPermissionValue()));
                 } else if (!player.hasPermission(stored.getType().getMoveOtherPermission())) {
                     AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
-                            new AbstractMap.SimpleImmutableEntry<>(player,
-                                    stored.getType().getMoveOtherPermission().getPermissionValue()));
+                            new AbstractMap.SimpleImmutableEntry<>(player, stored
+                                    .getType()
+                                    .getMoveOtherPermission()
+                                    .getPermissionValue()));
                 }
-                ShipsSign.LOCKED_SIGNS.remove(position);
+                ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                 if (details.getBossBar() != null) {
                     details.getBossBar().deregisterPlayers();
                 }
@@ -70,9 +72,9 @@ public interface SignUtil {
 
         BiConsumer<MovementContext, Throwable> exception = (context, exc) -> {
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             if (exc instanceof MoveException e) {
-                sendErrorMessage(player, e.getMovement(), e.getMovement().getValue().orElse(null));
+                player.sendMessage(e.getErrorMessageText());
             }
             context.getEntities().keySet().forEach(s -> {
                 if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
@@ -86,11 +88,6 @@ public interface SignUtil {
         ready.onMovementReady(details.build(), vessel);
     }
 
-    static <T> void sendErrorMessage(@NotNull CommandViewer viewer, @NotNull FailedMovement<T> movement,
-            @Nullable Object value) {
-        movement.sendMessage(viewer, (T) value);
-    }
-
     static void onMovement(SyncBlockPosition sign, LivePlayer player, MovementReady movement) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         MovementDetailsBuilder builder = new MovementDetailsBuilder();
@@ -101,7 +98,7 @@ public interface SignUtil {
             bossBar.register(player);
             builder.setBossBar(bossBar);
         }
-        ShipsSign.LOCKED_SIGNS.add(sign);
+        ShipsPlugin.getPlugin().getLockedSignManager().lock(sign);
         new OnOvertimeAutoUpdate(sign, builder, player, movement, config.getDefaultTrackSize()).loadOvertime();
 
     }
@@ -118,8 +115,11 @@ public interface SignUtil {
         private final LivePlayer player;
         private final MovementReady movementReady;
 
-        public OnOvertimeAutoUpdate(SyncBlockPosition position, MovementDetailsBuilder context, LivePlayer player,
-                MovementReady ready, int trackLimit) {
+        public OnOvertimeAutoUpdate(SyncBlockPosition position,
+                                    MovementDetailsBuilder context,
+                                    LivePlayer player,
+                                    MovementReady ready,
+                                    int trackLimit) {
             super(position, ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating());
             this.context = context;
             this.trackLimit = trackLimit;
@@ -134,7 +134,7 @@ public interface SignUtil {
 
         @Override
         protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure,
-                BlockPosition block) {
+                                                                         BlockPosition block) {
             if (this.context.getBossBar() != null) {
                 ServerBossBar bossBar = this.context.getBossBar();
                 int foundBlocks = currentStructure.getRelativePositions().size() + 1;
@@ -148,7 +148,7 @@ public interface SignUtil {
 
         @Override
         protected void onExceptionThrown(LoadVesselException e) {
-            ShipsSign.LOCKED_SIGNS.remove(this.original);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(this.original);
             if (this.context.getBossBar() != null) {
                 this.context.getBossBar().deregisterPlayers();
             }

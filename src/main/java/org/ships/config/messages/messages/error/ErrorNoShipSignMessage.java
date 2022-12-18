@@ -41,7 +41,7 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
     public AText process(AText text, PositionableShipsStructure obj) {
         Collection<Position<?>> positions = obj.getAsyncedPositions().parallelStream().collect(Collectors.toSet());
         for (CollectionSingleAdapter<Position<?>> adapter : this.getExactAdapters()) {
-            text = adapter.process(text, positions);
+            text = adapter.process(positions, text);
         }
         return text;
     }

@@ -42,14 +42,14 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
+    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
         stes.setText(this.getSignText());
         return stes;
     }
 
     @Override
-    public boolean onPrimaryClick(@NotNull LivePlayer player, SyncBlockPosition position) {
+    public boolean onPrimaryClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (opTile.isEmpty()) {
             return false;
@@ -70,13 +70,13 @@ public class MoveSign implements ShipsSign {
             speed++;
         }
         final int finalSpeed = speed;
-        ShipsSign.LOCKED_SIGNS.add(position);
+        ShipsPlugin.getPlugin().getLockedSignManager().lock(position);
         new ShipsOvertimeBlockFinder(position).loadOvertime(vessel -> {
             this.onSignSpeedUpdate(player, vessel, lste, finalSpeed);
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
         }, (pss) -> {
             player.sendMessage(AText.ofPlain("Could not find [Ships] sign").withColour(NamedTextColours.RED));
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             Collection<SyncBlockPosition> positions = pss.getPositions(
                     (Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
@@ -94,7 +94,7 @@ public class MoveSign implements ShipsSign {
     }
 
     @Override
-    public boolean onSecondClick(@NotNull LivePlayer player, SyncBlockPosition position) {
+    public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (opTile.isEmpty()) {
             return false;
@@ -149,7 +149,7 @@ public class MoveSign implements ShipsSign {
                               MovementDetailsBuilder builder,
                               Vessel vessel) {
         if (speed > vessel.getMaxSpeed() || speed < -vessel.getMaxSpeed()) {
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             player.sendMessage(
                     AText.ofPlain("Speed error: Your ship cannot move that fast").withColour(NamedTextColours.RED));
             if (builder.getBossBar() != null) {
@@ -159,7 +159,7 @@ public class MoveSign implements ShipsSign {
         }
         Optional<DirectionalData> opDirectional = position.getBlockDetails().getDirectionalData();
         if (opDirectional.isEmpty()) {
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             player.sendMessage(AText
                                        .ofPlain("Unknown error: " + position.getBlockType().getId() + " is not "
                                                         + "directional")

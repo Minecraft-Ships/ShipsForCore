@@ -19,7 +19,6 @@ import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
-import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.ShipsSign;
@@ -40,13 +39,10 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(this.SHIP_ARGUMENT),
-                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
-                new ExactArgument(this.SHIP_ROTATE_ARGUMENT),
-                new ExactArgument(this.SHIP_ROTATION_ARGUMENT, true, "left", "right")
-        );
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                             new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
+                             new ExactArgument(this.SHIP_ROTATE_ARGUMENT),
+                             new ExactArgument(this.SHIP_ROTATION_ARGUMENT, true, "left", "right"));
     }
 
     @Override
@@ -78,11 +74,11 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
         }
 
         BiConsumer<MovementContext, Throwable> exceptionSupplier = (context, exc) -> {
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             if (exc instanceof MoveException e) {
                 if (commandContext.getSource() instanceof CommandViewer viewer) {
-                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                    viewer.sendMessage(e.getErrorMessageText());
                 }
             } else {
                 exc.printStackTrace();
@@ -106,9 +102,5 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
         }
 
         return true;
-    }
-
-    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value) {
-        movement.sendMessage(viewer, (T) value);
     }
 }

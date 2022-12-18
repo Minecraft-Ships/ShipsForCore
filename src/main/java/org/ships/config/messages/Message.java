@@ -5,6 +5,7 @@ import org.core.config.ConfigurationNode;
 import org.core.config.parser.StringParser;
 import org.core.entity.Entity;
 import org.core.entity.EntityType;
+import org.core.inventory.item.ItemType;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.Position;
 import org.jetbrains.annotations.NotNull;
@@ -16,11 +17,14 @@ import org.ships.config.messages.adapter.config.TrackLimitAdapter;
 import org.ships.config.messages.adapter.entity.EntityNameAdapter;
 import org.ships.config.messages.adapter.entity.type.EntityTypeIdAdapter;
 import org.ships.config.messages.adapter.entity.type.EntityTypeNameAdapter;
+import org.ships.config.messages.adapter.item.ItemIdAdapter;
+import org.ships.config.messages.adapter.item.ItemNameAdapter;
 import org.ships.config.messages.adapter.misc.CollectionSingleAdapter;
 import org.ships.config.messages.adapter.misc.InvalidNameAdapter;
 import org.ships.config.messages.adapter.misc.MappedAdapter;
 import org.ships.config.messages.adapter.permission.PermissionNodeAdapter;
 import org.ships.config.messages.adapter.specific.NamedBlockNameAdapter;
+import org.ships.config.messages.adapter.specific.number.NumberAdapter;
 import org.ships.config.messages.adapter.structure.StructureChunkSizeAdapter;
 import org.ships.config.messages.adapter.structure.StructureSizeAdapter;
 import org.ships.config.messages.adapter.vessel.VesselIdAdapter;
@@ -74,10 +78,18 @@ public interface Message<R> {
 
     NamedBlockNameAdapter NAMED_BLOCK_NAME = new NamedBlockNameAdapter();
     TrackLimitAdapter CONFIG_TRACK_LIMIT = new TrackLimitAdapter();
+    ItemNameAdapter ITEM_NAME = new ItemNameAdapter();
+    ItemIdAdapter ITEM_ID = new ItemIdAdapter();
+    NumberAdapter<Integer> FUEL_FOUND_REQUIREMENT = new NumberAdapter<>("Fuel Found");
+    NumberAdapter<Integer> FUEL_CONSUMPTION_REQUIREMENT = new NumberAdapter<>("Fuel Consumption");
+    NumberAdapter<Integer> FUEL_LEFT_REQUIREMENT = new NumberAdapter<>("Fuel Left");
+    NumberAdapter<Integer> TOTAL_FOUND_BLOCKS = new NumberAdapter<>("total found blocks");
+    NumberAdapter<Double> PERCENT_FOUND = new NumberAdapter<>("Percent found");
+    List<MessageAdapter<ItemType>> ITEM_ADAPTERS = List.of(ITEM_NAME, ITEM_ID);
 
     List<ConfigAdapter<?>> CONFIG_ADAPTERS = Collections.singletonList(CONFIG_TRACK_LIMIT);
     List<MessageAdapter<BlockType>> BLOCK_TYPE_ADAPTERS = Arrays.asList(BLOCK_TYPE_ID, BLOCK_TYPE_NAME);
-    List<MessageAdapter<Position<?>>> LOCATION_ADAPTERS = new ArrayList<MessageAdapter<Position<?>>>() {{
+    List<MessageAdapter<Position<?>>> LOCATION_ADAPTERS = new ArrayList<>() {{
         this.addAll(BLOCK_TYPE_ADAPTERS
                             .parallelStream()
                             .map(ma -> new MappedAdapter<Position<?>, BlockType>(ma, (Position::getBlockType)))
@@ -85,7 +97,7 @@ public interface Message<R> {
     }};
     List<MessageAdapter<EntityType<?, ?>>> ENTITY_TYPE_ADAPTERS = Arrays.asList(ENTITY_TYPE_ID, ENTITY_TYPE_NAME);
 
-    List<MessageAdapter<Entity<?>>> ENTITY_ADAPTERS = new ArrayList<MessageAdapter<Entity<?>>>() {{
+    List<MessageAdapter<Entity<?>>> ENTITY_ADAPTERS = new ArrayList<>() {{
         this.add(ENTITY_NAME);
         this.addAll(LOCATION_ADAPTERS
                             .parallelStream()

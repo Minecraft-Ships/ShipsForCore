@@ -1,6 +1,7 @@
 package org.ships.config.messages.adapter.misc;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.Set;
@@ -28,8 +29,13 @@ public class MappedAdapter<M, T> implements MessageAdapter<M> {
     }
 
     @Override
-    public AText process(AText message, M obj) {
-        return this.adapter.process(message, this.function.apply(obj));
+    public AText process(@NotNull M obj) {
+        return this.adapter.process(this.function.apply(obj));
+    }
+
+    @Override
+    public AText process(@NotNull M obj, @NotNull AText message) {
+        return this.adapter.process(this.function.apply(obj), message);
     }
 
     @Override

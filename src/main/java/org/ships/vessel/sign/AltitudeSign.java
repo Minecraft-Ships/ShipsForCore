@@ -19,12 +19,11 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.exceptions.move.MoveException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
+import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
-import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.loader.ShipsOvertimeUpdateBlockLoader;
@@ -39,11 +38,8 @@ import java.util.function.BiConsumer;
 public class AltitudeSign implements ShipsSign {
 
     public static final List<AText> SIGN = Arrays.asList(
-            AText.ofPlain("[Altitude]").withColour(NamedTextColours.YELLOW),
-            AText.ofPlain("{Increase}"),
-            AText.ofPlain("decrease"),
-            AText.ofPlain("1")
-    );
+            AText.ofPlain("[Altitude]").withColour(NamedTextColours.YELLOW), AText.ofPlain("{Increase}"),
+            AText.ofPlain("decrease"), AText.ofPlain("1"));
 
     @Override
     public boolean isSign(List<? extends AText> lines) {
@@ -51,14 +47,14 @@ public class AltitudeSign implements ShipsSign {
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
+    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
         stes.setText(SIGN);
         return stes;
     }
 
     @Override
-    public boolean onPrimaryClick(@NotNull LivePlayer player, SyncBlockPosition position) {
+    public boolean onPrimaryClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (opTile.isEmpty()) {
             return false;
@@ -79,18 +75,18 @@ public class AltitudeSign implements ShipsSign {
                     if (newSpeed <= vessel.getAltitudeSpeed()) {
                         stes.setTextAt(3, AText.ofPlain(newSpeed + ""));
                     }
-                    ShipsSign.LOCKED_SIGNS.remove(position);
+                    ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                 }
 
                 @Override
-                protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(
-                        PositionableShipsStructure currentStructure, BlockPosition block) {
+                protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure,
+                                                                                 BlockPosition block) {
                     return OvertimeBlockFinderUpdate.BlockFindControl.USE;
                 }
 
                 @Override
                 protected void onExceptionThrown(LoadVesselException e) {
-                    ShipsSign.LOCKED_SIGNS.remove(position);
+                    ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                     if (!(e instanceof UnableToFindLicenceSign e1)) {
                         player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));
                         return;
@@ -106,11 +102,10 @@ public class AltitudeSign implements ShipsSign {
                             .setDisplayName("Unable to find ships sign")
                             .setDelay(5)
                             .setDelayUnit(TimeUnit.SECONDS)
-                            .setRunner(
-                                    (sch) -> e1
-                                            .getFoundStructure()
-                                            .getSyncedPositions()
-                                            .forEach(bp -> bp.resetBlock(player)))
+                            .setRunner((sch) -> e1
+                                    .getFoundStructure()
+                                    .getSyncedPositions()
+                                    .forEach(bp -> bp.resetBlock(player)))
                             .build(ShipsPlugin.getPlugin())
                             .run();
                 }
@@ -129,7 +124,7 @@ public class AltitudeSign implements ShipsSign {
     }
 
     @Override
-    public boolean onSecondClick(@NotNull LivePlayer player, SyncBlockPosition position) {
+    public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         Optional<LiveTileEntity> opTileEntity = position.getTileEntity();
         if (opTileEntity.isEmpty()) {
             return false;
@@ -159,7 +154,7 @@ public class AltitudeSign implements ShipsSign {
         }
         final ServerBossBar finalBar = bossBar;
         final int finalAltitude = altitude;
-        ShipsSign.LOCKED_SIGNS.add(position);
+        ShipsPlugin.getPlugin().getLockedSignManager().lock(position);
         new ShipsOvertimeUpdateBlockLoader(position, config.isStructureAutoUpdating()) {
             @Override
             protected void onStructureUpdate(Vessel vessel) {
@@ -167,8 +162,8 @@ public class AltitudeSign implements ShipsSign {
             }
 
             @Override
-            protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(
-                    PositionableShipsStructure currentStructure, BlockPosition block) {
+            protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure,
+                                                                             BlockPosition block) {
                 int foundBlocks = currentStructure.getRelativePositions().size() + 1;
                 if (finalBar != null) {
                     finalBar.setTitle(AText.ofPlain(foundBlocks + " / " + blockLimit));
@@ -183,16 +178,16 @@ public class AltitudeSign implements ShipsSign {
 
             @Override
             protected void onExceptionThrown(LoadVesselException e) {
-                ShipsSign.LOCKED_SIGNS.remove(position);
+                ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                 if (finalBar != null) {
                     finalBar.deregisterPlayers();
                 }
                 if (e instanceof UnableToFindLicenceSign e1) {
                     player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                     e1
-                            .getFoundStructure().getSyncedPositions()
-                            .forEach(bp -> bp
-                                    .setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
+                            .getFoundStructure()
+                            .getSyncedPositions()
+                            .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                     TranslateCore
                             .getScheduleManager()
                             .schedule()
@@ -200,7 +195,8 @@ public class AltitudeSign implements ShipsSign {
                             .setDelay(5)
                             .setDelayUnit(TimeUnit.SECONDS)
                             .setRunner((scheduler) -> e1
-                                    .getFoundStructure().getSyncedPositions()
+                                    .getFoundStructure()
+                                    .getSyncedPositions()
                                     .forEach(bp -> bp.resetBlock(player)))
                             .build(ShipsPlugin.getPlugin())
                             .run();
@@ -223,18 +219,18 @@ public class AltitudeSign implements ShipsSign {
         return "Altitude Sign";
     }
 
-    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value) {
-        movement.sendMessage(viewer, (T) value);
-    }
-
-    private void onVesselMove(CommandViewer player, BlockPosition position, ServerBossBar bossBar, int altitude,
-            String line1, Vessel vessel) {
+    private void onVesselMove(CommandViewer player,
+                              BlockPosition position,
+                              ServerBossBar bossBar,
+                              int altitude,
+                              String line1,
+                              Vessel vessel) {
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
         if (opFlag.isPresent() && bossBar != null) {
             if (opFlag.get()) {
                 bossBar.deregisterPlayers();
                 player.sendMessage(AText.ofPlain("The altitude is locked on this ship"));
-                ShipsSign.LOCKED_SIGNS.remove(position);
+                ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                 return;
             }
         }
@@ -249,7 +245,7 @@ public class AltitudeSign implements ShipsSign {
         });
 
         BiConsumer<MovementContext, Throwable> exception = (context, exc) -> {
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             context
                     .getEntities()
@@ -261,8 +257,7 @@ public class AltitudeSign implements ShipsSign {
             if (!(exc instanceof MoveException e)) {
                 return;
             }
-            FailedMovement<?> movement = e.getMovement();
-            this.sendErrorMessage(player, movement, movement.getValue().orElse(null));
+            player.sendMessage(e.getErrorMessageText());
         };
 
         builder.setException(exception);

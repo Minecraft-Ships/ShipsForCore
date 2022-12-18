@@ -2,12 +2,12 @@ package org.ships.vessel.common.requirement;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
-import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.MovementResult;
 import org.ships.vessel.common.types.Vessel;
 
+import java.util.AbstractMap;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -55,8 +55,8 @@ public class MaxSizeRequirement implements Requirement {
             return;
         }
         if (opMaxSize.getAsInt() < size) {
-            throw new MoveException(
-                    new AbstractFailedMovement<>(vessel, MovementResult.OVER_SIZED, (size - opMaxSize.getAsInt())));
+            throw new MoveException(context, AdventureMessageConfig.ERROR_OVERSIZED,
+                                    new AbstractMap.SimpleEntry<>(vessel, size - opMaxSize.getAsInt()));
         }
     }
 

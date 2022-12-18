@@ -28,7 +28,6 @@ import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
-import org.ships.vessel.sign.ShipsSign;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -239,7 +238,9 @@ public class MovementContext {
             return false;
         }
         this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
-        this.getClicked().ifPresent(ShipsSign.LOCKED_SIGNS::remove);
+        this.getClicked().ifPresent(clicked -> {
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(clicked);
+        });
         vessel.set(MovingFlag.class, null);
         return true;
 

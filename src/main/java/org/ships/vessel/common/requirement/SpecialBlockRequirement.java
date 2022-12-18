@@ -3,10 +3,10 @@ package org.ships.vessel.common.requirement;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.messages.error.data.NamedBlockMessageData;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
-import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.MovementResult;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Optional;
@@ -22,8 +22,10 @@ public class SpecialBlockRequirement implements Requirement {
         this(parent, null, null, name);
     }
 
-    public SpecialBlockRequirement(@Nullable SpecialBlockRequirement parent, @Nullable BlockType type,
-            @Nullable Integer amount, @Nullable String name) {
+    public SpecialBlockRequirement(@Nullable SpecialBlockRequirement parent,
+                                   @Nullable BlockType type,
+                                   @Nullable Integer amount,
+                                   @Nullable String name) {
         if (parent == null && (type == null || amount == null)) {
             throw new IllegalArgumentException("parent cannot be null if another value is");
         }
@@ -76,8 +78,11 @@ public class SpecialBlockRequirement implements Requirement {
                 .map(moving -> moving.getStoredBlockData().getType().equals(requiredType))
                 .count();
         if (found < amount) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NO_SPECIAL_NAMED_BLOCK_FOUND,
-                    this.getDisplayName().orElse(requiredType.getName())));
+            throw new MoveException(context, AdventureMessageConfig.ERROR_FAILED_TO_FIND_NAMED_BLOCK,
+                                    new NamedBlockMessageData()
+                                            .setVessel(vessel)
+                                            .setType(requiredType)
+                                            .setNamedBlock(this.displayName));
         }
     }
 

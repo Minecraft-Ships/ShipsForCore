@@ -36,16 +36,15 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(SHIP_ARGUMENT),
-                new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
-                    if (vessel instanceof Fallable) {
-                        return true;
-                    }
-                    if (source instanceof User player && vessel instanceof CrewStoredVessel crewVessel) {
-                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
-                    }
-                    return vessel instanceof VesselRequirement;
-                }, vessel -> "Does not have any requirements"),
-                new ExactArgument(SHIP_CHECK_ARGUMENT));
+                             new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
+                                 if (vessel instanceof Fallable) {
+                                     return true;
+                                 }
+                                 if (source instanceof User player && vessel instanceof CrewStoredVessel crewVessel) {
+                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                 }
+                                 return vessel instanceof VesselRequirement;
+                             }, vessel -> "Does not have any requirements"), new ExactArgument(SHIP_CHECK_ARGUMENT));
     }
 
     @Override
@@ -76,21 +75,17 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
                 .getSyncedPositions()
                 .stream()
                 .map(block -> new SetMovingBlock(block, block))
-                .collect(
-                        Collectors.toCollection(MovingBlockSet::new));
+                .collect(Collectors.toCollection(MovingBlockSet::new));
 
         MovementContext context = new MovementContext(new MovementDetailsBuilder().setException((context1, exe) -> {
-        }).build(), new MovementInstructionBuilder()
-                .setMovingBlocks(set)
-                .setStrictMovement(true)
-                .build());
+        }).build(), new MovementInstructionBuilder().setMovingBlocks(set).setStrictMovement(true).build());
 
         try {
             rVessel.checkRequirements(context);
             viewer.sendMessage(AText.ofPlain("Meets Requirements: true"));
         } catch (MoveException e) {
             viewer.sendMessage(AText.ofPlain("Meets Requirements: false"));
-            e.getMovement().sendMessage(viewer);
+            viewer.sendMessage(e.getErrorMessageText());
         }
 
         return true;

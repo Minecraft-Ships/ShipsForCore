@@ -33,6 +33,7 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final InfoEntitiesLineMessage INFO_ENTITIES_LINE = new InfoEntitiesLineMessage();
     public static final ErrorOversizedMessage ERROR_OVERSIZED = new ErrorOversizedMessage();
     public static final ErrorUndersizedMessage ERROR_UNDERSIZED = new ErrorUndersizedMessage();
+    public static final ErrorNotEnoughFuelMessage ERROR_NOT_ENOUGH_FUEL = new ErrorNotEnoughFuelMessage();
     public static final ErrorTooManyOfBlockMessage ERROR_TOO_MANY_OF_BLOCK = new ErrorTooManyOfBlockMessage();
     public static final ErrorAlreadyMovingMessage ERROR_ALREADY_MOVING = new ErrorAlreadyMovingMessage();
     public static final ErrorVesselStillLoadingMessage ERROR_VESSEL_STILL_LOADING = new ErrorVesselStillLoadingMessage();
@@ -43,6 +44,7 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public static final ErrorShipsSignIsMoving ERROR_SHIPS_SIGN_IS_MOVING = new ErrorShipsSignIsMoving();
     public static final BlockFinderBarMessage BAR_BLOCK_FINDER_ON_FIND = new BlockFinderBarMessage();
     public static final ErrorBlockInWayMessage ERROR_BLOCK_IN_WAY = new ErrorBlockInWayMessage();
+    public static final ErrorSpecialBlockPercentNotEnough ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH = new ErrorSpecialBlockPercentNotEnough();
 
     public static final ErrorNoSpeedSetMessage ERROR_NO_SPEED_SET = new ErrorNoSpeedSetMessage();
     public static final ErrorNotMovingOnMessage ERROR_NOT_MOVING_ON = new ErrorNotMovingOnMessage();
@@ -77,6 +79,8 @@ public class AdventureMessageConfig implements Config.KnownNodes {
         this.messages.add(ERROR_BLOCK_IN_WAY);
         this.messages.add(ERROR_NO_SPEED_SET);
         this.messages.add(ERROR_FAILED_TO_FIND_NAMED_BLOCK);
+        this.messages.add(ERROR_NOT_MOVING_ON);
+        this.messages.add(ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH);
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Messages." + TranslateCore
                 .getPlatform()
                 .getConfigFormat()

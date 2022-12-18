@@ -25,11 +25,9 @@ import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.VesselRequirement;
-import org.ships.vessel.common.requirement.FuelRequirement;
-import org.ships.vessel.common.requirement.Requirement;
-import org.ships.vessel.common.requirement.SpecialBlockRequirement;
-import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
+import org.ships.vessel.common.requirement.*;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.*;
@@ -37,20 +35,18 @@ import java.util.stream.Collectors;
 
 public class Airship extends AbstractShipsVessel implements AirType, Fallable, VesselRequirement {
 
-    protected final ConfigurationNode.KnownParser.SingleKnown<Boolean> configBurnerBlock =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block", "Burner");
-    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
-    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_BLOCK_TYPE, "Block", "Special",
-                    "Type");
-    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption =
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
-    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot =
-            new ConfigurationNode.KnownParser.SingleKnown<>(new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel",
-                    "Slot");
-    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Boolean> configBurnerBlock = new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_BOOLEAN, "Block", "Burner");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Double> configSpecialBlockPercent = new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_DOUBLE, "Block", "Special", "Percent");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(
+            Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
+    protected final ConfigurationNode.KnownParser.SingleKnown<Integer> configFuelConsumption = new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Block", "Fuel", "Consumption");
+    protected final ConfigurationNode.KnownParser.SingleKnown<FuelSlot> configFuelSlot = new ConfigurationNode.KnownParser.SingleKnown<>(
+            new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
+    protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(
+            Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     private final Collection<Requirement> requirements = new HashSet<>();
 
@@ -64,6 +60,17 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         this.initRequirements();
     }
 
+    public MaxSizeRequirement getMaxBlocksRequirement() {
+        return this
+                .getRequirement(MaxSizeRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a max blocks requirement"));
+    }
+
+    public MinSizeRequirement getMinBlocksRequirement() {
+        return this
+                .getRequirement(MinSizeRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a min blocks requirement"));
+    }
 
     public void setBurner(@Nullable Boolean check) {
         SpecialBlockRequirement requirement = this.getSpecialBlockRequirement();
@@ -114,6 +121,32 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
 
     public int getFuelConsumption() {
         return this.getFuelRequirement().getConsumption();
+    }
+
+    @Override
+    public @NotNull Vessel setMaxSize(@Nullable Integer size) {
+        MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
+        maxRequirements = maxRequirements.createCopy(size);
+        this.setRequirement(maxRequirements);
+        return this;
+    }
+
+    @Override
+    public boolean isMaxSizeSpecified() {
+        return this.getMaxBlocksRequirement().isMaxSizeSpecified();
+    }
+
+    @Override
+    public @NotNull Vessel setMinSize(@Nullable Integer size) {
+        MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
+        minRequirements = minRequirements.createCopy(size);
+        this.setRequirement(minRequirements);
+        return this;
+    }
+
+    @Override
+    public boolean isMinSizeSpecified() {
+        return this.getMinBlocksRequirement().isMinSizeSpecified();
     }
 
     public @NotNull Airship setFuelConsumption(@Nullable Integer fuel) {
@@ -195,16 +228,18 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
     @Override
     public @NotNull Map<String, String> getExtraInformation() {
         Map<String, String> map = new HashMap<>();
-        map.put("Fuel",
-                this
-                        .getFuelTypes()
-                        .stream()
-                        .map(Parser.STRING_TO_ITEM_TYPE::unparse)
-                        .collect(Collectors.joining(", ")));
+        map.put("Fuel", this
+                .getFuelTypes()
+                .stream()
+                .map(Parser.STRING_TO_ITEM_TYPE::unparse)
+                .collect(Collectors.joining(", ")));
         map.put("Fuel Consumption", this.getFuelConsumption() + "");
         map.put("Fuel Slot", this.getFuelSlot().name());
-        map.put("Special Block", this.getSpecialBlocks().stream().map(Parser.STRING_TO_BLOCK_TYPE::unparse
-        ).collect(Collectors.joining(", ")));
+        map.put("Special Block", this
+                .getSpecialBlocks()
+                .stream()
+                .map(Parser.STRING_TO_BLOCK_TYPE::unparse)
+                .collect(Collectors.joining(", ")));
         map.put("Required Percent", this.getSpecialBlocksPercent() + "");
         map.put("Requires Burner", this.isUsingBurner() + "");
         return map;
@@ -234,8 +269,10 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         if (this.isUsingBurner() && !burnerFound) {
             return true;
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f) /
-                this.getStructure().getOriginalRelativePositions().size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f) / this
+                .getStructure()
+                .getOriginalRelativePositions()
+                .size());
         if ((this.getSpecialBlocksPercent() != 0) && specialBlockPercent <= this.getSpecialBlocksPercent()) {
             return true;
         }

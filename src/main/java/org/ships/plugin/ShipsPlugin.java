@@ -24,7 +24,6 @@ import org.ships.config.configuration.LegacyShipsConfig;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.debug.DebugFile;
 import org.ships.config.messages.AdventureMessageConfig;
-import org.ships.config.messages.MessageConfig;
 import org.ships.event.listener.CoreEventListener;
 import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.movement.BlockPriority;
@@ -40,6 +39,7 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 import org.ships.vessel.converts.vessel.VesselConverter;
 import org.ships.vessel.converts.vessel.shipsfive.Ships5VesselConverter;
 import org.ships.vessel.sign.*;
+import org.ships.vessel.sign.lock.LockedSignManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,15 +49,14 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 15.2;
+    public static final double PRERELEASE_VERSION = 15.3;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
     private final Collection<Identifiable> identifiables = new HashSet<>();
+    private final LockedSignManager lockedSignManager = new LockedSignManager();
     private final Collection<Vessel> vessels = new LinkedHashSet<>();
     private DefaultBlockList blockList;
-    @Deprecated(forRemoval = true)
-    private MessageConfig messageConfig;
     private AdventureMessageConfig aMessageConfig;
     private ShipsConfig config;
     private DebugFile debugFile;
@@ -70,6 +69,10 @@ public class ShipsPlugin implements CorePlugin {
 
     public static ShipsPlugin getPlugin() {
         return plugin;
+    }
+
+    public @NotNull LockedSignManager getLockedSignManager() {
+        return this.lockedSignManager;
     }
 
     public boolean isShuttingDown() {
@@ -86,7 +89,6 @@ public class ShipsPlugin implements CorePlugin {
         this.init();
         LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
         this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
-        this.messageConfig = new MessageConfig();
         this.aMessageConfig = new AdventureMessageConfig();
         this.blockList = new DefaultBlockList();
         this.debugFile = new DebugFile();
@@ -171,11 +173,6 @@ public class ShipsPlugin implements CorePlugin {
                 });
             });
         }
-    }
-
-    @Deprecated(forRemoval = true)
-    public MessageConfig getMessageConfig() {
-        return this.messageConfig;
     }
 
     public AdventureMessageConfig getAdventureMessageConfig() {

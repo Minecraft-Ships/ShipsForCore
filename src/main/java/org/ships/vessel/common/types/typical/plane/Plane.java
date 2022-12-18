@@ -18,14 +18,18 @@ import org.core.world.position.block.entity.container.furnace.FurnaceTileEntityS
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.requirement.FuelRequirement;
+import org.ships.vessel.common.requirement.MaxSizeRequirement;
+import org.ships.vessel.common.requirement.MinSizeRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.*;
@@ -50,6 +54,18 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     public Plane(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends Plane> type) {
         super(ste, position, type);
         this.initRequirements();
+    }
+
+    public MaxSizeRequirement getMaxBlocksRequirement() {
+        return this
+                .getRequirement(MaxSizeRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a max blocks requirement"));
+    }
+
+    public MinSizeRequirement getMinBlocksRequirement() {
+        return this
+                .getRequirement(MinSizeRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a min blocks requirement"));
     }
 
     public FuelRequirement getFuelRequirement() {
@@ -151,4 +167,31 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         }).toList();
         return acceptedSlots.isEmpty();
     }
+
+    @Override
+    public @NotNull Vessel setMaxSize(@Nullable Integer size) {
+        MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
+        maxRequirements = maxRequirements.createCopy(size);
+        this.setRequirement(maxRequirements);
+        return this;
+    }
+
+    @Override
+    public boolean isMaxSizeSpecified() {
+        return this.getMaxBlocksRequirement().isMaxSizeSpecified();
+    }
+
+    @Override
+    public @NotNull Vessel setMinSize(@Nullable Integer size) {
+        MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
+        minRequirements = minRequirements.createCopy(size);
+        this.setRequirement(minRequirements);
+        return this;
+    }
+
+    @Override
+    public boolean isMinSizeSpecified() {
+        return this.getMinBlocksRequirement().isMinSizeSpecified();
+    }
+
 }

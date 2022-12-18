@@ -8,10 +8,10 @@ import org.core.utils.time.TimeRange;
 import org.core.world.boss.ServerBossBar;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
-import org.ships.movement.result.MovementResult;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FileBasedVessel;
@@ -69,8 +69,7 @@ public class FallExecutor implements Consumer<Scheduler> {
                         }
                         MovementDetailsBuilder builder = new MovementDetailsBuilder();
                         if (config.isBossBarVisible()) {
-                            ServerBossBar bossBar =
-                                    TranslateCore.createBossBar().setTitle(AText.ofPlain("Falling"));
+                            ServerBossBar bossBar = TranslateCore.createBossBar().setTitle(AText.ofPlain("Falling"));
                             v
                                     .getEntities()
                                     .stream()
@@ -87,7 +86,7 @@ public class FallExecutor implements Consumer<Scheduler> {
                                 return;
                             }
                             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
-                            if (!e.getMovement().getResult().equals(MovementResult.COLLIDE_DETECTED)) {
+                            if (!e.getDisplayMessage().equals(AdventureMessageConfig.ERROR_COLLIDE_DETECTED)) {
                                 return;
                             }
                             if (v instanceof FileBasedVessel) {

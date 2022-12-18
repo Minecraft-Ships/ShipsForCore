@@ -28,7 +28,6 @@ import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
-import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.ShipsSign;
@@ -45,28 +44,25 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
     private final String SHIP_ID_ARGUMENT = "ship_id";
     private final String SHIP_MOVE_TO_ARGUMENT = "moveTo";
     private final String SHIP_EXACT_ARGUMENT = "exact";
-    private final OptionalArgument<WorldExtent> SHIP_WORLD_ARGUMENT = new OptionalArgument<>(new WorldArgument(
-            "world"), (WorldExtent) null);
+    private final OptionalArgument<WorldExtent> SHIP_WORLD_ARGUMENT = new OptionalArgument<>(new WorldArgument("world"),
+                                                                                             (WorldExtent) null);
     private final String SHIP_VECTOR_ARGUMENT = "vector";
 
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(this.SHIP_ARGUMENT),
-                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT),
-                new ExactArgument(this.SHIP_EXACT_ARGUMENT),
-                new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT, this.createSuggestion(p -> p.getX().intValue()),
-                        this.createSuggestion(p -> p.getY().intValue()),
-                        this.createSuggestion(p -> p.getZ().intValue())),
-                SHIP_WORLD_ARGUMENT
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                             new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT), new ExactArgument(this.SHIP_EXACT_ARGUMENT),
+                             new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT,
+                                                        this.createSuggestion(p -> p.getX().intValue()),
+                                                        this.createSuggestion(p -> p.getY().intValue()),
+                                                        this.createSuggestion(p -> p.getZ().intValue())),
+                             SHIP_WORLD_ARGUMENT
 
         );
     }
 
-    private SuggestionArgument<Integer> createSuggestion(
-            Function<? super Position<? extends Number>, Integer> function) {
+    private SuggestionArgument<Integer> createSuggestion(Function<? super Position<? extends Number>, Integer> function) {
         return new SuggestionArgument<Integer>(new IntegerArgument(this.SHIP_VECTOR_ARGUMENT)) {
             @Override
             public List<String> suggest(CommandContext commandContext, CommandArgumentContext<Integer> argument) {
@@ -114,11 +110,11 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
             builder.setBossBar(bar);
         }
         builder.setException((context, exc) -> {
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             if (exc instanceof MoveException e) {
                 if (commandContext.getSource() instanceof CommandViewer viewer) {
-                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                    viewer.sendMessage(e.getErrorMessageText());
                 }
             } else {
                 exc.printStackTrace();
@@ -132,9 +128,5 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
 
         vessel.moveTo(position, builder.build());
         return true;
-    }
-
-    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value) {
-        movement.sendMessage(viewer, (T) value);
     }
 }

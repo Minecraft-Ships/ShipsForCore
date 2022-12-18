@@ -9,18 +9,15 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.core.world.position.block.entity.sign.LiveSignTileEntity;
-import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
+import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.sign.ShipsSign;
+import org.ships.vessel.sign.lock.SignLock;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
 
@@ -48,22 +45,17 @@ public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
-        Collection<SyncBlockPosition> set = vessel.getStructure().getAll(LiveSignTileEntity.class);
-        Collection<BlockPosition> collection = ShipsSign.LOCKED_SIGNS
-                .parallelStream()
-                .filter(block -> set.parallelStream().anyMatch(sign -> sign.equals(block)))
-                .collect(Collectors.toSet());
-        if (collection.isEmpty()) {
+        Collection<SignLock> locks = ShipsPlugin.getPlugin().getLockedSignManager().getLockedSigns(vessel);
+        if (locks.isEmpty()) {
             if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(AText.ofPlain("Cleared all locked signs"));
+                ((CommandViewer) source).sendMessage(AText.ofPlain("No locks could be found"));
             }
-            ShipsSign.LOCKED_SIGNS.clear();
             return true;
         }
-        boolean successful = ShipsSign.LOCKED_SIGNS.removeAll(collection);
+        boolean successful = ShipsPlugin.getPlugin().getLockedSignManager().unlockAll(locks);
         if (source instanceof CommandViewer) {
             ((CommandViewer) source).sendMessage(AText.ofPlain(
-                    (successful ? "Cleared " : "Failed to clear") + " all (" + set.size() + ") locked signs: "));
+                    (successful ? "Cleared " : "Failed to clear") + " all (" + locks.size() + ") locked signs: "));
         }
         return true;
     }

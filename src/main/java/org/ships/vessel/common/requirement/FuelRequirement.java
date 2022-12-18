@@ -7,11 +7,10 @@ import org.core.inventory.parts.Slot;
 import org.core.world.position.block.entity.container.furnace.LiveFurnaceTileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.messages.error.data.FuelRequirementMessageData;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
-import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.MovementResult;
-import org.ships.movement.result.data.RequiredFuelMovementData;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.types.Vessel;
 
@@ -31,8 +30,10 @@ public class FuelRequirement implements Requirement {
         this(parent, null, null, null);
     }
 
-    public FuelRequirement(@Nullable FuelRequirement parent, @Nullable FuelSlot slot, @Nullable Integer takeAmount,
-            @Nullable Collection<ItemType> fuelTypes) {
+    public FuelRequirement(@Nullable FuelRequirement parent,
+                           @Nullable FuelSlot slot,
+                           @Nullable Integer takeAmount,
+                           @Nullable Collection<ItemType> fuelTypes) {
         if (parent == null && (takeAmount == null || slot == null || fuelTypes == null)) {
             throw new IllegalArgumentException("Parent must not be null if any values are null");
         }
@@ -107,13 +108,13 @@ public class FuelRequirement implements Requirement {
                 .map(opItem -> opItem.get().getQuantity())
                 .anyMatch(amount -> amount >= toTakeAmount);
         if (!check) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_FUEL,
-                    new RequiredFuelMovementData(toTakeAmount, fuelTypes)));
+            throw new MoveException(context, AdventureMessageConfig.ERROR_NOT_ENOUGH_FUEL,
+                                    new FuelRequirementMessageData(vessel, fuelTypes, toTakeAmount));
         }
     }
 
     @Override
-    public void onProcessRequirement(@NotNull MovementContext context, @NotNull Vessel vessel) throws MoveException {
+    public void onProcessRequirement(@NotNull MovementContext context, @NotNull Vessel vessel) {
         Collection<ItemType> fuelTypes = this.getFuelTypes();
         int toTakeAmount = this.getConsumption();
         if (fuelTypes.isEmpty() || toTakeAmount == 0) {

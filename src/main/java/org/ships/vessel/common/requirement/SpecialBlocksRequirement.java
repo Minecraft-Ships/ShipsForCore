@@ -4,12 +4,11 @@ import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.messages.error.data.RequirementPercentMessageData;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
-import org.ships.movement.result.AbstractFailedMovement;
-import org.ships.movement.result.MovementResult;
-import org.ships.movement.result.data.RequiredPercentMovementData;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
@@ -27,8 +26,9 @@ public class SpecialBlocksRequirement implements Requirement {
         this(parent, null, null);
     }
 
-    public SpecialBlocksRequirement(@Nullable SpecialBlocksRequirement parent, @Nullable Float specialBlocksPercentage,
-            @Nullable Collection<BlockType> specialBlocks) {
+    public SpecialBlocksRequirement(@Nullable SpecialBlocksRequirement parent,
+                                    @Nullable Float specialBlocksPercentage,
+                                    @Nullable Collection<BlockType> specialBlocks) {
         if (parent == null && (specialBlocks == null || specialBlocksPercentage == null)) {
             throw new IllegalArgumentException("Parent cannot be null if another value is null");
         }
@@ -86,16 +86,14 @@ public class SpecialBlocksRequirement implements Requirement {
                 .filter(block -> specialBlocks.contains(block.getType()))
                 .count();
         if (blocksFound == 0) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_PERCENT,
-                    new RequiredPercentMovementData(specialBlocks.first(), percentageRequired,
-                            0)));
+            throw new MoveException(context, AdventureMessageConfig.ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH,
+                                    new RequirementPercentMessageData(vessel, 0, 0));
         }
 
         double totalPercent = (blocksFound * 100.0) / context.getMovingStructure().size();
         if (totalPercent < percentageRequired) {
-            throw new MoveException(new AbstractFailedMovement<>(vessel, MovementResult.NOT_ENOUGH_PERCENT,
-                    new RequiredPercentMovementData(specialBlocks.iterator().next(), percentageRequired,
-                            (int) totalPercent)));
+            throw new MoveException(context, AdventureMessageConfig.ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH,
+                                    new RequirementPercentMessageData(vessel, totalPercent, (int) blocksFound));
         }
     }
 

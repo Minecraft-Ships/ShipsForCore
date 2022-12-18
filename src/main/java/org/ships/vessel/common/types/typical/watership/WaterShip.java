@@ -12,14 +12,20 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.vessel.common.assits.Fallable;
+import org.ships.vessel.common.assits.FileBasedVessel;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
+import org.ships.vessel.common.requirement.MaxSizeRequirement;
+import org.ships.vessel.common.requirement.MinSizeRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.AbstractShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.*;
@@ -43,6 +49,18 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         super(ste, position, type);
         this.flags.add(new AltitudeLockFlag(true));
         this.initRequirements();
+    }
+
+    public MaxSizeRequirement getMaxBlocksRequirement() {
+        return this
+                .getRequirement(MaxSizeRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a max blocks requirement"));
+    }
+
+    public MinSizeRequirement getMinBlocksRequirement() {
+        return this
+                .getRequirement(MinSizeRequirement.class)
+                .orElseThrow(() -> new RuntimeException("Submarine is missing a min blocks requirement"));
     }
 
     public float getSpecialBlockPercent() {
@@ -88,12 +106,68 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
+    public @NotNull FileBasedVessel deserializeExtra(@NotNull ConfigurationStream file) {
+        MaxSizeRequirement maxSizeRequirement = this.getMaxBlocksRequirement();
+        Optional<Integer> opMaxSize = file.getInteger(AbstractShipType.MAX_SIZE);
+        if (opMaxSize.isPresent()) {
+            maxSizeRequirement = maxSizeRequirement.createChild(opMaxSize.get());
+        }
+        this.setRequirement(maxSizeRequirement);
+
+        MinSizeRequirement minSizeRequirement = this.getMinBlocksRequirement();
+        Optional<Integer> opMinSize = file.getInteger(AbstractShipType.MIN_SIZE);
+        if (opMinSize.isPresent()) {
+            minSizeRequirement = minSizeRequirement.createChild(opMinSize.get());
+        }
+        this.setRequirement(minSizeRequirement);
+
+        SpecialBlocksRequirement specialRequirement = this.getSpecialBlocksRequirement();
+        Optional<Double> opPercent = file.getDouble(AbstractShipType.SPECIAL_BLOCK_PERCENT);
+        if (opPercent.isPresent()) {
+            specialRequirement = specialRequirement.createChildWithPercentage(opPercent.get().floatValue());
+        }
+        HashSet<BlockType> collection = file.parseCollection(AbstractShipType.SPECIAL_BLOCK_TYPE, new HashSet<>());
+        if (!collection.isEmpty()) {
+            specialRequirement = specialRequirement.createChildWithBlocks(collection);
+        }
+        this.setRequirement(specialRequirement);
+        return this;
+    }
+
+
+    @Override
     public @NotNull Map<String, String> getExtraInformation() {
         Map<String, String> map = new HashMap<>();
         map.put("Special Block",
                 ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
         map.put("Required Percent", this.getSpecialBlockPercent() + "");
         return map;
+    }
+
+    @Override
+    public @NotNull Vessel setMaxSize(@Nullable Integer size) {
+        MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
+        maxRequirements = maxRequirements.createCopy(size);
+        this.setRequirement(maxRequirements);
+        return this;
+    }
+
+    @Override
+    public boolean isMaxSizeSpecified() {
+        return this.getMaxBlocksRequirement().isMaxSizeSpecified();
+    }
+
+    @Override
+    public @NotNull Vessel setMinSize(@Nullable Integer size) {
+        MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
+        minRequirements = minRequirements.createCopy(size);
+        this.setRequirement(minRequirements);
+        return this;
+    }
+
+    @Override
+    public boolean isMinSizeSpecified() {
+        return this.getMinBlocksRequirement().isMinSizeSpecified();
     }
 
     @Override

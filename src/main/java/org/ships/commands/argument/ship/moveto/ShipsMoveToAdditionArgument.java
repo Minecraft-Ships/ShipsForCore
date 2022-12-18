@@ -20,10 +20,8 @@ import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
-import org.ships.movement.result.FailedMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,12 +75,12 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
         }
 
         builder.setException((context, exc) -> {
-            ShipsSign.LOCKED_SIGNS.remove(position);
+            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             if (exc instanceof MoveException) {
                 MoveException e = (MoveException) exc;
                 if (commandContext.getSource() instanceof CommandViewer viewer) {
-                    this.sendErrorMessage(viewer, e.getMovement(), e.getMovement().getValue().orElse(null));
+                    viewer.sendMessage(e.getErrorMessageText());
                 }
             } else {
                 exc.printStackTrace();
@@ -97,9 +95,5 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
         vessel.moveTowards(vector3, builder.build());
 
         return true;
-    }
-
-    private <T> void sendErrorMessage(CommandViewer viewer, FailedMovement<T> movement, Object value) {
-        movement.sendMessage(viewer, (T) value);
     }
 }
