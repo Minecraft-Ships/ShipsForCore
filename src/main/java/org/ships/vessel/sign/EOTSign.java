@@ -57,7 +57,7 @@ public class EOTSign implements ShipsSign {
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(SignTileEntity sign) {
+    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
         SignTileEntitySnapshot stes = sign.getSnapshot();
         stes.setText(this.SIGN);
         return stes;
@@ -129,7 +129,7 @@ public class EOTSign implements ShipsSign {
     }
 
     @Override
-    public boolean onSecondClick(@NotNull LivePlayer player, SyncBlockPosition position) {
+    public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (opTile.isEmpty()) {
             return false;

@@ -59,7 +59,7 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(SignTileEntity sign) throws IOException {
+    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot snapshot = sign.getSnapshot();
         List<AText> lines = snapshot.getText();
         Optional<ShipType<?>> opType = ShipsPlugin.getPlugin().getAllShipTypes()
