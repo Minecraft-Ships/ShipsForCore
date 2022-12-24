@@ -12,9 +12,8 @@ import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.config.messages.AdventureMessageConfig;
-import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
+import org.ships.movement.instruction.details.SimpleMovementException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.EotFlag;
 import org.ships.vessel.common.types.Vessel;
@@ -106,19 +105,9 @@ public class EOTExecutor implements Consumer<Scheduler> {
             builder.setBossBar(bossBar);
         }
 
-        builder.setException((context, exc) -> {
-            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
-            this.vessel.getEntities().forEach(e -> e.setGravity(true));
-            if (exc instanceof MoveException e) {
-                if (this.player == null) {
-                    return;
-                }
-                if (e.getDisplayMessage().equals(AdventureMessageConfig.ERROR_ALREADY_MOVING)) {
-                    return;
-                }
-                this.player.sendMessage(e.getErrorMessageText());
-            }
-        });
+        CommandViewer[] viewers = this.player == null ? new CommandViewer[0] : new CommandViewer[]{this.player};
+
+        builder.setException(new SimpleMovementException(viewers));
 
         this.vessel.moveTowards(directionalData
                                         .getDirection()

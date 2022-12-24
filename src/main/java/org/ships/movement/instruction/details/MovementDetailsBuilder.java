@@ -21,12 +21,8 @@ public class MovementDetailsBuilder {
         return this.exception;
     }
 
-    public MovementDetailsBuilder setExceptionTemp(BiConsumer<MovementContext, ? super Throwable> throwable) {
+    public MovementDetailsBuilder setException(BiConsumer<MovementContext, ? super Throwable> throwable) {
         this.exception = throwable;
-        return this;
-    }
-
-    public MovementDetailsBuilder setException(SimpleMovementException exception) {
         return this;
     }
 
