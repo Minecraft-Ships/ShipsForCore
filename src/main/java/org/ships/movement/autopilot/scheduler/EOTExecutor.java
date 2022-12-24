@@ -3,12 +3,15 @@ package org.ships.movement.autopilot.scheduler;
 import org.core.TranslateCore;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
+import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
@@ -22,20 +25,20 @@ import java.util.function.Consumer;
 
 public class EOTExecutor implements Consumer<Scheduler> {
 
-    private final Vessel vessel;
-    private final LivePlayer player;
+    private final @NotNull Vessel vessel;
+    private final @Nullable CommandViewer player;
 
-    public EOTExecutor(Vessel vessel, LivePlayer player) {
+    public EOTExecutor(@NotNull Vessel vessel, @Nullable CommandViewer player) {
         this.vessel = vessel;
         this.player = player;
     }
 
-    public Vessel getVessel() {
+    public @NotNull Vessel getVessel() {
         return this.vessel;
     }
 
-    public LivePlayer getPlayer() {
-        return this.player;
+    public @NotNull Optional<CommandViewer> getPlayer() {
+        return Optional.ofNullable(this.player);
     }
 
     public Optional<LiveSignTileEntity> getSign() {
@@ -107,6 +110,9 @@ public class EOTExecutor implements Consumer<Scheduler> {
             context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
             this.vessel.getEntities().forEach(e -> e.setGravity(true));
             if (exc instanceof MoveException e) {
+                if (this.player == null) {
+                    return;
+                }
                 if (e.getDisplayMessage().equals(AdventureMessageConfig.ERROR_ALREADY_MOVING)) {
                     return;
                 }

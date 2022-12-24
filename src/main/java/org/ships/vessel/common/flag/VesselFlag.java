@@ -29,6 +29,9 @@ public interface VesselFlag<T> extends Identifiable {
 
         public F build(String parse) {
             F flag = this.buildEmpty();
+            if (parse.isBlank()) {
+                return flag;
+            }
             Optional<T> opValue = flag.getParser().parse(parse);
             if (!opValue.isPresent()) {
                 throw new IllegalArgumentException("Could not parse \"" + parse + "\"");

@@ -90,18 +90,26 @@ public interface Permissions {
     CorePermission CMD_CONFIG_VIEW = TranslateCore
             .getPlatform()
             .register(new CorePermission(true, "ships", "cmd", "config", "view"));
-    CorePermission CMD_AUTOPILOT = TranslateCore
+    CorePermission CMD_SHIP_AUTOPILOT_USE_OWN = TranslateCore
             .getPlatform()
-            .register(new CorePermission(false, "ships", "cmd", "autopilot"));
+            .register(new CorePermission(false, "ships", "cmd", "ship", "autopilot", "use", "own"));
+    CorePermission CMD_SHIP_AUTOPILOT_USE_OTHER = TranslateCore
+            .getPlatform()
+            .register(new CorePermission(false, "ships", "cmd", "ship", "autopilot", "use", "other"));
     CorePermission CMD_BLOCKLIST_SET = TranslateCore
             .getPlatform()
             .register(new CorePermission(false, "ships", "cmd", "blocklist", "set"));
     CorePermission CMD_BLOCKLIST_VIEW = TranslateCore
             .getPlatform()
             .register(new CorePermission(true, "ships", "cmd", "blocklist", "view"));
-    CorePermission CMD_SHIP_TRACK = TranslateCore
+    CorePermission CMD_SHIP_TRACK_OWN = TranslateCore
             .getPlatform()
-            .register(new CorePermission(true, "ships", "cmd", "ship", "track"));
+            .register(new CorePermission(true, "ships", "cmd", "ship", "track", "own"));
+
+    CorePermission CMD_SHIP_TRACK_OTHER = TranslateCore
+            .getPlatform()
+            .register(new CorePermission(true, "ships", "cmd", "ship", "track", "other"));
+
 
     CorePermission CMD_SHIP_MODIFY_SPEED = TranslateCore
             .getPlatform()

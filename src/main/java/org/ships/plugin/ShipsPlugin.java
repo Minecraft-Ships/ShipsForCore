@@ -4,6 +4,7 @@ import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.command.CommandRegister;
+import org.core.logger.Logger;
 import org.core.platform.plugin.CorePlugin;
 import org.core.platform.plugin.details.CorePluginVersion;
 import org.core.platform.update.PluginUpdate;
@@ -27,6 +28,7 @@ import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.event.listener.CoreEventListener;
 import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.movement.BlockPriority;
+import org.ships.movement.autopilot.path.FlightPathManager;
 import org.ships.movement.autopilot.scheduler.FallExecutor;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
@@ -49,13 +51,15 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 15.3;
+    public static final double PRERELEASE_VERSION = 15.4;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
     private final Collection<Identifiable> identifiables = new HashSet<>();
     private final LockedSignManager lockedSignManager = new LockedSignManager();
     private final Collection<Vessel> vessels = new LinkedHashSet<>();
+    private final FlightPathManager flightPaths = new FlightPathManager();
+    private Logger logger;
     private DefaultBlockList blockList;
     private AdventureMessageConfig aMessageConfig;
     private ShipsConfig config;
@@ -67,7 +71,10 @@ public class ShipsPlugin implements CorePlugin {
         plugin = this;
     }
 
-    public static ShipsPlugin getPlugin() {
+    public static @NotNull ShipsPlugin getPlugin() {
+        if (plugin == null) {
+            throw new RuntimeException("Ships has not loaded");
+        }
         return plugin;
     }
 
@@ -82,6 +89,10 @@ public class ShipsPlugin implements CorePlugin {
     @Override
     public void onShutdown() {
         shutdown = true;
+    }
+
+    public @NotNull FlightPathManager getFlightPathManager() {
+        return this.flightPaths;
     }
 
     @Override
@@ -154,22 +165,23 @@ public class ShipsPlugin implements CorePlugin {
             TranslateCore.getPlatform().getUpdateChecker(DevBukkitUpdateChecker.ID).ifPresent(devBukkit -> {
                 devBukkit.checkForUpdate(new DevBukkitUpdateOption(36846)).thenAcceptAsync((result) -> {
                     if (result instanceof FailedResult failed) {
-                        System.err.println("Failed to update: " + failed);
+                        this.logger.error("Failed to update: " + failed);
                         return;
                     }
                     SuccessfulResult successfulResult = (SuccessfulResult) result;
                     PluginUpdate context = successfulResult.getUpdate();
                     String fullVersionName = context.getName();
                     String currentVersionName =
-                            "Ships -B " + this.getPluginVersion().asString() + " R2 " + PRERELEASE_TAG + " "
+                            "Ships -B " + this.getPluginVersion().asString() + ".0 R2 " + PRERELEASE_TAG + " "
                                     + PRERELEASE_VERSION;
                     if (fullVersionName.equals(currentVersionName)) {
                         return;
                     }
-                    System.out.println("An update can be downloaded");
-                    System.out.println("\tName: " + fullVersionName);
-                    System.out.println("\tFor Minecraft: " + context.getVersion());
-                    System.out.println("\tDownload At: " + context.getDownloadURL().toExternalForm());
+                    this.logger.log("An update can be downloaded");
+                    this.logger.log("\tCurrent Version: " + currentVersionName);
+                    this.logger.log("\tUpdated Version: " + fullVersionName);
+                    this.logger.log("\tFor Minecraft: " + context.getVersion());
+                    this.logger.log("\tDownload At: " + context.getDownloadURL().toExternalForm());
                 });
             });
         }
@@ -371,12 +383,17 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     @Override
-    public void onConstruct(@NotNull Object pluginLauncher) {
+    public void onConstruct(@NotNull Object pluginLauncher, @NotNull Logger logger) {
         this.launcher = pluginLauncher;
+        this.logger = logger;
         File file = new File(this.getConfigFolder().getParentFile(), "Ships");
         if (file.exists()) {
             file.renameTo(this.getConfigFolder());
         }
+    }
+
+    public @NotNull Logger getLogger() {
+        return this.logger;
     }
 
     @Override

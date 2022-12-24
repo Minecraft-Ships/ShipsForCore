@@ -21,8 +21,12 @@ public class MovementDetailsBuilder {
         return this.exception;
     }
 
-    public MovementDetailsBuilder setException(BiConsumer<MovementContext, ? super Throwable> throwable) {
+    public MovementDetailsBuilder setExceptionTemp(BiConsumer<MovementContext, ? super Throwable> throwable) {
         this.exception = throwable;
+        return this;
+    }
+
+    public MovementDetailsBuilder setException(SimpleMovementException exception) {
         return this;
     }
 
@@ -48,8 +52,7 @@ public class MovementDetailsBuilder {
         return this.midMovementEvents;
     }
 
-    public MovementDetailsBuilder setMidMovementEvents(
-            MidMovement... midMovementEvents) {
+    public MovementDetailsBuilder setMidMovementEvents(MidMovement... midMovementEvents) {
         this.midMovementEvents = midMovementEvents;
         return this;
     }
@@ -58,8 +61,7 @@ public class MovementDetailsBuilder {
         return this.postMovementEvents;
     }
 
-    public MovementDetailsBuilder setPostMovementEvents(
-            PostMovement... postMovementEvents) {
+    public MovementDetailsBuilder setPostMovementEvents(PostMovement... postMovementEvents) {
         this.postMovementEvents = postMovementEvents;
         return this;
     }

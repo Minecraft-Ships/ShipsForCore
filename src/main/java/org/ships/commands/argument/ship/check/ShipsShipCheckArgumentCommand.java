@@ -5,6 +5,7 @@ import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
@@ -17,6 +18,8 @@ import org.ships.movement.MovingBlockSet;
 import org.ships.movement.SetMovingBlock;
 import org.ships.movement.instruction.MovementInstructionBuilder;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
+import org.ships.movement.instruction.details.SimpleMovementException;
+import org.ships.permissions.Permissions;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.VesselRequirement;
@@ -37,13 +40,20 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(SHIP_ARGUMENT),
                              new ShipIdArgument<>(SHIP_ID_ARGUMENT, (source, vessel) -> {
-                                 if (vessel instanceof Fallable) {
-                                     return true;
+                                 if (!(vessel instanceof Fallable)) {
+                                     return false;
                                  }
-                                 if (source instanceof User player && vessel instanceof CrewStoredVessel crewVessel) {
+                                 if (!(vessel instanceof VesselRequirement)) {
+                                     return false;
+                                 }
+                                 if (source instanceof LivePlayer player
+                                         && Permissions.CMD_SHIP_TRACK_OWN.hasPermission(player)) {
+                                     return true;
+                                 } else if ((source instanceof User player
+                                         && vessel instanceof CrewStoredVessel crewVessel)) {
                                      return crewVessel.getPermission(player.getUniqueId()).canCommand();
                                  }
-                                 return vessel instanceof VesselRequirement;
+                                 return false;
                              }, vessel -> "Does not have any requirements"), new ExactArgument(SHIP_CHECK_ARGUMENT));
     }
 
@@ -77,8 +87,9 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
                 .map(block -> new SetMovingBlock(block, block))
                 .collect(Collectors.toCollection(MovingBlockSet::new));
 
-        MovementContext context = new MovementContext(new MovementDetailsBuilder().setException((context1, exe) -> {
-        }).build(), new MovementInstructionBuilder().setMovingBlocks(set).setStrictMovement(true).build());
+        MovementContext context = new MovementContext(
+                new MovementDetailsBuilder().setException(new SimpleMovementException()).build(),
+                new MovementInstructionBuilder().setMovingBlocks(set).setStrictMovement(true).build());
 
         try {
             rVessel.checkRequirements(context);

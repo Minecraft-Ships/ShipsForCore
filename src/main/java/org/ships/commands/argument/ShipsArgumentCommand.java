@@ -20,6 +20,8 @@ import org.ships.commands.argument.create.CreateShipCommand;
 import org.ships.commands.argument.fix.NoGravityArgumentCommand;
 import org.ships.commands.argument.help.ShipsHelpArgumentCommand;
 import org.ships.commands.argument.info.ShipsInfoArgumentCommand;
+import org.ships.commands.argument.ship.autopilot.AutopilotCancelArgumentCommand;
+import org.ships.commands.argument.ship.autopilot.AutopilotToArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipAddCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipRemoveCrewArgumentCommand;
 import org.ships.commands.argument.ship.crew.ShipViewCrewArgumentCommand;
@@ -100,6 +102,9 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
         COMMANDS.add(new ShipsMoveToExactArgument());
         COMMANDS.add(new ShipsMoveToAdditionArgument());
         COMMANDS.add(new ShipsMoveToRotateArgument());
+
+        COMMANDS.add(new AutopilotCancelArgumentCommand());
+        COMMANDS.add(new AutopilotToArgumentCommand());
     }
 
     @Override

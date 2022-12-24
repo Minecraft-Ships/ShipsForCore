@@ -7,8 +7,6 @@ import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.position.vector.Vector3IntegerArgument;
 import org.core.command.argument.context.CommandContext;
-import org.core.entity.EntitySnapshot;
-import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
@@ -18,8 +16,8 @@ import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
+import org.ships.movement.instruction.details.SimpleMovementException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 
@@ -74,23 +72,8 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
             builder.setBossBar(bar);
         }
 
-        builder.setException((context, exc) -> {
-            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
-            if (exc instanceof MoveException) {
-                MoveException e = (MoveException) exc;
-                if (commandContext.getSource() instanceof CommandViewer viewer) {
-                    viewer.sendMessage(e.getErrorMessageText());
-                }
-            } else {
-                exc.printStackTrace();
-            }
-            context.getEntities().keySet().forEach(s -> {
-                if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
-                    ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
-                }
-            });
-        });
+        CommandViewer[] viewers = commandContext.getSource() instanceof CommandViewer ? new CommandViewer[]{((CommandViewer) commandContext.getSource())} : new CommandViewer[0];
+        builder.setException(new SimpleMovementException(viewers));
 
         vessel.moveTowards(vector3, builder.build());
 

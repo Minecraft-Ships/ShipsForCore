@@ -3,6 +3,7 @@ package org.ships.vessel.common.flag;
 import org.array.utils.ArrayUtils;
 import org.core.config.parser.StringParser;
 import org.core.vector.type.Vector3;
+import org.ships.plugin.ShipsPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,21 +37,30 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
 
     @Override
     public StringParser<Map<UUID, Vector3<Double>>> getParser() {
-        return new StringParser<Map<UUID, Vector3<Double>>>() {
+        return new StringParser<>() {
 
             @Override
             public Optional<Map<UUID, Vector3<Double>>> parse(String original) {
                 Map<UUID, Vector3<Double>> map = new HashMap<>();
                 String[] split = original.split(", ");
                 for (String pair : split) {
+                    String[] entry = pair.split(": ");
+                    if (entry.length != 2) {
+                        throw new RuntimeException(
+                                "Cannot read PlayerStatusFlag of '" + pair + "'. Whole: " + original);
+                    }
                     try {
-                        String[] entry = pair.split(": ");
                         UUID uuid = UUID.fromString(entry[0]);
                         String[] vectorPoints = entry[1].split(Pattern.quote("||"));
                         Vector3<Double> vector = Vector3.valueOf(Double.parseDouble(vectorPoints[0]),
-                                Double.parseDouble(vectorPoints[1]), Double.parseDouble(vectorPoints[2]));
+                                                                 Double.parseDouble(vectorPoints[1]),
+                                                                 Double.parseDouble(vectorPoints[2]));
                         map.put(uuid, vector);
                     } catch (Throwable e) {
+                        ShipsPlugin
+                                .getPlugin()
+                                .getLogger()
+                                .error("Failed to read entry of key: '" + entry[0] + "' value: " + entry[1]);
                         e.printStackTrace();
                     }
                 }
@@ -59,9 +69,9 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
 
             @Override
             public String unparse(Map<UUID, Vector3<Double>> value) {
-                return ArrayUtils.toString(", ",
-                        e -> e.getKey().toString() + ": " + e.getValue().getX() + "||" + e.getValue().getY() + "||" +
-                                e.getValue().getZ(), value.entrySet());
+                return ArrayUtils.toString(", ", e -> e.getKey().toString() + ": " + e.getValue().getX() + "||" + e
+                        .getValue()
+                        .getY() + "||" + e.getValue().getZ(), value.entrySet());
             }
         };
     }
