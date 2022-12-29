@@ -2,6 +2,7 @@ package org.ships.config.messages.messages.info;
 
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 
@@ -38,7 +39,7 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
     }
 
     @Override
-    public AText process(AText text, Map.Entry<String, String> obj) {
+    public AText process(@NotNull AText text, Map.Entry<String, String> obj) {
         text = Message.VESSEL_INFO_VALUE.process(obj.getKey(), text);
         text = Message.VESSEL_INFO_KEY.process(obj.getValue(), text);
         return text;

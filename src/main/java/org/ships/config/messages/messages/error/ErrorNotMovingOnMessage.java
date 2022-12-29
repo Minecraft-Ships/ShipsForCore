@@ -1,6 +1,7 @@
 package org.ships.config.messages.messages.error;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.messages.error.data.NotMovingOnMessageData;
@@ -28,7 +29,7 @@ public class ErrorNotMovingOnMessage implements Message<NotMovingOnMessageData> 
     }
 
     @Override
-    public AText process(AText text, NotMovingOnMessageData obj) {
+    public AText process(@NotNull AText text, NotMovingOnMessageData obj) {
         return null;
     }
 }

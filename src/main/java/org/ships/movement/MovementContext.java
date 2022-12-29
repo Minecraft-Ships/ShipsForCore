@@ -11,11 +11,11 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.movement.BasicMovement;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
+import org.ships.config.blocks.instruction.BlockInstruction;
+import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
-import org.ships.config.messages.Message;
 import org.ships.config.messages.messages.error.data.CollideDetectedMessageData;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.move.MoveException;
@@ -206,7 +206,7 @@ public class MovementContext {
             }
             BlockList list = ShipsPlugin.getPlugin().getBlockList();
             BlockInstruction bi = list.getBlockInstruction(after.getBlockType());
-            return bi.getCollideType() != BlockInstruction.CollideType.IGNORE;
+            return bi.getCollide() != CollideType.IGNORE;
         }).map(MovingBlock::getAfterPosition).collect(Collectors.toSet());
         if (collided.isEmpty()) {
             return;

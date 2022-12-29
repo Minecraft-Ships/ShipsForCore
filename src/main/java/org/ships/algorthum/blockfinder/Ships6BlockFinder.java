@@ -9,8 +9,9 @@ import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
+import org.ships.config.blocks.instruction.BlockInstruction;
+import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -57,7 +58,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                     SyncBlockPosition block = proc.getRelative(face);
                     if (ret.stream().noneMatch(b -> b.equals(block))) {
                         BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
-                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+                        if (bi.getCollide() == CollideType.MATERIAL) {
                             ret.add(block);
                             target.add(block);
                         }
@@ -154,7 +155,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                             continue;
                         }
                         BlockInstruction bi = Ships6BlockFinder.this.list.getBlockInstruction(block.getBlockType());
-                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+                        if (bi.getCollide() == CollideType.MATERIAL) {
                             this.ret.add(block);
                         }
                     }

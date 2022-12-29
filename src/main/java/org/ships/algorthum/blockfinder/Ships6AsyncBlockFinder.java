@@ -10,8 +10,9 @@ import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
+import org.ships.config.blocks.instruction.BlockInstruction;
+import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -81,7 +82,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                         ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
                                         Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
                                         BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
-                                        if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+                                        if (bi.getCollide() == CollideType.MATERIAL) {
                                             if (positions.contains(vector) || finalToProcess
                                                     .parallelStream()
                                                     .anyMatch(entry -> entry.getKey().equals(block))) {

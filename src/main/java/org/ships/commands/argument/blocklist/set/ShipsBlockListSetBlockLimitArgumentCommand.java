@@ -13,6 +13,7 @@ import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.DefaultBlockList;
+import org.ships.config.blocks.instruction.ModifiableBlockInstruction;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
@@ -54,7 +55,8 @@ public class ShipsBlockListSetBlockLimitArgumentCommand implements ArgumentComma
                 .getBlockList()
                 .stream()
                 .filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b)))
-                .forEach(bi -> blocklist.replaceBlockInstruction(bi.setBlockLimit(limit)));
+                .filter(bi -> bi instanceof ModifiableBlockInstruction)
+                .forEach(bi -> blocklist.replaceBlockInstruction(((ModifiableBlockInstruction)bi).setBlockLimit(limit)));
         blocklist.saveChanges();
         if (commandContext.getSource() instanceof CommandViewer) {
             ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain(blocks.size() + " have been set to" +

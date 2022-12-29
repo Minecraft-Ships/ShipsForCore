@@ -3,6 +3,7 @@ package org.ships.config.messages.messages.error;
 import org.core.adventureText.AText;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.misc.MappedAdapter;
@@ -38,7 +39,7 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
     }
 
     @Override
-    public AText process(AText text, Map.Entry<Vessel, Collection<BlockPosition>> obj) {
+    public AText process(@NotNull AText text, Map.Entry<Vessel, Collection<BlockPosition>> obj) {
         text = Message
                 .asCollectionSingle(Message.LOCATION_ADAPTERS)
                 .process(obj.getValue().parallelStream().collect(Collectors.toSet()), text);

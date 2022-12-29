@@ -12,8 +12,9 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.BlockType;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
+import org.ships.config.blocks.instruction.CollideType;
+import org.ships.config.blocks.instruction.ModifiableBlockInstruction;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
@@ -32,9 +33,9 @@ public class ShipsBlockListSetCollideTypeArgumentCommand implements ArgumentComm
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(SHIP_BLOCK_LIST_ARGUMENT), new ExactArgument(SHIP_SET_ARGUMENT),
-                new ExactArgument(SHIP_COLLIDE_TYPE_ARGUMENT),
-                new EnumArgument<>(SHIP_COLLIDE_VALUE_ARGUMENT, BlockInstruction.CollideType.class),
-                new BlockTypesArgument(SHIP_BLOCK_TYPE_ARGUMENT));
+                             new ExactArgument(SHIP_COLLIDE_TYPE_ARGUMENT),
+                             new EnumArgument<>(SHIP_COLLIDE_VALUE_ARGUMENT, CollideType.class),
+                             new BlockTypesArgument(SHIP_BLOCK_TYPE_ARGUMENT));
     }
 
     @Override
@@ -50,18 +51,22 @@ public class ShipsBlockListSetCollideTypeArgumentCommand implements ArgumentComm
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         List<BlockType> blocks = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
-        BlockInstruction.CollideType collideType = commandContext.getArgument(this, SHIP_COLLIDE_VALUE_ARGUMENT);
+        CollideType collideType = commandContext.getArgument(this, SHIP_COLLIDE_VALUE_ARGUMENT);
         DefaultBlockList blocklist = ShipsPlugin.getPlugin().getBlockList();
         blocklist
                 .getBlockList()
                 .stream()
                 .filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b)))
-                .forEach(bi -> blocklist.replaceBlockInstruction(bi.setCollideType(collideType)));
+                .filter(bi -> bi instanceof ModifiableBlockInstruction)
+                .forEach(bi -> blocklist.replaceBlockInstruction(
+                        ((ModifiableBlockInstruction) bi).setCollide(collideType)));
         blocklist.saveChanges();
         if (commandContext.getSource() instanceof CommandViewer) {
             ((CommandViewer) commandContext.getSource()).sendMessage(AText
-                    .ofPlain(blocks.size() + " have been set to " + collideType.name())
-                    .withColour(NamedTextColours.AQUA));
+                                                                             .ofPlain(blocks.size()
+                                                                                              + " have been set to "
+                                                                                              + collideType.name())
+                                                                             .withColour(NamedTextColours.AQUA));
         }
         return true;
     }

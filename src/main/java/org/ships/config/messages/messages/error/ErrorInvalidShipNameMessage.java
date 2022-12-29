@@ -1,6 +1,7 @@
 package org.ships.config.messages.messages.error;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
@@ -28,7 +29,7 @@ public class ErrorInvalidShipNameMessage implements Message<String> {
     }
 
     @Override
-    public AText process(AText text, String obj) {
+    public AText process(@NotNull AText text, String obj) {
         for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }

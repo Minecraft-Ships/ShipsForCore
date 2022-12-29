@@ -3,6 +3,7 @@ package org.ships.config.messages.messages.error;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.world.position.block.BlockType;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
@@ -35,7 +36,7 @@ public class ErrorTooManyOfBlockMessage implements Message<Map.Entry<Vessel, Blo
     }
 
     @Override
-    public AText process(AText text, Map.Entry<Vessel, BlockType> obj) {
+    public AText process(@NotNull AText text, Map.Entry<Vessel, BlockType> obj) {
         for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }

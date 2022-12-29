@@ -1,18 +1,18 @@
 package org.ships.config.parsers;
 
 import org.core.config.parser.StringParser;
-import org.ships.config.blocks.BlockInstruction;
+import org.ships.config.blocks.instruction.CollideType;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class StringToCollideTypeParser implements StringParser.Suggestible<BlockInstruction.CollideType> {
+public class StringToCollideTypeParser implements StringParser.Suggestible<CollideType> {
 
     @Override
-    public Optional<BlockInstruction.CollideType> parse(String original) {
-        for (BlockInstruction.CollideType collideType : BlockInstruction.CollideType.values()) {
+    public Optional<CollideType> parse(String original) {
+        for (CollideType collideType : CollideType.values()) {
             if (collideType.name().equalsIgnoreCase(original) || collideType.name().charAt(0) == original.charAt(0)) {
                 return Optional.of(collideType);
             }
@@ -21,12 +21,12 @@ public class StringToCollideTypeParser implements StringParser.Suggestible<Block
     }
 
     @Override
-    public String unparse(BlockInstruction.CollideType value) {
+    public String unparse(CollideType value) {
         return value.name();
     }
 
     @Override
-    public List<BlockInstruction.CollideType> getSuggestions(String peek) {
+    public List<CollideType> getSuggestions(String peek) {
         return this
                 .getSuggestions()
                 .stream()
@@ -35,7 +35,7 @@ public class StringToCollideTypeParser implements StringParser.Suggestible<Block
     }
 
     @Override
-    public List<BlockInstruction.CollideType> getSuggestions() {
-        return Arrays.asList(BlockInstruction.CollideType.values());
+    public List<CollideType> getSuggestions() {
+        return Arrays.asList(CollideType.values());
     }
 }

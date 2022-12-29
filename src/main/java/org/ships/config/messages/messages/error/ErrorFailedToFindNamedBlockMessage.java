@@ -2,6 +2,7 @@ package org.ships.config.messages.messages.error;
 
 import org.core.adventureText.AText;
 import org.core.world.position.block.BlockType;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.messages.error.data.NamedBlockMessageData;
@@ -31,7 +32,7 @@ public class ErrorFailedToFindNamedBlockMessage implements Message<NamedBlockMes
     }
 
     @Override
-    public AText process(AText text, NamedBlockMessageData obj) {
+    public AText process(@NotNull AText text, NamedBlockMessageData obj) {
         if (Message.NAMED_BLOCK_NAME.containsAdapter(text)) {
             text = Message.NAMED_BLOCK_NAME.process(obj.getNamedBlock(), text);
         }

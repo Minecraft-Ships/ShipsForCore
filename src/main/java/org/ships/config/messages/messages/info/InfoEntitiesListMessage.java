@@ -3,6 +3,7 @@ package org.ships.config.messages.messages.info;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 
@@ -26,7 +27,7 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
     }
 
     @Override
-    public AText process(AText text, Entity<?> obj) {
+    public AText process(@NotNull AText text, Entity<?> obj) {
         for (MessageAdapter<Entity<?>> adapter : this.getExactAdapters()) {
             text = adapter.process(obj, text);
         }

@@ -2,6 +2,7 @@ package org.ships.config.messages.messages.error;
 
 import org.core.adventureText.AText;
 import org.core.world.position.impl.BlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 
@@ -25,7 +26,7 @@ public class ErrorNoSpeedSetMessage implements Message<BlockPosition> {
     }
 
     @Override
-    public AText process(AText text, BlockPosition obj) {
+    public AText process(@NotNull AText text, BlockPosition obj) {
         for (MessageAdapter<?> adapter : this.getAdapters()) {
             if (adapter.containsAdapter(text)) {
                 text = ((MessageAdapter<BlockPosition>) adapter).process(obj, text);

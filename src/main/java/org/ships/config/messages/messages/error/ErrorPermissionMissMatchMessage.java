@@ -4,6 +4,7 @@ import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.Entity;
 import org.core.entity.living.human.player.LivePlayer;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
@@ -35,7 +36,7 @@ public class ErrorPermissionMissMatchMessage implements Message<Map.Entry<LivePl
     }
 
     @Override
-    public AText process(AText text, Map.Entry<LivePlayer, String> obj) {
+    public AText process(@NotNull AText text, Map.Entry<LivePlayer, String> obj) {
         text = text.withAllAs(Message.PERMISSION_NODE.adapterTextFormat(), AText.ofPlain(obj.getValue()));
         for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);

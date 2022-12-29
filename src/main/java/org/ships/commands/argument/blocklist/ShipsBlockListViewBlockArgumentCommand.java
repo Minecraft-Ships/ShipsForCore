@@ -13,7 +13,7 @@ import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.BlockType;
-import org.ships.config.blocks.BlockInstruction;
+import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
@@ -30,7 +30,7 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(SHIP_BLOCK_LIST_ARGUMENT), new ExactArgument(SHIP_VIEW_ARGUMENT),
-                new BlockTypeArgument(SHIP_BLOCK_TYPE_ARGUMENT));
+                             new BlockTypeArgument(SHIP_BLOCK_TYPE_ARGUMENT));
     }
 
     @Override
@@ -59,20 +59,14 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
         CommandViewer viewer = (CommandViewer) commandContext.getSource();
         BlockType type = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
         BlockInstruction bi = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(type);
-        AText collideType =
-                AText
-                        .ofPlain("CollideType: ")
-                        .withColour(NamedTextColours.AQUA)
-                        .append(AText
-                                .ofPlain(bi.getCollideType().name())
-                                .withColour(NamedTextColours.YELLOW));
-        AText blockLimit =
-                AText
-                        .ofPlain("BlockLimit: ")
-                        .withColour(NamedTextColours.AQUA)
-                        .append(AText
-                                .ofPlain(String.valueOf(bi.getBlockLimit()))
-                                .withColour(NamedTextColours.YELLOW));
+        AText collideType = AText
+                .ofPlain("CollideType: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(bi.getCollide().name()).withColour(NamedTextColours.YELLOW));
+        AText blockLimit = AText
+                .ofPlain("BlockLimit: ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(String.valueOf(bi.getBlockLimit())).withColour(NamedTextColours.YELLOW));
         viewer.sendMessage(collideType);
         viewer.sendMessage(blockLimit);
         return true;

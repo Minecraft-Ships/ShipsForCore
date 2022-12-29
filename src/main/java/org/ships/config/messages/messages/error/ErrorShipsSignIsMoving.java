@@ -2,6 +2,7 @@ package org.ships.config.messages.messages.error;
 
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
@@ -27,7 +28,7 @@ public class ErrorShipsSignIsMoving implements Message<Object> {
 
     @Override
     @Deprecated
-    public AText process(AText text, Object obj) {
+    public AText process(@NotNull AText text, Object obj) {
         for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }

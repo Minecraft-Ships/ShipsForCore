@@ -48,7 +48,7 @@ public class EOTSign implements ShipsSign {
     }
 
     public boolean isAhead(SignTileEntity entity) {
-        return entity.getTextAt(1).isPresent() && entity.getTextAt(1).get().contains("{");
+        return entity.getTextAt(1).isPresent() && entity.getTextAt(1).get().contains("{", false);
     }
 
     @Override

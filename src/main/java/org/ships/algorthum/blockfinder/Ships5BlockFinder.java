@@ -5,8 +5,9 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.jetbrains.annotations.NotNull;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
+import org.ships.config.blocks.instruction.BlockInstruction;
+import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -32,7 +33,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
             BlockPosition block = position.getRelative(direction);
             BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
             OvertimeBlockFinderUpdate.BlockFindControl blockFind = null;
-            if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+            if (bi.getCollide() == CollideType.MATERIAL) {
                 if (event != null) {
                     blockFind = event.onBlockFind(this.shipsStructure, block);
                     if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
@@ -72,7 +73,7 @@ public class Ships5BlockFinder implements BasicBlockFinder {
 
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-            OvertimeBlockFinderUpdate runAfterFullSearch) {
+                                           OvertimeBlockFinderUpdate runAfterFullSearch) {
         runAfterFullSearch.onShipsStructureUpdated(this.getConnectedBlocks(position, runAfterFullSearch));
     }
 

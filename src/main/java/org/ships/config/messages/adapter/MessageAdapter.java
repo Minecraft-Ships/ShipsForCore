@@ -15,7 +15,7 @@ public interface MessageAdapter<T> {
 
     default AText process(@NotNull T obj, @NotNull AText message) {
         AText mapped = this.process(obj);
-        return message.withAllAs(this.adapterTextFormat(), mapped);
+        return message.withAllAsIgnoreCase(this.adapterTextFormat(), mapped);
     }
 
     default String adapterTextFormat() {

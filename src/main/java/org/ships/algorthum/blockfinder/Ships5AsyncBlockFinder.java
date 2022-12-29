@@ -9,13 +9,14 @@ import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
+import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
+import org.ships.config.blocks.instruction.BlockInstruction;
 
 import java.util.Optional;
 
@@ -36,7 +37,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
             ASyncBlockPosition block = position.getRelative(direction);
             BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
             OvertimeBlockFinderUpdate.BlockFindControl blockFind = null;
-            if (bi.getCollideType() == BlockInstruction.CollideType.MATERIAL) {
+            if (bi.getCollide() == CollideType.MATERIAL) {
                 if (event != null) {
                     blockFind = event.onBlockFind(this.shipsStructure, block);
                     if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {

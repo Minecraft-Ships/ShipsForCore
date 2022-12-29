@@ -42,16 +42,12 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
             new BlockTypeArgument("blocktype"), new ParseCommandArgument<>() {
         @Override
         public CommandArgumentResult<BlockType> parse(CommandContext context,
-                CommandArgumentContext<BlockType> argument) {
+                                                      CommandArgumentContext<BlockType> argument) {
             if (!(context.getSource() instanceof LivePlayer player)) {
                 return CommandArgumentResult.from(argument, 0, null);
             }
             Optional<BlockPosition> opBlockType = player.getBlockLookingAt();
-            return CommandArgumentResult.from(
-                    argument,
-                    0,
-                    opBlockType.map(Position::getBlockType).orElse(null)
-            );
+            return CommandArgumentResult.from(argument, 0, opBlockType.map(Position::getBlockType).orElse(null));
         }
     });
 
@@ -84,8 +80,12 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
         BlockDetails details = bt.getDefaultBlockDetails();
         viewer.sendMessage(AText.ofPlain("---[ID]---"));
         viewer.sendMessage(AText.ofPlain(" |- ID: " + details.getType().getId()));
-        viewer.sendMessage(AText.ofPlain(" |- BlockList-CollideType: " +
-                ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(details.getType()).getCollideType().name()));
+        viewer.sendMessage(AText.ofPlain(" |- BlockList-CollideType: " + ShipsPlugin
+                .getPlugin()
+                .getBlockList()
+                .getBlockInstruction(details.getType())
+                .getCollide()
+                .name()));
         viewer.sendMessage(AText.ofPlain("---[Keyed Data]---"));
         for (Map.Entry<String, Class<? extends KeyedData<?>>> dataClass : KeyedData.getDefaultKeys().entrySet()) {
             if (details.getUnspecified(dataClass.getValue()).isPresent()) {
@@ -98,12 +98,12 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
         viewer.sendMessage(AText.ofPlain("---[Priority]---"));
         WorldExtent world = TranslateCore.getServer().getWorlds().iterator().next();
         BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0),
-                details).getBlockPriority();
+                                                    details).getBlockPriority();
         viewer.sendMessage(AText.ofPlain(" |- ID: " + priority.getId()));
         viewer.sendMessage(AText.ofPlain(" |- Value: " + priority.getPriorityNumber()));
         viewer.sendMessage(AText.ofPlain("---[Like]---"));
         String like = ArrayUtils.toString("\n |- ", Identifiable::getName,
-                bt.getLike().parallelStream().limit(5).collect(Collectors.toList()));
+                                          bt.getLike().parallelStream().limit(5).collect(Collectors.toList()));
         viewer.sendMessage(AText.ofPlain("\n |- " + like));
         return true;
     }

@@ -11,7 +11,8 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
-import org.ships.config.blocks.BlockInstruction;
+import org.ships.config.blocks.instruction.BlockInstruction;
+import org.ships.config.blocks.instruction.CollideType;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
@@ -47,25 +48,23 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer)) {
+        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer) commandContext.getSource();
         Collection<BlockInstruction> bl = ShipsPlugin.getPlugin().getBlockList().getBlockList();
-        Map<BlockInstruction.CollideType, Integer> values = new EnumMap<>(BlockInstruction.CollideType.class);
-        for (BlockInstruction.CollideType type : BlockInstruction.CollideType.values()) {
+        Map<CollideType, Integer> values = new EnumMap<>(CollideType.class);
+        for (CollideType type : CollideType.values()) {
             values.put(type, 0);
         }
         for (BlockInstruction bi : bl) {
-            values.replace(bi.getCollideType(), values.get(bi.getCollideType()) + 1);
+            values.replace(bi.getCollide(), values.get(bi.getCollide()) + 1);
         }
-        values.forEach((c, a) -> viewer
-                .sendMessage(AText
-                        .ofPlain(c.name() + ": ")
-                        .withColour(NamedTextColours.AQUA)
-                        .append(AText
-                                .ofPlain(a.toString())
-                                .withColour(NamedTextColours.YELLOW))));
+        values.forEach((c, a) -> viewer.sendMessage(AText
+                                                            .ofPlain(c.name() + ": ")
+                                                            .withColour(NamedTextColours.AQUA)
+                                                            .append(AText
+                                                                            .ofPlain(a.toString())
+                                                                            .withColour(NamedTextColours.YELLOW))));
         return true;
     }
 }

@@ -1,6 +1,7 @@
 package org.ships.config.messages.messages.bar;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
@@ -30,7 +31,7 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
     }
 
     @Override
-    public AText process(AText text, PositionableShipsStructure obj) {
+    public AText process(@NotNull AText text, PositionableShipsStructure obj) {
         for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
             text = adapter.process(text);
         }

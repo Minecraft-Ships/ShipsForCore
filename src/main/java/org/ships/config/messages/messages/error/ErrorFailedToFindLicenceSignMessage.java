@@ -1,6 +1,7 @@
 package org.ships.config.messages.messages.error;
 
 import org.core.adventureText.AText;
+import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -25,7 +26,7 @@ public class ErrorFailedToFindLicenceSignMessage implements Message<Positionable
     }
 
     @Override
-    public AText process(AText text, PositionableShipsStructure obj) {
+    public AText process(@NotNull AText text, PositionableShipsStructure obj) {
         for (MessageAdapter<?> adapter : this.getAdapters()) {
             if (adapter.containsAdapter(text)) {
                 text = ((MessageAdapter<PositionableShipsStructure>) adapter).process(obj, text);

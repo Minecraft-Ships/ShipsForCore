@@ -39,8 +39,8 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
-import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.DefaultBlockList;
+import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.event.vessel.create.VesselCreateEvent;
@@ -103,8 +103,7 @@ public class CoreEventListener implements EventListener {
         }
         for (Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())) {
             SyncBlockPosition position = event.getPosition().getRelative(direction);
-            if (list.getBlockInstruction(position.getBlockType()).getCollideType()
-                    != BlockInstruction.CollideType.MATERIAL) {
+            if (list.getBlockInstruction(position.getBlockType()).getCollide() != CollideType.MATERIAL) {
                 continue;
             }
 
@@ -217,12 +216,12 @@ public class CoreEventListener implements EventListener {
         if (!(opTE.get() instanceof LiveSignTileEntity lste)) {
             return;
         }
-        BlockInstruction.CollideType collideType = ShipsPlugin
+        CollideType collideType = ShipsPlugin
                 .getPlugin()
                 .getBlockList()
                 .getBlockInstruction(position.getBlockType())
-                .getCollideType();
-        if (collideType != BlockInstruction.CollideType.MATERIAL) {
+                .getCollide();
+        if (collideType != CollideType.MATERIAL) {
             return;
         }
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
@@ -246,12 +245,12 @@ public class CoreEventListener implements EventListener {
         if (config.getDisabledWorlds().contains(event.getEntity().getPosition().getWorld())) {
             return;
         }
-        BlockInstruction.CollideType collideType = ShipsPlugin
+        CollideType collideType = ShipsPlugin
                 .getPlugin()
                 .getBlockList()
                 .getBlockInstruction(event.getPosition().getBlockType())
-                .getCollideType();
-        if (collideType != BlockInstruction.CollideType.MATERIAL) {
+                .getCollide();
+        if (collideType != CollideType.MATERIAL) {
             return;
         }
         boolean register = false;
