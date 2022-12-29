@@ -5,6 +5,7 @@ import org.core.permission.CorePermission;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection"})
 public interface Permissions {
+    CorePermission CMD_LOCK = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "cmd", "lock"));
 
     CorePermission CMD_SHIPS = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "cmd", "ships"));
     CorePermission AIRSHIP_MOVE_OWN = TranslateCore

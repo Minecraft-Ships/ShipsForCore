@@ -11,7 +11,7 @@ import java.util.AbstractMap;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-public class MaxSizeRequirement implements Requirement {
+public class MaxSizeRequirement implements Requirement<MaxSizeRequirement> {
 
     private final @Nullable Integer maxSize;
     private final @Nullable MaxSizeRequirement parent;
@@ -66,6 +66,19 @@ public class MaxSizeRequirement implements Requirement {
     }
 
     @Override
+    public @NotNull MaxSizeRequirement getRequirementsBetween(@NotNull MaxSizeRequirement requirement) {
+        MaxSizeRequirement maxSizeRequirement = this;
+        Integer amount = null;
+        while (maxSizeRequirement != null && maxSizeRequirement != requirement) {
+            if (maxSizeRequirement.maxSize != null) {
+                amount = maxSizeRequirement.maxSize;
+            }
+            maxSizeRequirement = maxSizeRequirement.getParent().orElse(null);
+        }
+        return new MaxSizeRequirement(requirement, amount);
+    }
+
+    @Override
     public @NotNull MaxSizeRequirement createChild() {
         return new MaxSizeRequirement(this);
     }
@@ -85,7 +98,7 @@ public class MaxSizeRequirement implements Requirement {
     }
 
     @Override
-    public Optional<Requirement> getParent() {
+    public Optional<MaxSizeRequirement> getParent() {
         return Optional.ofNullable(this.parent);
     }
 

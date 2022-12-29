@@ -33,32 +33,39 @@ public class MarsshipType extends AbstractShipType<Marsship>
     private CorePermission moveOtherPermission = Permissions.MARSSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.MARSSHIP_MAKE;
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public MarsshipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "/Configuration/ShipType/MarsShip." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+                            "/Configuration/ShipType/MarsShip." + TranslateCore
+                                    .getPlatform()
+                                    .getConfigFormat()
+                                    .getFileType()[0]));
     }
 
     public MarsshipType(String name, File file) {
         this(ShipsPlugin.getPlugin(), name,
-                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
-                BlockTypes.AIR, BlockTypes.WATER);
+             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR,
+             BlockTypes.WATER);
     }
 
-    public MarsshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file,
-            BlockType... types) {
+    public MarsshipType(Plugin plugin,
+                        String displayName,
+                        ConfigurationStream.ConfigurationFile file,
+                        BlockType... types) {
         super(plugin, displayName, file, types);
         if (!(plugin.equals(ShipsPlugin.getPlugin()) && displayName.equals(NAME))) {
             String pluginId = plugin.getPluginId();
             String name = displayName.toLowerCase().replace(" ", "");
-            this.moveOwnPermission = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "move",
-                    "own",
-                    pluginId, name));
-            this.moveOtherPermission = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "move",
-                    "other", pluginId, name));
-            this.makePermission = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "make",
-                    pluginId, name));
+            this.moveOwnPermission = TranslateCore
+                    .getPlatform()
+                    .register(new CorePermission(true, "ships", "move", "own", pluginId, name));
+            this.moveOtherPermission = TranslateCore
+                    .getPlatform()
+                    .register(new CorePermission(false, "ships", "move", "other", pluginId, name));
+            this.makePermission = TranslateCore
+                    .getPlatform()
+                    .register(new CorePermission(false, "ships", "make", pluginId, name));
         }
     }
 
@@ -78,14 +85,14 @@ public class MarsshipType extends AbstractShipType<Marsship>
         this.file.set(ALTITUDE_SPEED, 5);
         this.file.set(SPECIAL_BLOCK_PERCENT, 15);
         this.file.set(SPECIAL_BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE,
-                Collections.singletonList(BlockTypes.DAYLIGHT_DETECTOR));
+                      Collections.singletonList(BlockTypes.DAYLIGHT_DETECTOR));
     }
 
     @Override
-    public Collection<Requirement> getDefaultRequirements() {
+    public Collection<Requirement<?>> getDefaultRequirements() {
         if (this.requirements.isEmpty()) {
-            Requirement daylightDetector = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
-                    this.getDefaultSpecialBlockTypes());
+            Requirement<?> daylightDetector = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                                                                           this.getDefaultSpecialBlockTypes());
             this.requirements.add(daylightDetector);
         }
         return this.requirements;

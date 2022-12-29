@@ -28,7 +28,7 @@ import java.util.HashSet;
 public class SubmarineType extends AbstractShipType<Submarine>
         implements SpecialBlockShipType<Submarine>, FuelledShipType<Submarine> {
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public SubmarineType() {
         this("Submarine", new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -63,14 +63,14 @@ public class SubmarineType extends AbstractShipType<Submarine>
     }
 
     @Override
-    public Collection<Requirement> getDefaultRequirements() {
+    public Collection<Requirement<?>> getDefaultRequirements() {
         if (this.requirements.isEmpty()) {
-            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
-                                                              this.getDefaultFuelConsumption(),
-                                                              this.getDefaultFuelTypes());
-            Requirement specialBlocksRequirement = new SpecialBlocksRequirement(null,
-                                                                                this.getDefaultSpecialBlocksPercent(),
-                                                                                this.getDefaultSpecialBlockTypes());
+            Requirement<?> fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                                                                 this.getDefaultFuelConsumption(),
+                                                                 this.getDefaultFuelTypes());
+            Requirement<?> specialBlocksRequirement = new SpecialBlocksRequirement(null,
+                                                                                   this.getDefaultSpecialBlocksPercent(),
+                                                                                   this.getDefaultSpecialBlockTypes());
             this.requirements.add(fuelRequirement);
             this.requirements.add(specialBlocksRequirement);
         }

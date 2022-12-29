@@ -6,11 +6,9 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.types.ShipType;
-import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.HashMap;
@@ -40,25 +38,5 @@ public class OPShip extends AbstractShipsVessel implements AirType {
     @Override
     public @NotNull Map<String, String> getExtraInformation() {
         return new HashMap<>();
-    }
-
-    @Override
-    public @NotNull Vessel setMaxSize(@Nullable Integer size) {
-        return this;
-    }
-
-    @Override
-    public boolean isMaxSizeSpecified() {
-        return false;
-    }
-
-    @Override
-    public @NotNull Vessel setMinSize(@Nullable Integer size) {
-        return this;
-    }
-
-    @Override
-    public boolean isMinSizeSpecified() {
-        return false;
     }
 }

@@ -30,7 +30,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(
             Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
 
     public Marsship(ShipType<? extends Marsship> type, LiveTileEntity licence) throws NoLicencePresent {
@@ -82,7 +82,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     }
 
     @Override
-    public Collection<Requirement> getRequirements() {
+    public Collection<Requirement<?>> getRequirements() {
         return Collections.unmodifiableCollection(this.requirements);
     }
 
@@ -99,7 +99,6 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         return (MarsshipType) super.getType();
     }
 
-    @Override
     public @NotNull Vessel setMaxSize(@Nullable Integer size) {
         MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
         maxRequirements = maxRequirements.createCopy(size);
@@ -107,12 +106,10 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         return this;
     }
 
-    @Override
     public boolean isMaxSizeSpecified() {
         return this.getMaxBlocksRequirement().isMaxSizeSpecified();
     }
 
-    @Override
     public @NotNull Vessel setMinSize(@Nullable Integer size) {
         MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
         minRequirements = minRequirements.createCopy(size);
@@ -120,7 +117,6 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         return this;
     }
 
-    @Override
     public boolean isMinSizeSpecified() {
         return this.getMinBlocksRequirement().isMinSizeSpecified();
     }
@@ -156,7 +152,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     }
 
     @Override
-    public void setRequirement(Requirement updated) {
+    public void setRequirement(Requirement<?> updated) {
         this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }

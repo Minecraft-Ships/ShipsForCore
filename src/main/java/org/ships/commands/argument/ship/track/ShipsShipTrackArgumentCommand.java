@@ -44,7 +44,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
     @Override
     public Optional<Permission> getPermissionNode() {
-        return Optional.of(Permissions.CMD_SHIP_TRACK);
+        return Optional.of(Permissions.CMD_SHIP_TRACK_OWN);
     }
 
     @Override

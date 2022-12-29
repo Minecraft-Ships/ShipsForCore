@@ -10,7 +10,7 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.AbstractMap;
 import java.util.Optional;
 
-public class MinSizeRequirement implements Requirement {
+public class MinSizeRequirement implements Requirement<MinSizeRequirement> {
 
     private final @Nullable MinSizeRequirement parent;
     private final @Nullable Integer minSize;
@@ -55,6 +55,20 @@ public class MinSizeRequirement implements Requirement {
 
     }
 
+    @NotNull
+    @Override
+    public MinSizeRequirement getRequirementsBetween(@NotNull MinSizeRequirement requirement) {
+        MinSizeRequirement minSizeRequirement = this;
+        Integer amount = null;
+        while (minSizeRequirement != null && minSizeRequirement != requirement) {
+            if (minSizeRequirement.minSize != null) {
+                amount = minSizeRequirement.minSize;
+            }
+            minSizeRequirement = minSizeRequirement.getParent().orElse(null);
+        }
+        return new MinSizeRequirement(requirement, amount);
+    }
+
     @Override
     public @NotNull MinSizeRequirement createChild() {
         return new MinSizeRequirement(this, null);
@@ -65,7 +79,7 @@ public class MinSizeRequirement implements Requirement {
     }
 
     @Override
-    public @NotNull Requirement createCopy() {
+    public @NotNull MinSizeRequirement createCopy() {
         return new MinSizeRequirement(this.parent, this.minSize);
     }
 
@@ -74,7 +88,7 @@ public class MinSizeRequirement implements Requirement {
     }
 
     @Override
-    public Optional<Requirement> getParent() {
+    public Optional<MinSizeRequirement> getParent() {
         return Optional.empty();
     }
 

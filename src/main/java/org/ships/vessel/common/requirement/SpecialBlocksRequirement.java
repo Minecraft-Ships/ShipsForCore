@@ -11,12 +11,9 @@ import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.*;
 
-public class SpecialBlocksRequirement implements Requirement {
+public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequirement> {
 
     private final @Nullable SpecialBlocksRequirement parent;
     private final @Nullable Collection<BlockType> specialBlocks;
@@ -38,6 +35,14 @@ public class SpecialBlocksRequirement implements Requirement {
         this.parent = parent;
         this.specialBlocks = specialBlocks;
         this.specialBlocksPercentage = specialBlocksPercentage;
+    }
+
+    public Optional<Float> getSpecifiedPercent() {
+        return Optional.ofNullable(this.specialBlocksPercentage);
+    }
+
+    public Collection<BlockType> getSpecifiedBlocks() {
+        return this.specialBlocks == null ? Collections.emptySet() : this.specialBlocks;
     }
 
     public boolean isPercentageSpecified() {
@@ -103,6 +108,23 @@ public class SpecialBlocksRequirement implements Requirement {
     }
 
     @Override
+    public @NotNull SpecialBlocksRequirement getRequirementsBetween(@NotNull SpecialBlocksRequirement requirement) {
+        SpecialBlocksRequirement specialBlock = this;
+        Collection<BlockType> type = null;
+        Float amount = null;
+        while (specialBlock != null && specialBlock != requirement) {
+            if (specialBlock.specialBlocks != null) {
+                type = specialBlock.specialBlocks;
+            }
+            if (specialBlock.specialBlocksPercentage != null) {
+                amount = specialBlock.specialBlocksPercentage;
+            }
+            specialBlock = specialBlock.getParent().orElse(null);
+        }
+        return new SpecialBlocksRequirement(requirement, amount, type);
+    }
+
+    @Override
     public @NotNull SpecialBlocksRequirement createChild() {
         return new SpecialBlocksRequirement(this);
     }
@@ -130,7 +152,7 @@ public class SpecialBlocksRequirement implements Requirement {
 
 
     @Override
-    public Optional<Requirement> getParent() {
+    public Optional<SpecialBlocksRequirement> getParent() {
         return Optional.ofNullable(this.parent);
     }
 

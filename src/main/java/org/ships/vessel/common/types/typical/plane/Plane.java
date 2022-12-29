@@ -44,7 +44,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(
             Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
         super(licence, type);
@@ -127,13 +127,13 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     }
 
     @Override
-    public Collection<Requirement> getRequirements() {
+    public Collection<Requirement<?>> getRequirements() {
         return Collections.unmodifiableCollection(this.requirements);
     }
 
     @Override
-    public void setRequirement(Requirement updated) {
-        this.getRequirement(updated.getClass()).ifPresent(req -> this.requirements.remove(req));
+    public void setRequirement(Requirement<?> updated) {
+        this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }
 
@@ -168,7 +168,6 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         return acceptedSlots.isEmpty();
     }
 
-    @Override
     public @NotNull Vessel setMaxSize(@Nullable Integer size) {
         MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
         maxRequirements = maxRequirements.createCopy(size);
@@ -176,12 +175,10 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         return this;
     }
 
-    @Override
     public boolean isMaxSizeSpecified() {
         return this.getMaxBlocksRequirement().isMaxSizeSpecified();
     }
 
-    @Override
     public @NotNull Vessel setMinSize(@Nullable Integer size) {
         MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
         minRequirements = minRequirements.createCopy(size);
@@ -189,7 +186,6 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         return this;
     }
 
-    @Override
     public boolean isMinSizeSpecified() {
         return this.getMinBlocksRequirement().isMinSizeSpecified();
     }

@@ -37,7 +37,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     protected final ConfigurationNode.KnownParser.CollectionKnown<BlockType> configSpecialBlockType = new ConfigurationNode.KnownParser.CollectionKnown<>(
             Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -83,17 +83,17 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     }
 
     @Override
-    public @NotNull Collection<Requirement> getRequirements() {
+    public @NotNull Collection<Requirement<?>> getRequirements() {
         return Collections.unmodifiableCollection(this.requirements);
     }
 
     @Override
-    public void setRequirement(Requirement updated) {
+    public void setRequirement(@NotNull Requirement<?> updated) {
         this.requirements
                 .parallelStream()
                 .filter(r -> r.getClass().getName().equals(updated.getClass().getName()))
                 .findAny()
-                .ifPresent(requ -> this.requirements.remove(requ));
+                .ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }
 
@@ -144,7 +144,6 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         return map;
     }
 
-    @Override
     public @NotNull Vessel setMaxSize(@Nullable Integer size) {
         MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
         maxRequirements = maxRequirements.createCopy(size);
@@ -152,12 +151,10 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         return this;
     }
 
-    @Override
     public boolean isMaxSizeSpecified() {
         return this.getMaxBlocksRequirement().isMaxSizeSpecified();
     }
 
-    @Override
     public @NotNull Vessel setMinSize(@Nullable Integer size) {
         MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
         minRequirements = minRequirements.createCopy(size);
@@ -165,7 +162,6 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         return this;
     }
 
-    @Override
     public boolean isMinSizeSpecified() {
         return this.getMinBlocksRequirement().isMinSizeSpecified();
     }

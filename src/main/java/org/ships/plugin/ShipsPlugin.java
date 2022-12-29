@@ -28,6 +28,7 @@ import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.event.listener.CoreEventListener;
 import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.movement.BlockPriority;
+import org.ships.movement.PreventMovementManager;
 import org.ships.movement.autopilot.path.FlightPathManager;
 import org.ships.movement.autopilot.scheduler.FallExecutor;
 import org.ships.permissions.vessel.CrewPermission;
@@ -66,6 +67,7 @@ public class ShipsPlugin implements CorePlugin {
     private DebugFile debugFile;
     private Object launcher;
     private boolean shutdown;
+    private final PreventMovementManager preventMovement = new PreventMovementManager();
 
     public ShipsPlugin() {
         plugin = this;
@@ -109,6 +111,10 @@ public class ShipsPlugin implements CorePlugin {
             fallScheduler.run();
         }
         this.init2();
+    }
+
+    public PreventMovementManager getPreventMovementManager() {
+        return this.preventMovement;
     }
 
     @Override

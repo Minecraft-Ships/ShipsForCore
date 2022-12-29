@@ -20,6 +20,7 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.assits.shiptype.SizedShipType;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
@@ -100,6 +101,14 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         }
         shipsType.getDefaultRequirements().stream().map(Requirement::createChild).forEach(requirement::setRequirement);
 
+    }
+
+    public Optional<Integer> getMaxSize() {
+        ShipType<?> type = this.getType();
+        if (!(type instanceof SizedShipType<?> sizedType)) {
+            return Optional.empty();
+        }
+        return sizedType.getMaxSize();
     }
 
     @Override

@@ -44,36 +44,26 @@ import java.util.stream.Collectors;
 
 public class ShipsFileLoader implements ShipsLoader {
 
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SIZE_MAX =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SIZE_MAX = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SIZE_MIN =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SIZE_MIN = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Speed", "Count", "Min");
 
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SPEED_MAX =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SPEED_MAX = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Speed", "Max");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SPEED_ALTITUDE =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> SPEED_ALTITUDE = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Speed", "Altitude");
-    public static final ConfigurationNode.KnownParser.SingleKnown<CrewPermission> META_DEFAULT_PERMISSION =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<CrewPermission> META_DEFAULT_PERMISSION = new ConfigurationNode.KnownParser.SingleKnown<>(
             ShipsParsers.STRING_TO_CREW_PERMISSION, "Meta", "Permission", "Default");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_X =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_X = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Meta", "Location", "X");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Y =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Y = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Meta", "Location", "Y");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Z =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> META_LOCATION_Z = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Meta", "Location", "Z");
-    public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_WORLD =
-            new ConfigurationNode.KnownParser.SingleKnown<>(
+    public static final ConfigurationNode.KnownParser.SingleKnown<WorldExtent> META_LOCATION_WORLD = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_WORLD, "Meta", "Location", "World");
-    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>> META_STRUCTURE =
-            new ConfigurationNode.KnownParser.CollectionKnown<>(
+    public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(
             Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
     public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(
             () -> ShipsPlugin
@@ -82,16 +72,13 @@ public class ShipsFileLoader implements ShipsLoader {
                     .entrySet()
                     .stream()
                     .collect(
-                            Collectors.<Map.Entry<String, VesselFlag.Builder<?, ?>>, String, Parser<String,
-                                    VesselFlag<?>>>toMap(
+                            Collectors.<Map.Entry<String, VesselFlag.Builder<?, ?>>, String, Parser<String, VesselFlag<?>>>toMap(
                                     e -> e.getKey().replaceAll(":", " "),
-                                    new Function<Map.Entry<String, VesselFlag.Builder<?, ?>>,
-                                            VesselFlagWrappedParser<?>>() {
+                                    new Function<Map.Entry<String, VesselFlag.Builder<?, ?>>, VesselFlagWrappedParser<?>>() {
 
 
                                         @Override
-                                        public VesselFlagWrappedParser<?> apply(
-                                                Map.Entry<String, VesselFlag.Builder<?, ?>> stringVesselFlagEntry) {
+                                        public VesselFlagWrappedParser<?> apply(Map.Entry<String, VesselFlag.Builder<?, ?>> stringVesselFlagEntry) {
                                             return this.build(stringVesselFlagEntry.getValue());
                                         }
 
@@ -132,15 +119,15 @@ public class ShipsFileLoader implements ShipsLoader {
                         TranslateCore
                                 .getConsole()
                                 .sendMessage(AText
-                                        .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                        .withColour(NamedTextColours.RED));
+                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .withColour(NamedTextColours.RED));
                         function.accept(e);
                     } catch (Throwable e) {
                         TranslateCore
                                 .getConsole()
                                 .sendMessage(AText
-                                        .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                        .withColour(NamedTextColours.RED));
+                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .withColour(NamedTextColours.RED));
                         e.printStackTrace();
                     }
                 }
@@ -148,8 +135,8 @@ public class ShipsFileLoader implements ShipsLoader {
                 TranslateCore
                         .getConsole()
                         .sendMessage(AText
-                                .ofPlain("Could not load any ships of " + st.getId())
-                                .withColour(NamedTextColours.RED));
+                                             .ofPlain("Could not load any ships of " + st.getId())
+                                             .withColour(NamedTextColours.RED));
                 e.printStackTrace();
             }
         });
@@ -157,8 +144,9 @@ public class ShipsFileLoader implements ShipsLoader {
     }
 
     public void save(AbstractShipsVessel vessel) {
-        ConfigurationStream.ConfigurationFile file = TranslateCore.createConfigurationFile(this.file,
-                TranslateCore.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile file = TranslateCore.createConfigurationFile(this.file, TranslateCore
+                .getPlatform()
+                .getConfigFormat());
         Map<CrewPermission, List<String>> uuidList = new HashMap<>();
         vessel.getCrew().forEach((key, value) -> {
             List<String> list = uuidList.get(value);
@@ -180,7 +168,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 this.setSingleInFile(file, (ConfigurationNode.KnownParser.SingleKnown<?>) key, value);
             } else if (key instanceof ConfigurationNode.KnownParser.CollectionKnown) {
                 this.setCollectionInFile(file, (ConfigurationNode.KnownParser.CollectionKnown<?>) key,
-                        (Collection<?>) value);
+                                         (Collection<?>) value);
             } else {
                 throw new IllegalArgumentException("Could not understand what to do with " + key.getClass().getName());
             }
@@ -192,7 +180,7 @@ public class ShipsFileLoader implements ShipsLoader {
         file.set(META_LOCATION_Y, vessel.getPosition().getY());
         file.set(META_LOCATION_Z, vessel.getPosition().getZ());
         vessel.getMaxSize().ifPresent((size) -> file.set(SIZE_MAX, size));
-        file.set(SIZE_MIN, vessel.getMinSize());
+        //TODO file.set(SIZE_MIN, vessel.getMinSize());
         vessel.getTeleportVectors().forEach((key, value) -> {
             file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "X"), value.getX());
             file.set(new ConfigurationNode("Meta", "Location", "Teleport", key, "Y"), value.getY());
@@ -200,7 +188,7 @@ public class ShipsFileLoader implements ShipsLoader {
         });
         uuidList.forEach((key, value) -> file.set(
                 new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_STRING_PARSER, "Meta",
-                        "Permission", key.getId()), value));
+                                                                    "Permission", key.getId()), value));
         file.set(META_STRUCTURE, vessel.getStructure().getRelativePositions());
         Set<VesselFlag<?>> flags = vessel
                 .getFlags()
@@ -213,23 +201,25 @@ public class ShipsFileLoader implements ShipsLoader {
 
     @Override
     public ShipsVessel load() throws LoadVesselException {
-        ConfigurationStream.ConfigurationFile file = TranslateCore.createConfigurationFile(this.file,
-                TranslateCore.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile file = TranslateCore.createConfigurationFile(this.file, TranslateCore
+                .getPlatform()
+                .getConfigFormat());
         Optional<WorldExtent> opWorld = file.parse(META_LOCATION_WORLD);
-        if (!opWorld.isPresent()) {
-            throw new FileLoadVesselException(this.file,
-                    "Unknown World of " + file.getString(META_LOCATION_WORLD).orElse("'No value found'"));
+        if (opWorld.isEmpty()) {
+            throw new FileLoadVesselException(this.file, "Unknown World of " + file
+                    .getString(META_LOCATION_WORLD)
+                    .orElse("'No value found'"));
         }
         Optional<Integer> opX = file.getInteger(META_LOCATION_X);
-        if (!opX.isPresent()) {
+        if (opX.isEmpty()) {
             throw new FileLoadVesselException(this.file, "Unknown X value");
         }
         Optional<Integer> opY = file.getInteger(META_LOCATION_Y);
-        if (!opY.isPresent()) {
+        if (opY.isEmpty()) {
             throw new FileLoadVesselException(this.file, "Unknown Y value");
         }
         Optional<Integer> opZ = file.getInteger(META_LOCATION_Z);
-        if (!opZ.isPresent()) {
+        if (opZ.isEmpty()) {
             throw new FileLoadVesselException(this.file, "Unknown Z value");
         }
         SyncBlockPosition position = opWorld.get().getPosition(opX.get(), opY.get(), opZ.get());
@@ -240,27 +230,26 @@ public class ShipsFileLoader implements ShipsLoader {
                         "Could not get licence sign from register. Something is really wrong"));
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {
-            throw new FileLoadVesselException(this.file,
-                    "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," +
-                            position.getZ() + "," + position.getWorld().getName() + ": Error V1");
+            throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
+                    + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
         if (!sign.isSign(lste)) {
-            throw new FileLoadVesselException(this.file,
-                    "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," +
-                            position.getZ() + "," + position.getWorld().getName() + ": Error V2");
+            throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
+                    + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
         Optional<AText> opShipTypeS = lste.getTextAt(1);
         if (opShipTypeS.isEmpty()) {
-            throw new FileLoadVesselException(this.file,
-                    "LicenceSign is not at location " + position.getX() + "," + position.getY() + "," +
-                            position.getZ() + "," + position.getWorld().getName() + ": Error V3");
+            throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
+                    + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
         String shipTypeS = opShipTypeS.get().toPlain();
         Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
-        Optional<ShipType<?>> opShipType =
-                types.parallelStream().filter(s -> s.getDisplayName().equalsIgnoreCase(shipTypeS)).findAny();
+        Optional<ShipType<?>> opShipType = types
+                .parallelStream()
+                .filter(s -> s.getDisplayName().equalsIgnoreCase(shipTypeS))
+                .findAny();
         if (opShipType.isEmpty()) {
             throw new FileLoadVesselException(this.file, "Unknown ShipType");
         }
@@ -273,8 +262,8 @@ public class ShipsFileLoader implements ShipsLoader {
         file.getInteger(SPEED_ALTITUDE).ifPresent(ship::setAltitudeSpeed);
         file.getInteger(SPEED_MAX).ifPresent(ship::setMaxSpeed);
 
-        file.getInteger(SIZE_MAX).ifPresent(ship::setMaxSize);
-        file.getInteger(SIZE_MIN).ifPresent(ship::setMinSize);
+        //TODO file.getInteger(SIZE_MAX).ifPresent(ship::setMaxSize);
+        //TODO file.getInteger(SIZE_MIN).ifPresent(ship::setMinSize);
         file.getChildren(new ConfigurationNode("Meta", "Location", "Teleport")).forEach(c -> {
             String[] path = c.getPath();
             String id = path[path.length - 1];
@@ -297,18 +286,18 @@ public class ShipsFileLoader implements ShipsLoader {
                 .setDisplayName(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown") + " - Structure-Loader")
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setDelay(1)
-                .setRunner((sch) -> new StructureLoad(ship).load(position,
-                        file.parseCollection(META_STRUCTURE, new ArrayList<>())))
+                .setRunner((sch) -> new StructureLoad(ship).load(position, file.parseCollection(META_STRUCTURE,
+                                                                                                new ArrayList<>())))
                 .build(ShipsPlugin.getPlugin())
                 .run();
 
-        ShipsPlugin.getPlugin()
+        ShipsPlugin
+                .getPlugin()
                 .getAll(CrewPermission.class)
-                .forEach(p -> file.parseCollection(
-                        new ConfigurationNode("Meta", "Permission", p.getId()),
-                        Parser.STRING_TO_UNIQUE_ID,
-                        new ArrayList<>()
-                ).forEach(u -> ship.getCrew().put(u, p)));
+                .forEach(p -> file
+                        .parseCollection(new ConfigurationNode("Meta", "Permission", p.getId()),
+                                         Parser.STRING_TO_UNIQUE_ID, new ArrayList<>())
+                        .forEach(u -> ship.getCrew().put(u, p)));
         file.parseCollection(META_FLAGS, new HashSet<>()).forEach(ship::set);
         try {
             ship.deserializeExtra(file);
@@ -319,16 +308,18 @@ public class ShipsFileLoader implements ShipsLoader {
     }
 
     private <T, C extends Collection<T>> void setCollectionInFile(ConfigurationStream stream,
-            ConfigurationNode.KnownParser.CollectionKnown<T> node, Collection<?> value) {
+                                                                  ConfigurationNode.KnownParser.CollectionKnown<T> node,
+                                                                  Collection<?> value) {
         stream.set(node, (C) value);
     }
 
-    private <T> void setSingleInFile(ConfigurationStream stream, ConfigurationNode.KnownParser.SingleKnown<T> node,
-            Object value) {
+    private <T> void setSingleInFile(ConfigurationStream stream,
+                                     ConfigurationNode.KnownParser.SingleKnown<T> node,
+                                     Object value) {
         stream.set(node, (T) value);
     }
 
-    private static class StructureLoad {
+    private final static class StructureLoad {
 
         private final ShipsVessel ship;
 
@@ -338,25 +329,38 @@ public class ShipsFileLoader implements ShipsLoader {
 
         public void load(BlockPosition position, Collection<? extends Vector3<Integer>> structureList) {
             if (structureList.isEmpty()) {
-                ShipsPlugin.getPlugin().getConfig().getDefaultFinder().getConnectedBlocksOvertime(position,
-                        new FindAirOvertimeBlockFinderUpdate(StructureLoad.this.ship, new OvertimeBlockFinderUpdate() {
-                            @Override
-                            public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                                StructureLoad.this.ship.setStructure(structure);
-                                StructureLoad.this.ship.setLoading(false);
-                                TranslateCore
-                                        .getConsole()
-                                        .sendMessage(AText.ofPlain(
-                                                Else.throwOr(NoLicencePresent.class, StructureLoad.this.ship::getId,
-                                                        "Unknown") + " has loaded."));
-                            }
+                ShipsPlugin
+                        .getPlugin()
+                        .getConfig()
+                        .getDefaultFinder()
+                        .getConnectedBlocksOvertime(position,
+                                                    new FindAirOvertimeBlockFinderUpdate(StructureLoad.this.ship,
+                                                                                         new OvertimeBlockFinderUpdate() {
+                                                                                             @Override
+                                                                                             public void onShipsStructureUpdated(
+                                                                                                     @NotNull PositionableShipsStructure structure) {
+                                                                                                 StructureLoad.this.ship.setStructure(
+                                                                                                         structure);
+                                                                                                 StructureLoad.this.ship.setLoading(
+                                                                                                         false);
+                                                                                                 TranslateCore
+                                                                                                         .getConsole()
+                                                                                                         .sendMessage(
+                                                                                                                 AText.ofPlain(
+                                                                                                                         Else.throwOr(
+                                                                                                                                 NoLicencePresent.class,
+                                                                                                                                 StructureLoad.this.ship::getId,
+                                                                                                                                 "Unknown")
+                                                                                                                                 + " has loaded."));
+                                                                                             }
 
-                            @Override
-                            public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                                    @NotNull BlockPosition block) {
-                                return BlockFindControl.USE;
-                            }
-                        }));
+                                                                                             @Override
+                                                                                             public BlockFindControl onBlockFind(
+                                                                                                     @NotNull PositionableShipsStructure currentStructure,
+                                                                                                     @NotNull BlockPosition block) {
+                                                                                                 return BlockFindControl.USE;
+                                                                                             }
+                                                                                         }));
             } else {
                 PositionableShipsStructure pss = this.ship.getStructure();
                 pss.setRaw(structureList);

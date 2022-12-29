@@ -15,6 +15,7 @@ import org.ships.config.blocks.BlockInstruction;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Message;
 import org.ships.config.messages.messages.error.data.CollideDetectedMessageData;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.move.MoveException;
@@ -133,6 +134,10 @@ public class MovementContext {
             bossBar.setValue(100);
             bossBar.setTitle(AText.ofPlain("Processing: Pre"));
         });
+
+        if(ShipsPlugin.getPlugin().getPreventMovementManager().isMovementPrevented()){
+            throw new MoveException(this, AdventureMessageConfig.ERROR_PREVENT_MOVEMENT, vessel);
+        }
 
         if (this.isPreMoveEventCancelled(vessel)) {
             return;

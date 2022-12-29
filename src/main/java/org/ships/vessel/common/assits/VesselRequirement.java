@@ -11,28 +11,28 @@ import java.util.Optional;
 
 public interface VesselRequirement extends Vessel {
 
-    Collection<Requirement> getRequirements();
+    Collection<Requirement<?>> getRequirements();
 
-    default <R extends Requirement> Optional<R> getRequirement(Class<R> clazz) {
+    default <R extends Requirement<?>> Optional<R> getRequirement(Class<R> clazz) {
         return this
                 .getRequirements()
                 .parallelStream()
-                .filter(requirement -> clazz.isInstance(requirement))
+                .filter(clazz::isInstance)
                 .findAny()
                 .map(requirement -> (R) requirement);
     }
 
     default void checkRequirements(@NotNull MovementContext context) throws MoveException {
-        for (Requirement requirement : this.getRequirements()) {
+        for (Requirement<?> requirement : this.getRequirements()) {
             requirement.onCheckRequirement(context, this);
         }
     }
 
     default void finishRequirements(@NotNull MovementContext context) throws MoveException {
-        for (Requirement requirement : this.getRequirements()) {
+        for (Requirement<?> requirement : this.getRequirements()) {
             requirement.onProcessRequirement(context, this);
         }
     }
 
-    void setRequirement(Requirement updated);
+    void setRequirement(@NotNull Requirement<?> updated);
 }

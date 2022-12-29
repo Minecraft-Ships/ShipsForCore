@@ -19,38 +19,62 @@ import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
 import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
-import org.ships.vessel.common.requirement.FuelRequirement;
-import org.ships.vessel.common.requirement.Requirement;
-import org.ships.vessel.common.requirement.SpecialBlockRequirement;
-import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
+import org.ships.vessel.common.requirement.*;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 public class AirshipType extends AbstractShipType<Airship>
         implements CloneableShipType<Airship>, SpecialBlockShipType<Airship>, FuelledShipType<Airship> {
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private FuelRequirement fuelRequirement;
+    private SpecialBlocksRequirement specialBlocksRequirement;
+    private SpecialBlockRequirement burnerRequirement;
+    private MinSizeRequirement minSizeRequirement;
+    private MaxSizeRequirement maxSizeRequirement;
 
     public AirshipType() {
         this("Airship", new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "/Configuration/ShipType/Airship." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]));
+                                 "/Configuration/ShipType/Airship." + TranslateCore
+                                         .getPlatform()
+                                         .getConfigFormat()
+                                         .getFileType()[0]));
     }
 
     public AirshipType(String displayName, File file) {
         this(ShipsPlugin.getPlugin(), displayName,
-                TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
-                BlockTypes.AIR);
+             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+             BlockTypes.AIR);
     }
 
-    public AirshipType(Plugin plugin, String displayName, ConfigurationStream.ConfigurationFile file,
-            BlockType... types) {
+    public AirshipType(Plugin plugin,
+                       String displayName,
+                       ConfigurationStream.ConfigurationFile file,
+                       BlockType... types) {
         super(plugin, displayName, file, types);
+    }
+
+    public @NotNull FuelRequirement getFuelRequirement() {
+        return this.fuelRequirement;
+    }
+
+    public @NotNull SpecialBlockRequirement getBurnerRequirement() {
+        return this.burnerRequirement;
+    }
+
+    public @NotNull SpecialBlocksRequirement getSpecialBlocksRequirement() {
+        return this.specialBlocksRequirement;
+    }
+
+    public @NotNull MinSizeRequirement getMinimumSizeRequirement() {
+        return this.minSizeRequirement;
+    }
+
+    public @NotNull MaxSizeRequirement getMaxSizeRequirement() {
+        return this.maxSizeRequirement;
     }
 
     public boolean isUsingBurner() {
@@ -80,17 +104,27 @@ public class AirshipType extends AbstractShipType<Airship>
     }
 
     @Override
-    public Collection<Requirement> getDefaultRequirements() {
-        if (this.requirements.isEmpty()) {
-            Requirement burnerRequirement = new SpecialBlockRequirement(null, BlockTypes.FIRE,
-                    this.isUsingBurner() ? 1 : 0, "Burner");
-            Requirement woolRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
-                    this.getDefaultSpecialBlockTypes());
-            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
-                    this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
-            this.requirements.addAll(List.of(burnerRequirement, woolRequirement, fuelRequirement));
+    public Collection<Requirement<?>> getDefaultRequirements() {
+        if (this.fuelRequirement == null) {
+            this.fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                                                       this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
         }
-        return Collections.unmodifiableCollection(this.requirements);
+        if (this.burnerRequirement == null) {
+            this.burnerRequirement = new SpecialBlockRequirement(null, BlockTypes.FIRE, this.isUsingBurner() ? 1 : 0,
+                                                                 "Burner");
+        }
+        if (this.specialBlocksRequirement == null) {
+            this.specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                                                                         this.getDefaultSpecialBlockTypes());
+        }
+        if (this.minSizeRequirement == null) {
+            this.minSizeRequirement = new MinSizeRequirement(null, this.getDefaultMinSize());
+        }
+        if (this.maxSizeRequirement == null) {
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.getDefaultMaxSize().orElse(null));
+        }
+        return List.of(this.burnerRequirement, this.fuelRequirement, this.specialBlocksRequirement,
+                       this.minSizeRequirement, this.maxSizeRequirement);
     }
 
     @Override

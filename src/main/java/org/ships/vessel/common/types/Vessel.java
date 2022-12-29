@@ -24,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.instruction.details.MovementDetails;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.assits.shiptype.SizedShipType;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -62,34 +61,6 @@ public interface Vessel extends Positionable<BlockPosition> {
     @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed);
 
     boolean isAltitudeSpeedSpecified();
-
-    @Deprecated(forRemoval = true)
-    default Optional<Integer> getMaxSize() {
-        ShipType<?> type = this.getType();
-        if (!(type instanceof SizedShipType<?> sizedType)) {
-            return Optional.empty();
-        }
-        return sizedType.getMaxSize();
-    }
-
-    @Deprecated(forRemoval = true)
-    @NotNull Vessel setMaxSize(@Nullable Integer size);
-
-    boolean isMaxSizeSpecified();
-
-    @Deprecated(forRemoval = true)
-    default int getMinSize() {
-        ShipType<?> type = this.getType();
-        if (!(type instanceof SizedShipType<?> sizedType)) {
-            return 0;
-        }
-        return sizedType.getMinSize();
-    }
-
-    @Deprecated(forRemoval = true)
-    @NotNull Vessel setMinSize(@Nullable Integer size);
-
-    boolean isMinSizeSpecified();
 
     void moveTowards(int x, int y, int z, @NotNull MovementDetails details);
 

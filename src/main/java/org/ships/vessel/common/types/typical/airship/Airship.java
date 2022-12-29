@@ -25,6 +25,7 @@ import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.assits.shiptype.SizedShipType;
 import org.ships.vessel.common.requirement.*;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
@@ -48,7 +49,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
     protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(
             Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public Airship(ShipType<? extends Airship> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -97,7 +98,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
     }
 
     @Override
-    public Collection<Requirement> getRequirements() {
+    public Collection<Requirement<?>> getRequirements() {
         return Collections.unmodifiableCollection(this.requirements);
     }
 
@@ -123,7 +124,6 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         return this.getFuelRequirement().getConsumption();
     }
 
-    @Override
     public @NotNull Vessel setMaxSize(@Nullable Integer size) {
         MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
         maxRequirements = maxRequirements.createCopy(size);
@@ -131,12 +131,10 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         return this;
     }
 
-    @Override
     public boolean isMaxSizeSpecified() {
         return this.getMaxBlocksRequirement().isMaxSizeSpecified();
     }
 
-    @Override
     public @NotNull Vessel setMinSize(@Nullable Integer size) {
         MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
         minRequirements = minRequirements.createCopy(size);
@@ -144,7 +142,14 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         return this;
     }
 
-    @Override
+    public int getMinSize() {
+        ShipType<?> type = this.getType();
+        if (!(type instanceof SizedShipType<?> sizedType)) {
+            return 0;
+        }
+        return sizedType.getMinSize();
+    }
+
     public boolean isMinSizeSpecified() {
         return this.getMinBlocksRequirement().isMinSizeSpecified();
     }
@@ -203,14 +208,35 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
     }
 
     @Override
-    public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
+    public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(@NotNull ConfigurationStream file) {
+        AirshipType type = this.getType();
+        FuelRequirement fuelRequirement = this.getFuelRequirement().getRequirementsBetween(type.getFuelRequirement());
+        SpecialBlockRequirement burnerRequirement = this
+                .getSpecialBlockRequirement()
+                .getRequirementsBetween(type.getBurnerRequirement());
+        SpecialBlocksRequirement specialBlockRequirement = this
+                .getSpecialBlocksRequirement()
+                .getRequirementsBetween(type.getSpecialBlocksRequirement());
+
+        Collection<ItemType> fuelTypes = fuelRequirement.getSpecifiedFuelTypes();
+        Collection<BlockType> specialBlocks = specialBlockRequirement.getSpecifiedBlocks();
+
+
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
-        map.put(this.configBurnerBlock, this.isUsingBurner());
-        map.put(this.configSpecialBlockType, this.getSpecialBlocks());
-        map.put(this.configSpecialBlockPercent, this.getSpecialBlocksPercent());
-        map.put(this.configFuelConsumption, this.getFuelConsumption());
-        map.put(this.configFuelSlot, this.getFuelSlot());
-        map.put(this.configFuelTypes, this.getFuelTypes());
+        fuelRequirement.getSpecifiedConsumption().ifPresent(value -> map.put(this.configFuelConsumption, value));
+        fuelRequirement.getSpecifiedFuelSlot().ifPresent(slot -> map.put(this.configFuelTypes, slot));
+        if (!fuelTypes.isEmpty()) {
+            map.put(this.configFuelTypes, fuelTypes);
+        }
+
+        burnerRequirement.getSpecifiedBlock().ifPresent(value -> map.put(this.configBurnerBlock, value));
+
+        specialBlockRequirement
+                .getSpecifiedPercent()
+                .ifPresent(value -> map.put(this.configSpecialBlockPercent, value));
+        if (!specialBlocks.isEmpty()) {
+            map.put(this.configSpecialBlockType, specialBlocks);
+        }
         return map;
     }
 

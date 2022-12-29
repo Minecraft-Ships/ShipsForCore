@@ -32,7 +32,7 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     private CorePermission moveOtherPermission = Permissions.WATERSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.WATERSHIP_MAKE;
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public WaterShipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -97,10 +97,10 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     }
 
     @Override
-    public Collection<Requirement> getDefaultRequirements() {
+    public Collection<Requirement<?>> getDefaultRequirements() {
         if (this.requirements.isEmpty()) {
-            Requirement requirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
-                                                                   this.getDefaultSpecialBlockTypes());
+            Requirement<?> requirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                                                                      this.getDefaultSpecialBlockTypes());
             this.requirements.add(requirement);
         }
         return this.requirements;

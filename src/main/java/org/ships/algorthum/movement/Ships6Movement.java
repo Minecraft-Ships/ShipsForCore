@@ -92,7 +92,7 @@ public class Ships6Movement implements BasicMovement {
             scheduler = TranslateCore
                     .getScheduleManager()
                     .schedule()
-                    .setDisplayName("Remove Blocxds67ytyk")
+                    .setDisplayName("Remove Blocks")
                     .setRunner(new RemoveBlocks(waterLevel, A, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(config.getDefaultMovementStackDelay())

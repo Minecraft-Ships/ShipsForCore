@@ -7,7 +7,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Optional;
 
-public interface Requirement {
+public interface Requirement<S extends Requirement<S>> {
 
     boolean useOnStrict();
 
@@ -15,11 +15,13 @@ public interface Requirement {
 
     void onProcessRequirement(@NotNull MovementContext context, @NotNull Vessel vessel) throws MoveException;
 
-    @NotNull Requirement createChild();
+    @NotNull S getRequirementsBetween(@NotNull S requirement);
 
-    @NotNull Requirement createCopy();
+    @NotNull S createChild();
 
-    Optional<Requirement> getParent();
+    @NotNull S createCopy();
+
+    Optional<S> getParent();
 
     boolean isEnabled();
 }

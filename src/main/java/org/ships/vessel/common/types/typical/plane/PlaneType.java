@@ -24,7 +24,7 @@ import java.util.HashSet;
 
 public class PlaneType extends AbstractShipType<Plane> implements FuelledShipType<Plane> {
 
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public PlaneType() {
         this("Plane", new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -57,11 +57,11 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
     }
 
     @Override
-    public Collection<Requirement> getDefaultRequirements() {
+    public Collection<Requirement<?>> getDefaultRequirements() {
         if (this.requirements.isEmpty()) {
-            Requirement fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
-                                                              this.getDefaultFuelConsumption(),
-                                                              this.getDefaultFuelTypes());
+            Requirement<FuelRequirement> fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                                                                               this.getDefaultFuelConsumption(),
+                                                                               this.getDefaultFuelTypes());
             this.requirements.add(fuelRequirement);
         }
         return this.requirements;

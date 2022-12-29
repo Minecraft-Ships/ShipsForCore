@@ -1,10 +1,11 @@
 package org.ships.vessel.common.requirement;
 
-import org.core.inventory.inventories.live.block.LiveFurnaceInventory;
+import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
-import org.core.world.position.block.entity.container.furnace.LiveFurnaceTileEntity;
+import org.core.world.position.block.details.data.keyed.KeyedData;
+import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
@@ -15,11 +16,13 @@ import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FuelRequirement implements Requirement {
+public class FuelRequirement implements Requirement<FuelRequirement> {
 
     private final @Nullable Collection<ItemType> fuelTypes;
     private final @Nullable Integer takeAmount;
@@ -44,6 +47,13 @@ public class FuelRequirement implements Requirement {
         this.slot = slot;
     }
 
+    public OptionalInt getSpecifiedConsumption() {
+        if (this.takeAmount == null) {
+            return OptionalInt.empty();
+        }
+        return OptionalInt.of(this.takeAmount);
+    }
+
     public int getConsumption() {
         if (this.parent == null) {
             if (this.takeAmount == null) {
@@ -54,6 +64,10 @@ public class FuelRequirement implements Requirement {
         return this.parent.getConsumption();
     }
 
+    public Optional<FuelSlot> getSpecifiedFuelSlot() {
+        return Optional.ofNullable(this.slot);
+    }
+
     public @NotNull FuelSlot getFuelSlot() {
         if (this.parent == null) {
             if (this.slot == null) {
@@ -62,6 +76,10 @@ public class FuelRequirement implements Requirement {
             return this.slot;
         }
         return this.parent.getFuelSlot();
+    }
+
+    public @NotNull Collection<ItemType> getSpecifiedFuelTypes() {
+        return this.fuelTypes == null ? Collections.emptyList() : this.fuelTypes;
     }
 
     public @NotNull Collection<ItemType> getFuelTypes() {
@@ -81,14 +99,14 @@ public class FuelRequirement implements Requirement {
         return false;
     }
 
-    private Stream<LiveFurnaceInventory> getInventories(MovementContext context) {
+    private Stream<FurnaceInventory> getInventories(MovementContext context) {
         return context
                 .getMovingStructure()
                 .stream()
-                .map(movingBlock -> movingBlock.getBeforePosition().getTileEntity())
+                .map(movingBlock -> (movingBlock.getStoredBlockData()).get(KeyedData.TILED_ENTITY))
                 .filter(Optional::isPresent)
-                .filter(opTileEntity -> opTileEntity.get() instanceof LiveFurnaceTileEntity)
-                .map(opTileEntity -> ((LiveFurnaceTileEntity) opTileEntity.get()).getInventory());
+                .filter(opTileEntity -> opTileEntity.get() instanceof FurnaceTileEntity)
+                .map(opTileEntity -> ((FurnaceTileEntity) opTileEntity.get()).getInventory());
     }
 
     @Override
@@ -98,7 +116,7 @@ public class FuelRequirement implements Requirement {
         if (fuelTypes.isEmpty() || toTakeAmount == 0) {
             return;
         }
-        Collection<LiveFurnaceInventory> furnaceInventories = this.getInventories(context).collect(Collectors.toSet());
+        Collection<FurnaceInventory> furnaceInventories = this.getInventories(context).collect(Collectors.toSet());
         boolean check = furnaceInventories
                 .parallelStream()
                 .map(inventory -> (
@@ -120,7 +138,7 @@ public class FuelRequirement implements Requirement {
         if (fuelTypes.isEmpty() || toTakeAmount == 0) {
             return;
         }
-        Stream<LiveFurnaceInventory> furnaceInventories = this.getInventories(context);
+        Stream<FurnaceInventory> furnaceInventories = this.getInventories(context);
 
         Optional<Slot> opSlot = furnaceInventories
                 .map(inventory -> (this.slot == FuelSlot.TOP ? inventory.getSmeltingSlot() : inventory.getFuelSlot()))
@@ -136,11 +154,31 @@ public class FuelRequirement implements Requirement {
                 .getItem()
                 .orElseThrow(() -> new RuntimeException("onCheck was not called first or was in a different schedule"));
         if ((stack.getQuantity() - toTakeAmount) > 0) {
-            stack = stack.copyWithQuantity(stack.getQuantity() - toTakeAmount);
+            slot.setItem(stack.copyWithQuantity(stack.getQuantity() - toTakeAmount));
         } else {
-            stack = null;
+            slot.setItem(null);
         }
-        slot.setItem(stack);
+    }
+
+    @Override
+    public @NotNull FuelRequirement getRequirementsBetween(@NotNull FuelRequirement requirement) {
+        FuelRequirement fuel = this;
+        Collection<ItemType> fuelTypes = null;
+        Integer takeAmount = null;
+        FuelSlot slot = null;
+        while (fuel != null && fuel != requirement) {
+            if (fuel.fuelTypes != null) {
+                fuelTypes = (fuel.fuelTypes);
+            }
+            if (fuel.takeAmount != null) {
+                takeAmount = fuel.takeAmount;
+            }
+            if (fuel.slot != null) {
+                slot = fuel.slot;
+            }
+            fuel = fuel.getParent().orElse(null);
+        }
+        return new FuelRequirement(requirement, slot, takeAmount, fuelTypes);
     }
 
     @Override
@@ -166,7 +204,7 @@ public class FuelRequirement implements Requirement {
     }
 
     @Override
-    public Optional<Requirement> getParent() {
+    public Optional<FuelRequirement> getParent() {
         return Optional.ofNullable(this.parent);
     }
 

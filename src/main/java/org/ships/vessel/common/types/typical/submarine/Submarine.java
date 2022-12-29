@@ -36,7 +36,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
             new StringToEnumParser<>(FuelSlot.class), "Block", "Fuel", "Slot");
     protected final ConfigurationNode.KnownParser.CollectionKnown<ItemType> configFuelTypes = new ConfigurationNode.KnownParser.CollectionKnown<>(
             Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
-    private final Collection<Requirement> requirements = new HashSet<>();
+    private final Collection<Requirement<?>> requirements = new HashSet<>();
 
     public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
@@ -117,7 +117,6 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         return (SubmarineType) super.getType();
     }
 
-    @Override
     public @NotNull Vessel setMaxSize(@Nullable Integer size) {
         MaxSizeRequirement maxRequirements = this.getMaxBlocksRequirement();
         maxRequirements = maxRequirements.createCopy(size);
@@ -125,12 +124,10 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         return this;
     }
 
-    @Override
     public boolean isMaxSizeSpecified() {
         return this.getMaxBlocksRequirement().isMaxSizeSpecified();
     }
 
-    @Override
     public @NotNull Vessel setMinSize(@Nullable Integer size) {
         MinSizeRequirement minRequirements = this.getMinBlocksRequirement();
         minRequirements = minRequirements.createCopy(size);
@@ -138,7 +135,6 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
         return this;
     }
 
-    @Override
     public boolean isMinSizeSpecified() {
         return this.getMinBlocksRequirement().isMinSizeSpecified();
     }
@@ -193,12 +189,12 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
     }
 
     @Override
-    public Collection<Requirement> getRequirements() {
-        throw new RuntimeException("Not implemented");
+    public Collection<Requirement<?>> getRequirements() {
+        return this.requirements;
     }
 
     @Override
-    public void setRequirement(Requirement updated) {
+    public void setRequirement(Requirement<?> updated) {
         this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }
