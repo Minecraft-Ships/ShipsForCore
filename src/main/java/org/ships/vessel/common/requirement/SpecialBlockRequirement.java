@@ -149,6 +149,6 @@ public class SpecialBlockRequirement implements Requirement<SpecialBlockRequirem
 
     @Override
     public boolean isEnabled() {
-        return this.getAmount() == 0;
+        return this.getAmount() != 0;
     }
 }
