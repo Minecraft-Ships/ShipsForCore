@@ -14,8 +14,8 @@ public interface VesselRequirement extends Vessel {
     Collection<Requirement<?>> getRequirements();
 
     default <R extends Requirement<?>> Optional<R> getRequirement(Class<R> clazz) {
-        return this
-                .getRequirements()
+        Collection<Requirement<?>> requirements = this.getRequirements();
+        return requirements
                 .parallelStream()
                 .filter(clazz::isInstance)
                 .findAny()

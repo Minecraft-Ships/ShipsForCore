@@ -50,7 +50,7 @@ public class NodeToBlockInstruction implements StringMapParser<ModifiableBlockIn
                 .flatMap(stringStringEntry -> ShipsParsers.STRING_TO_COLLIDE_TYPE.parse(stringStringEntry.getValue()))
                 .ifPresent(bi::setCollide);
         opLimit
-                .flatMap(stringLimit -> Parser.STRING_TO_INTEGER.parse(stringLimit.getValue()))
+                .flatMap(stringLimit -> Parser.STRING_TO_POSITIVE_INTEGER.parse(stringLimit.getValue()))
                 .ifPresent(bi::setBlockLimit);
         return Optional.of(bi);
     }
@@ -60,7 +60,7 @@ public class NodeToBlockInstruction implements StringMapParser<ModifiableBlockIn
         Map<String, String> map = new HashMap<>();
         map.put(BLOCK_TYPE, Parser.STRING_TO_BLOCK_TYPE.unparse(value.getType()));
         map.put(COLLIDE_TYPE, ShipsParsers.STRING_TO_COLLIDE_TYPE.unparse(value.getCollide()));
-        map.put(BLOCK_LIMIT, Parser.STRING_TO_INTEGER.unparse(value.getBlockLimit().orElse(-1)));
+        map.put(BLOCK_LIMIT, Parser.STRING_TO_POSITIVE_INTEGER.unparse(value.getBlockLimit().orElse(-1)));
         return map;
     }
 
