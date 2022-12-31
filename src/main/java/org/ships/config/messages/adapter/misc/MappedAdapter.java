@@ -9,10 +9,11 @@ import java.util.function.Function;
 
 public class MappedAdapter<M, T> implements MessageAdapter<M> {
 
-    private final Function<? super M, ? extends T> function;
-    private final MessageAdapter<? super T> adapter;
+    private final @NotNull Function<? super M, ? extends T> function;
+    private final @NotNull MessageAdapter<? super T> adapter;
 
-    public MappedAdapter(MessageAdapter<? super T> adapter, Function<? super M, ? extends T> function) {
+    public MappedAdapter(@NotNull MessageAdapter<? super T> adapter,
+                         @NotNull Function<? super M, ? extends T> function) {
         this.function = function;
         this.adapter = adapter;
     }
@@ -35,7 +36,11 @@ public class MappedAdapter<M, T> implements MessageAdapter<M> {
 
     @Override
     public AText process(@NotNull M obj, @NotNull AText message) {
-        return this.adapter.process(this.function.apply(obj), message);
+        T mapped = this.function.apply(obj);
+        if (mapped == null) {
+            System.out.println("Mapped: null");
+        }
+        return this.adapter.process(mapped, message);
     }
 
     @Override

@@ -36,44 +36,47 @@ public class SpecialBlockRequirement implements Requirement<SpecialBlockRequirem
         this.displayName = name;
     }
 
-    public Optional<String> getSpecifiedDisplayName(){
+    public Optional<String> getSpecifiedDisplayName() {
         return Optional.ofNullable(this.displayName);
     }
 
     public Optional<String> getDisplayName() {
+        if (this.displayName != null) {
+            return Optional.of(this.displayName);
+        }
         if (this.parent == null) {
-            return Optional.ofNullable(this.displayName);
+            return Optional.empty();
         }
         return this.parent.getDisplayName();
     }
 
-    public OptionalInt getSpecifiedAmount(){
-        if(this.amount == null){
+    public OptionalInt getSpecifiedAmount() {
+        if (this.amount == null) {
             return OptionalInt.empty();
         }
         return OptionalInt.of(this.amount);
     }
 
     public int getAmount() {
-        if (this.parent == null) {
-            if (this.amount == null) {
-                throw new RuntimeException("You skipped the constructor checks");
-            }
+        if (this.amount != null) {
             return this.amount;
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("You skipped the constructor checks");
         }
         return this.parent.getAmount();
     }
 
-    public Optional<BlockType> getSpecifiedBlock(){
+    public Optional<BlockType> getSpecifiedBlock() {
         return Optional.ofNullable(this.blockType);
     }
 
     public @NotNull BlockType getBlock() {
-        if (this.parent == null) {
-            if (this.blockType == null) {
-                throw new RuntimeException("You skipped the constructor checks");
-            }
+        if (this.blockType != null) {
             return this.blockType;
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("You skipped the constructor checks");
         }
         return this.parent.getBlock();
     }

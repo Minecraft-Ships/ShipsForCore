@@ -33,13 +33,13 @@ public class MaxSizeRequirement implements Requirement<MaxSizeRequirement> {
     }
 
     public OptionalInt getMaxSize() {
-        if (this.maxSize == null) {
-            if (this.parent == null) {
-                return OptionalInt.empty();
-            }
-            return this.parent.getMaxSize();
+        if (this.maxSize != null) {
+            return OptionalInt.of(this.maxSize);
         }
-        return OptionalInt.of(this.maxSize);
+        if (this.parent == null) {
+            return OptionalInt.empty();
+        }
+        return this.parent.getMaxSize();
     }
 
     @Override

@@ -15,10 +15,7 @@ import org.ships.movement.MovementContext;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,11 +52,12 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
     }
 
     public int getConsumption() {
-        if (this.parent == null) {
-            if (this.takeAmount == null) {
-                throw new RuntimeException("You skipped the constructor checks");
-            }
+        if (this.takeAmount != null) {
             return this.takeAmount;
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("You skipped the constructor checks");
+
         }
         return this.parent.getConsumption();
     }
@@ -69,11 +67,11 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
     }
 
     public @NotNull FuelSlot getFuelSlot() {
-        if (this.parent == null) {
-            if (this.slot == null) {
-                throw new RuntimeException("You skipped the constructor checks");
-            }
+        if (this.slot != null) {
             return this.slot;
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("You skipped the constructor checks");
         }
         return this.parent.getFuelSlot();
     }
@@ -117,17 +115,22 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
             return;
         }
         Collection<FurnaceInventory> furnaceInventories = this.getInventories(context).collect(Collectors.toSet());
-        boolean check = furnaceInventories
+        TreeSet<Integer> fuelSlots = furnaceInventories
                 .parallelStream()
                 .map(inventory -> (
                         this.slot == FuelSlot.TOP ? inventory.getSmeltingSlot() : inventory.getFuelSlot()).getItem())
                 .filter(Optional::isPresent)
                 .filter(opItem -> fuelTypes.contains(opItem.get().getType()))
                 .map(opItem -> opItem.get().getQuantity())
-                .anyMatch(amount -> amount >= toTakeAmount);
-        if (!check) {
+                .collect(Collectors.toCollection(TreeSet::new));
+        if (fuelSlots.isEmpty()) {
             throw new MoveException(context, AdventureMessageConfig.ERROR_NOT_ENOUGH_FUEL,
-                                    new FuelRequirementMessageData(vessel, fuelTypes, toTakeAmount));
+                                    new FuelRequirementMessageData(vessel, fuelTypes, 0));
+        }
+        int slot = fuelSlots.last();
+        if (slot < toTakeAmount) {
+            throw new MoveException(context, AdventureMessageConfig.ERROR_NOT_ENOUGH_FUEL,
+                                    new FuelRequirementMessageData(vessel, fuelTypes, fuelSlots.last()));
         }
     }
 

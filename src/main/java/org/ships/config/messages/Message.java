@@ -80,9 +80,9 @@ public interface Message<R> {
     TrackLimitAdapter CONFIG_TRACK_LIMIT = new TrackLimitAdapter();
     ItemNameAdapter ITEM_NAME = new ItemNameAdapter();
     ItemIdAdapter ITEM_ID = new ItemIdAdapter();
-    NumberAdapter<Integer> FUEL_FOUND_REQUIREMENT = new NumberAdapter<>("Fuel Found");
-    NumberAdapter<Integer> FUEL_CONSUMPTION_REQUIREMENT = new NumberAdapter<>("Fuel Consumption");
-    NumberAdapter<Integer> FUEL_LEFT_REQUIREMENT = new NumberAdapter<>("Fuel Left");
+    NumberAdapter<Integer> FUEL_FOUND_REQUIREMENT = new NumberAdapter<>("Fuel found");
+    NumberAdapter<Integer> FUEL_CONSUMPTION_REQUIREMENT = new NumberAdapter<>("Fuel consumption");
+    NumberAdapter<Integer> FUEL_LEFT_REQUIREMENT = new NumberAdapter<>("Fuel left");
     NumberAdapter<Integer> TOTAL_FOUND_BLOCKS = new NumberAdapter<>("total found blocks");
     NumberAdapter<Double> PERCENT_FOUND = new NumberAdapter<>("Percent found");
     List<MessageAdapter<ItemType>> ITEM_ADAPTERS = List.of(ITEM_NAME, ITEM_ID);

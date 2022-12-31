@@ -34,13 +34,16 @@ public class CollectionAdapter<T> implements MessageAdapter<Collection<T>> {
     @Override
     public AText process(@NotNull Collection<T> obj) {
         List<AText> list = obj.parallelStream().map(this.adapter::process).toList();
+        if (list.isEmpty()) {
+            return AText.ofPlain("none");
+        }
         AText ret = null;
         for (AText text : list) {
             if (ret == null) {
                 ret = text;
                 continue;
             }
-            ret = ret.append(text);
+            ret = ret.append(AText.ofPlain(", ")).append(text);
         }
         return ret;
     }

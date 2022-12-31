@@ -23,11 +23,11 @@ public interface MessageAdapter<T> {
     }
 
     default boolean containsAdapter(String plain) {
-        return plain.contains(this.adapterTextFormat());
+        return plain.toLowerCase().contains(this.adapterTextFormat().toLowerCase());
     }
 
     default boolean containsAdapter(AText text) {
-        return text.contains(AText.ofPlain(this.adapterTextFormat()));
+        return text.containsIgnoreCase(this.adapterTextFormat());
     }
 
 }

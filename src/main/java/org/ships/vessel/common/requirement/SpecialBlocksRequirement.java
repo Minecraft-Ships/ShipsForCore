@@ -11,7 +11,10 @@ import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.TreeSet;
 
 public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequirement> {
 
@@ -42,7 +45,13 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
     }
 
     public Collection<BlockType> getSpecifiedBlocks() {
-        return this.specialBlocks == null ? Collections.emptySet() : this.specialBlocks;
+        if (this.specialBlocks != null) {
+            return this.specialBlocks;
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("You skipped the constructor checks");
+        }
+        return this.parent.getSpecifiedBlocks();
     }
 
     public boolean isPercentageSpecified() {
@@ -54,21 +63,21 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
     }
 
     public float getPercentage() {
-        if (this.parent == null) {
-            if (this.specialBlocksPercentage == null) {
-                throw new RuntimeException("You skipped the constructor checks");
-            }
+        if (this.specialBlocksPercentage != null) {
             return this.specialBlocksPercentage;
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("You skipped the constructor checks");
         }
         return this.parent.getPercentage();
     }
 
     public @NotNull Collection<BlockType> getBlocks() {
-        if (this.parent == null) {
-            if (this.specialBlocks == null) {
-                throw new RuntimeException("You skipped the constructor checks");
-            }
+        if (this.specialBlocks != null) {
             return this.specialBlocks;
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("You skipped the constructor checks");
         }
         return this.parent.getBlocks();
     }
@@ -81,7 +90,7 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
 
     @Override
     public void onCheckRequirement(@NotNull MovementContext context, @NotNull Vessel vessel) throws MoveException {
-        TreeSet<BlockType> specialBlocks = new TreeSet<>(Comparator.comparing(Identifiable::getName));
+        Collection<BlockType> specialBlocks = new TreeSet<>(Comparator.comparing(Identifiable::getName));
         specialBlocks.addAll(this.getBlocks());
         float percentageRequired = this.getPercentage();
         long blocksFound = context
@@ -130,11 +139,11 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
     }
 
     public @NotNull SpecialBlocksRequirement createChildWithPercentage(@Nullable Float value) {
-        return new SpecialBlocksRequirement(this, value, this.specialBlocks);
+        return new SpecialBlocksRequirement(this, value, null);
     }
 
     public @NotNull SpecialBlocksRequirement createChildWithBlocks(@Nullable Collection<BlockType> blocks) {
-        return new SpecialBlocksRequirement(this, this.specialBlocksPercentage, blocks);
+        return new SpecialBlocksRequirement(this, null, blocks);
     }
 
     @Override

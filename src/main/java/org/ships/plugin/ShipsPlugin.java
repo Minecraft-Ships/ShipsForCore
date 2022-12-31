@@ -171,7 +171,7 @@ public class ShipsPlugin implements CorePlugin {
             TranslateCore.getPlatform().getUpdateChecker(DevBukkitUpdateChecker.ID).ifPresent(devBukkit -> {
                 devBukkit.checkForUpdate(new DevBukkitUpdateOption(36846)).thenAcceptAsync((result) -> {
                     if (result instanceof FailedResult failed) {
-                        this.logger.error("Failed to update: " + failed);
+                        this.logger.error("Failed to update: " + failed.getReason());
                         return;
                     }
                     SuccessfulResult successfulResult = (SuccessfulResult) result;

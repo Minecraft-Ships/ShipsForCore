@@ -247,7 +247,7 @@ public class Airship extends AbstractShipsVessel implements AirType, Fallable, V
         file.getInteger(this.configFuelConsumption).ifPresent(this::setFuelConsumption);
         this.setFuelTypes(file.parseCollection(this.configFuelTypes, new HashSet<>()));
         this.setFuelSlot(file.parse(this.configFuelSlot).orElse(null));
-        this.setSpecialBlocks(file.parseCollection(this.configSpecialBlockType, new HashSet<>()));
+        this.setSpecialBlocks(file.parseCollection(this.configSpecialBlockType, new HashSet<>(), null));
         return this;
     }
 

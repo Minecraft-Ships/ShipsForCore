@@ -12,7 +12,7 @@ import java.util.Set;
 public class VesselSizeAdapter implements MessageAdapter<Vessel> {
     @Override
     public String adapterText() {
-        return "Size";
+        return "Vessel size";
     }
 
     @Override

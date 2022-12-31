@@ -25,7 +25,9 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
 
     @Override
     public AText getDefault() {
-        return AText.ofPlain("Found " + Message.PERCENT_FOUND.adapterTextFormat() + " of one of ");
+        return AText.ofPlain(
+                "Found " + Message.PERCENT_FOUND.adapterTextFormat() + " of one of " + new CollectionAdapter<>(
+                        Message.BLOCK_TYPE_NAME).adapterTextFormat());
     }
 
     @Override
