@@ -125,6 +125,12 @@ public interface Vessel extends Positionable<BlockPosition> {
         Collection<LiveEntity> entities = new HashSet<>();
         List<LiveEntity> entities2 = new ArrayList<>();
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
+        Bounds<Integer> bounds = this.getStructure().getBounds();
+        Vector3<Integer> max = bounds.getIntMax();
+        Vector3<Integer> min = bounds.getIntMin();
+        bounds = new Bounds<>(min, Vector3.valueOf(max.getX(), Integer.MAX_VALUE, max.getZ()));
+        Bounds<Integer> finalBounds = bounds;
+
         chunks.forEach(c -> entities2.addAll(c.getEntities()));
 
         Scheduler sched = TranslateCore
@@ -170,7 +176,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                             if (opPosition.isEmpty()) {
                                 continue;
                             }
-                            if (pss.stream().anyMatch(b -> b.equals(opPosition.get()))) {
+                            if (finalBounds.contains(opPosition.get().getPosition())) {
                                 single.accept(e);
                                 entities.add(e);
                             } else if (!e.isOnGround()) {

@@ -4,7 +4,6 @@ import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.entity.living.human.player.Player;
 import org.core.entity.living.human.player.User;
 import org.core.entity.scene.droppeditem.DroppedItem;
 import org.core.event.EventListener;
@@ -143,7 +142,7 @@ public class CoreEventListener implements EventListener {
         this.onPlayerJoin(event.getEntity());
     }
 
-    public void onPlayerJoin(Player<?> player) {
+    public void onPlayerJoin(LivePlayer player) {
         for (Vessel vessel : ShipsPlugin.getPlugin().getVessels()) {
             if (!(vessel instanceof ShipsVessel)) {
                 continue;
@@ -161,6 +160,7 @@ public class CoreEventListener implements EventListener {
             SyncExactPosition position = sPos.toExactPosition().getRelative(vector);
             if (!position.equals(player.getPosition())) {
                 player.setPosition(position);
+                player.sendMessage(AText.ofPlain("Ships has spawned you on " + vessel.getCachedName()));
                 map.remove(player.getUniqueId());
                 vessel.set(PlayerStatesFlag.class, map);
             }

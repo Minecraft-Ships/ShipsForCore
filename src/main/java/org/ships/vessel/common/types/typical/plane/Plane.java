@@ -120,7 +120,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
         if (opConsumption.isPresent()) {
             fuelRequirements = fuelRequirements.createCopyWithConsumption(opConsumption.get());
         }
-        fuelRequirements.createCopyWithFuel(file.parseCollection(this.configFuelTypes, new HashSet<>()));
+        fuelRequirements.createCopyWithFuel(file.parseCollection(this.configFuelTypes, new HashSet<>(), null));
         fuelRequirements.createCopyWithSlot(file.parse(this.configFuelSlot).orElse(null));
         this.setRequirement(fuelRequirements);
         return this;

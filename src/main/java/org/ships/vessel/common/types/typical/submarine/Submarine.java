@@ -173,7 +173,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
                     opSpecialBlockPercent.get().floatValue());
         }
         specialBlocksRequirement = specialBlocksRequirement.createCopyWithBlocks(
-                file.parseCollection(this.configSpecialBlockType, new HashSet<>()));
+                file.parseCollection(this.configSpecialBlockType, new HashSet<>(), null));
         this.setRequirement(specialBlocksRequirement);
 
 

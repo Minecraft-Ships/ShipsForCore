@@ -146,7 +146,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
             requirements = requirements.createCopyWithPercentage(opSpecialBlockPercent.get().floatValue());
         }
         requirements = requirements.createChildWithBlocks(
-                file.parseCollection(this.configSpecialBlockType, new HashSet<>()));
+                file.parseCollection(this.configSpecialBlockType, new HashSet<>(), null));
         this.setRequirement(requirements);
         return this;
     }
