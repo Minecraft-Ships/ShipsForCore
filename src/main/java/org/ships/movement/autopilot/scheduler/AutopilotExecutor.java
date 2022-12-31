@@ -37,7 +37,9 @@ public class AutopilotExecutor implements Consumer<Scheduler> {
             Optional<FlightCheckpoint> opNewCheckout = opFlightPath.get().getNext(nextCheckpoint);
             if (opNewCheckout.isEmpty()) {
                 this.vessel.set(new FlightPathFlag());
-                t.cancel();
+                if(t instanceof Scheduler.Native nativeSch){
+                    nativeSch.cancel();
+                }
                 return;
             }
             nextCheckpoint = opNewCheckout.get();

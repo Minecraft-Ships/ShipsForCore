@@ -7,7 +7,7 @@ import java.util.OptionalInt;
 
 public class MoveIntoBlockInstruction implements BlockInstruction {
 
-    private @NotNull BlockType type;
+    private final @NotNull BlockType type;
 
     public MoveIntoBlockInstruction(@NotNull BlockType type) {
         this.type = type;

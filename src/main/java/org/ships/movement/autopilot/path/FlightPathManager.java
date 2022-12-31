@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedTransferQueue;
 
 public class FlightPathManager {
 
-    private Collection<FlightPath> paths = new LinkedTransferQueue<>();
+    private final Collection<FlightPath> paths = new LinkedTransferQueue<>();
 
     public Collection<FlightPath> getPaths() {
         return Collections.unmodifiableCollection(this.paths);

@@ -128,9 +128,6 @@ public class Result extends ArrayList<Result.Run> {
         Run COMMON_RESET_GRAVITY = (v, c) -> c.getEntities().keySet().forEach(e -> e.setGravity(true));
 
         Run COMMON_SET_NEW_POSITIONS = (v, c) -> {
-            /*if (!ShipsPlugin.getPlugin().getConfig().isStructureAutoUpdating()){
-                return;
-            }*/
             PositionableShipsStructure pss = v.getStructure();
             pss.clear();
             c.getMovingStructure().getOriginal().forEach((mb) -> pss.addPosition(mb.getAfterPosition()));

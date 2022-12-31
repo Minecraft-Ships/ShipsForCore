@@ -12,7 +12,7 @@ import java.util.List;
 public class ShipsDataViewMaxSpeedCommand extends AbstractShipsDataViewCommand {
 
 
-    private final ExactArgument SPEED_ARGUMENT = new ExactArgument("speed");
+    private static final ExactArgument SPEED_ARGUMENT = new ExactArgument("speed");
 
     @Override
     protected List<CommandArgument<?>> getExtraArguments() {

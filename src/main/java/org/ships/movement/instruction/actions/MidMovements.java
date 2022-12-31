@@ -41,7 +41,6 @@ public interface MidMovements {
                         .stream()
                         .map(Direction::getRightAngleLeft)
                         .collect(Collectors.toSet());
-                ;
                 blockDetails.set(KeyedData.MULTI_DIRECTIONAL, collection);
             }
             return;

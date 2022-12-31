@@ -30,7 +30,6 @@ import org.ships.exceptions.move.MoveException;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,13 +39,13 @@ import java.util.function.Function;
 
 public class ShipsMoveToExactArgument implements ArgumentCommand {
 
-    private final String SHIP_ARGUMENT = "ship";
-    private final String SHIP_ID_ARGUMENT = "ship_id";
-    private final String SHIP_MOVE_TO_ARGUMENT = "moveTo";
-    private final String SHIP_EXACT_ARGUMENT = "exact";
-    private final OptionalArgument<WorldExtent> SHIP_WORLD_ARGUMENT = new OptionalArgument<>(new WorldArgument("world"),
-                                                                                             (WorldExtent) null);
-    private final String SHIP_VECTOR_ARGUMENT = "vector";
+    private static final String SHIP_ARGUMENT = "ship";
+    private static final String SHIP_ID_ARGUMENT = "ship_id";
+    private static final String SHIP_MOVE_TO_ARGUMENT = "moveTo";
+    private static final String SHIP_EXACT_ARGUMENT = "exact";
+    private static final OptionalArgument<WorldExtent> SHIP_WORLD_ARGUMENT = new OptionalArgument<>(
+            new WorldArgument("world"), (WorldExtent) null);
+    private static final String SHIP_VECTOR_ARGUMENT = "vector";
 
 
     @Override

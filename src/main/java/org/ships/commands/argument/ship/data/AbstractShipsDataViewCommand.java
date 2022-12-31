@@ -36,13 +36,9 @@ public abstract class AbstractShipsDataViewCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        List<CommandArgument<?>> arguments = new ArrayList<>(Arrays.asList(
-                SHIP_ARGUMENT,
-                SHIP_ID_ARGUMENT,
-                DATA_ARGUMENT,
-                SPEED_ARGUMENT,
-                VIEW_ARGUMENT
-        ));
+        List<CommandArgument<?>> arguments = new ArrayList<>(
+                Arrays.asList(this.SHIP_ARGUMENT, this.SHIP_ID_ARGUMENT, this.DATA_ARGUMENT, this.SPEED_ARGUMENT,
+                              this.VIEW_ARGUMENT));
         arguments.addAll(this.getExtraArguments());
         return arguments;
     }
