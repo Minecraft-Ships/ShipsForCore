@@ -160,7 +160,7 @@ public class CoreEventListener implements EventListener {
             SyncExactPosition position = sPos.toExactPosition().getRelative(vector);
             if (!position.equals(player.getPosition())) {
                 player.setPosition(position);
-                player.sendMessage(AText.ofPlain("Ships has spawned you on " + vessel.getCachedName()));
+                player.sendMessage(AdventureMessageConfig.INFO_PLAYER_SPAWNED_ON_SHIP.process(vessel));
                 map.remove(player.getUniqueId());
                 vessel.set(PlayerStatesFlag.class, map);
             }

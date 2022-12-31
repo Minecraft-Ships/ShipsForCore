@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 public class AdventureMessageConfig implements Config.KnownNodes {
 
+    public static final InfoPlayerSpawnedOnShipMessage INFO_PLAYER_SPAWNED_ON_SHIP = new InfoPlayerSpawnedOnShipMessage();
     public static final ErrorPreventMovementMessage ERROR_PREVENT_MOVEMENT = new ErrorPreventMovementMessage();
     public static final ErrorFailedInMovement ERROR_FAILED_IN_MOVEMENT = new ErrorFailedInMovement();
     public static final InfoNameMessage INFO_NAME = new InfoNameMessage();
