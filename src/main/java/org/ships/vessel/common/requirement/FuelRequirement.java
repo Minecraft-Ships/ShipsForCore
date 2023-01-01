@@ -159,7 +159,7 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
         if ((stack.getQuantity() - toTakeAmount) > 0) {
             slot.setItem(stack.copyWithQuantity(stack.getQuantity() - toTakeAmount));
         } else {
-            slot.setItem(null);
+            slot.removeItem();
         }
     }
 
