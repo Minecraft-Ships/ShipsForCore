@@ -40,33 +40,39 @@ public interface SignUtil {
         if (vessel instanceof CrewStoredVessel stored) {
             if (details.getBossBar() != null) {
                 details.getBossBar().setTitle(AText.ofPlain("Checking permissions"));
+                ShipsPlugin.getPlugin().getLogger().log("Checking permissions");
             }
 
             if (!((stored.getPermission(player.getUniqueId()).canMove() && player.hasPermission(
                     stored.getType().getMoveOwnPermission())) || player.hasPermission(
                     stored.getType().getMoveOtherPermission()))) {
+                ShipsPlugin.getPlugin().getLogger().log("Found that you don't have any permissions to move");
+                AText permission = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
+                        new AbstractMap.SimpleImmutableEntry<>(player, "Unknown"));
                 if (!stored.getPermission(player.getUniqueId()).canMove()) {
-                    AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
+                    permission = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
                             new AbstractMap.SimpleImmutableEntry<>(player, "Vessel crew rank"));
                 } else if (!player.hasPermission(stored.getType().getMoveOwnPermission())) {
-                    AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
+                    permission = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
                             new AbstractMap.SimpleImmutableEntry<>(player, stored
                                     .getType()
                                     .getMoveOwnPermission()
                                     .getPermissionValue()));
                 } else if (!player.hasPermission(stored.getType().getMoveOtherPermission())) {
-                    AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
+                    permission = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
                             new AbstractMap.SimpleImmutableEntry<>(player, stored
                                     .getType()
                                     .getMoveOtherPermission()
                                     .getPermissionValue()));
                 }
+                player.sendMessage(permission);
                 ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                 if (details.getBossBar() != null) {
                     details.getBossBar().deregisterPlayers();
                 }
                 return;
             }
+            ShipsPlugin.getPlugin().getLogger().log("Checked permissions");
         }
         details.setClickedBlock(position);
 
@@ -85,6 +91,7 @@ public interface SignUtil {
 
         details.setException(exception);
 
+        ShipsPlugin.getPlugin().getLogger().log("Movement context created");
         ready.onMovementReady(details.build(), vessel);
     }
 
