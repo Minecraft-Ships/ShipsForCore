@@ -1,9 +1,6 @@
 package org.ships.vessel.common.types;
 
-import org.core.TranslateCore;
 import org.core.entity.LiveEntity;
-import org.core.schedule.Scheduler;
-import org.core.schedule.unit.TimeUnit;
 import org.core.utils.Bounds;
 import org.core.utils.MathUtils;
 import org.core.vector.type.Vector2;
@@ -23,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.instruction.details.MovementDetails;
-import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -118,87 +114,44 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     }
 
+    @Deprecated
     default void getEntitiesOvertime(int limit,
                                      Predicate<? super LiveEntity> predicate,
                                      Consumer<? super LiveEntity> single,
                                      Consumer<? super Collection<LiveEntity>> output) {
-        Collection<LiveEntity> entities = new HashSet<>();
-        List<LiveEntity> entities2 = new ArrayList<>();
+        getEntitiesAsynced(predicate, entities -> {
+            entities.forEach(single);
+            output.accept(entities);
+        });
+    }
+
+    default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
+                                    Consumer<? super Collection<LiveEntity>> output) {
         Set<ChunkExtent> chunks = this.getStructure().getChunks();
         Bounds<Integer> bounds = this.getStructure().getBounds();
         Vector3<Integer> max = bounds.getIntMax();
         Vector3<Integer> min = bounds.getIntMin();
-        bounds = new Bounds<>(min, Vector3.valueOf(max.getX(), Integer.MAX_VALUE, max.getZ()));
+        bounds = new Bounds<>(min.minus(1, 1, 1), Vector3.valueOf(max.getX(), Integer.MAX_VALUE, max.getZ()));
         Bounds<Integer> finalBounds = bounds;
 
-        chunks.forEach(c -> entities2.addAll(c.getEntities()));
+        Map<LiveEntity, Vector3<Integer>> entityPositions = chunks
+                .stream()
+                .flatMap(c -> c.getEntities().stream())
+                .collect(Collectors.toMap(e -> e, e -> e
+                        .getAttachedTo()
+                        .map(Position::getPosition)
+                        .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
 
-        Scheduler sched = TranslateCore
-                .getScheduleManager()
-                .schedule()
-                .setDisplayName("Ignore")
-                .setDelay(0)
-                .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                .setRunner((sch) -> {
-                })
-                .setAsync(true)
-                .build(ShipsPlugin.getPlugin());
-        double fin = entities2.size() / (double) limit;
-        if (fin != ((int) fin)) {
-            fin++;
-        }
-        if (fin == 0) {
-            output.accept(entities);
-            return;
-        }
-        Collection<SyncBlockPosition> pss = this
-                .getStructure()
-                .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
-        for (int A = 0; A < fin; A++) {
-            final int B = A;
-            sched = TranslateCore
-                    .getScheduleManager()
-                    .schedule()
-                    .setDisplayName("\tentity getter " + A)
-                    .setDelay(1)
-                    .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                    .setRunner((sch) -> {
-                        int c = (B * limit);
-                        for (int to = 0; to < limit; to++) {
-                            if ((c + to) >= entities2.size()) {
-                                break;
-                            }
-                            LiveEntity e = entities2.get(c + to);
-                            if (!predicate.test(e)) {
-                                continue;
-                            }
-                            Optional<SyncBlockPosition> opPosition = e.getAttachedTo();
-                            if (opPosition.isEmpty()) {
-                                continue;
-                            }
-                            if (finalBounds.contains(opPosition.get().getPosition())) {
-                                single.accept(e);
-                                entities.add(e);
-                            } else if (!e.isOnGround()) {
-                                SyncBlockPosition bPos = e.getPosition().toBlockPosition();
-                                if (pss
-                                        .stream()
-                                        .noneMatch(
-                                                b -> bPos.isInLineOfSight(b.getPosition(), FourFacingDirection.DOWN))) {
-                                    continue;
-                                }
-                                single.accept(e);
-                                entities.add(e);
-                            }
-                        }
-                        if (B == 0) {
-                            output.accept(entities);
-                        }
-                    })
-                    .setToRunAfter(sched)
-                    .build(ShipsPlugin.getPlugin());
-        }
-        sched.run();
+        Set<LiveEntity> entities = entityPositions
+                .entrySet()
+                .parallelStream()
+                .filter(entry -> finalBounds.contains(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .filter(predicate)
+                .collect(Collectors.toSet());
+
+        //this maybe changed to full asynced, hence why its a consumer
+        output.accept(entities);
     }
 
     default void rotateAnticlockwiseAround(@NotNull BlockPosition location, @NotNull MovementDetails details) {

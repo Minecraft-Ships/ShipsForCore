@@ -3,6 +3,7 @@ package org.ships.vessel.structure;
 import org.core.utils.Bounds;
 import org.core.vector.type.Vector3;
 import org.core.world.ChunkExtent;
+import org.core.world.WorldExtent;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.BlockType;
@@ -18,7 +19,10 @@ import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,22 +31,41 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
 
     PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos);
 
-    Collection<Vector3<Integer>> getOutsideBlocks(@NotNull FourFacingDirection direction);
+    Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter(FourFacingDirection direction);
 
-    @Deprecated
-    PositionableShipsStructure addAir();
+    @Deprecated(forRemoval = true)
+    default Collection<Vector3<Integer>> getOutsideBlocks(@NotNull FourFacingDirection direction) {
+        return this.getOutsidePositionsRelativeToCenter(direction);
+    }
 
     void addAir(Consumer<? super PositionableShipsStructure> onComplete);
 
-    default Collection<Vector3<Integer>> getOutsideBlocks() {
+    default Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter() {
         return Arrays
                 .stream(FourFacingDirection.getFourFacingDirections())
                 .flatMap(direction -> this.getOutsideBlocks((FourFacingDirection) direction).stream())
                 .collect(Collectors.toSet());
     }
 
+    default Collection<Vector3<Integer>> getOutsidePositionsRelativeToWorld() {
+        Vector3<Integer> position = this.getPosition().getPosition();
+        return this
+                .getOutsidePositionsRelativeToCenter()
+                .parallelStream()
+                .map(position::plus)
+                .collect(Collectors.toSet());
+    }
+
+    @Deprecated(forRemoval = true)
+    default Collection<Vector3<Integer>> getOutsideBlocks() {
+        return this.getOutsidePositionsRelativeToCenter();
+    }
+
     default Bounds<Integer> getBounds() {
-        Set<Vector3<Integer>> positions = this.getOutsideBlocks().parallelStream().collect(Collectors.toSet());
+        Set<Vector3<Integer>> positions = this
+                .getOutsidePositionsRelativeToWorld()
+                .parallelStream()
+                .collect(Collectors.toSet());
         if (positions.isEmpty()) {
             throw new IllegalStateException("No structure found");
         }
@@ -76,17 +99,47 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return new Bounds<>(Vector3.valueOf(minX, minY, minZ), Vector3.valueOf(maxX, maxY, maxZ));
     }
 
-    Collection<Vector3<Integer>> getRelativePositions();
+    default Collection<Vector3<Integer>> getRelativePositionsToCenter() {
+        Collection<Vector3<Integer>> originalPositions = new HashSet<>(this.getOriginalRelativePositionsToCenter());
+        originalPositions.add(Vector3.valueOf(0, 0, 0));
+        return originalPositions;
+    }
 
-    Collection<Vector3<Integer>> getOriginalRelativePositions();
+    @Deprecated(forRemoval = true)
+    default Collection<Vector3<Integer>> getRelativePositions() {
+        return this.getRelativePositionsToCenter();
+    }
 
-    boolean addPosition(Vector3<Integer> add);
+    Collection<Vector3<Integer>> getOriginalRelativePositionsToCenter();
 
-    boolean removePosition(Vector3<Integer> remove);
+    @Deprecated(forRemoval = true)
+    default Collection<Vector3<Integer>> getOriginalRelativePositions() {
+        return this.getOriginalRelativePositionsToCenter();
+    }
+
+    @Deprecated(forRemoval = true)
+    default boolean addPosition(Vector3<Integer> add) {
+        return this.addPositionRelativeToCenter(add);
+    }
+
+    boolean addPositionRelativeToCenter(Vector3<Integer> add);
+
+    boolean removePositionRelativeToCenter(Vector3<Integer> remove);
+
+    @Deprecated(forRemoval = true)
+    default boolean removePosition(Vector3<Integer> remove) {
+        return this.removePositionRelativeToCenter(remove);
+    }
 
     PositionableShipsStructure clear();
 
-    PositionableShipsStructure setRaw(Collection<? extends Vector3<Integer>> collection);
+
+    @Deprecated
+    default PositionableShipsStructure setRaw(Collection<? extends Vector3<Integer>> collection) {
+        return setRawPositionsRelativeToCenter(collection);
+    }
+
+    PositionableShipsStructure setRawPositionsRelativeToCenter(Collection<? extends Vector3<Integer>> collection);
 
     default int getXSize() {
         return this.getSpecificSize(Vector3::getX);
@@ -136,21 +189,58 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
     }
 
     default Set<ChunkExtent> getChunks() {
-        Collection<ASyncBlockPosition> positions = this.getPositionsRelativeTo(Position.toASync(this.getPosition()));
-        Set<Vector3<Integer>> vector3Set = positions
+        Collection<Vector3<Integer>> positions = this
+                .getAsyncedPositionsRelativeToWorld()
                 .parallelStream()
                 .map(Position::getChunkPosition)
-                .collect(Collectors.toUnmodifiableSet());
-        return vector3Set.stream().map(pos -> this.getPosition().getWorld().loadChunk(pos)).collect(Collectors.toSet());
+                .collect(Collectors.toSet());
+        WorldExtent world = this.getPosition().getWorld();
+        return positions.stream().map(world::loadChunk).collect(Collectors.toSet());
     }
 
+    default CompletableFuture<Collection<ChunkExtent>> getChunksAsynced() {
+        Collection<Vector3<Integer>> positions = this
+                .getAsyncedPositionsRelativeToWorld()
+                .parallelStream()
+                .map(Position::getChunkPosition)
+                .collect(Collectors.toSet());
+        WorldExtent world = this.getPosition().getWorld();
+        Set<CompletableFuture<ChunkExtent>> chunkAsync = positions
+                .stream()
+                .map(world::loadChunkAsynced)
+                .collect(Collectors.toSet());
+        return CompletableFuture
+                .allOf(chunkAsync.toArray(new CompletableFuture[0]))
+                .thenApply(v -> chunkAsync.parallelStream().map(f -> {
+                    try {
+                        return f.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException("This should be impossible", e);
+                    }
+                }).collect(Collectors.toSet()));
+    }
+
+    @Deprecated(forRemoval = true)
     default boolean addPosition(BlockPosition position) {
         Vector3<Integer> original = this.getPosition().getPosition();
         Vector3<Integer> next = position.getPosition();
         return this.addPosition(next.minus(original));
     }
 
+    default boolean addPositionRelativeToWorld(BlockPosition position) {
+        Vector3<Integer> original = this.getPosition().getPosition();
+        Vector3<Integer> next = position.getPosition();
+        return this.addPosition(next.minus(original));
+    }
+
+    @Deprecated(forRemoval = true)
     default boolean removePosition(BlockPosition position) {
+        Vector3<Integer> original = this.getPosition().getPosition();
+        Vector3<Integer> next = position.getPosition();
+        return this.removePosition(next.minus(original));
+    }
+
+    default boolean removePositionRelativeToWorld(BlockPosition position) {
         Vector3<Integer> original = this.getPosition().getPosition();
         Vector3<Integer> next = position.getPosition();
         return this.removePosition(next.minus(original));
@@ -189,15 +279,30 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
                 .collect(Collectors.toUnmodifiableSet());
     }
 
+    @Deprecated(forRemoval = true)
     default Collection<SyncBlockPosition> getSyncedPositions() {
         return this.getPositionsRelativeTo(this.getPosition());
     }
 
+    default Collection<SyncBlockPosition> getSyncedPositionsRelativeToWorld() {
+        return this.getPositionsRelativeTo(this.getPosition());
+    }
+
+    @Deprecated(forRemoval = true)
     default Collection<ASyncBlockPosition> getAsyncedPositions() {
         return this.getPositions(Position::toASync);
     }
 
+    default Collection<ASyncBlockPosition> getAsyncedPositionsRelativeToWorld() {
+        return this.getPositions(Position::toASync);
+    }
+
+    @Deprecated(forRemoval = true)
     default <T extends BlockPosition> Collection<T> getPositions(Function<? super SyncBlockPosition, ? extends T> function) {
+        return this.getPositionsRelativeTo(function.apply(this.getPosition()));
+    }
+
+    default <T extends BlockPosition> Collection<T> getPositionsRelativeTo(Function<? super SyncBlockPosition, ? extends T> function) {
         return this.getPositionsRelativeTo(function.apply(this.getPosition()));
     }
 }
