@@ -40,8 +40,8 @@ public class Ships5BlockFinder implements BasicBlockFinder {
                         this.getNextBlock(event, block, directions);
                     }
                 }
-                if (this.shipsStructure.addPosition(block)) {
-                    if (blockFind != null && blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
+                if (this.shipsStructure.addPositionRelativeToWorld(block)) {
+                    if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                         return;
                     }
                     this.getNextBlock(event, block, directions);

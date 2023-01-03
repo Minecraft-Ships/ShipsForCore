@@ -170,7 +170,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     public boolean shouldFall() {
         int specialBlockCount = 0;
         boolean inWater = false;
-        for (SyncBlockPosition blockPosition : this.getStructure().getSyncedPositions()) {
+        for (SyncBlockPosition blockPosition : this.getStructure().getSyncedPositionsRelativeToWorld()) {
             if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))) {
                 specialBlockCount++;
             }
@@ -185,7 +185,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         }
         float specialBlockPercent = ((specialBlockCount * 100.0f) / this
                 .getStructure()
-                .getOriginalRelativePositions()
+                .getOriginalRelativePositionsToCenter()
                 .size());
         return (!(this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
     }

@@ -162,14 +162,14 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
     @Override
     public void save() {
         ConfigurationStream.ConfigurationFile file = this.getFile();
-        this.getDefaultMaxSize().ifPresent((size -> file.set(MAX_SIZE, size)));
-        file.set(MIN_SIZE, this.getDefaultMinSize());
 
         this.getFlags().stream().filter(v -> v instanceof VesselFlag.Serializable).forEach(vf -> {
             String value = ((VesselFlag.Serializable<?>) vf).serialize();
             String[] id = vf.getId().split(Pattern.quote(":"));
             file.set(new ConfigurationNode("flags", id[0], id[1]), value);
         });
+
+        this.getDefaultRequirements().forEach(requirement -> requirement.serialize(file, true));
 
         file.save();
     }

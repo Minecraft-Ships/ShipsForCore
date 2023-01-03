@@ -18,7 +18,8 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
-import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.assits.shiptype.SizedShipType;
+import org.ships.vessel.common.assits.shiptype.SpecialBlocksShipType;
 import org.ships.vessel.common.requirement.*;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.AbstractShipType;
@@ -28,7 +29,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class AirshipType extends AbstractShipType<Airship>
-        implements CloneableShipType<Airship>, SpecialBlockShipType<Airship>, FuelledShipType<Airship> {
+        implements CloneableShipType<Airship>, SpecialBlocksShipType<Airship>, FuelledShipType<Airship>,
+        SizedShipType<Airship> {
 
     private FuelRequirement fuelRequirement;
     private SpecialBlocksRequirement specialBlocksRequirement;
@@ -57,6 +59,7 @@ public class AirshipType extends AbstractShipType<Airship>
         super(plugin, displayName, file, types);
     }
 
+    @Override
     public @NotNull FuelRequirement getFuelRequirement() {
         return this.fuelRequirement;
     }
@@ -65,14 +68,17 @@ public class AirshipType extends AbstractShipType<Airship>
         return this.burnerRequirement;
     }
 
+    @Override
     public @NotNull SpecialBlocksRequirement getSpecialBlocksRequirement() {
         return this.specialBlocksRequirement;
     }
 
+    @Override
     public @NotNull MinSizeRequirement getMinimumSizeRequirement() {
         return this.minSizeRequirement;
     }
 
+    @Override
     public @NotNull MaxSizeRequirement getMaxSizeRequirement() {
         return this.maxSizeRequirement;
     }
@@ -82,12 +88,12 @@ public class AirshipType extends AbstractShipType<Airship>
     }
 
     @Override
-    public CloneableShipType<Airship> cloneWithName(File file, String name) {
+    public AirshipType cloneWithName(File file, String name) {
         return new AirshipType(name, file);
     }
 
     @Override
-    public CloneableShipType<Airship> getOriginType() {
+    public AirshipType getOriginType() {
         return ShipType.AIRSHIP;
     }
 

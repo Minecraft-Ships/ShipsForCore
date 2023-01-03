@@ -2,6 +2,7 @@ package org.ships.movement;
 
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
+import org.core.entity.Entity;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.world.boss.ServerBossBar;
@@ -14,7 +15,6 @@ import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
-import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.config.messages.messages.error.data.CollideDetectedMessageData;
 import org.ships.event.vessel.move.VesselMoveEvent;
@@ -33,7 +33,6 @@ import org.ships.vessel.sign.LicenceSign;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MovementContext {
@@ -108,13 +107,12 @@ public class MovementContext {
     }
 
     public void move(Vessel vessel) throws MoveException {
-        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         this.isVesselLoading(vessel);
         this.isVesselMoving(vessel);
         vessel.set(MovingFlag.class, this);
-        this.collectEntities(vessel, config, entities -> {
+        this.collectEntities(vessel, entities -> {
             try {
-                this.movePostEntity(vessel, entities);
+                this.movePostEntity(vessel);
             } catch (Throwable e) {
                 this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
                 vessel.set(new MovingFlag());
@@ -129,13 +127,13 @@ public class MovementContext {
         });
     }
 
-    private void movePostEntity(Vessel vessel, Collection<LiveEntity> entities) throws Exception {
+    private void movePostEntity(Vessel vessel) throws Exception {
         this.getBossBar().ifPresent(bossBar -> {
             bossBar.setValue(100);
             bossBar.setTitle(AText.ofPlain("Processing: Pre"));
         });
 
-        if(ShipsPlugin.getPlugin().getPreventMovementManager().isMovementPrevented()){
+        if (ShipsPlugin.getPlugin().getPreventMovementManager().isMovementPrevented()) {
             throw new MoveException(this, AdventureMessageConfig.ERROR_PREVENT_MOVEMENT, vessel);
         }
 
@@ -189,7 +187,7 @@ public class MovementContext {
     }
 
     private void processRequirements(VesselRequirement vessel) throws MoveException {
-        AText.ofPlain("Processing: Requirements");
+        this.getBossBar().ifPresent(bossBar -> bossBar.setTitle(AText.ofPlain("Processing: Requirements")));
         vessel.finishRequirements(this);
     }
 
@@ -251,37 +249,44 @@ public class MovementContext {
 
     }
 
-    private void collectEntities(Vessel vessel, ShipsConfig config, Consumer<Collection<LiveEntity>> after) {
-        vessel.getEntitiesOvertime(config.getEntityTrackingLimit(), e -> true, e -> {
-            EntitySnapshot<? extends LiveEntity> snapshot = e.createSnapshot();
-            if (snapshot == null) {
+    private void collectEntities(Vessel vessel, Consumer<Collection<LiveEntity>> after) {
+        vessel.getEntitiesAsynced(e -> true, e -> {
+            e.forEach(entity -> this.saveEntity(vessel, entity, e.size()));
+            after.accept(e);
+        });
+    }
+
+    private void saveEntity(@NotNull Vessel vessel, @NotNull Entity<LiveEntity> entity, int totalSize) {
+        EntitySnapshot<? extends LiveEntity> snapshot = entity.createSnapshot();
+        if (snapshot == null) {
+            return;
+        }
+        Optional<SyncBlockPosition> opAttached = entity.getAttachedTo();
+        if (opAttached.isEmpty()) {
+            return;
+        }
+        Optional<MovingBlock> mBlock = this.getMovingStructure().getBefore(opAttached.get());
+        if (mBlock.isEmpty()) {
+            SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
+            Collection<SyncBlockPosition> positions = vessel.getStructure().getSyncedPositionsRelativeToWorld();
+            Optional<SyncBlockPosition> opDown = positions
+                    .stream()
+                    .filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN))
+                    .findAny();
+            if (opDown.isEmpty()) {
                 return;
             }
-            Optional<SyncBlockPosition> opAttached = e.getAttachedTo();
-            if (opAttached.isEmpty()) {
-                return;
-            }
-            Optional<MovingBlock> mBlock = this.getMovingStructure().getBefore(opAttached.get());
-            if (mBlock.isEmpty()) {
-                SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
-                Collection<SyncBlockPosition> positions = vessel
-                        .getStructure()
-                        .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) t -> t);
-                Optional<SyncBlockPosition> opDown = positions
-                        .stream()
-                        .filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN))
-                        .findAny();
-                if (opDown.isEmpty()) {
-                    return;
-                }
-                mBlock = this.getMovingStructure().getBefore(opDown.get());
-            }
-            if (mBlock.isEmpty()) {
-                return;
-            }
-            this.entities.put(snapshot, mBlock.get());
-            this.getBossBar().ifPresent(bossBar -> AText.ofPlain("Collecting entities: " + this.entities.size()));
-        }, after);
+            mBlock = this.getMovingStructure().getBefore(opDown.get());
+        }
+        if (mBlock.isEmpty()) {
+            return;
+        }
+        this.entities.put(snapshot, mBlock.get());
+        this.getBossBar().ifPresent(bossBar -> {
+            bossBar.setTitle(AText.ofPlain("Collecting entities: " + this.entities.size()));
+            bossBar.setValue(this.entities.size(), totalSize);
+
+        });
     }
 
     private void isVesselMoving(Vessel vessel) throws MoveException {

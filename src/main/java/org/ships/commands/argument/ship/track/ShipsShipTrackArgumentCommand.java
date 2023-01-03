@@ -68,7 +68,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
         }
         vessel
                 .getStructure()
-                .getSyncedPositions()
+                .getSyncedPositionsRelativeToWorld()
                 .forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
         TranslateCore
                 .getScheduleManager()
@@ -76,7 +76,10 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
                 .setDisplayName("ShipsTrack:" + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                 .setDelay(10)
                 .setDelayUnit(TimeUnit.SECONDS)
-                .setRunner((sch) -> vessel.getStructure().getSyncedPositions().forEach(bp -> bp.resetBlock(player)))
+                .setRunner((sch) -> vessel
+                        .getStructure()
+                        .getSyncedPositionsRelativeToWorld()
+                        .forEach(bp -> bp.resetBlock(player)))
                 .build(ShipsPlugin.getPlugin())
                 .run();
         return true;

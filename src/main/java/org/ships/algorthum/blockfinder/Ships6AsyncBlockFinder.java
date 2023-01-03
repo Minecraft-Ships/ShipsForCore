@@ -68,7 +68,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                     toProcess.add(new AbstractMap.SimpleImmutableEntry<>(Position.toASync(position),
                                                                          FourFacingDirection.NONE));
                     while (!toProcess.isEmpty() && addedBlocks < limit && !ShipsPlugin.getPlugin().isShuttingDown()) {
-                        Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
+                        Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositionsToCenter();
                         Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
                         for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
                             if (ShipsPlugin.getPlugin().isShuttingDown()) {
@@ -104,7 +104,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 continue;
                             }
-                            structure.addPosition(Position.toSync(posEntry.getKey()));
+                            structure.addPositionRelativeToWorld(Position.toSync(posEntry.getKey()));
                             addedBlocks++;
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 TranslateCore

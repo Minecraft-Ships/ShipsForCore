@@ -76,7 +76,7 @@ public class MovementInstructionBuilder {
     public MovementInstructionBuilder setMovementBlocks(PositionableShipsStructure structure,
             Function<SyncBlockPosition, MovingBlock> function) {
         this.movingBlocks = structure
-                .getSyncedPositions()
+                .getSyncedPositionsRelativeToWorld()
                 .stream()
                 .map(function)
                 .collect(Collectors.toCollection(MovingBlockSet::new));

@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LicenceSign implements ShipsSign {
@@ -62,18 +61,19 @@ public class LicenceSign implements ShipsSign {
     public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) throws IOException {
         SignTileEntitySnapshot snapshot = sign.getSnapshot();
         List<AText> lines = snapshot.getText();
-        Optional<ShipType<?>> opType = ShipsPlugin.getPlugin().getAllShipTypes()
+        Optional<ShipType<?>> opType = ShipsPlugin
+                .getPlugin()
+                .getAllShipTypes()
                 .stream()
                 .filter(t -> lines.get(1).toPlain().equalsIgnoreCase(t.getDisplayName()))
                 .findFirst();
         if (opType.isEmpty()) {
-            throw new IOException("Unknown Ship Type: Ship Types: " +
-                    ShipsPlugin
-                            .getPlugin()
-                            .getAllShipTypes()
-                            .stream()
-                            .map(ShipType::getDisplayName)
-                            .collect(Collectors.joining(", ")));
+            throw new IOException("Unknown Ship Type: Ship Types: " + ShipsPlugin
+                    .getPlugin()
+                    .getAllShipTypes()
+                    .stream()
+                    .map(ShipType::getDisplayName)
+                    .collect(Collectors.joining(", ")));
         }
 
         String name = lines.get(2).toPlain();
@@ -116,10 +116,10 @@ public class LicenceSign implements ShipsSign {
             config
                     .getDefaultFinder()
                     .setConnectedVessel(s)
-                    .getConnectedBlocksOvertime(
-                            position,
-                            new FindAirOvertimeBlockFinderUpdate(
-                                    s, new VesselStructureUpdate(s, totalCount, player, bar)));
+                    .getConnectedBlocksOvertime(position, new FindAirOvertimeBlockFinderUpdate(s,
+                                                                                               new VesselStructureUpdate(
+                                                                                                       s, totalCount,
+                                                                                                       player, bar)));
         }
     }
 
@@ -130,15 +130,14 @@ public class LicenceSign implements ShipsSign {
         } catch (UnableToFindLicenceSign e1) {
             Collection<? extends SyncBlockPosition> foundStructure = e1
                     .getFoundStructure()
-                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
+                    .getSyncedPositionsRelativeToWorld();
             foundStructure.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .getScheduleManager()
                     .schedule()
                     .setDelay(5)
                     .setDelayUnit(TimeUnit.SECONDS)
-                    .setRunner((sched) -> foundStructure
-                            .forEach(bp -> bp.resetBlock(player)))
+                    .setRunner((sched) -> foundStructure.forEach(bp -> bp.resetBlock(player)))
                     .build(ShipsPlugin.getPlugin())
                     .run();
         } catch (IOException e) {
@@ -147,35 +146,31 @@ public class LicenceSign implements ShipsSign {
                 if (opTile.get() instanceof LiveSignTileEntity lste) {
                     String type = lste.getTextAt(1).map(AText::toPlain).orElse("");
                     String name = lste.getTextAt(2).map(AText::toPlain).orElse("");
-                    Optional<ShipType<?>> opType = ShipsPlugin.getPlugin().getAllShipTypes()
+                    Optional<ShipType<?>> opType = ShipsPlugin
+                            .getPlugin()
+                            .getAllShipTypes()
                             .stream()
                             .filter(t -> t.getDisplayName().equalsIgnoreCase(type))
                             .findAny();
                     if (opType.isEmpty()) {
                         player.sendMessage(AText
-                                .ofPlain("Could not find ShipType with display name of " + type)
-                                .withColour(NamedTextColours.RED));
+                                                   .ofPlain("Could not find ShipType with display name of " + type)
+                                                   .withColour(NamedTextColours.RED));
                         return false;
                     }
-                    File file =
-                            new File(
-                                    TranslateCore.getPlatform().getPlatformConfigFolder(),
-                                    "VesselData/" + opType
-                                            .get()
-                                            .getId()
-                                            .replaceAll(":", ".")
-                                            + "/"
-                                            + name
-                                            + "."
-                                            + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+                    File file = new File(TranslateCore.getPlatform().getPlatformConfigFolder(),
+                                         "VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "."
+                                                 + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
                     if (!file.exists()) {
                         player.sendMessage(AText
-                                .ofPlain("Could not find the file associated with the ship")
-                                .withColour(NamedTextColours.RED));
+                                                   .ofPlain("Could not find the file associated with the ship")
+                                                   .withColour(NamedTextColours.RED));
                         return false;
                     }
                     ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file,
-                            TranslateCore.getPlatform().getConfigFormat());
+                                                                                                         TranslateCore
+                                                                                                                 .getPlatform()
+                                                                                                                 .getConfigFormat());
                     config.set(ShipsFileLoader.META_LOCATION_X, position.getX());
                     config.set(ShipsFileLoader.META_LOCATION_Y, position.getY());
                     config.set(ShipsFileLoader.META_LOCATION_Z, position.getZ());
@@ -222,8 +217,10 @@ public class LicenceSign implements ShipsSign {
         private final @NotNull CommandViewer messager;
         private final @NotNull Vessel vessel;
 
-        private VesselStructureUpdate(@NotNull Vessel vessel, int totalBlockCount, @NotNull CommandViewer messager,
-                @Nullable ServerBossBar bossBar) {
+        private VesselStructureUpdate(@NotNull Vessel vessel,
+                                      int totalBlockCount,
+                                      @NotNull CommandViewer messager,
+                                      @Nullable ServerBossBar bossBar) {
             this.messager = messager;
             this.vessel = vessel;
             this.finalBar = bossBar;
@@ -232,21 +229,22 @@ public class LicenceSign implements ShipsSign {
 
         @Override
         public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-            int originalSize = structure.getOriginalRelativePositions().size();
+            int originalSize = structure.getOriginalRelativePositionsToCenter().size();
             this.vessel.setStructure(structure);
             this.vessel.save();
-            this.messager.sendMessage(AText.ofPlain("Vessel structure has updated by " +
-                    (structure.getOriginalRelativePositions().size() - originalSize)));
+            this.messager.sendMessage(AText.ofPlain(
+                    "Vessel structure has updated by " + (structure.getOriginalRelativePositionsToCenter().size()
+                            - originalSize)));
             if (this.finalBar != null) {
                 this.finalBar.deregisterPlayers();
             }
         }
 
         @Override
-        public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(
-                @NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block) {
+        public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
+                                                                      @NotNull BlockPosition block) {
             if (this.finalBar != null) {
-                int blockCount = currentStructure.getOriginalRelativePositions().size() + 1;
+                int blockCount = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
                 this.finalBar.setTitle(AText.ofPlain(blockCount + "/" + this.totalBlockCount));
                 try {
                     this.finalBar.setValue(blockCount, this.totalBlockCount);

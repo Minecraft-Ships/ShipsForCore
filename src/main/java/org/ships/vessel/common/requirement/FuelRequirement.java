@@ -1,5 +1,6 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationStream;
 import org.core.inventory.inventories.general.block.FurnaceInventory;
 import org.core.inventory.item.ItemType;
 import org.core.inventory.item.stack.ItemStack;
@@ -14,6 +15,7 @@ import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -217,5 +219,31 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
             return false;
         }
         return this.getConsumption() != 0;
+    }
+
+    @Override
+    public void serialize(@NotNull ConfigurationStream stream, boolean withParentData) {
+        if (withParentData) {
+            this.serializeParent(stream);
+            return;
+        }
+        this.serializeInstance(stream);
+    }
+
+    private void serializeInstance(@NotNull ConfigurationStream stream) {
+        this.getSpecifiedFuelSlot().ifPresent(slot -> stream.set(AbstractShipType.FUEL_SLOT, slot));
+        this.getSpecifiedConsumption().ifPresent(take -> stream.set(AbstractShipType.FUEL_CONSUMPTION, take));
+        stream.set(AbstractShipType.FUEL_TYPES, this.getSpecifiedFuelTypes());
+    }
+
+    private void serializeParent(@NotNull ConfigurationStream stream) {
+        FuelSlot slot = this.getFuelSlot();
+        int consumption = this.getConsumption();
+        Collection<ItemType> types = this.getFuelTypes();
+
+        stream.set(AbstractShipType.FUEL_TYPES, types);
+        stream.set(AbstractShipType.FUEL_CONSUMPTION, consumption);
+        stream.set(AbstractShipType.FUEL_SLOT, slot);
+
     }
 }

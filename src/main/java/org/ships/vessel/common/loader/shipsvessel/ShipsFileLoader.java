@@ -189,7 +189,7 @@ public class ShipsFileLoader implements ShipsLoader {
         uuidList.forEach((key, value) -> file.set(
                 new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_STRING_PARSER, "Meta",
                                                                     "Permission", key.getId()), value));
-        file.set(META_STRUCTURE, vessel.getStructure().getRelativePositions());
+        file.set(META_STRUCTURE, vessel.getStructure().getRelativePositionsToCenter());
         Set<VesselFlag<?>> flags = vessel
                 .getFlags()
                 .stream()

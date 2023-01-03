@@ -14,17 +14,21 @@ import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
 import org.ships.vessel.common.requirement.FuelRequirement;
+import org.ships.vessel.common.requirement.MaxSizeRequirement;
+import org.ships.vessel.common.requirement.MinSizeRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 
 public class PlaneType extends AbstractShipType<Plane> implements FuelledShipType<Plane> {
 
-    private final Collection<Requirement<?>> requirements = new HashSet<>();
+    private FuelRequirement fuelRequirement;
+    private MinSizeRequirement minSizeRequirement;
+    private MaxSizeRequirement maxSizeRequirement;
 
     public PlaneType() {
         this("Plane", new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -58,13 +62,17 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
 
     @Override
     public Collection<Requirement<?>> getDefaultRequirements() {
-        if (this.requirements.isEmpty()) {
-            Requirement<FuelRequirement> fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
-                                                                               this.getDefaultFuelConsumption(),
-                                                                               this.getDefaultFuelTypes());
-            this.requirements.add(fuelRequirement);
+        if (this.fuelRequirement == null) {
+            this.fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                                                       this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
         }
-        return this.requirements;
+        if (this.minSizeRequirement == null) {
+            this.minSizeRequirement = new MinSizeRequirement(null, this.getDefaultMinSize());
+        }
+        if (this.maxSizeRequirement == null) {
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.getDefaultMaxSize().orElse(null));
+        }
+        return List.of(this.maxSizeRequirement, this.minSizeRequirement, this.fuelRequirement);
     }
 
     @Override
@@ -85,5 +93,10 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
     @Override
     public @NotNull CorePermission getMakePermission() {
         return Permissions.PLANE_MAKE;
+    }
+
+    @Override
+    public FuelRequirement getFuelRequirement() {
+        return this.fuelRequirement;
     }
 }

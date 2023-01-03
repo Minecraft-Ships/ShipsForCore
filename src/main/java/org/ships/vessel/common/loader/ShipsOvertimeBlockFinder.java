@@ -4,9 +4,7 @@ import org.core.TranslateCore;
 import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
-import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
@@ -15,14 +13,8 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ShipsOvertimeBlockFinder {
@@ -48,7 +40,7 @@ public class ShipsOvertimeBlockFinder {
     }
 
     public void loadOvertime(Consumer<? super Vessel> consumer,
-            Consumer<? super PositionableShipsStructure> exceptionRunner) {
+                             Consumer<? super PositionableShipsStructure> exceptionRunner) {
         TranslateCore
                 .getScheduleManager()
                 .schedule()
@@ -62,9 +54,10 @@ public class ShipsOvertimeBlockFinder {
     }
 
     public void loadOvertimeSynced(Consumer<? super Vessel> consumer,
-            Consumer<? super PositionableShipsStructure> exceptionRunner) {
+                                   Consumer<? super PositionableShipsStructure> exceptionRunner) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this.getVessels()
+        Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this
+                .getVessels()
                 .parallelStream()
                 .collect(Collectors.toMap(v -> v.getPosition().getPosition(), v -> v))
                 .entrySet();
@@ -74,13 +67,15 @@ public class ShipsOvertimeBlockFinder {
         if (!config.isStructureAutoUpdating()) {
             ShipsPlugin.getPlugin().getVessels().forEach(v -> {
                 PositionableShipsStructure pss = v.getStructure();
-                Collection<ASyncBlockPosition> collection = pss
-                        .getPositions((Function<SyncBlockPosition, ASyncBlockPosition>) (Position::toASync));
-                TranslateCore.getScheduleManager().schedule()
+                Collection<ASyncBlockPosition> collection = pss.getAsyncedPositionsRelativeToWorld();
+                TranslateCore
+                        .getScheduleManager()
+                        .schedule()
                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                         .setDelay(0)
                         .setDisplayName("Ship Finder")
-                        .setAsync(true).setRunner((sch) -> {
+                        .setAsync(true)
+                        .setRunner((sch) -> {
                             if (collection.parallelStream().anyMatch(p -> p.equals(this.position))) {
                                 consumer.accept(v);
                             }
@@ -104,7 +99,7 @@ public class ShipsOvertimeBlockFinder {
 
             @Override
             public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                    @NotNull BlockPosition block) {
+                                                @NotNull BlockPosition block) {
                 Optional<Map.Entry<Vector3<Integer>, Vessel>> opFirst = vessels
                         .parallelStream()
                         .filter(e -> e.getKey().equals(block.getPosition()))

@@ -101,9 +101,7 @@ public interface Vessel extends Positionable<BlockPosition> {
             Optional<SyncBlockPosition> opTo = e.getAttachedTo();
             return opTo.filter(syncBlockPosition -> bounds.contains(syncBlockPosition.getPosition())).isPresent();
         }).collect(Collectors.toSet());
-        Collection<ASyncBlockPosition> blocks = this
-                .getStructure()
-                .getPositions((Function<? super SyncBlockPosition, ? extends ASyncBlockPosition>) Position::toASync);
+        Collection<ASyncBlockPosition> blocks = this.getStructure().getAsyncedPositionsRelativeToWorld();
         return entities.stream().filter(check).filter(e -> {
             Optional<SyncBlockPosition> opBlock = e.getAttachedTo();
             //noinspection EqualsBetweenInconvertibleTypes
@@ -114,12 +112,12 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     default void getEntitiesOvertime(int limit,
                                      Predicate<? super LiveEntity> predicate,
                                      Consumer<? super LiveEntity> single,
                                      Consumer<? super Collection<LiveEntity>> output) {
-        getEntitiesAsynced(predicate, entities -> {
+        this.getEntitiesAsynced(predicate, entities -> {
             entities.forEach(single);
             output.accept(entities);
         });
@@ -193,8 +191,7 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     default Optional<Integer> getWaterLevel() {
         PositionableShipsStructure pss = this.getStructure();
-        return this.getWaterLevel(p -> p, pss.getPositions(
-                (Function<? super SyncBlockPosition, ? extends BlockPosition>) Position::toASync));
+        return this.getWaterLevel(p -> p, pss.getAsyncedPositionsRelativeToWorld());
     }
 
 }

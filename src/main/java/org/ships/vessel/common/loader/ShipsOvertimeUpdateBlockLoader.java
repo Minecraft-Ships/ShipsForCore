@@ -85,7 +85,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                 return;
             }
             PositionableShipsStructure structure2 = new AbstractPositionableShipsStructure(opBlock.get());
-            structure.getSyncedPositions().forEach(structure2::addPosition);
+            structure.getSyncedPositionsRelativeToWorld().forEach(structure2::addPositionRelativeToWorld);
             try {
                 Vessel vessel =
                         new ShipsLicenceSignFinder((SignTileEntity) structure2

@@ -1,5 +1,8 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationNode;
+import org.core.config.ConfigurationStream;
+import org.core.config.parser.Parser;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -153,5 +156,17 @@ public class SpecialBlockRequirement implements Requirement<SpecialBlockRequirem
     @Override
     public boolean isEnabled() {
         return this.getAmount() != 0;
+    }
+
+    @Override
+    public void serialize(@NotNull ConfigurationStream stream, boolean withParentData) {
+        OptionalInt opAmount = this.getSpecifiedAmount();
+        if (opAmount.isEmpty() && !withParentData) {
+            return;
+        }
+        int amount = opAmount.orElseGet(this::getAmount);
+        stream.set(new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Block",
+                                                                   this.getDisplayName().orElse("Special")),
+                   amount != 0);
     }
 }

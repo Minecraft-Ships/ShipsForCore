@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 public class MoveSign implements ShipsSign {
 
@@ -77,8 +76,7 @@ public class MoveSign implements ShipsSign {
         }, (pss) -> {
             player.sendMessage(AText.ofPlain("Could not find [Ships] sign").withColour(NamedTextColours.RED));
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            Collection<SyncBlockPosition> positions = pss.getPositions(
-                    (Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s);
+            Collection<SyncBlockPosition> positions = pss.getSyncedPositionsRelativeToWorld();
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .getScheduleManager()

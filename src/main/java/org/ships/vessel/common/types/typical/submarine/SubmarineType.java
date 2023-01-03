@@ -14,7 +14,7 @@ import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
-import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.assits.shiptype.SpecialBlocksShipType;
 import org.ships.vessel.common.requirement.FuelRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
@@ -23,12 +23,14 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 
 public class SubmarineType extends AbstractShipType<Submarine>
-        implements SpecialBlockShipType<Submarine>, FuelledShipType<Submarine> {
+        implements SpecialBlocksShipType<Submarine>, FuelledShipType<Submarine> {
 
-    private final Collection<Requirement<?>> requirements = new HashSet<>();
+
+    private FuelRequirement fuelRequirement;
+    private SpecialBlocksRequirement specialBlocksRequirement;
 
     public SubmarineType() {
         this("Submarine", new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -64,17 +66,15 @@ public class SubmarineType extends AbstractShipType<Submarine>
 
     @Override
     public Collection<Requirement<?>> getDefaultRequirements() {
-        if (this.requirements.isEmpty()) {
-            Requirement<?> fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
-                                                                 this.getDefaultFuelConsumption(),
-                                                                 this.getDefaultFuelTypes());
-            Requirement<?> specialBlocksRequirement = new SpecialBlocksRequirement(null,
-                                                                                   this.getDefaultSpecialBlocksPercent(),
-                                                                                   this.getDefaultSpecialBlockTypes());
-            this.requirements.add(fuelRequirement);
-            this.requirements.add(specialBlocksRequirement);
+        if (this.fuelRequirement == null) {
+            this.fuelRequirement = new FuelRequirement(null, this.getDefaultFuelSlot(),
+                                                       this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
         }
-        return this.requirements;
+        if (this.specialBlocksRequirement == null) {
+            this.specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                                                                         this.getDefaultSpecialBlockTypes());
+        }
+        return List.of(this.specialBlocksRequirement, this.fuelRequirement);
     }
 
     @Override
@@ -95,5 +95,15 @@ public class SubmarineType extends AbstractShipType<Submarine>
     @Override
     public @NotNull CorePermission getMakePermission() {
         return Permissions.SUBMARINE_MAKE;
+    }
+
+    @Override
+    public FuelRequirement getFuelRequirement() {
+        return this.fuelRequirement;
+    }
+
+    @Override
+    public @NotNull SpecialBlocksRequirement getSpecialBlocksRequirement() {
+        return this.specialBlocksRequirement;
     }
 }

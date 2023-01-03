@@ -28,7 +28,6 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.AbstractMap;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 public interface SignUtil {
 
@@ -144,7 +143,7 @@ public interface SignUtil {
                                                                          BlockPosition block) {
             if (this.context.getBossBar() != null) {
                 ServerBossBar bossBar = this.context.getBossBar();
-                int foundBlocks = currentStructure.getRelativePositions().size() + 1;
+                int foundBlocks = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
                 try {
                     bossBar.setValue(foundBlocks, this.trackLimit);
                 } catch (IllegalArgumentException ignore) {
@@ -166,7 +165,7 @@ public interface SignUtil {
             this.player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
             e1
                     .getFoundStructure()
-                    .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
+                    .getSyncedPositionsRelativeToWorld()
                     .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
             TranslateCore
                     .getScheduleManager()
@@ -176,7 +175,7 @@ public interface SignUtil {
                     .setDelayUnit(TimeUnit.SECONDS)
                     .setRunner((sch) -> e1
                             .getFoundStructure()
-                            .getPositions((Function<? super SyncBlockPosition, ? extends SyncBlockPosition>) s -> s)
+                            .getSyncedPositionsRelativeToWorld()
                             .forEach(bp -> bp.resetBlock(this.player)))
                     .build(ShipsPlugin.getPlugin())
                     .run();

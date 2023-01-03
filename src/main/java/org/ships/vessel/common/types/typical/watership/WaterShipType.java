@@ -14,7 +14,9 @@ import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
-import org.ships.vessel.common.assits.shiptype.SpecialBlockShipType;
+import org.ships.vessel.common.assits.shiptype.SpecialBlocksShipType;
+import org.ships.vessel.common.requirement.MaxSizeRequirement;
+import org.ships.vessel.common.requirement.MinSizeRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
@@ -22,17 +24,20 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 
 public class WaterShipType extends AbstractShipType<WaterShip>
-        implements CloneableShipType<WaterShip>, SpecialBlockShipType<WaterShip> {
+        implements CloneableShipType<WaterShip>, SpecialBlocksShipType<WaterShip> {
 
     public static final String NAME = "Ship";
     private CorePermission moveOwnPermission = Permissions.WATERSHIP_MOVE_OWN;
     private CorePermission moveOtherPermission = Permissions.WATERSHIP_MOVE_OTHER;
     private CorePermission makePermission = Permissions.WATERSHIP_MAKE;
 
-    private final Collection<Requirement<?>> requirements = new HashSet<>();
+
+    private SpecialBlocksRequirement specialBlocksRequirement;
+    private MinSizeRequirement minSizeRequirement;
+    private MaxSizeRequirement maxSizeRequirement;
 
     public WaterShipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -98,12 +103,17 @@ public class WaterShipType extends AbstractShipType<WaterShip>
 
     @Override
     public Collection<Requirement<?>> getDefaultRequirements() {
-        if (this.requirements.isEmpty()) {
-            Requirement<?> requirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
-                                                                      this.getDefaultSpecialBlockTypes());
-            this.requirements.add(requirement);
+        if (this.maxSizeRequirement == null) {
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.getDefaultMaxSize().orElse(null));
         }
-        return this.requirements;
+        if (this.minSizeRequirement == null) {
+            this.minSizeRequirement = new MinSizeRequirement(null, this.getDefaultMinSize());
+        }
+        if (this.specialBlocksRequirement == null) {
+            this.specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
+                                                                         this.getDefaultSpecialBlockTypes());
+        }
+        return List.of(this.minSizeRequirement, this.maxSizeRequirement, this.specialBlocksRequirement);
     }
 
     @Override
@@ -114,5 +124,10 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     @Override
     public CloneableShipType<WaterShip> getOriginType() {
         return ShipType.WATERSHIP;
+    }
+
+    @Override
+    public @NotNull SpecialBlocksRequirement getSpecialBlocksRequirement() {
+        return this.specialBlocksRequirement;
     }
 }

@@ -43,31 +43,33 @@ public class ShipsUpdateBlockLoader {
 
                     @Override
                     public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                            @NotNull BlockPosition block) {
+                                                        @NotNull BlockPosition block) {
                         return BlockFindControl.USE;
                     }
                 });
     }
 
     private Vessel load(PositionableShipsStructure blocks) throws LoadVesselException {
-        LicenceSign ls = ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new IllegalStateException(
-                "Could not fince licence sign"));
+        LicenceSign ls = ShipsPlugin
+                .getPlugin()
+                .get(LicenceSign.class)
+                .orElseThrow(() -> new IllegalStateException("Could not fince licence sign"));
         Optional<SyncBlockPosition> opBlock = blocks.getAll(SignTileEntity.class).stream().filter(b -> {
-            SignTileEntity lste = (SignTileEntity) b.getTileEntity().orElseThrow(() -> new IllegalStateException(
-                    "Could not get tile entity"));
+            SignTileEntity lste = (SignTileEntity) b
+                    .getTileEntity()
+                    .orElseThrow(() -> new IllegalStateException("Could not get tile entity"));
             return ls.isSign(lste);
         }).findAny();
-        if (!opBlock.isPresent()) {
+        if (opBlock.isEmpty()) {
             throw new UnableToFindLicenceSign(blocks, "Failed to find licence sign");
         }
         SyncBlockPosition block = opBlock.get();
-        Vessel vessel =
-                new ShipsLicenceSignFinder((SignTileEntity) opBlock
-                        .get()
-                        .getTileEntity()
-                        .orElseThrow(() -> new IllegalStateException("Could not get tile entity"))).load();
+        Vessel vessel = new ShipsLicenceSignFinder((SignTileEntity) opBlock
+                .get()
+                .getTileEntity()
+                .orElseThrow(() -> new IllegalStateException("Could not get tile entity"))).load();
         PositionableShipsStructure apss = new AbstractPositionableShipsStructure(block);
-        blocks.getSyncedPositions().forEach(apss::addPosition);
+        blocks.getSyncedPositionsRelativeToWorld().forEach(apss::addPositionRelativeToWorld);
         vessel.setStructure(apss);
         return vessel;
     }

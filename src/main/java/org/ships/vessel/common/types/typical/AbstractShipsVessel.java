@@ -353,4 +353,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public @NotNull CrewPermission getDefaultPermission() {
         return this.defaultPermission;
     }
+
+
 }

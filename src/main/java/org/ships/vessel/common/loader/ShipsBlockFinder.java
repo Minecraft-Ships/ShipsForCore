@@ -22,7 +22,7 @@ public class ShipsBlockFinder implements ShipsLoader {
     public Vessel load() throws LoadVesselException {
         Optional<Vessel> opVessel = ShipsPlugin.getPlugin().getVessels().stream().filter(v -> {
             PositionableShipsStructure pss = v.getStructure();
-            Collection<ASyncBlockPosition> collection = pss.getAsyncedPositions();
+            Collection<ASyncBlockPosition> collection = pss.getAsyncedPositionsRelativeToWorld();
             return collection.stream().anyMatch(p -> p.getPosition().equals(this.position.getPosition()));
         }).findAny();
         if (opVessel.isPresent()) {

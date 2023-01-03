@@ -1,11 +1,13 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.util.AbstractMap;
 import java.util.Optional;
@@ -96,6 +98,18 @@ public class MinSizeRequirement implements Requirement<MinSizeRequirement> {
     public boolean isEnabled() {
         int size = this.getMinimumSize();
         return size > 0;
+    }
+
+    @Override
+    public void serialize(@NotNull ConfigurationStream stream, boolean withParentData) {
+        if (withParentData) {
+            int min = this.getMinimumSize();
+            stream.set(AbstractShipType.MAX_SIZE, min);
+            return;
+        }
+        if (this.minSize != null) {
+            stream.set(AbstractShipType.MAX_SIZE, this.minSize);
+        }
     }
 
     public boolean isMinSizeSpecified() {

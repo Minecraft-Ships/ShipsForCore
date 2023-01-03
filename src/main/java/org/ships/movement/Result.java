@@ -130,7 +130,7 @@ public class Result extends ArrayList<Result.Run> {
         Run COMMON_SET_NEW_POSITIONS = (v, c) -> {
             PositionableShipsStructure pss = v.getStructure();
             pss.clear();
-            c.getMovingStructure().getOriginal().forEach((mb) -> pss.addPosition(mb.getAfterPosition()));
+            c.getMovingStructure().getOriginal().forEach((mb) -> pss.addPositionRelativeToWorld(mb.getAfterPosition()));
         };
 
         Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, c) -> {

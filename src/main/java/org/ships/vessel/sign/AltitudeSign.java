@@ -94,7 +94,7 @@ public class AltitudeSign implements ShipsSign {
                     player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                     e1
                             .getFoundStructure()
-                            .getSyncedPositions()
+                            .getSyncedPositionsRelativeToWorld()
                             .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                     TranslateCore
                             .getScheduleManager()
@@ -104,7 +104,7 @@ public class AltitudeSign implements ShipsSign {
                             .setDelayUnit(TimeUnit.SECONDS)
                             .setRunner((sch) -> e1
                                     .getFoundStructure()
-                                    .getSyncedPositions()
+                                    .getSyncedPositionsRelativeToWorld()
                                     .forEach(bp -> bp.resetBlock(player)))
                             .build(ShipsPlugin.getPlugin())
                             .run();
@@ -164,7 +164,7 @@ public class AltitudeSign implements ShipsSign {
             @Override
             protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure,
                                                                              BlockPosition block) {
-                int foundBlocks = currentStructure.getRelativePositions().size() + 1;
+                int foundBlocks = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
                 if (finalBar != null) {
                     finalBar.setTitle(AText.ofPlain(foundBlocks + " / " + blockLimit));
                     try {
@@ -186,7 +186,7 @@ public class AltitudeSign implements ShipsSign {
                     player.sendMessage(AText.ofPlain(e1.getReason()).withColour(NamedTextColours.RED));
                     e1
                             .getFoundStructure()
-                            .getSyncedPositions()
+                            .getSyncedPositionsRelativeToWorld()
                             .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                     TranslateCore
                             .getScheduleManager()
@@ -196,7 +196,7 @@ public class AltitudeSign implements ShipsSign {
                             .setDelayUnit(TimeUnit.SECONDS)
                             .setRunner((scheduler) -> e1
                                     .getFoundStructure()
-                                    .getSyncedPositions()
+                                    .getSyncedPositionsRelativeToWorld()
                                     .forEach(bp -> bp.resetBlock(player)))
                             .build(ShipsPlugin.getPlugin())
                             .run();

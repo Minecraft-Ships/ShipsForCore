@@ -1,11 +1,13 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.util.AbstractMap;
 import java.util.Optional;
@@ -106,5 +108,16 @@ public class MaxSizeRequirement implements Requirement<MaxSizeRequirement> {
     public boolean isEnabled() {
         OptionalInt opSize = this.getMaxSize();
         return opSize.isPresent() && opSize.getAsInt() != 0 && opSize.getAsInt() != Integer.MAX_VALUE;
+    }
+
+    @Override
+    public void serialize(@NotNull ConfigurationStream stream, boolean withParentData) {
+        if (withParentData) {
+            this.getMaxSize().ifPresent(value -> stream.set(AbstractShipType.MAX_SIZE, value));
+            return;
+        }
+        if (this.maxSize != null) {
+            stream.set(AbstractShipType.MAX_SIZE, this.maxSize);
+        }
     }
 }

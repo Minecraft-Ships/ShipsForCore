@@ -2,6 +2,7 @@ package org.ships.vessel.common.assits.shiptype;
 
 import org.core.inventory.item.ItemType;
 import org.ships.vessel.common.assits.FuelSlot;
+import org.ships.vessel.common.requirement.FuelRequirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipType;
@@ -10,6 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public interface FuelledShipType<V extends Vessel> extends ShipType<V> {
+
+    FuelRequirement getFuelRequirement();
 
     default int getDefaultFuelConsumption() {
         return this.getFile().getInteger(AbstractShipType.FUEL_CONSUMPTION).orElse(0);

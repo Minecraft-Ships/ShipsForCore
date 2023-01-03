@@ -1,5 +1,6 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationStream;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
@@ -10,6 +11,7 @@ import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.MovingBlock;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -27,17 +29,17 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
     }
 
     public SpecialBlocksRequirement(@Nullable SpecialBlocksRequirement parent,
-                                    @Nullable Float specialBlocksPercentage,
+                                    @Nullable Float specialBlocksPercent,
                                     @Nullable Collection<BlockType> specialBlocks) {
-        if (parent == null && (specialBlocks == null || specialBlocksPercentage == null)) {
+        if (parent == null && (specialBlocks == null || specialBlocksPercent == null)) {
             throw new IllegalArgumentException("Parent cannot be null if another value is null");
         }
-        if (specialBlocksPercentage != null && (specialBlocksPercentage < 0 || specialBlocksPercentage > 100)) {
+        if (specialBlocksPercent != null && (specialBlocksPercent < 0 || specialBlocksPercent > 100)) {
             throw new IndexOutOfBoundsException("Percentage can only be between 0 and 100");
         }
         this.parent = parent;
         this.specialBlocks = specialBlocks;
-        this.specialBlocksPercentage = specialBlocksPercentage;
+        this.specialBlocksPercentage = specialBlocksPercent;
     }
 
     public Optional<Float> getSpecifiedPercent() {
@@ -171,5 +173,30 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
             return false;
         }
         return this.getPercentage() != 0;
+    }
+
+    @Override
+    public void serialize(@NotNull ConfigurationStream stream, boolean withParentData) {
+        if (withParentData) {
+            this.serializeInstance(stream);
+            return;
+        }
+        this.serializeParent(stream);
+    }
+
+    private void serializeParent(@NotNull ConfigurationStream stream) {
+        float percent = this.getPercentage();
+        Collection<BlockType> blocks = this.getBlocks();
+
+        stream.set(AbstractShipType.SPECIAL_BLOCK_PERCENT, percent);
+        stream.set(AbstractShipType.SPECIAL_BLOCK_TYPE, blocks);
+    }
+
+    private void serializeInstance(@NotNull ConfigurationStream stream) {
+        Optional<Float> opPercent = this.getSpecifiedPercent();
+        opPercent.ifPresent(value -> stream.set(AbstractShipType.SPECIAL_BLOCK_PERCENT, value));
+        if (this.specialBlocks != null) {
+            stream.set(AbstractShipType.SPECIAL_BLOCK_TYPE, this.specialBlocks);
+        }
     }
 }

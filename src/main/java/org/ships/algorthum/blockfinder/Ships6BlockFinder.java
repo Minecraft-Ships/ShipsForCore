@@ -49,7 +49,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         process.add(Position.toSync(position));
         while (count != this.limit) {
             if (process.isEmpty()) {
-                ret.forEach(pss::addPosition);
+                ret.forEach(pss::addPositionRelativeToWorld);
                 return pss;
             }
             for (SyncBlockPosition proc : process) {
@@ -69,7 +69,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             process.addAll(target);
             target.clear();
         }
-        ret.forEach(pss::addPosition);
+        ret.forEach(pss::addPositionRelativeToWorld);
         return pss;
     }
 
@@ -224,7 +224,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                                 if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                     return;
                                 }
-                                this.pss.addPosition(p);
+                                this.pss.addPositionRelativeToWorld(p);
                                 this.ret.add(p);
                                 this.total.add(p);
                             });

@@ -1,5 +1,6 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationStream;
 import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
@@ -24,4 +25,6 @@ public interface Requirement<S extends Requirement<S>> {
     Optional<S> getParent();
 
     boolean isEnabled();
+
+    void serialize(@NotNull ConfigurationStream stream, boolean withParentData);
 }

@@ -22,6 +22,6 @@ public class VesselSizeAdapter implements MessageAdapter<Vessel> {
 
     @Override
     public AText process(@NotNull Vessel obj) {
-        return AText.ofPlain(obj.getStructure().getOriginalRelativePositions().size() + "");
+        return AText.ofPlain((obj.getStructure().getOriginalRelativePositionsToCenter().size() + 1) + "");
     }
 }

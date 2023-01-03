@@ -106,9 +106,9 @@ public class CoreEventListener implements EventListener {
                 continue;
             }
 
-            new ShipsOvertimeBlockFinder(position).loadOvertime(vessel -> vessel.getStructure().addPosition(position),
-                                                                structure -> {
-                                                                });
+            new ShipsOvertimeBlockFinder(position).loadOvertime(
+                    vessel -> vessel.getStructure().addPositionRelativeToWorld(position), structure -> {
+                    });
         }
     }
 
@@ -409,7 +409,7 @@ public class CoreEventListener implements EventListener {
                                     }
                                     AText text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.process(
                                             currentStructure);
-                                    int blockAmount = (currentStructure.getOriginalRelativePositions().size() + 1);
+                                    int blockAmount = (currentStructure.getOriginalRelativePositionsToCenter().size() + 1);
                                     finalBar.setTitle(text);
                                     finalBar.setValue(blockAmount, trackSize);
                                 })
@@ -523,7 +523,7 @@ public class CoreEventListener implements EventListener {
             }
             new ShipsOvertimeBlockFinder(pos).loadOvertime(vessel -> {
                 if (config.isStructureClickUpdating()) {
-                    vessel.getStructure().removePosition(event.getPosition());
+                    vessel.getStructure().removePositionRelativeToWorld(event.getPosition());
                 }
                 if (vessel instanceof CrewStoredVessel csVessel
                         && event instanceof BlockChangeEvent.Break.Pre.ByPlayer eventBreak) {
