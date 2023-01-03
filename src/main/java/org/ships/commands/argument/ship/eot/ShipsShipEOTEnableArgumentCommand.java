@@ -9,11 +9,10 @@ import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
+import org.core.schedule.Scheduler;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.entity.LiveTileEntity;
-import org.core.world.position.block.entity.sign.LiveSignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
@@ -38,8 +37,8 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                new ExactArgument(this.SHIP_EOT_ARGUMENT), new ExactArgument(this.SHIP_ENABLE_ARGUMENT),
-                new BooleanArgument(this.SHIP_BOOLEAN_ARGUMENT));
+                             new ExactArgument(this.SHIP_EOT_ARGUMENT), new ExactArgument(this.SHIP_ENABLE_ARGUMENT),
+                             new BooleanArgument(this.SHIP_BOOLEAN_ARGUMENT));
     }
 
     @Override
@@ -65,7 +64,9 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
                     liveSignTileEntity.setTextAt(1, AText.ofPlain("Ahead"));
                     liveSignTileEntity.setTextAt(2, AText.ofPlain("{Stop}"));
                 });
-                s.cancel();
+                if (s instanceof Scheduler.Native nativeSch) {
+                    nativeSch.cancel();
+                }
             });
             return true;
         }

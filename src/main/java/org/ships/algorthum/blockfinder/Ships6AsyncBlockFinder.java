@@ -1,6 +1,7 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
+import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
@@ -70,13 +71,13 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                         Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositions();
                         Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
                         for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
-
                             if (ShipsPlugin.getPlugin().isShuttingDown()) {
                                 return;
                             }
                             final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
                             Stream
                                     .of(directions)
+                                    .parallel()
                                     .filter(direction -> !posEntry.getValue().equals(direction.getOpposite()))
                                     .forEach(direction -> {
                                         ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
@@ -115,7 +116,9 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                         .setDisplayName("Ships 6 async release")
                                         .build(ShipsPlugin.getPlugin())
                                         .run();
-                                scheduler.cancel();
+                                if (scheduler instanceof Scheduler.Native nativeSch) {
+                                    nativeSch.cancel();
+                                }
                                 return;
                             }
 
@@ -131,8 +134,9 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                             .setDisplayName("Ships 6 async release")
                             .build(ShipsPlugin.getPlugin())
                             .run();
-                    scheduler.cancel();
-
+                    if (scheduler instanceof Scheduler.Native nativeSch) {
+                        nativeSch.cancel();
+                    }
                 })
                 .setDisplayName("Ships 6 async structure finder")
                 .build(ShipsPlugin.getPlugin())

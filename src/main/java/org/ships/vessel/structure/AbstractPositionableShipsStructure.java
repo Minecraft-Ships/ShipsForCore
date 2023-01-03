@@ -11,7 +11,6 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
-import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.plugin.ShipsPlugin;
@@ -19,7 +18,6 @@ import org.ships.plugin.ShipsPlugin;
 import java.util.*;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AbstractPositionableShipsStructure implements PositionableShipsStructure {
@@ -96,14 +94,13 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
-    @Deprecated
     public PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos) {
         this.position = pos;
         return this;
     }
 
     @Override
-    public Collection<Vector3<Integer>> getOutsideBlocks(@NotNull FourFacingDirection direction) {
+    public Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter(@NotNull FourFacingDirection direction) {
         if (direction.equals(FourFacingDirection.EAST)) {
             return Collections.unmodifiableCollection(this.outsideEast);
         }
@@ -138,7 +135,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
                             for (int z = min.getZ(); z < max.getZ(); z++) {
                                 BlockPosition position = world.getAsyncPosition(x, y, z);
                                 if (position.getBlockType().equals(BlockTypes.AIR)) {
-                                    this.addPosition(position);
+                                    this.addPositionRelativeToWorld(position);
                                 }
                             }
                         }
@@ -157,52 +154,8 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
-    public PositionableShipsStructure addAir() {
-        Collection<ASyncBlockPosition> positions = this.getPositions(
-                (Function<? super SyncBlockPosition, ? extends ASyncBlockPosition>) Position::toASync);
-        Collection<BlockPosition> toAdd = new ArrayList<>();
-        Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        positions.forEach(p -> {
-            for (Direction dir : directions) {
-                try {
-                    getNextInLine(p, dir, positions).ifPresent(p1 -> {
-                        BlockPosition target = p;
-                        Vector3<Integer> dirV = dir.getAsVector();
-                        int disX = p1.getX() - target.getX();
-                        int disY = p1.getY() - target.getY();
-                        int disZ = p1.getZ() - target.getZ();
-                        while (!((disX == 0) && (disY == 0) && (disZ == 0))) {
-                            target = target.getRelative(dir);
-                            if (disX != 0) {
-                                disX = disX - dirV.getX();
-                            }
-                            if (disY != 0) {
-                                disY = disY - dirV.getY();
-                            }
-                            if (disZ != 0) {
-                                disZ = disZ - dirV.getZ();
-                            }
-                            if (!target.getBlockType().equals(BlockTypes.AIR)) {
-                                break;
-                            }
-                            if (toAdd.contains(target)) {
-                                continue;
-                            }
-                            toAdd.add(target);
-                        }
-                    });
-                } catch (DirectionNotSupported directionNotSupported) {
-                    directionNotSupported.printStackTrace();
-                }
-            }
-        });
-        toAdd.forEach(p -> this.addRawPosition(p.getPosition()));
-        return this;
-    }
-
-    @Override
-    public Set<Vector3<Integer>> getRelativePositions() {
-        Set<Vector3<Integer>> vectors = new HashSet<>(this.getOriginalRelativePositions());
+    public Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter() {
+        Collection<Vector3<Integer>> vectors = new HashSet<>(this.getOriginalRelativePositionsToCenter());
         if (vectors.stream().noneMatch(v -> v.equals(Vector3.valueOf(0, 0, 0)))) {
             vectors.add(Vector3.valueOf(0, 0, 0));
         }
@@ -210,12 +163,12 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
-    public Collection<Vector3<Integer>> getOriginalRelativePositions() {
+    public Collection<Vector3<Integer>> getOriginalRelativePositionsToCenter() {
         return this.vectors;
     }
 
     @Override
-    public boolean addPosition(@NotNull Vector3<Integer> add) {
+    public boolean addPositionRelativeToCenter(Vector3<Integer> add) {
         if (this.vectors.parallelStream().anyMatch(v -> v.equals(add))) {
             return false;
         }
@@ -281,13 +234,13 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         return this.vectors.add(add);
     }
 
-    private void addRawPosition(@NotNull Vector3<Integer> position) {
+    private void addPositionRelativeToWorld(@NotNull Vector3<Integer> position) {
         Vector3<Integer> original = this.getPosition().getPosition();
-        this.addPosition(position.minus(original));
+        this.addPositionRelativeToCenter(position.minus(original));
     }
 
     @Override
-    public boolean removePosition(@NotNull Vector3<Integer> remove) {
+    public boolean removePositionRelativeToCenter(@NotNull Vector3<Integer> remove) {
         Vector3<Integer> original = this.getPosition().getPosition();
         Vector3<Integer> next = this.position.getPosition();
         return this.vectors.remove(next.minus(original));
@@ -300,9 +253,9 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
-    public AbstractPositionableShipsStructure setRaw(Collection<? extends Vector3<Integer>> collection) {
+    public PositionableShipsStructure setRawPositionsRelativeToCenter(Collection<? extends Vector3<Integer>> collection) {
         this.clear();
-        collection.forEach(this::addRawPosition);
+        collection.forEach(this::addPositionRelativeToCenter);
         return this;
     }
 
