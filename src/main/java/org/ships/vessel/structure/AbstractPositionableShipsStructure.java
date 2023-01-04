@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class AbstractPositionableShipsStructure implements PositionableShipsStructure {
 
-    private final Collection<Vector3<Integer>> vectors = new HashSet<>();
+    private final Collection<Vector3<Integer>> vectors = new LinkedTransferQueue<>();
     private final Collection<Vector3<Integer>> outsideNorth = new LinkedTransferQueue<>();
     private final Collection<Vector3<Integer>> outsideEast = new LinkedTransferQueue<>();
     private final Collection<Vector3<Integer>> outsideSouth = new LinkedTransferQueue<>();

@@ -20,8 +20,11 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Stream;
 
 public class Ships6AsyncBlockFinder implements BasicBlockFinder {
@@ -62,19 +65,22 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                 .setRunner((scheduler) -> {
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(
                             Position.toSync(position));
-                    Collection<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new HashSet<>();
+                    LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new LinkedTransferQueue<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-                    int addedBlocks = 1;
                     toProcess.add(new AbstractMap.SimpleImmutableEntry<>(Position.toASync(position),
                                                                          FourFacingDirection.NONE));
-                    while (!toProcess.isEmpty() && addedBlocks < limit && !ShipsPlugin.getPlugin().isShuttingDown()) {
+                    while (!toProcess.isEmpty() && structure.getOriginalRelativePositionsToCenter().size() < limit
+                            && !ShipsPlugin.getPlugin().isShuttingDown()) {
                         Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositionsToCenter();
-                        Collection<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedBlockingQueue<>();
-                        for (Map.Entry<ASyncBlockPosition, Direction> posEntry : toProcess) {
+                        LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedTransferQueue<>();
+                        while (toProcess.hasWaitingConsumer()) {
+                            continue;
+                        }
+                        final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
+                        toProcess.parallelStream().forEach(posEntry -> {
                             if (ShipsPlugin.getPlugin().isShuttingDown()) {
                                 return;
                             }
-                            final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
                             Stream
                                     .of(directions)
                                     .parallel()
@@ -102,10 +108,9 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                             OvertimeBlockFinderUpdate.BlockFindControl blockFind = runAfterFullSearch.onBlockFind(
                                     structure, posEntry.getKey());
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
-                                continue;
+                                return;
                             }
                             structure.addPositionRelativeToWorld(Position.toSync(posEntry.getKey()));
-                            addedBlocks++;
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 TranslateCore
                                         .getScheduleManager()
@@ -119,10 +124,8 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                 if (scheduler instanceof Scheduler.Native nativeSch) {
                                     nativeSch.cancel();
                                 }
-                                return;
                             }
-
-                        }
+                        });
                         toProcess = next;
                     }
                     TranslateCore
