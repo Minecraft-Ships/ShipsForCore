@@ -39,7 +39,6 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
     public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws
             IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        int number = argument.getFirstArgument() + 1;
         Optional<T> opValue = ShipsPlugin
                 .getPlugin()
                 .getAll(this.type)
@@ -56,7 +55,6 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
     @Override
     public List<String> suggest(CommandContext context, CommandArgumentContext<T> argument) {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        int number = argument.getFirstArgument() + 1;
         return ShipsPlugin
                 .getPlugin()
                 .getAll(this.type)

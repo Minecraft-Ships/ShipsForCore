@@ -5,6 +5,14 @@ import org.core.permission.CorePermission;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection"})
 public interface Permissions {
+
+    CorePermission CMD_SHIPTYPE_MODIFY_READ = TranslateCore
+            .getPlatform()
+            .register(new CorePermission(false, "ships", "cmd", "shiptype", "modify", "get"));
+    CorePermission CMD_SHIPTYPE_MODIFY_SET = TranslateCore
+            .getPlatform()
+            .register(new CorePermission(false, "ships", "cmd", "shiptype", "modify", "set"));
+
     CorePermission CMD_LOCK = TranslateCore.getPlatform().register(new CorePermission(false, "ships", "cmd", "lock"));
 
     CorePermission CMD_SHIPS = TranslateCore.getPlatform().register(new CorePermission(true, "ships", "cmd", "ships"));

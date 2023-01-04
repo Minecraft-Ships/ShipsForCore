@@ -42,6 +42,7 @@ import org.ships.commands.argument.type.ShipsDeleteShipTypeArgument;
 import org.ships.commands.argument.type.ShipsViewShipTypeArgument;
 import org.ships.commands.argument.type.flag.ModifyShipTypeFlagArgument;
 import org.ships.commands.argument.type.flag.ViewShipTypeFlagArgument;
+import org.ships.commands.argument.type.modify.read.ReadSizeTypeArgumentCommand;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 
@@ -105,6 +106,8 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
 
         COMMANDS.add(new AutopilotCancelArgumentCommand());
         COMMANDS.add(new AutopilotToArgumentCommand());
+
+        COMMANDS.add(new ReadSizeTypeArgumentCommand());
     }
 
     @Override

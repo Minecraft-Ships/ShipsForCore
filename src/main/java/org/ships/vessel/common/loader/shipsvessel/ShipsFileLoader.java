@@ -298,8 +298,8 @@ public class ShipsFileLoader implements ShipsLoader {
                         .parseCollection(new ConfigurationNode("Meta", "Permission", p.getId()),
                                          Parser.STRING_TO_UNIQUE_ID, new ArrayList<>())
                         .forEach(u -> ship.getCrew().put(u, p)));
-        file.parseCollection(META_FLAGS, new HashSet<>()).forEach(ship::set);
         try {
+            file.parseCollection(META_FLAGS, new HashSet<>()).forEach(ship::set);
             ship.deserializeExtra(file);
         } catch (Throwable e) {
             throw new WrappedFileLoadVesselException(this.file, e);
