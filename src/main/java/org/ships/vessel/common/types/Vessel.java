@@ -5,7 +5,6 @@ import org.core.utils.Bounds;
 import org.core.utils.MathUtils;
 import org.core.vector.type.Vector2;
 import org.core.vector.type.Vector3;
-import org.core.world.ChunkExtent;
 import org.core.world.Extent;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -125,31 +124,32 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
                                     Consumer<? super Collection<LiveEntity>> output) {
-        Set<ChunkExtent> chunks = this.getStructure().getChunks();
-        Bounds<Integer> bounds = this.getStructure().getBounds();
-        Vector3<Integer> max = bounds.getIntMax();
-        Vector3<Integer> min = bounds.getIntMin();
-        bounds = new Bounds<>(min.minus(1, 1, 1), Vector3.valueOf(max.getX(), Integer.MAX_VALUE, max.getZ()));
-        Bounds<Integer> finalBounds = bounds;
+        this.getStructure().getChunksAsynced().thenAccept(chunks -> {
+            Bounds<Integer> bounds = this.getStructure().getBounds();
+            Vector3<Integer> max = bounds.getIntMax();
+            Vector3<Integer> min = bounds.getIntMin();
+            bounds = new Bounds<>(min.minus(1, 1, 1), Vector3.valueOf(max.getX(), Integer.MAX_VALUE, max.getZ()));
+            Bounds<Integer> finalBounds = bounds;
 
-        Map<LiveEntity, Vector3<Integer>> entityPositions = chunks
-                .stream()
-                .flatMap(c -> c.getEntities().stream())
-                .collect(Collectors.toMap(e -> e, e -> e
-                        .getAttachedTo()
-                        .map(Position::getPosition)
-                        .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
+            Map<LiveEntity, Vector3<Integer>> entityPositions = chunks
+                    .stream()
+                    .flatMap(c -> c.getEntities().stream())
+                    .collect(Collectors.toMap(e -> e, e -> e
+                            .getAttachedTo()
+                            .map(Position::getPosition)
+                            .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
 
-        Set<LiveEntity> entities = entityPositions
-                .entrySet()
-                .parallelStream()
-                .filter(entry -> finalBounds.contains(entry.getValue()))
-                .map(Map.Entry::getKey)
-                .filter(predicate)
-                .collect(Collectors.toSet());
+            Set<LiveEntity> entities = entityPositions
+                    .entrySet()
+                    .parallelStream()
+                    .filter(entry -> finalBounds.contains(entry.getValue()))
+                    .map(Map.Entry::getKey)
+                    .filter(predicate)
+                    .collect(Collectors.toSet());
 
-        //this maybe changed to full asynced, hence why its a consumer
-        output.accept(entities);
+            //this maybe changed to full asynced, hence why its a consumer
+            output.accept(entities);
+        });
     }
 
     default void rotateAnticlockwiseAround(@NotNull BlockPosition location, @NotNull MovementDetails details) {

@@ -38,8 +38,10 @@ public interface ShipType<T extends Vessel> extends Identifiable {
 
     int getDefaultAltitudeSpeed();
 
+    @Deprecated(forRemoval = true)
     @NotNull Optional<Integer> getDefaultMaxSize();
 
+    @Deprecated(forRemoval = true)
     int getDefaultMinSize();
 
     @NotNull ConfigurationStream.ConfigurationFile getFile();
@@ -65,11 +67,7 @@ public interface ShipType<T extends Vessel> extends Identifiable {
     }
 
     default <E> @NotNull Optional<E> getFlagValue(@NotNull Class<? extends VesselFlag<E>> class1) {
-        Optional<? extends VesselFlag<E>> opFlag = this.getFlag(class1);
-        if (!opFlag.isPresent()) {
-            return Optional.empty();
-        }
-        return opFlag.get().getValue();
+        return this.getFlag(class1).flatMap(VesselFlag::getValue);
     }
 
     @Override

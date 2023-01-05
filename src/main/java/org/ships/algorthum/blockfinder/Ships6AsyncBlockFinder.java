@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class Ships6AsyncBlockFinder implements BasicBlockFinder {
@@ -77,13 +78,14 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                             continue;
                         }
                         final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
+                        AtomicBoolean shouldKill = new AtomicBoolean();
                         toProcess.parallelStream().forEach(posEntry -> {
                             if (ShipsPlugin.getPlugin().isShuttingDown()) {
+                                shouldKill.set(true);
                                 return;
                             }
                             Stream
                                     .of(directions)
-                                    .parallel()
                                     .filter(direction -> !posEntry.getValue().equals(direction.getOpposite()))
                                     .forEach(direction -> {
                                         ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
@@ -112,6 +114,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                             }
                             structure.addPositionRelativeToWorld(Position.toSync(posEntry.getKey()));
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
+                                shouldKill.set(true);
                                 TranslateCore
                                         .getScheduleManager()
                                         .schedule()
@@ -126,6 +129,9 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                 }
                             }
                         });
+                        if (shouldKill.get()) {
+                            return;
+                        }
                         toProcess = next;
                     }
                     TranslateCore

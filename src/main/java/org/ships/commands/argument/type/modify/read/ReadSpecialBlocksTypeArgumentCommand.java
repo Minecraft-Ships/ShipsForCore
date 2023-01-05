@@ -6,39 +6,38 @@ import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
-import org.core.inventory.item.ItemType;
 import org.core.permission.Permission;
 import org.core.source.viewer.CommandViewer;
-import org.core.utils.Identifiable;
+import org.core.world.position.block.BlockType;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
-import org.ships.vessel.common.assits.FuelSlot;
-import org.ships.vessel.common.assits.shiptype.FuelledShipType;
-import org.ships.vessel.common.requirement.FuelRequirement;
+import org.ships.vessel.common.assits.shiptype.SpecialBlocksShipType;
+import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ReadFuelTypeArgumentCommand implements ArgumentCommand {
+public class ReadSpecialBlocksTypeArgumentCommand implements ArgumentCommand {
 
     private final ExactArgument type = new ExactArgument("shiptype");
     private final ExactArgument modify = new ExactArgument("modify");
-    private final ShipIdentifiableArgument<FuelledShipType<?>> shipType = new ShipIdentifiableArgument<>(
-            "shiptype value", (Class<FuelledShipType<?>>) (Object) FuelledShipType.class, (c, a, t) -> true);
+    private final ShipIdentifiableArgument<SpecialBlocksShipType<?>> shipType = new ShipIdentifiableArgument<>(
+            "shiptype value", (Class<SpecialBlocksShipType<?>>) (Object) SpecialBlocksShipType.class,
+            (c, a, t) -> true);
     private final ExactArgument get = new ExactArgument("get");
-    private final ExactArgument fuel = new ExactArgument("fuel");
+    private final ExactArgument specialBlocks = new ExactArgument("blocks");
 
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return List.of(this.type, this.modify, this.shipType, this.get, this.fuel);
+        return List.of(this.type, this.modify, this.shipType, this.get, this.specialBlocks);
     }
 
     @Override
     public String getDescription() {
-        return "Get the fuel information for a shiptype";
+        return "Get the special block data for a shiptype";
     }
 
     @Override
@@ -48,19 +47,17 @@ public class ReadFuelTypeArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        FuelledShipType<?> shipType = commandContext.getArgument(this, this.shipType);
-        FuelRequirement fuelRequirement = shipType.getFuelRequirement();
-        Collection<ItemType> fuelTypes = fuelRequirement.getFuelTypes();
-        FuelSlot fuelSlot = fuelRequirement.getFuelSlot();
-        int take = fuelRequirement.getConsumption();
+        SpecialBlocksShipType<?> shipType = commandContext.getArgument(this, this.shipType);
+        SpecialBlocksRequirement specialBlocksRequirement = shipType.getSpecialBlocksRequirement();
+        Collection<BlockType> specialBlocksTypes = specialBlocksRequirement.getBlocks();
+        float percentage = specialBlocksRequirement.getPercentage();
 
         if (commandContext.getSource() instanceof CommandViewer viewer) {
-            viewer.sendMessage(AText.ofPlain("Consumption: " + take));
-            viewer.sendMessage(AText.ofPlain("Slot: " + fuelSlot.name()));
-            viewer.sendMessage(AText.ofPlain("Fuel Types: " + fuelTypes
-                    .parallelStream()
-                    .map(Identifiable::getName)
+            viewer.sendMessage(AText.ofPlain("Special Block Types: " + specialBlocksTypes
+                    .stream()
+                    .map(type -> type.getName())
                     .collect(Collectors.joining(", "))));
+            viewer.sendMessage(AText.ofPlain("Percentage: " + percentage));
         }
         return true;
     }
