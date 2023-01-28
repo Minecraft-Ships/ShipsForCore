@@ -45,8 +45,11 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
         return Optional.of(Permissions.CMD_INFO);
     }
 
-    private String readVersion(PlatformDetails details) {
-        return details.getName() + ": " + details.getVersion().asString();
+    private AText readVersion(PlatformDetails details) {
+        return AText
+                .ofPlain(details.getName() + ": ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(details.getVersion().asString()).withColour(NamedTextColours.GOLD));
     }
 
     @Override
@@ -69,9 +72,9 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
                                    .append(AText
                                                    .ofPlain(ShipsPlugin.PRERELEASE_VERSION + "")
                                                    .withColour(NamedTextColours.GOLD)));
-        viewer.sendMessage(AText.ofPlain(this.readVersion(TranslateCore.getPlatform().getDetails())));
-        viewer.sendMessage(AText.ofPlain(this.readVersion(TranslateCore.getPlatform().getTranslateCoreDetails())));
-        viewer.sendMessage(AText.ofPlain(this.readVersion(TranslateCore.getPlatform().getImplementationDetails())));
+        viewer.sendMessage(this.readVersion(TranslateCore.getPlatform().getDetails()));
+        viewer.sendMessage(this.readVersion(TranslateCore.getPlatform().getTranslateCoreDetails()));
+        viewer.sendMessage(this.readVersion(TranslateCore.getPlatform().getImplementationDetails()));
         viewer.sendMessage(AText
                                    .ofPlain("Vessel Types: ")
                                    .withColour(NamedTextColours.AQUA)
