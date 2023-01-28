@@ -38,12 +38,6 @@ public interface ShipType<T extends Vessel> extends Identifiable {
 
     int getDefaultAltitudeSpeed();
 
-    @Deprecated(forRemoval = true)
-    @NotNull Optional<Integer> getDefaultMaxSize();
-
-    @Deprecated(forRemoval = true)
-    int getDefaultMinSize();
-
     @NotNull ConfigurationStream.ConfigurationFile getFile();
 
     @NotNull T createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos);

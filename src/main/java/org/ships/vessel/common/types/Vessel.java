@@ -94,6 +94,8 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     default Collection<LiveEntity> getEntities(Predicate<? super LiveEntity> check) {
         Bounds<Integer> bounds = this.getStructure().getBounds();
+        bounds.add(1, Integer.MAX_VALUE, 1);
+        bounds.add(-1, -1, -1);
         Set<LiveEntity> entities = new HashSet<>();
         this.getStructure().getChunks().stream().map(Extent::getEntities).forEach(entities::addAll);
         entities = entities.stream().filter(e -> {
@@ -103,52 +105,48 @@ public interface Vessel extends Positionable<BlockPosition> {
         Collection<ASyncBlockPosition> blocks = this.getStructure().getAsyncedPositionsRelativeToWorld();
         return entities.stream().filter(check).filter(e -> {
             Optional<SyncBlockPosition> opBlock = e.getAttachedTo();
-            //noinspection EqualsBetweenInconvertibleTypes
-            return opBlock
-                    .filter(syncBlockPosition -> blocks.parallelStream().anyMatch(b -> b.equals(syncBlockPosition)))
-                    .isPresent();
+            //noinspection SuspiciousMethodCalls
+            return opBlock.filter(blocks::contains).isPresent();
         }).collect(Collectors.toSet());
 
     }
 
-    @Deprecated(forRemoval = true)
-    default void getEntitiesOvertime(int limit,
-                                     Predicate<? super LiveEntity> predicate,
-                                     Consumer<? super LiveEntity> single,
-                                     Consumer<? super Collection<LiveEntity>> output) {
-        this.getEntitiesAsynced(predicate, entities -> {
-            entities.forEach(single);
-            output.accept(entities);
-        });
+    default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
+                                    Consumer<? super Collection<LiveEntity>> output) {
+        this.getEntitiesAsynced(predicate, output, Throwable::printStackTrace);
     }
 
     default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
-                                    Consumer<? super Collection<LiveEntity>> output) {
+                                    Consumer<? super Collection<LiveEntity>> output,
+                                    Consumer<Throwable> onException) {
         this.getStructure().getChunksAsynced().thenAccept(chunks -> {
-            Bounds<Integer> bounds = this.getStructure().getBounds();
-            Vector3<Integer> max = bounds.getIntMax();
-            Vector3<Integer> min = bounds.getIntMin();
-            bounds = new Bounds<>(min.minus(1, 1, 1), Vector3.valueOf(max.getX(), Integer.MAX_VALUE, max.getZ()));
-            Bounds<Integer> finalBounds = bounds;
+            try {
+                Bounds<Integer> bounds = this.getStructure().getBounds();
+                Vector3<Integer> max = bounds.getIntMax();
+                Vector3<Integer> min = bounds.getIntMin();
+                bounds.add(-1, -1, -1);
+                bounds.add(1, Integer.MAX_VALUE, 1);
 
-            Map<LiveEntity, Vector3<Integer>> entityPositions = chunks
-                    .stream()
-                    .flatMap(c -> c.getEntities().stream())
-                    .collect(Collectors.toMap(e -> e, e -> e
-                            .getAttachedTo()
-                            .map(Position::getPosition)
-                            .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
+                Map<LiveEntity, Vector3<Integer>> entityPositions = chunks
+                        .stream()
+                        .flatMap(c -> c.getEntities().stream())
+                        .collect(Collectors.toMap(e -> e, e -> e
+                                .getAttachedTo()
+                                .map(Position::getPosition)
+                                .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
 
-            Set<LiveEntity> entities = entityPositions
-                    .entrySet()
-                    .parallelStream()
-                    .filter(entry -> finalBounds.contains(entry.getValue()))
-                    .map(Map.Entry::getKey)
-                    .filter(predicate)
-                    .collect(Collectors.toSet());
+                Set<LiveEntity> entities = entityPositions
+                        .entrySet()
+                        .parallelStream()
+                        .filter(entry -> bounds.contains(entry.getValue()))
+                        .map(Map.Entry::getKey)
+                        .filter(predicate)
+                        .collect(Collectors.toSet());
 
-            //this maybe changed to full asynced, hence why its a consumer
-            output.accept(entities);
+                output.accept(entities);
+            } catch (Throwable e) {
+                onException.accept(e);
+            }
         });
     }
 

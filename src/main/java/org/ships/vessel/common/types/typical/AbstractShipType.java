@@ -35,10 +35,6 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
             Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     public static final ConfigurationNode.KnownParser.SingleKnown<Boolean> BURNER_BLOCK = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_BOOLEAN, "Block", "Burner");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
-    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(
-            Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(
             Parser.STRING_TO_INTEGER, "Speed", "Max");
     public static final ConfigurationNode.KnownParser.SingleKnown<Integer> ALTITUDE_SPEED = new ConfigurationNode.KnownParser.SingleKnown<>(
@@ -113,16 +109,6 @@ public abstract class AbstractShipType<V extends Vessel> implements Serializable
                 .getFile()
                 .parse(ALTITUDE_SPEED, Parser.STRING_TO_INTEGER)
                 .orElseThrow(() -> new IllegalStateException("Could not get altitude speed from " + this.displayName));
-    }
-
-    @Override
-    public @NotNull Optional<Integer> getDefaultMaxSize() {
-        return this.getFile().parse(MAX_SIZE, Parser.STRING_TO_INTEGER);
-    }
-
-    @Override
-    public int getDefaultMinSize() {
-        return this.getFile().parse(MIN_SIZE, Parser.STRING_TO_INTEGER).orElse(0);
     }
 
     @Override

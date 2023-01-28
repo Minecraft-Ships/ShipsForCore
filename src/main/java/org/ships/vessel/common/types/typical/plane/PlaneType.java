@@ -30,6 +30,9 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
     private MinSizeRequirement minSizeRequirement;
     private MaxSizeRequirement maxSizeRequirement;
 
+    private Integer max;
+    private final int min;
+
     public PlaneType() {
         this("Plane", new File(ShipsPlugin.getPlugin().getConfigFolder(),
                                "/Configuration/ShipType/Plane." + TranslateCore
@@ -49,6 +52,8 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
                      ConfigurationStream.ConfigurationFile file,
                      BlockType... types) {
         super(plugin, displayName, file, types);
+        file.getInteger(MaxSizeRequirement.MAX_SIZE).ifPresent(v -> this.max = v);
+        this.min = file.getInteger(MinSizeRequirement.MIN_SIZE, 0);
     }
 
     @Override
@@ -67,10 +72,10 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
                                                        this.getDefaultFuelConsumption(), this.getDefaultFuelTypes());
         }
         if (this.minSizeRequirement == null) {
-            this.minSizeRequirement = new MinSizeRequirement(null, this.getDefaultMinSize());
+            this.minSizeRequirement = new MinSizeRequirement(null, this.min);
         }
         if (this.maxSizeRequirement == null) {
-            this.maxSizeRequirement = new MaxSizeRequirement(null, this.getDefaultMaxSize().orElse(null));
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.max);
         }
         return List.of(this.maxSizeRequirement, this.minSizeRequirement, this.fuelRequirement);
     }

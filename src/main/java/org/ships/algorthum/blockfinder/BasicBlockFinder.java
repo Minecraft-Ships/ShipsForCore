@@ -14,11 +14,12 @@ public interface BasicBlockFinder extends Algorithm {
     Ships5AsyncBlockFinder SHIPS_FIVE_ASYNC = new Ships5AsyncBlockFinder();
     Ships6BlockFinder SHIPS_SIX = new Ships6BlockFinder();
     Ships6AsyncBlockFinder SHIPS_SIX_RELEASE_ONE_ASYNC = new Ships6AsyncBlockFinder();
+    Ships6SingleAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC = new Ships6SingleAsyncBlockFinder();
 
     @NotNull BasicBlockFinder init();
 
     void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-            @NotNull OvertimeBlockFinderUpdate runAfterFullSearch);
+                                    @NotNull OvertimeBlockFinderUpdate runAfterFullSearch);
 
     int getBlockLimit();
 

@@ -31,13 +31,13 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(COMMAND_NAME, false, "config"),
-                new ExactArgument("set"),
-                new ExactArgument(CONFIG_TYPE, false, "shiptype"),
-                new ShipIdentifiableArgument<>(SHIP_TYPE, ShipType.class),
-                new ShipTypeSingleKeyArgument(CONFIG_KEY),
-                new ShipTypeSingleValueArgument<>(CONFIG_VALUE, (c, a) -> c.getArgument(this, CONFIG_KEY)));
+        return Arrays.asList(new ExactArgument(COMMAND_NAME, false, "config"), new ExactArgument("set"),
+                             new ExactArgument(CONFIG_TYPE, false, "shiptype"),
+                             new ShipIdentifiableArgument<>(SHIP_TYPE, ShipType.class),
+                             new ShipTypeSingleKeyArgument(CONFIG_KEY), new ShipTypeSingleValueArgument<>(CONFIG_VALUE,
+                                                                                                          (c, a) -> c.getArgument(
+                                                                                                                  this,
+                                                                                                                  CONFIG_KEY)));
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
 
     @Override
     public Optional<Permission> getPermissionNode() {
-        return Optional.of(Permissions.CMD_CONFIG_VIEW);
+        return Optional.of(Permissions.CMD_CONFIG_SET);
     }
 
     @Override

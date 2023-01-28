@@ -153,10 +153,14 @@ public class Result extends ArrayList<Result.Run> {
                 snapshot.teleportEntity(true);
                 return;
             }
-            e.getCreatedFrom().ifPresent(LiveEntity::remove);
-            try {
-                e.spawnEntity();
-            } catch (IllegalStateException ignored) {
+            Optional<? extends LiveEntity> opFrom = e.getCreatedFrom();
+            if (opFrom.isPresent() && !opFrom.get().isRemoved()) {
+                opFrom.get().setPosition(e.getPosition());
+            } else {
+                try {
+                    e.spawnEntity();
+                } catch (IllegalStateException ignored) {
+                }
             }
 
         });

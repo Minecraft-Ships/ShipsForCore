@@ -1,13 +1,14 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
+import org.core.config.parser.Parser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.util.AbstractMap;
 import java.util.Optional;
@@ -16,6 +17,9 @@ public class MinSizeRequirement implements Requirement<MinSizeRequirement> {
 
     private final @Nullable MinSizeRequirement parent;
     private final @Nullable Integer minSize;
+
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MIN_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Block", "Count", "Min");
 
     public MinSizeRequirement(@Nullable MinSizeRequirement parent, @Nullable Integer minSize) {
         if (parent == null && minSize == null) {
@@ -104,11 +108,11 @@ public class MinSizeRequirement implements Requirement<MinSizeRequirement> {
     public void serialize(@NotNull ConfigurationStream stream, boolean withParentData) {
         if (withParentData) {
             int min = this.getMinimumSize();
-            stream.set(AbstractShipType.MAX_SIZE, min);
+            stream.set(MIN_SIZE, min);
             return;
         }
         if (this.minSize != null) {
-            stream.set(AbstractShipType.MAX_SIZE, this.minSize);
+            stream.set(MIN_SIZE, this.minSize);
         }
     }
 

@@ -14,10 +14,9 @@ import java.util.stream.Collectors;
 public class ShipTypeSingleKeyArgument implements CommandArgument<ConfigurationNode.KnownParser.SingleKnown<Object>> {
 
     public static final Set<ConfigurationNode.KnownParser.SingleKnown<?>> PARSE_FUNCTIONS = new HashSet<>(
-            Arrays.asList(AbstractShipType.ALTITUDE_SPEED, AbstractShipType.FUEL_CONSUMPTION, AbstractShipType.MAX_SIZE,
-                          AbstractShipType.MAX_SPEED, AbstractShipType.MIN_SIZE, AbstractShipType.FUEL_CONSUMPTION,
-                          AbstractShipType.BURNER_BLOCK, AbstractShipType.FUEL_SLOT,
-                          AbstractShipType.SPECIAL_BLOCK_PERCENT));
+            Arrays.asList(AbstractShipType.ALTITUDE_SPEED, AbstractShipType.FUEL_CONSUMPTION,
+                          AbstractShipType.MAX_SPEED, AbstractShipType.FUEL_CONSUMPTION, AbstractShipType.BURNER_BLOCK,
+                          AbstractShipType.FUEL_SLOT, AbstractShipType.SPECIAL_BLOCK_PERCENT));
     private final String id;
 
 

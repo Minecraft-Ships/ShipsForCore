@@ -10,6 +10,7 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
@@ -39,6 +40,9 @@ public class MarsshipType extends AbstractShipType<Marsship>
     private MinSizeRequirement minSizeRequirement;
     private MaxSizeRequirement maxSizeRequirement;
 
+    private @Nullable Integer max;
+    private int min;
+
 
     public MarsshipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -59,6 +63,10 @@ public class MarsshipType extends AbstractShipType<Marsship>
                         ConfigurationStream.ConfigurationFile file,
                         BlockType... types) {
         super(plugin, displayName, file, types);
+
+        this.min = file.getInteger(MinSizeRequirement.MIN_SIZE, 0);
+        file.getInteger(MaxSizeRequirement.MAX_SIZE).ifPresent(value -> this.max = value);
+
         if (!(plugin.equals(ShipsPlugin.getPlugin()) && displayName.equals(NAME))) {
             String pluginId = plugin.getPluginId();
             String name = displayName.toLowerCase().replace(" ", "");
@@ -72,6 +80,14 @@ public class MarsshipType extends AbstractShipType<Marsship>
                     .getPlatform()
                     .register(new CorePermission(false, "ships", "make", pluginId, name));
         }
+    }
+
+    public MinSizeRequirement getMinimumRequirement() {
+        return this.minSizeRequirement;
+    }
+
+    public MaxSizeRequirement getMaximumRequirement() {
+        return this.maxSizeRequirement;
     }
 
     @Override
@@ -99,11 +115,12 @@ public class MarsshipType extends AbstractShipType<Marsship>
             this.specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
                                                                          this.getDefaultSpecialBlockTypes());
         }
+
         if (this.maxSizeRequirement == null) {
-            this.maxSizeRequirement = new MaxSizeRequirement(null, this.getDefaultMaxSize().orElse(null));
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.max);
         }
         if (this.minSizeRequirement == null) {
-            this.minSizeRequirement = new MinSizeRequirement(null, this.getDefaultMinSize());
+            this.minSizeRequirement = new MinSizeRequirement(null, this.min);
         }
         return List.of(this.maxSizeRequirement, this.minSizeRequirement, this.specialBlocksRequirement);
     }

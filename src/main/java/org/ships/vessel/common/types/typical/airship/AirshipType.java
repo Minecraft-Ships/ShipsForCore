@@ -38,6 +38,9 @@ public class AirshipType extends AbstractShipType<Airship>
     private MinSizeRequirement minSizeRequirement;
     private MaxSizeRequirement maxSizeRequirement;
 
+    private int min;
+    private Integer max;
+
     public AirshipType() {
         this("Airship", new File(ShipsPlugin.getPlugin().getConfigFolder(),
                                  "/Configuration/ShipType/Airship." + TranslateCore
@@ -57,6 +60,8 @@ public class AirshipType extends AbstractShipType<Airship>
                        ConfigurationStream.ConfigurationFile file,
                        BlockType... types) {
         super(plugin, displayName, file, types);
+        this.min = file.getInteger(MinSizeRequirement.MIN_SIZE, 0);
+        file.getInteger(MaxSizeRequirement.MAX_SIZE).ifPresent(value -> this.max = value);
     }
 
     @Override
@@ -79,7 +84,7 @@ public class AirshipType extends AbstractShipType<Airship>
     }
 
     @Override
-    public @NotNull MaxSizeRequirement getMaxSizeRequirement() {
+    public @NotNull MaxSizeRequirement getMaximumSizeRequirement() {
         return this.maxSizeRequirement;
     }
 
@@ -124,10 +129,10 @@ public class AirshipType extends AbstractShipType<Airship>
                                                                          this.getDefaultSpecialBlockTypes());
         }
         if (this.minSizeRequirement == null) {
-            this.minSizeRequirement = new MinSizeRequirement(null, this.getDefaultMinSize());
+            this.minSizeRequirement = new MinSizeRequirement(null, this.min);
         }
         if (this.maxSizeRequirement == null) {
-            this.maxSizeRequirement = new MaxSizeRequirement(null, this.getDefaultMaxSize().orElse(null));
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.max);
         }
         return List.of(this.burnerRequirement, this.fuelRequirement, this.specialBlocksRequirement,
                        this.minSizeRequirement, this.maxSizeRequirement);

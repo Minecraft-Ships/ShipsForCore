@@ -39,6 +39,9 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     private MinSizeRequirement minSizeRequirement;
     private MaxSizeRequirement maxSizeRequirement;
 
+    private Integer maxSize;
+    private int minSize;
+
     public WaterShipType() {
         this(NAME, new File(ShipsPlugin.getPlugin().getConfigFolder(),
                             "/Configuration/ShipType/Watership." + TranslateCore
@@ -58,6 +61,8 @@ public class WaterShipType extends AbstractShipType<WaterShip>
                          @NotNull ConfigurationStream.ConfigurationFile file,
                          BlockType... types) {
         super(plugin, displayName, file, types);
+        file.getInteger(MaxSizeRequirement.MAX_SIZE).ifPresent(v -> maxSize = v);
+        this.minSize = file.getInteger(MinSizeRequirement.MIN_SIZE, 0);
         if (!(plugin.equals(ShipsPlugin.getPlugin()) && displayName.equals(NAME))) {
             String pluginId = plugin.getPluginId();
             String name = displayName.toLowerCase().replace(" ", "");
@@ -104,10 +109,10 @@ public class WaterShipType extends AbstractShipType<WaterShip>
     @Override
     public Collection<Requirement<?>> getDefaultRequirements() {
         if (this.maxSizeRequirement == null) {
-            this.maxSizeRequirement = new MaxSizeRequirement(null, this.getDefaultMaxSize().orElse(null));
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.maxSize);
         }
         if (this.minSizeRequirement == null) {
-            this.minSizeRequirement = new MinSizeRequirement(null, this.getDefaultMinSize());
+            this.minSizeRequirement = new MinSizeRequirement(null, this.minSize);
         }
         if (this.specialBlocksRequirement == null) {
             this.specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),

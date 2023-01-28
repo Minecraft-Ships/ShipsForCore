@@ -10,14 +10,13 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.FuelSlot;
 import org.ships.vessel.common.assits.shiptype.FuelledShipType;
 import org.ships.vessel.common.assits.shiptype.SpecialBlocksShipType;
-import org.ships.vessel.common.requirement.FuelRequirement;
-import org.ships.vessel.common.requirement.Requirement;
-import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
+import org.ships.vessel.common.requirement.*;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
@@ -32,6 +31,13 @@ public class SubmarineType extends AbstractShipType<Submarine>
     private FuelRequirement fuelRequirement;
     private SpecialBlocksRequirement specialBlocksRequirement;
 
+    private MinSizeRequirement minSizeRequirement;
+    private MaxSizeRequirement maxSizeRequirement;
+
+
+    private @Nullable Integer max;
+    private final int min;
+
     public SubmarineType() {
         this("Submarine", new File(ShipsPlugin.getPlugin().getConfigFolder(),
                                    "/Configuration/ShipType/Submarine." + TranslateCore
@@ -40,8 +46,8 @@ public class SubmarineType extends AbstractShipType<Submarine>
                                            .getFileType()[0]));
     }
 
-    public SubmarineType(String name, File file) {
-        this(ShipsPlugin.getPlugin(), name,
+    public SubmarineType(String displayName, File file) {
+        this(ShipsPlugin.getPlugin(), displayName,
              TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR,
              BlockTypes.WATER);
     }
@@ -51,6 +57,8 @@ public class SubmarineType extends AbstractShipType<Submarine>
                          ConfigurationStream.ConfigurationFile file,
                          BlockType... types) {
         super(plugin, displayName, file, types);
+        this.min = file.getInteger(MinSizeRequirement.MIN_SIZE, 0);
+        file.getInteger(MaxSizeRequirement.MAX_SIZE).ifPresent(value -> this.max = value);
     }
 
     @Override
@@ -73,6 +81,12 @@ public class SubmarineType extends AbstractShipType<Submarine>
         if (this.specialBlocksRequirement == null) {
             this.specialBlocksRequirement = new SpecialBlocksRequirement(null, this.getDefaultSpecialBlocksPercent(),
                                                                          this.getDefaultSpecialBlockTypes());
+        }
+        if (this.minSizeRequirement == null) {
+            this.minSizeRequirement = new MinSizeRequirement(null, this.min);
+        }
+        if (this.maxSizeRequirement == null) {
+            this.maxSizeRequirement = new MaxSizeRequirement(null, this.max);
         }
         return List.of(this.specialBlocksRequirement, this.fuelRequirement);
     }

@@ -1,13 +1,14 @@
 package org.ships.vessel.common.requirement;
 
+import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
+import org.core.config.parser.Parser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.util.AbstractMap;
 import java.util.Optional;
@@ -17,6 +18,9 @@ public class MaxSizeRequirement implements Requirement<MaxSizeRequirement> {
 
     private final @Nullable Integer maxSize;
     private final @Nullable MaxSizeRequirement parent;
+
+    public static final ConfigurationNode.KnownParser.SingleKnown<Integer> MAX_SIZE = new ConfigurationNode.KnownParser.SingleKnown<>(
+            Parser.STRING_TO_INTEGER, "Block", "Count", "Max");
 
     public MaxSizeRequirement(@NotNull MaxSizeRequirement parent) {
         this(parent, null);
@@ -113,11 +117,11 @@ public class MaxSizeRequirement implements Requirement<MaxSizeRequirement> {
     @Override
     public void serialize(@NotNull ConfigurationStream stream, boolean withParentData) {
         if (withParentData) {
-            this.getMaxSize().ifPresent(value -> stream.set(AbstractShipType.MAX_SIZE, value));
+            this.getMaxSize().ifPresent(value -> stream.set(MAX_SIZE, value));
             return;
         }
         if (this.maxSize != null) {
-            stream.set(AbstractShipType.MAX_SIZE, this.maxSize);
+            stream.set(MAX_SIZE, this.maxSize);
         }
     }
 }

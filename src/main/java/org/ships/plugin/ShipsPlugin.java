@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 15.5;
+    public static final double PRERELEASE_VERSION = 15.6;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
@@ -259,6 +259,7 @@ public class ShipsPlugin implements CorePlugin {
         this.identifiables.add(BasicBlockFinder.SHIPS_FIVE_ASYNC);
         this.identifiables.add(BasicBlockFinder.SHIPS_SIX);
         this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_ASYNC);
+        this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC);
         this.identifiables.add(BlockPriority.AIR);
         this.identifiables.add(BlockPriority.DIRECTIONAL);
         this.identifiables.add(BlockPriority.ATTACHED);

@@ -26,17 +26,23 @@ public class ModifyShipTypeFlagArgument implements ArgumentCommand {
     private final ExactArgument FLAG_KEY = new ExactArgument("flag key", false, "flag");
     private final ExactArgument MODIFY_KEY = new ExactArgument("modify");
     private final ShipIdentifiableArgument<ShipType<?>> VESSEL_TYPE = new ShipIdentifiableArgument<>("shiptype",
-            (Class<ShipType<?>>) (Object) ShipType.class, (c, a, v) -> !v.getFlags().isEmpty());
-    private final ShipTypeFlagArgument VESSEL_TYPE_FLAG = new ShipTypeFlagArgument("flag",
-            (c, a) -> c.getArgument(this, this.VESSEL_TYPE));
+                                                                                                     (Class<ShipType<?>>) (Object) ShipType.class,
+                                                                                                     (c, a, v) -> !v
+                                                                                                             .getFlags()
+                                                                                                             .isEmpty());
+    private final ShipTypeFlagArgument VESSEL_TYPE_FLAG = new ShipTypeFlagArgument("flag", (c, a) -> c.getArgument(this,
+                                                                                                                   this.VESSEL_TYPE));
     private final StringParserArgument<Object> FLAG_PARSER = new StringParserArgument<>("flagValue",
-            (c, a) -> (StringParser<Object>) c.getArgument(this, this.VESSEL_TYPE_FLAG).getParser(),
-            (a, p) -> "Could not understand the value you entered");
+                                                                                        (c, a) -> (StringParser<Object>) c
+                                                                                                .getArgument(this,
+                                                                                                             this.VESSEL_TYPE_FLAG)
+                                                                                                .getParser(),
+                                                                                        (a, p) -> "Could not understand the value you entered");
 
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(this.VESSEL_TYPE_KEY, this.FLAG_KEY, this.MODIFY_KEY, this.VESSEL_TYPE,
-                this.VESSEL_TYPE_FLAG, this.FLAG_PARSER);
+                             this.VESSEL_TYPE_FLAG, this.FLAG_PARSER);
     }
 
     @Override

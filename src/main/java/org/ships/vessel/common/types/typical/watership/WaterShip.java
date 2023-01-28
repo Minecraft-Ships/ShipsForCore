@@ -108,14 +108,14 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     @Override
     public @NotNull FileBasedVessel deserializeExtra(@NotNull ConfigurationStream file) {
         MaxSizeRequirement maxSizeRequirement = this.getMaxBlocksRequirement();
-        Optional<Integer> opMaxSize = file.getInteger(AbstractShipType.MAX_SIZE);
+        Optional<Integer> opMaxSize = file.getInteger(MaxSizeRequirement.MAX_SIZE);
         if (opMaxSize.isPresent()) {
             maxSizeRequirement = maxSizeRequirement.createChild(opMaxSize.get());
         }
         this.setRequirement(maxSizeRequirement);
 
         MinSizeRequirement minSizeRequirement = this.getMinBlocksRequirement();
-        Optional<Integer> opMinSize = file.getInteger(AbstractShipType.MIN_SIZE);
+        Optional<Integer> opMinSize = file.getInteger(MinSizeRequirement.MIN_SIZE);
         if (opMinSize.isPresent()) {
             minSizeRequirement = minSizeRequirement.createChild(opMinSize.get());
         }
