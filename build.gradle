@@ -8,10 +8,6 @@ test {
     useJUnitPlatform()
 }
 
-jar {
-    dependsOn(':TranslateCore:jar')
-}
-
 repositories {
     mavenLocal()
     mavenCentral()
