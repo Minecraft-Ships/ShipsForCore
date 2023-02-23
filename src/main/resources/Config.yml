@@ -7,7 +7,7 @@ Advanced:
       Delay: 1
       DelayUnit: MINECRAFT_TICKS
   BlockFinder:
-    Default: ships:blockfinder_ships_six_async
+    Default: ships:blockfinder_ships_six_single_async
     Track: 4000
     Stack:
       Delay: 1

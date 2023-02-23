@@ -28,7 +28,7 @@ import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-public class Ships6AsyncBlockFinder implements BasicBlockFinder {
+public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
 
     protected int limit;
     private Vessel vessel;
@@ -36,7 +36,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
 
     @Override
     public String getId() {
-        return "ships:blockfinder_ships_six_async";
+        return "ships:blockfinder_ships_six_async_multi";
     }
 
     @Override
@@ -45,7 +45,7 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public @NotNull Ships6AsyncBlockFinder init() {
+    public @NotNull Ships6MultiAsyncBlockFinder init() {
         ShipsPlugin plugin = ShipsPlugin.getPlugin();
         ShipsConfig config = plugin.getConfig();
         this.limit = config.getDefaultTrackSize();
@@ -88,6 +88,9 @@ public class Ships6AsyncBlockFinder implements BasicBlockFinder {
                                     .of(directions)
                                     .filter(direction -> !posEntry.getValue().equals(direction.getOpposite()))
                                     .forEach(direction -> {
+                                        if(shouldKill.get()){
+                                            return;
+                                        }
                                         ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
                                         Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
                                         BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());

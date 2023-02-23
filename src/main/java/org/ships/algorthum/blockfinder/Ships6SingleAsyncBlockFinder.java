@@ -88,6 +88,9 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                                     .of(directions)
                                     .filter(direction -> !posEntry.getValue().equals(direction.getOpposite()))
                                     .forEach(direction -> {
+                                        if (shouldKill.get()) {
+                                            return;
+                                        }
                                         ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
                                         Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
                                         BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());

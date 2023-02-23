@@ -13,7 +13,7 @@ public interface BasicBlockFinder extends Algorithm {
     Ships5BlockFinder SHIPS_FIVE = new Ships5BlockFinder();
     Ships5AsyncBlockFinder SHIPS_FIVE_ASYNC = new Ships5AsyncBlockFinder();
     Ships6BlockFinder SHIPS_SIX = new Ships6BlockFinder();
-    Ships6AsyncBlockFinder SHIPS_SIX_RELEASE_ONE_ASYNC = new Ships6AsyncBlockFinder();
+    Ships6MultiAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_MULTI_ASYNC = new Ships6MultiAsyncBlockFinder();
     Ships6SingleAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC = new Ships6SingleAsyncBlockFinder();
 
     @NotNull BasicBlockFinder init();
