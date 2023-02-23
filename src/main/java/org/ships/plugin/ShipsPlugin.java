@@ -60,6 +60,7 @@ public class ShipsPlugin implements CorePlugin {
     private final LockedSignManager lockedSignManager = new LockedSignManager();
     private final Collection<Vessel> vessels = new LinkedHashSet<>();
     private final FlightPathManager flightPaths = new FlightPathManager();
+    private final PreventMovementManager preventMovement = new PreventMovementManager();
     private Logger logger;
     private DefaultBlockList blockList;
     private AdventureMessageConfig aMessageConfig;
@@ -67,17 +68,9 @@ public class ShipsPlugin implements CorePlugin {
     private DebugFile debugFile;
     private Object launcher;
     private boolean shutdown;
-    private final PreventMovementManager preventMovement = new PreventMovementManager();
 
     public ShipsPlugin() {
         plugin = this;
-    }
-
-    public static @NotNull ShipsPlugin getPlugin() {
-        if (plugin == null) {
-            throw new RuntimeException("Ships has not loaded");
-        }
-        return plugin;
     }
 
     public @NotNull LockedSignManager getLockedSignManager() {
@@ -88,43 +81,12 @@ public class ShipsPlugin implements CorePlugin {
         return this.shutdown;
     }
 
-    @Override
-    public void onShutdown() {
-        shutdown = true;
-    }
-
     public @NotNull FlightPathManager getFlightPathManager() {
         return this.flightPaths;
     }
 
-    @Override
-    public void onCoreReady() {
-        this.init();
-        LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
-        this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
-        this.aMessageConfig = new AdventureMessageConfig();
-        this.blockList = new DefaultBlockList();
-        this.debugFile = new DebugFile();
-        TranslateCore.getEventManager().register(this, new CoreEventListener());
-        if (this.config.isFallingEnabled()) {
-            Scheduler fallScheduler = FallExecutor.createScheduler();
-            fallScheduler.run();
-        }
-        this.init2();
-    }
-
     public PreventMovementManager getPreventMovementManager() {
         return this.preventMovement;
-    }
-
-    @Override
-    public @NotNull Object getPlatformLauncher() {
-        return this.launcher;
-    }
-
-    @Override
-    public void onRegisterCommands(@NotNull CommandRegister register) {
-        register.register(new ShipsArgumentCommand());
     }
 
     public void loadStructures() {
@@ -154,42 +116,6 @@ public class ShipsPlugin implements CorePlugin {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-
-    @Override
-    public void onCoreFinishedInit() {
-        this.loadCustomShipType();
-        this.initShipType();
-        this.loadVesselTypeFlagData();
-        this.loadVessels();
-        this.getLoadedMessages();
-
-        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-        if (config.isUpdateEnabled()) {
-            TranslateCore.getPlatform().getUpdateChecker(DevBukkitUpdateChecker.ID).ifPresent(devBukkit -> {
-                devBukkit.checkForUpdate(new DevBukkitUpdateOption(36846)).thenAcceptAsync((result) -> {
-                    if (result instanceof FailedResult failed) {
-                        this.logger.error("Failed to update: " + failed.getReason());
-                        return;
-                    }
-                    SuccessfulResult successfulResult = (SuccessfulResult) result;
-                    PluginUpdate context = successfulResult.getUpdate();
-                    String fullVersionName = context.getName();
-                    String currentVersionName =
-                            "Ships -B " + this.getPluginVersion().asString() + ".0 R2 " + PRERELEASE_TAG + " "
-                                    + PRERELEASE_VERSION;
-                    if (fullVersionName.equals(currentVersionName)) {
-                        return;
-                    }
-                    this.logger.log("An update can be downloaded");
-                    this.logger.log("\tCurrent Version: " + currentVersionName);
-                    this.logger.log("\tUpdated Version: " + fullVersionName);
-                    this.logger.log("\tFor Minecraft: " + context.getVersion());
-                    this.logger.log("\tDownload At: " + context.getDownloadURL().toExternalForm());
-                });
-            });
         }
     }
 
@@ -258,7 +184,7 @@ public class ShipsPlugin implements CorePlugin {
         this.identifiables.add(BasicBlockFinder.SHIPS_FIVE);
         this.identifiables.add(BasicBlockFinder.SHIPS_FIVE_ASYNC);
         this.identifiables.add(BasicBlockFinder.SHIPS_SIX);
-        this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_ASYNC);
+        this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_MULTI_ASYNC);
         this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC);
         this.identifiables.add(BlockPriority.AIR);
         this.identifiables.add(BlockPriority.DIRECTIONAL);
@@ -390,6 +316,62 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     @Override
+    public void onCoreReady() {
+        this.init();
+        LegacyShipsConfig legacyShipsConfig = new LegacyShipsConfig();
+        this.config = legacyShipsConfig.isLegacy() ? legacyShipsConfig.convertToNew() : new ShipsConfig();
+        this.aMessageConfig = new AdventureMessageConfig();
+        this.blockList = new DefaultBlockList();
+        this.debugFile = new DebugFile();
+        TranslateCore.getEventManager().register(this, new CoreEventListener());
+        if (this.config.isFallingEnabled()) {
+            Scheduler fallScheduler = FallExecutor.createScheduler();
+            fallScheduler.run();
+        }
+        this.init2();
+    }
+
+    @Override
+    public void onCoreFinishedInit() {
+        this.loadCustomShipType();
+        this.initShipType();
+        this.loadVesselTypeFlagData();
+        this.loadVessels();
+        this.getLoadedMessages();
+
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+        if (config.isUpdateEnabled()) {
+            TranslateCore.getPlatform().getUpdateChecker(DevBukkitUpdateChecker.ID).ifPresent(devBukkit -> {
+                devBukkit.checkForUpdate(new DevBukkitUpdateOption(36846)).thenAcceptAsync((result) -> {
+                    if (result instanceof FailedResult failed) {
+                        this.logger.error("Failed to update: " + failed.getReason());
+                        return;
+                    }
+                    SuccessfulResult successfulResult = (SuccessfulResult) result;
+                    PluginUpdate context = successfulResult.getUpdate();
+                    String fullVersionName = context.getName();
+                    String currentVersionName =
+                            "Ships -B " + this.getPluginVersion().asString() + ".0 R2 " + PRERELEASE_TAG + " "
+                                    + PRERELEASE_VERSION;
+                    if (fullVersionName.equals(currentVersionName)) {
+                        return;
+                    }
+                    this.logger.log("An update can be downloaded");
+                    this.logger.log("\tCurrent Version: " + currentVersionName);
+                    this.logger.log("\tUpdated Version: " + fullVersionName);
+                    this.logger.log("\tFor Minecraft: " + context.getVersion());
+                    this.logger.log("\tDownload At: " + context.getDownloadURL().toExternalForm());
+                });
+            });
+        }
+    }
+
+    @Override
+    public @NotNull Object getPlatformLauncher() {
+        return this.launcher;
+    }
+
+    @Override
     public void onConstruct(@NotNull Object pluginLauncher, @NotNull Logger logger) {
         this.launcher = pluginLauncher;
         this.logger = logger;
@@ -399,8 +381,14 @@ public class ShipsPlugin implements CorePlugin {
         }
     }
 
-    public @NotNull Logger getLogger() {
-        return this.logger;
+    @Override
+    public void onRegisterCommands(@NotNull CommandRegister register) {
+        register.register(new ShipsArgumentCommand());
+    }
+
+    @Override
+    public @NotNull String getLicence() {
+        return "All Rights Reserved";
     }
 
     @Override
@@ -409,7 +397,18 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     @Override
-    public @NotNull String getLicence() {
-        return "All Rights Reserved";
+    public void onShutdown() {
+        shutdown = true;
+    }
+
+    public @NotNull Logger getLogger() {
+        return this.logger;
+    }
+
+    public static @NotNull ShipsPlugin getPlugin() {
+        if (plugin == null) {
+            throw new RuntimeException("Ships has not loaded");
+        }
+        return plugin;
     }
 }
