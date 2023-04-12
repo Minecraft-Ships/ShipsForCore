@@ -1,6 +1,7 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
+import org.core.config.ConfigurationNode;
 import org.core.schedule.unit.TimeUnit;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -13,11 +14,15 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.node.DedicatedNode;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 public class Ships5AsyncBlockFinder implements BasicBlockFinder {
@@ -28,7 +33,9 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     private Vessel vessel;
     private BlockList list;
 
-    private void getNextBlock(OvertimeBlockFinderUpdate event, ASyncBlockPosition position, Direction... directions) {
+    private void getNextBlock(@Nullable OvertimeBlockFinderUpdate event,
+                              @NotNull ASyncBlockPosition position,
+                              @NotNull Direction... directions) {
         if (this.blockLimit != -1 && this.blockCount >= this.blockLimit) {
             return;
         }
@@ -54,8 +61,8 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
         }
     }
 
-    private PositionableShipsStructure getConnectedBlocks(ASyncBlockPosition position,
-                                                          OvertimeBlockFinderUpdate update) {
+    private PositionableShipsStructure getConnectedBlocks(@NotNull ASyncBlockPosition position,
+                                                          @Nullable OvertimeBlockFinderUpdate update) {
         this.blockCount = 0;
         this.shipsStructure = new AbstractPositionableShipsStructure(Position.toSync(position));
         this.list = ShipsPlugin.getPlugin().getBlockList();
@@ -70,11 +77,6 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
         ShipsConfig config = plugin.getConfig();
         this.blockLimit = config.getDefaultTrackSize();
         return this;
-    }
-
-    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
-        ASyncBlockPosition asyncPos = Position.toASync(position);
-        return this.getConnectedBlocks(asyncPos, null);
     }
 
     @Override
@@ -128,6 +130,11 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
         return this;
     }
 
+    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
+        ASyncBlockPosition asyncPos = Position.toASync(position);
+        return this.getConnectedBlocks(asyncPos, null);
+    }
+
     @Override
     public String getId() {
         return "ships:blockfinder_ships_five_async";
@@ -136,5 +143,15 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     @Override
     public String getName() {
         return "Ships 5 Async BlockFinder";
+    }
+
+    @Override
+    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Optional<File> configurationFile() {
+        return Optional.empty();
     }
 }

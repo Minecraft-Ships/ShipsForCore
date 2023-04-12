@@ -2,6 +2,7 @@ package org.ships.config.node;
 
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -33,5 +34,9 @@ public class RawDedicatedNode<V, N extends ConfigurationNode.KnownParser<?, V>> 
     @Override
     public void apply(ConfigurationStream stream, V value) {
         this.consumer.accept(stream, new AbstractMap.SimpleImmutableEntry<>(this.getNode(), value));
+    }
+
+    public static <N extends ConfigurationNode.KnownParser<?, Integer>> @NotNull RawDedicatedNode<Integer, N> integer(N node, String keyName){
+        return new RawDedicatedNode<>(node, keyName, (childNode, value) -> childNode.set(value.getKey(), value.getValue()));
     }
 }

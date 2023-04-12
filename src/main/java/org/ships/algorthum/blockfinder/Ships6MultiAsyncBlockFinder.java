@@ -1,6 +1,7 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
+import org.core.config.ConfigurationNode;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
@@ -15,15 +16,14 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.node.DedicatedNode;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
+import java.io.File;
+import java.util.*;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -178,4 +178,13 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
         return this;
     }
 
+    @Override
+    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Optional<File> configurationFile() {
+        return Optional.empty();
+    }
 }

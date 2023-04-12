@@ -1,5 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
+import org.core.config.ConfigurationNode;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
@@ -9,11 +10,15 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.node.DedicatedNode;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 public class Ships5BlockFinder implements BasicBlockFinder {
@@ -67,10 +72,6 @@ public class Ships5BlockFinder implements BasicBlockFinder {
         return this;
     }
 
-    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
-        return this.getConnectedBlocks(position, null);
-    }
-
     @Override
     public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
                                            OvertimeBlockFinderUpdate runAfterFullSearch) {
@@ -101,6 +102,10 @@ public class Ships5BlockFinder implements BasicBlockFinder {
         return this;
     }
 
+    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
+        return this.getConnectedBlocks(position, null);
+    }
+
     @Override
     public String getId() {
         return "ships:blockfinder_ships_five";
@@ -109,5 +114,15 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     @Override
     public String getName() {
         return "Ships 5 BlockFinder";
+    }
+
+    @Override
+    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Optional<File> configurationFile() {
+        return Optional.empty();
     }
 }

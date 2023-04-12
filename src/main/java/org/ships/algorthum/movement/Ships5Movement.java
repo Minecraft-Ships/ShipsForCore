@@ -1,13 +1,21 @@
 package org.ships.algorthum.movement;
 
 import org.core.TranslateCore;
+import org.core.config.ConfigurationNode;
 import org.core.world.position.impl.BlockPosition;
+import org.ships.config.node.DedicatedNode;
 import org.ships.event.vessel.move.VesselMoveEvent;
-import org.ships.movement.*;
+import org.ships.movement.MovementContext;
+import org.ships.movement.MovingBlock;
+import org.ships.movement.MovingBlockSet;
+import org.ships.movement.Result;
 import org.ships.movement.instruction.actions.PostMovement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -53,5 +61,15 @@ public class Ships5Movement implements BasicMovement {
     @Override
     public String getName() {
         return "Ships 5 Movement";
+    }
+
+    @Override
+    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Optional<File> configurationFile() {
+        return Optional.empty();
     }
 }
