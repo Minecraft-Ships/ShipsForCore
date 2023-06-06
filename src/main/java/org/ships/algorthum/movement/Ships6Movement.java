@@ -33,11 +33,11 @@ public class Ships6Movement implements BasicMovement {
     private static final class RemoveBlocks implements Consumer<Scheduler> {
 
         private final List<? extends MovingBlock> toProcess;
-        private final int waterLevel;
+        private final Integer waterLevel;
         private final int attempt;
         private final MovementContext context;
 
-        private RemoveBlocks(int level, int attempt, MovementContext context, List<? extends MovingBlock> blocks) {
+        private RemoveBlocks(Integer level, int attempt, MovementContext context, List<? extends MovingBlock> blocks) {
             this.toProcess = blocks;
             this.waterLevel = level;
             this.attempt = attempt;
@@ -55,7 +55,7 @@ public class Ships6Movement implements BasicMovement {
                     }
                 });
                 MovingBlock m = this.toProcess.get(A);
-                if (this.waterLevel >= m.getBeforePosition().getY()) {
+                if (this.waterLevel != null && this.waterLevel >= m.getBeforePosition().getY()) {
                     m.removeBeforePositionUnderWater();
                 } else {
                     m.removeBeforePositionOverAir();
@@ -134,12 +134,7 @@ public class Ships6Movement implements BasicMovement {
             currentlyAdding.add(block);
         }
         blocksToProcess.add(currentlyAdding);
-        int waterLevel = -1;
-        Optional<Integer> opWaterLevel = vessel.getWaterLevel();
-
-        if (opWaterLevel.isPresent()) {
-            waterLevel = opWaterLevel.get();
-        }
+        Integer waterLevel = vessel.getWaterLevel().orElse(null);
         final int total = blocks.size();
         Scheduler scheduler = TranslateCore
                 .getScheduleManager()
@@ -219,7 +214,6 @@ public class Ships6Movement implements BasicMovement {
         return Optional.of(new File(TranslateCore.getPlatform().getPlatformConfigFolder(),
                                     "Ships/Configuration/Movement/Ships Six." + TranslateCore
                                             .getPlatform()
-                                            .getConfigFormat()
-                                            .getMediaType()));
+                                            .getConfigFormat().getFileType()[0]));
     }
 }
