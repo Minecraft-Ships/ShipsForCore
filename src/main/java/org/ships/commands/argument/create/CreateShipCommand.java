@@ -43,18 +43,34 @@ import java.util.function.Function;
 
 public class CreateShipCommand implements ArgumentCommand {
 
-    private static final OptionalArgument<Integer> X = new OptionalArgument<>(new IntegerArgument("x"),
-            new Parse<>(pos -> pos.getX().intValue()));
-    private static final OptionalArgument<Integer> Y = new OptionalArgument<>(new IntegerArgument("y"),
-            new Parse<>(pos -> pos.getY().intValue()));
-    private static final OptionalArgument<Integer> Z = new OptionalArgument<>(new IntegerArgument("z"),
-            new Parse<>(pos -> pos.getZ().intValue()));
+    private static final OptionalArgument<Integer> X = new OptionalArgument<>(new IntegerArgument("x"), new Parse<>(
+            pos -> pos.getX().intValue()));
+    private static final OptionalArgument<Integer> Y = new OptionalArgument<>(new IntegerArgument("y"), new Parse<>(
+            pos -> pos.getY().intValue()));
+    private static final OptionalArgument<Integer> Z = new OptionalArgument<>(new IntegerArgument("z"), new Parse<>(
+            pos -> pos.getZ().intValue()));
     private static final OptionalArgument<WorldExtent> WORLD = new OptionalArgument<>(new WorldArgument("world"),
-            new Parse<>(Position::getWorld));
-    private static final ShipIdentifiableArgument<ShipType<?>> SHIP_TYPE =
-            new ShipIdentifiableArgument<>("ship_type", (Class<ShipType<?>>) (Object) ShipType.class);
+                                                                                      new Parse<>(Position::getWorld));
+    private static final ShipIdentifiableArgument<ShipType<?>> SHIP_TYPE = new ShipIdentifiableArgument<>("ship_type",
+                                                                                                          (Class<ShipType<?>>) (Object) ShipType.class);
     private static final ShipsStructureArgument STRUCTURE = new ShipsStructureArgument("structure");
     private static final StringArgument NAME = new StringArgument("name");
+
+    private record Parse<T>(Function<? super Position<? extends Number>, ? extends T> function)
+            implements ParseCommandArgument<T> {
+
+        @Override
+        public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument)
+                throws IOException {
+            if (!(context.getSource() instanceof Positionable)) {
+                throw new IOException("Player only command assumption for x, y, z and world");
+            }
+            Positionable<? extends Number> positionable = (Positionable<? extends Number>) context.getSource();
+            Position<? extends Number> position = positionable.getPosition();
+            return CommandArgumentResult.from(argument, this.function.apply(position));
+        }
+
+    }
 
     @Override
     public List<CommandArgument<?>> getArguments() {
@@ -123,14 +139,15 @@ public class CreateShipCommand implements ArgumentCommand {
             return false;
         }
         signTileEntity.setText(AText.ofPlain("[Ships]").withColour(NamedTextColours.YELLOW),
-                AText.ofPlain(shipType.getDisplayName()).withColour(NamedTextColours.BLUE),
-                AText.ofPlain(name).withColour(NamedTextColours.GREEN));
+                               AText.ofPlain(shipType.getDisplayName()).withColour(NamedTextColours.BLUE),
+                               AText.ofPlain(name).withColour(NamedTextColours.GREEN));
         Vessel vessel = shipType.createNewVessel(signTileEntity);
         ShipsPlugin.getPlugin().registerVessel(vessel);
         vessel.save();
         if (commandContext.getSource() instanceof CommandViewer viewer) {
             viewer.sendMessage(AText.ofPlain("Created ship"));
         }
+        vessel.setLoading(false);
         return true;
     }
 
@@ -149,31 +166,17 @@ public class CreateShipCommand implements ArgumentCommand {
                     if (!(opTile.get() instanceof LiveSignTileEntity ste)) {
                         continue;
                     }
-                    if (ShipsPlugin.getPlugin().get(LicenceSign.class).orElseThrow(() -> new RuntimeException("Could " +
-                            "not " +
-                            "find licence sign in register.")).isSign(ste)) {
+                    if (ShipsPlugin
+                            .getPlugin()
+                            .get(LicenceSign.class)
+                            .orElseThrow(
+                                    () -> new RuntimeException("Could " + "not " + "find licence sign in register."))
+                            .isSign(ste)) {
                         return ste;
                     }
                 }
             }
         }
         throw new IllegalStateException("Cannot find licence sign");
-    }
-
-    private record Parse<T>(
-            Function<? super Position<? extends Number>, ? extends T> function) implements ParseCommandArgument<T> {
-
-        @Override
-        public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws
-                IOException {
-            if (!(context.getSource() instanceof Positionable)) {
-                throw new IOException("Player only command assumption for x, y, z and world");
-            }
-            Positionable<? extends Number> positionable = (Positionable<? extends Number>) context.getSource();
-            Position<? extends Number> position = positionable.getPosition();
-            return CommandArgumentResult.from(argument,
-                    this.function.apply(position));
-        }
-
     }
 }

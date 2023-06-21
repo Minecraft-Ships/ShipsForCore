@@ -36,27 +36,29 @@ public class MovementInstructionBuilder {
     }
 
     public MovementInstructionBuilder setTeleportToMovementBlocks(PositionableShipsStructure structure,
-            BlockPosition position) {
+                                                                  BlockPosition position) {
         SyncBlockPosition syncedBlock = Position.toSync(position);
-        Vector3<Integer> blockPos = syncedBlock.getPosition();
         return this.setMovementBlocks(structure, block -> {
-            Vector3<Integer> rel = block.getPosition().minus(blockPos);
-            return new SetMovingBlock(block, syncedBlock.getRelative(rel));
+            Vector3<Integer> relative = block.getPosition().minus(structure.getPosition().getPosition());
+            SyncBlockPosition newType = syncedBlock.getRelative(relative);
+            return new SetMovingBlock(block, newType);
         });
     }
 
-    public MovementInstructionBuilder setAddToMovementBlocks(PositionableShipsStructure structure, int x, int y,
-            int z) {
+    public MovementInstructionBuilder setAddToMovementBlocks(PositionableShipsStructure structure,
+                                                             int x,
+                                                             int y,
+                                                             int z) {
         return this.setAddToMovementBlocks(structure, Vector3.valueOf(x, y, z));
     }
 
     public MovementInstructionBuilder setAddToMovementBlocks(PositionableShipsStructure structure,
-            Vector3<Integer> addTo) {
+                                                             Vector3<Integer> addTo) {
         return this.setMovementBlocks(structure, position -> new SetMovingBlock(position, position.getRelative(addTo)));
     }
 
     public MovementInstructionBuilder setRotateLeftAroundPosition(PositionableShipsStructure structure,
-            BlockPosition position) {
+                                                                  BlockPosition position) {
         return this.setMovementBlocks(structure, block -> new SetMovingBlock(block, block).rotateLeft(position));
     }
 
@@ -65,7 +67,7 @@ public class MovementInstructionBuilder {
     }
 
     public MovementInstructionBuilder setRotateRightAroundPosition(PositionableShipsStructure structure,
-            BlockPosition position) {
+                                                                   BlockPosition position) {
         return this.setMovementBlocks(structure, block -> new SetMovingBlock(block, block).rotateRight(position));
     }
 
@@ -74,7 +76,7 @@ public class MovementInstructionBuilder {
     }
 
     public MovementInstructionBuilder setMovementBlocks(PositionableShipsStructure structure,
-            Function<SyncBlockPosition, MovingBlock> function) {
+                                                        Function<SyncBlockPosition, MovingBlock> function) {
         this.movingBlocks = structure
                 .getSyncedPositionsRelativeToWorld()
                 .stream()

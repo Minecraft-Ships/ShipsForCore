@@ -32,12 +32,8 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument("ship"),
-                this.SHIP,
-                new ExactArgument("structure"),
-                new ExactArgument("save"),
-                this.NAME);
+        return Arrays.asList(new ExactArgument("ship"), this.SHIP, new ExactArgument("structure"),
+                             new ExactArgument("save"), this.NAME);
     }
 
     @Override
@@ -57,7 +53,7 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         String id = name.toLowerCase().replace(" ", "_");
 
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                "Structure/" + ShipsPlugin.getPlugin().getPluginId() + "/" + id + ".structure");
+                             "Structure/" + ShipsPlugin.getPlugin().getPluginId() + "/" + id + ".structure");
         if (file.exists()) {
             if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Cannot replace another structure file"));
@@ -80,6 +76,14 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         bounds.addX(1);
         bounds.addY(1);
         bounds.addZ(1);
+
+        if (bounds.getIntMax().equals(bounds.getIntMin())) {
+            if (commandContext.getSource() instanceof CommandViewer viewer) {
+                viewer.sendMessage(AText.ofPlain(
+                        "Size of ship is invalid. Manually updating the ship structure should fix this by sneaking and clicking the [ships] sign"));
+            }
+            return false;
+        }
 
         StructureBuilder structureBuilder = new StructureBuilder()
                 .setId(id)

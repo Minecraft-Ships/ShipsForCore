@@ -26,7 +26,7 @@ tasks.register('standaloneSponge') {
     }
 }
 
-ext.buildStandAlone = {
+ext.buildStandAlone = { implementationEntrypoint ->
     def path = file(project.buildDir.path + '/resources/main/META-INF/translate-core.properties')
     path.parentFile.mkdirs()
     path.createNewFile()
