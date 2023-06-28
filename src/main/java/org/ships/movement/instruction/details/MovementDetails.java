@@ -18,6 +18,7 @@ public class MovementDetails {
     private final @Nullable ServerBossBar bossBar;
     private final MidMovement[] midMovementEvents;
     private final PostMovement[] postMovementEvents;
+    private final Boolean updateStucture;
     private final @NotNull BiConsumer<MovementContext, ? super Throwable> exception;
 
 
@@ -27,9 +28,17 @@ public class MovementDetails {
         this.midMovementEvents = builder.getMidMovementEvents();
         this.postMovementEvents = builder.getPostMovementEvents();
         this.exception = builder.getException();
+        this.updateStucture = builder.updatingStructure().orElse(null);
         if (this.exception == null) {
             throw new RuntimeException("Exception must be stated");
         }
+    }
+
+    public boolean isUpdatingStructure() {
+        if (this.updateStucture == null) {
+            return true;
+        }
+        return this.updateStucture;
     }
 
     public @NotNull BiConsumer<MovementContext, ? super Throwable> getException() {

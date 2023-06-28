@@ -38,7 +38,12 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return this.getOutsidePositionsRelativeToCenter(direction);
     }
 
-    void addAir(Consumer<? super PositionableShipsStructure> onComplete);
+    @Deprecated(forRemoval = true)
+    default void addAir(Consumer<? super PositionableShipsStructure> onComplete) {
+        fillAir().thenAccept(onComplete);
+    }
+
+    CompletableFuture<PositionableShipsStructure> fillAir();
 
     default Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter() {
         return Arrays

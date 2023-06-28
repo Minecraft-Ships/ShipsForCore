@@ -6,10 +6,6 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 public interface OvertimeBlockFinderUpdate {
 
-    void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure);
-
-    BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block);
-
     enum BlockFindControl {
 
         IGNORE,
@@ -17,5 +13,7 @@ public interface OvertimeBlockFinderUpdate {
         USE_AND_FINISH
 
     }
+
+    BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block);
 
 }

@@ -6,7 +6,6 @@ import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
-import org.core.source.viewer.CommandViewer;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -17,7 +16,6 @@ import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.algorthum.blockfinder.FindAirOvertimeBlockFinderUpdate;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.commands.argument.ship.info.ShipsShipInfoArgumentCommand;
 import org.ships.config.configuration.ShipsConfig;
@@ -25,7 +23,7 @@ import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
-import org.ships.vessel.common.loader.ShipsLicenceSignFinder;
+import org.ships.vessel.common.finder.ShipsSignVesselFinder;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
@@ -41,12 +39,39 @@ import java.util.stream.Collectors;
 
 public class LicenceSign implements ShipsSign {
 
+    private static class VesselStructureUpdate implements OvertimeBlockFinderUpdate {
+
+        private final @Nullable ServerBossBar finalBar;
+        private final int totalBlockCount;
+
+        private VesselStructureUpdate(int totalBlockCount, @Nullable ServerBossBar bossBar) {
+            this.finalBar = bossBar;
+            this.totalBlockCount = totalBlockCount;
+        }
+
+        @Override
+        public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
+                                                                      @NotNull BlockPosition block) {
+            if (this.finalBar != null) {
+                int blockCount = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
+                this.finalBar.setTitle(AText.ofPlain(blockCount + "/" + this.totalBlockCount));
+                try {
+                    this.finalBar.setValue(blockCount, this.totalBlockCount);
+                } catch (IllegalArgumentException ignore) {
+
+                }
+            }
+            return OvertimeBlockFinderUpdate.BlockFindControl.USE;
+        }
+    }
+
     public Optional<Vessel> getShip(SignTileEntity entity) {
         if (!this.isSign(entity)) {
             return Optional.empty();
         }
         try {
-            return Optional.of(new ShipsLicenceSignFinder(entity).load());
+            Vessel vessel = ShipsSignVesselFinder.find(entity);
+            return Optional.of(vessel);
         } catch (LoadVesselException e) {
             return Optional.empty();
         }
@@ -100,33 +125,11 @@ public class LicenceSign implements ShipsSign {
         return snapshot;
     }
 
-    private void displayInfo(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) throws IOException {
-        Vessel s = new ShipsLicenceSignFinder(position).load();
-        if (!player.isSneaking()) {
-            if (s instanceof IdentifiableShip) {
-                ShipsShipInfoArgumentCommand.displayInfo(player, s);
-            }
-        } else {
-            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-            ServerBossBar bar = null;
-            int totalCount = config.getDefaultTrackSize();
-            if (config.isBossBarVisible()) {
-                bar = TranslateCore.createBossBar().register(player).setTitle(AText.ofPlain("0 / " + totalCount));
-            }
-            config
-                    .getDefaultFinder()
-                    .setConnectedVessel(s)
-                    .getConnectedBlocksOvertime(position, new FindAirOvertimeBlockFinderUpdate(s,
-                                                                                               new VesselStructureUpdate(
-                                                                                                       s, totalCount,
-                                                                                                       player, bar)));
-        }
-    }
-
     @Override
     public boolean onPrimaryClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
         try {
             this.displayInfo(player, position);
+            return true;
         } catch (UnableToFindLicenceSign e1) {
             Collection<? extends SyncBlockPosition> foundStructure = e1
                     .getFoundStructure()
@@ -140,6 +143,7 @@ public class LicenceSign implements ShipsSign {
                     .setRunner((sched) -> foundStructure.forEach(bp -> bp.resetBlock(player)))
                     .build(ShipsPlugin.getPlugin())
                     .run();
+            return true;
         } catch (IOException e) {
             Optional<LiveTileEntity> opTile = position.getTileEntity();
             if (opTile.isPresent()) {
@@ -188,8 +192,8 @@ public class LicenceSign implements ShipsSign {
                 }
             }
             player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));
+            return true;
         }
-        return false;
     }
 
     @Override
@@ -200,6 +204,35 @@ public class LicenceSign implements ShipsSign {
         return false;
     }
 
+    private void displayInfo(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) throws IOException {
+        Vessel s = ShipsSignVesselFinder.find((SignTileEntity) position
+                .getTileEntity()
+                .orElseThrow(() -> new RuntimeException("Unknown [ships] sign")));
+        if (!player.isSneaking()) {
+            if (s instanceof IdentifiableShip) {
+                ShipsShipInfoArgumentCommand.displayInfo(player, s);
+            }
+        } else {
+            ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+            ServerBossBar bar = null;
+            int totalCount = config.getDefaultTrackSize();
+            if (config.isBossBarVisible()) {
+                bar = TranslateCore.createBossBar().register(player).setTitle(AText.ofPlain("0 / " + totalCount));
+            }
+            final ServerBossBar finalBar = bar;
+            s.updateStructure(new VesselStructureUpdate(totalCount, bar)).thenAccept(structure -> {
+                int originalSize = structure.getOriginalRelativePositionsToCenter().size();
+                s.save();
+                player.sendMessage(AText.ofPlain(
+                        "Vessel structure has updated by " + (structure.getOriginalRelativePositionsToCenter().size()
+                                - originalSize)));
+                if (finalBar != null) {
+                    finalBar.deregisterPlayers();
+                }
+            });
+        }
+    }
+
     @Override
     public String getId() {
         return "ships:licence_sign";
@@ -208,51 +241,5 @@ public class LicenceSign implements ShipsSign {
     @Override
     public String getName() {
         return "Licence sign";
-    }
-
-    private static class VesselStructureUpdate implements OvertimeBlockFinderUpdate {
-
-        private final @Nullable ServerBossBar finalBar;
-        private final int totalBlockCount;
-        private final @NotNull CommandViewer messager;
-        private final @NotNull Vessel vessel;
-
-        private VesselStructureUpdate(@NotNull Vessel vessel,
-                                      int totalBlockCount,
-                                      @NotNull CommandViewer messager,
-                                      @Nullable ServerBossBar bossBar) {
-            this.messager = messager;
-            this.vessel = vessel;
-            this.finalBar = bossBar;
-            this.totalBlockCount = totalBlockCount;
-        }
-
-        @Override
-        public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-            int originalSize = structure.getOriginalRelativePositionsToCenter().size();
-            this.vessel.setStructure(structure);
-            this.vessel.save();
-            this.messager.sendMessage(AText.ofPlain(
-                    "Vessel structure has updated by " + (structure.getOriginalRelativePositionsToCenter().size()
-                            - originalSize)));
-            if (this.finalBar != null) {
-                this.finalBar.deregisterPlayers();
-            }
-        }
-
-        @Override
-        public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                                                                      @NotNull BlockPosition block) {
-            if (this.finalBar != null) {
-                int blockCount = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
-                this.finalBar.setTitle(AText.ofPlain(blockCount + "/" + this.totalBlockCount));
-                try {
-                    this.finalBar.setValue(blockCount, this.totalBlockCount);
-                } catch (IllegalArgumentException ignore) {
-
-                }
-            }
-            return OvertimeBlockFinderUpdate.BlockFindControl.USE;
-        }
     }
 }

@@ -7,6 +7,7 @@ import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.actions.MidMovement;
 import org.ships.movement.instruction.actions.PostMovement;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class MovementDetailsBuilder {
@@ -16,6 +17,16 @@ public class MovementDetailsBuilder {
     private MidMovement[] midMovementEvents;
     private PostMovement[] postMovementEvents;
     private BiConsumer<MovementContext, ? super Throwable> exception;
+    private Boolean updatingStructure;
+
+    public Optional<Boolean> updatingStructure() {
+        return Optional.ofNullable(this.updatingStructure);
+    }
+
+    public MovementDetailsBuilder setUpdatingStructure(Boolean updatingStructure) {
+        this.updatingStructure = updatingStructure;
+        return this;
+    }
 
     public BiConsumer<MovementContext, ? super Throwable> getException() {
         return this.exception;

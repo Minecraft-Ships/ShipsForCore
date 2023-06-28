@@ -19,7 +19,7 @@ import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsOvertimeBlockFinder;
+import org.ships.vessel.common.finder.VesselBlockFinder;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Arrays;
@@ -70,13 +70,16 @@ public class MoveSign implements ShipsSign {
         }
         final int finalSpeed = speed;
         ShipsPlugin.getPlugin().getLockedSignManager().lock(position);
-        new ShipsOvertimeBlockFinder(position).loadOvertime(vessel -> {
-            this.onSignSpeedUpdate(player, vessel, lste, finalSpeed);
-            ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-        }, (pss) -> {
+
+        VesselBlockFinder.findOvertime(position).thenAccept(entry -> {
+            if (entry.getValue().isPresent()) {
+                this.onSignSpeedUpdate(player, entry.getValue().get(), lste, finalSpeed);
+                ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
+                return;
+            }
             player.sendMessage(AText.ofPlain("Could not find [Ships] sign").withColour(NamedTextColours.RED));
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            Collection<SyncBlockPosition> positions = pss.getSyncedPositionsRelativeToWorld();
+            Collection<SyncBlockPosition> positions = entry.getKey().getSyncedPositionsRelativeToWorld();
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .getScheduleManager()

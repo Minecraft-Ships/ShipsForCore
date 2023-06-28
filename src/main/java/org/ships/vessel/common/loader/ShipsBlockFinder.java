@@ -10,6 +10,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.util.Collection;
 import java.util.Optional;
 
+@Deprecated(forRemoval = true)
 public class ShipsBlockFinder implements ShipsLoader {
 
     protected final BlockPosition position;

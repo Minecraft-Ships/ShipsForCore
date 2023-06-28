@@ -5,7 +5,6 @@ import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.async.ASyncBlockPosition;
-import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.configuration.ShipsConfig;
@@ -14,9 +13,11 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+@Deprecated(forRemoval = true)
 public class ShipsOvertimeBlockFinder {
 
     private final BlockPosition position;
@@ -39,6 +40,7 @@ public class ShipsOvertimeBlockFinder {
         return this.vessels;
     }
 
+    @Deprecated(forRemoval = true)
     public void loadOvertime(Consumer<? super Vessel> consumer,
                              Consumer<? super PositionableShipsStructure> exceptionRunner) {
         TranslateCore
@@ -48,13 +50,12 @@ public class ShipsOvertimeBlockFinder {
                 .setDisplayName("Async vessel finder")
                 .setDelay(0)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                .setRunner((sch) -> this.loadOvertimeSynced(consumer, exceptionRunner))
+                .setRunner((sch) -> this.loadOvertime(exceptionRunner).thenAccept(consumer))
                 .build(ShipsPlugin.getPlugin())
                 .run();
     }
 
-    public void loadOvertimeSynced(Consumer<? super Vessel> consumer,
-                                   Consumer<? super PositionableShipsStructure> exceptionRunner) {
+    public CompletableFuture<Vessel> loadOvertime(Consumer<? super PositionableShipsStructure> exceptionRunner) {
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         Set<Map.Entry<Vector3<Integer>, Vessel>> vessels = this
                 .getVessels()
@@ -65,6 +66,7 @@ public class ShipsOvertimeBlockFinder {
         Map.Entry<Byte, Vessel> passed = new AbstractMap.SimpleEntry<>((byte) 0, null);
 
         if (!config.isStructureAutoUpdating()) {
+            CompletableFuture<Vessel> future = new CompletableFuture<>();
             ShipsPlugin.getPlugin().getVessels().forEach(v -> {
                 PositionableShipsStructure pss = v.getStructure();
                 Collection<ASyncBlockPosition> collection = pss.getAsyncedPositionsRelativeToWorld();
@@ -77,39 +79,37 @@ public class ShipsOvertimeBlockFinder {
                         .setAsync(true)
                         .setRunner((sch) -> {
                             if (collection.parallelStream().anyMatch(p -> p.equals(this.position))) {
-                                consumer.accept(v);
+                                future.complete(v);
                             }
                         })
                         .build(ShipsPlugin.getPlugin())
                         .run();
             });
-            return;
+            return future;
         }
 
         BasicBlockFinder finder = ShipsPlugin.getPlugin().getConfig().getDefaultFinder().init();
-        finder.getConnectedBlocksOvertime(this.position, new OvertimeBlockFinderUpdate() {
-            @Override
-            public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                if (passed.getValue() == null) {
-                    exceptionRunner.accept(structure);
-                    return;
-                }
-                consumer.accept(passed.getValue());
+        return finder.getConnectedBlocksOvertime(this.position, (currentStructure, block) -> {
+            Optional<Map.Entry<Vector3<Integer>, Vessel>> opFirst = vessels
+                    .parallelStream()
+                    .filter(e -> e.getKey().equals(block.getPosition()))
+                    .findFirst();
+            if (opFirst.isPresent()) {
+                passed.setValue(opFirst.get().getValue());
+                return OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH;
             }
-
-            @Override
-            public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                                                @NotNull BlockPosition block) {
-                Optional<Map.Entry<Vector3<Integer>, Vessel>> opFirst = vessels
-                        .parallelStream()
-                        .filter(e -> e.getKey().equals(block.getPosition()))
-                        .findFirst();
-                if (opFirst.isPresent()) {
-                    passed.setValue(opFirst.get().getValue());
-                    return BlockFindControl.USE_AND_FINISH;
-                }
-                return BlockFindControl.USE;
+            return OvertimeBlockFinderUpdate.BlockFindControl.USE;
+        }).thenApply(structure -> {
+            if (passed.getValue() == null) {
+                exceptionRunner.accept(structure);
             }
+            return passed.getValue();
         });
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadOvertimeSynced(Consumer<? super Vessel> consumer,
+                                   Consumer<? super PositionableShipsStructure> exceptionRunner) {
+        loadOvertime(exceptionRunner).thenAccept(consumer);
     }
 }

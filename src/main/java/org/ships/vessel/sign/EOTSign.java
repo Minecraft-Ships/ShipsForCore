@@ -68,6 +68,21 @@ public class EOTSign implements ShipsSign {
         return false;
     }
 
+    @Override
+    public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
+        Optional<LiveTileEntity> opTile = position.getTileEntity();
+        if (opTile.isEmpty()) {
+            return false;
+        }
+        LiveTileEntity lte = opTile.get();
+        if (!(lte instanceof LiveSignTileEntity stes)) {
+            return false;
+        }
+
+        new ShipsUpdateBlockLoader(position).loadOvertime(this.onLoad(player, stes), this.onException(player));
+        return true;
+    }
+
     private Consumer<Vessel> onLoad(LivePlayer player, LiveSignTileEntity stes) {
         return (vessel) -> {
             Vector3<Integer> relative = stes.getPosition().getPosition().minus(vessel.getPosition().getPosition());
@@ -126,21 +141,6 @@ public class EOTSign implements ShipsSign {
         return ex -> player.sendMessage(AText
                                                 .ofPlain("Could not find connected ship (" + ex.getMessage() + ")")
                                                 .withColour(NamedTextColours.RED));
-    }
-
-    @Override
-    public boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) {
-        Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if (opTile.isEmpty()) {
-            return false;
-        }
-        LiveTileEntity lte = opTile.get();
-        if (!(lte instanceof LiveSignTileEntity stes)) {
-            return false;
-        }
-
-        new ShipsUpdateBlockLoader(position).loadOvertime(this.onLoad(player, stes), this.onException(player));
-        return false;
     }
 
     @Override

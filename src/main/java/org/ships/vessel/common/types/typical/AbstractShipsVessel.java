@@ -13,6 +13,8 @@ import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.VesselStructureUpdate;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.permissions.vessel.CrewPermission;
@@ -20,6 +22,7 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.assits.VesselRequirement;
+import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.assits.shiptype.SizedShipType;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -32,6 +35,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public abstract class AbstractShipsVessel implements ShipsVessel {
@@ -122,23 +126,44 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
-    public Optional<String> getCachedName() {
-        return Optional.ofNullable(this.cachedName);
+    public @NotNull PositionableShipsStructure getStructure() {
+        return this.positionableShipsStructure;
     }
 
     @Override
-    public boolean isLoading() {
-        return this.isLoading;
+    public void setStructure(@NotNull PositionableShipsStructure pss) {
+        if (TranslateCore.getPlatform().callEvent(new VesselStructureUpdate(pss, this)).isCancelled()) {
+            return;
+        }
+        this.positionableShipsStructure = pss;
     }
 
     @Override
-    public void setLoading(boolean check) {
-        this.isLoading = check;
+    public CompletableFuture<PositionableShipsStructure> updateStructure(OvertimeBlockFinderUpdate update) {
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+
+        return config
+                .getDefaultFinder()
+                .setConnectedVessel(this)
+                .getConnectedBlocksOvertime(this.getPosition(), update)
+                .thenCompose(updated -> {
+                    if (AbstractShipsVessel.this instanceof WaterType) {
+                        return updated.fillAir();
+                    }
+                    return CompletableFuture.completedFuture(updated);
+                })
+                .thenCompose(updated -> {
+                    this.setStructure(updated);
+                    if (AbstractShipsVessel.this instanceof WaterType) {
+                        return updated.fillAir();
+                    }
+                    return CompletableFuture.completedFuture(updated);
+                });
     }
 
     @Override
-    public @NotNull Collection<VesselFlag<?>> getFlags() {
-        return Collections.unmodifiableCollection(this.flags);
+    public @NotNull ShipType<? extends AbstractShipsVessel> getType() {
+        return this.type;
     }
 
     @Override
@@ -183,37 +208,73 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
-    public Map<String, Vector3<Double>> getTeleportVectors() {
-        return this.teleportPositions;
+    public int getMaxSpeed() {
+        if (this.maxSpeed == null) {
+            return this.getType().getDefaultMaxSpeed();
+        }
+        return this.maxSpeed;
     }
 
     @Override
-    public TeleportToVessel setTeleportVector(Vector3<Double> position, String id) {
-        this.teleportPositions.put(id, position);
+    public @NotNull Vessel setMaxSpeed(@Nullable Integer speed) {
+        if (speed != null && speed < 0) {
+            throw new IndexOutOfBoundsException("Speed cannot be less then 0");
+        }
+        this.maxSpeed = speed;
         return this;
     }
 
     @Override
-    public TeleportToVessel setTeleportPosition(ExactPosition tel, String id) {
-        ExactPosition position = this.getPosition().toExactPosition();
-        Optional<DirectionalData> opDirectionalData = position.getBlockDetails().getDirectionalData();
-        if (opDirectionalData.isEmpty()) {
-            return this;
+    public boolean isMaxSpeedSpecified() {
+        return this.maxSpeed != null;
+    }
+
+    @Override
+    public int getAltitudeSpeed() {
+        if (this.altitudeSpeed == null) {
+            return this.getType().getDefaultAltitudeSpeed();
         }
-        Direction direction = opDirectionalData.get().getDirection();
+        return this.altitudeSpeed;
+    }
 
-        double x = tel.getX() - position.getX();
-        double y = tel.getY() - position.getY();
-        double z = tel.getZ() - position.getZ();
-
-        Vector3<Double> vector = this.flip(direction, x, y, z);
-
-        if (this.teleportPositions.containsKey(id)) {
-            this.teleportPositions.replace(id, vector);
-            return this;
+    @Override
+    public @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed) {
+        if (speed != null && speed < 0) {
+            throw new IndexOutOfBoundsException("Speed cannot be less then 0");
         }
-        this.teleportPositions.put(id, vector);
+        this.altitudeSpeed = speed;
         return this;
+    }
+
+    @Override
+    public boolean isAltitudeSpeedSpecified() {
+        return this.altitudeSpeed != null;
+    }
+
+    @Override
+    public boolean isLoading() {
+        return this.isLoading;
+    }
+
+    @Override
+    public void setLoading(boolean check) {
+        this.isLoading = check;
+    }
+
+    @Override
+    public void save() {
+        ShipsFileLoader fl = new ShipsFileLoader(this.getFile());
+        fl.save(this);
+    }
+
+    @Override
+    public Optional<String> getCachedName() {
+        return Optional.ofNullable(this.cachedName);
+    }
+
+    @Override
+    public @NotNull Collection<VesselFlag<?>> getFlags() {
+        return Collections.unmodifiableCollection(this.flags);
     }
 
     private Vector3<Double> flip(Direction direction, double x, double y, double z) {
@@ -260,76 +321,42 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     @Override
-    public @NotNull ShipType<? extends AbstractShipsVessel> getType() {
-        return this.type;
+    public Map<String, Vector3<Double>> getTeleportVectors() {
+        return this.teleportPositions;
+    }
+
+    @Override
+    public TeleportToVessel setTeleportPosition(ExactPosition tel, String id) {
+        ExactPosition position = this.getPosition().toExactPosition();
+        Optional<DirectionalData> opDirectionalData = position.getBlockDetails().getDirectionalData();
+        if (opDirectionalData.isEmpty()) {
+            return this;
+        }
+        Direction direction = opDirectionalData.get().getDirection();
+
+        double x = tel.getX() - position.getX();
+        double y = tel.getY() - position.getY();
+        double z = tel.getZ() - position.getZ();
+
+        Vector3<Double> vector = this.flip(direction, x, y, z);
+
+        if (this.teleportPositions.containsKey(id)) {
+            this.teleportPositions.replace(id, vector);
+            return this;
+        }
+        this.teleportPositions.put(id, vector);
+        return this;
+    }
+
+    @Override
+    public TeleportToVessel setTeleportVector(Vector3<Double> position, String id) {
+        this.teleportPositions.put(id, position);
+        return this;
     }
 
     @Override
     public @NotNull File getFile() {
         return this.file;
-    }
-
-    @Override
-    public void save() {
-        ShipsFileLoader fl = new ShipsFileLoader(this.getFile());
-        fl.save(this);
-    }
-
-    @Override
-    public @NotNull PositionableShipsStructure getStructure() {
-        return this.positionableShipsStructure;
-    }
-
-    @Override
-    public void setStructure(@NotNull PositionableShipsStructure pss) {
-        if (TranslateCore.getPlatform().callEvent(new VesselStructureUpdate(pss, this)).isCancelled()) {
-            return;
-        }
-        this.positionableShipsStructure = pss;
-    }
-
-    @Override
-    public boolean isMaxSpeedSpecified() {
-        return this.maxSpeed != null;
-    }
-
-    @Override
-    public int getMaxSpeed() {
-        if (this.maxSpeed == null) {
-            return this.getType().getDefaultMaxSpeed();
-        }
-        return this.maxSpeed;
-    }
-
-    @Override
-    public int getAltitudeSpeed() {
-        if (this.altitudeSpeed == null) {
-            return this.getType().getDefaultAltitudeSpeed();
-        }
-        return this.altitudeSpeed;
-    }
-
-    @Override
-    public @NotNull Vessel setMaxSpeed(@Nullable Integer speed) {
-        if (speed != null && speed < 0) {
-            throw new IndexOutOfBoundsException("Speed cannot be less then 0");
-        }
-        this.maxSpeed = speed;
-        return this;
-    }
-
-    @Override
-    public boolean isAltitudeSpeedSpecified() {
-        return this.altitudeSpeed != null;
-    }
-
-    @Override
-    public @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed) {
-        if (speed != null && speed < 0) {
-            throw new IndexOutOfBoundsException("Speed cannot be less then 0");
-        }
-        this.altitudeSpeed = speed;
-        return this;
     }
 
     @Override

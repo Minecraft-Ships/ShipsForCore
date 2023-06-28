@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class Ships5AsyncBlockFinder implements BasicBlockFinder {
 
@@ -80,8 +81,9 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-                                           @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+    public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
+                                                                                    @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+        CompletableFuture<PositionableShipsStructure> future = new CompletableFuture<>();
         TranslateCore
                 .getScheduleManager()
                 .schedule()
@@ -97,13 +99,13 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
                             .setDelay(0)
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                             .setDisplayName("ToSync")
-                            .setRunner((s1) -> runAfterFullSearch.onShipsStructureUpdated(positions))
+                            .setRunner((s1) -> future.complete(positions))
                             .build(ShipsPlugin.getPlugin())
                             .run();
                 })
                 .build(ShipsPlugin.getPlugin())
                 .run();
-
+        return future;
     }
 
     @Override

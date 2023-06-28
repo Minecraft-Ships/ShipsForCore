@@ -24,6 +24,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -54,8 +55,9 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-                                           @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+    public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
+                                                                                    @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+        CompletableFuture<PositionableShipsStructure> future = new CompletableFuture<>();
         int limit = this.limit;
         TranslateCore
                 .getScheduleManager()
@@ -88,7 +90,7 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                                     .of(directions)
                                     .filter(direction -> !posEntry.getValue().equals(direction.getOpposite()))
                                     .forEach(direction -> {
-                                        if(shouldKill.get()){
+                                        if (shouldKill.get()) {
                                             return;
                                         }
                                         ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
@@ -123,7 +125,7 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                                         .schedule()
                                         .setDelay(0)
                                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                                        .setRunner((context) -> runAfterFullSearch.onShipsStructureUpdated(structure))
+                                        .setRunner((context) -> future.complete(structure))
                                         .setDisplayName("Ships 6 async release")
                                         .build(ShipsPlugin.getPlugin())
                                         .run();
@@ -142,7 +144,7 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                             .schedule()
                             .setDelay(0)
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                            .setRunner((context) -> runAfterFullSearch.onShipsStructureUpdated(structure))
+                            .setRunner((context) -> future.complete(structure))
                             .setDisplayName("Ships 6 async release")
                             .build(ShipsPlugin.getPlugin())
                             .run();
@@ -153,7 +155,7 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                 .setDisplayName("Ships 6 async structure finder")
                 .build(ShipsPlugin.getPlugin())
                 .run();
-
+        return future;
     }
 
     @Override

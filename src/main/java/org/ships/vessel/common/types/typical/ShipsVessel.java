@@ -69,7 +69,7 @@ public interface ShipsVessel
                 .setStrictMovement(strict)
                 .build());
         try {
-            context.move(this);
+            context.move(this, details.isUpdatingStructure());
         } catch (MoveException e) {
             details.getException().accept(context, e);
         }
@@ -83,7 +83,7 @@ public interface ShipsVessel
                 .setStrictMovement(strict)
                 .build());
         try {
-            context.move(this);
+            context.move(this, details.isUpdatingStructure());
         } catch (MoveException e) {
             details.getException().accept(context, e);
         }
@@ -97,7 +97,7 @@ public interface ShipsVessel
                 .setTeleportToMovementBlocks(this.getStructure(), location)
                 .build());
         try {
-            context.move(this);
+            context.move(this, details.isUpdatingStructure());
         } catch (MoveException e) {
             details.getException().accept(context, e);
         }
@@ -110,7 +110,7 @@ public interface ShipsVessel
                 .setMidMoveEvent(MidMovements.ROTATE_BLOCKS_RIGHT)
                 .build());
         try {
-            context.move(this);
+            context.move(this, details.isUpdatingStructure());
         } catch (MoveException e) {
             details.getException().accept(context, e);
         }
@@ -123,7 +123,7 @@ public interface ShipsVessel
                 .setMidMoveEvent(MidMovements.ROTATE_BLOCKS_LEFT)
                 .build());
         try {
-            context.move(this);
+            context.move(this, details.isUpdatingStructure());
         } catch (MoveException e) {
             details.getException().accept(context, e);
         }

@@ -13,9 +13,9 @@ import java.util.List;
 public class WheelSign implements ShipsSign {
 
     public static final List<AText> SIGN = List.of(AText.ofPlain("[Wheel]").withColour(NamedTextColours.YELLOW),
-            AText.ofPlain("\\\\||//").withColour(NamedTextColours.RED),
-            AText.ofPlain("==||==").withColour(NamedTextColours.RED),
-            AText.ofPlain("//||\\\\").withColour(NamedTextColours.RED));
+                                                   AText.ofPlain("\\\\||//").withColour(NamedTextColours.RED),
+                                                   AText.ofPlain("==||==").withColour(NamedTextColours.RED),
+                                                   AText.ofPlain("//||\\\\").withColour(NamedTextColours.RED));
 
     @Override
     public boolean isSign(List<? extends AText> lines) {
@@ -61,6 +61,6 @@ public class WheelSign implements ShipsSign {
             }
             vessel.rotateRightAround(vessel.getPosition(), details);
         }));
-        return false;
+        return true;
     }
 }

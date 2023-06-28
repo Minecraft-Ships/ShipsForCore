@@ -5,8 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.algorthum.Algorithm;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public interface BasicBlockFinder extends Algorithm {
 
@@ -18,8 +20,13 @@ public interface BasicBlockFinder extends Algorithm {
 
     @NotNull BasicBlockFinder init();
 
-    void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-                                    @NotNull OvertimeBlockFinderUpdate runAfterFullSearch);
+    CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
+                                                                             @NotNull OvertimeBlockFinderUpdate runAfterFullSearch);
+
+    default CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position) {
+        return getConnectedBlocksOvertime(position,
+                                          (currentStructure, block) -> OvertimeBlockFinderUpdate.BlockFindControl.USE);
+    }
 
     int getBlockLimit();
 

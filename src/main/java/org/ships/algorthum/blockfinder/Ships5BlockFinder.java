@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class Ships5BlockFinder implements BasicBlockFinder {
 
@@ -73,9 +74,9 @@ public class Ships5BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-                                           OvertimeBlockFinderUpdate runAfterFullSearch) {
-        runAfterFullSearch.onShipsStructureUpdated(this.getConnectedBlocks(position, runAfterFullSearch));
+    public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
+                                                                                    @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+        return CompletableFuture.completedFuture(this.getConnectedBlocks(position, runAfterFullSearch));
     }
 
     @Override

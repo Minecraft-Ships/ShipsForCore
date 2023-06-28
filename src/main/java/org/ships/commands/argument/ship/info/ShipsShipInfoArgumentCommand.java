@@ -37,6 +37,37 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
     private final String SHIP_ID_ARGUMENT = "ship_id";
     private final String SHIP_INFO_ARGUMENT = "info";
 
+    @Override
+    public List<CommandArgument<?>> getArguments() {
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
+                             new ExactArgument(this.SHIP_INFO_ARGUMENT));
+    }
+
+    @Override
+    public String getDescription() {
+        return "Information about the specified ship";
+    }
+
+    @Override
+    public Optional<Permission> getPermissionNode() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
+        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
+            return false;
+        }
+        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
+        displayInfo(viewer, vessel);
+        return true;
+    }
+
+    @Override
+    public boolean hasPermission(CommandSource source) {
+        return source instanceof CommandViewer;
+    }
+
     private static <T> String flagToString(Function<? super VesselFlag<T>, String> to, VesselFlag<T> flag) {
         return to.apply(flag) + flag.getValue().map(v -> ": " + flag.getParser().unparse(v)).orElse("");
     }
@@ -104,43 +135,10 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
         }
 
         viewer.sendMessage(AdventureMessageConfig.INFO_ENTITIES_LINE.parse(messages));
-        vessel.getEntitiesAsynced(e -> true, e -> {
-            e.forEach(entity -> {
-                AText entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.parse(messages);
-                entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.process(entitiesText, entity);
-                viewer.sendMessage(entitiesText);
-            });
-        });
-    }
-
-    @Override
-    public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                             new ExactArgument(this.SHIP_INFO_ARGUMENT));
-    }
-
-    @Override
-    public String getDescription() {
-        return "Information about the specified ship";
-    }
-
-    @Override
-    public boolean hasPermission(CommandSource source) {
-        return source instanceof CommandViewer;
-    }
-
-    @Override
-    public Optional<Permission> getPermissionNode() {
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
-            return false;
-        }
-        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
-        displayInfo(viewer, vessel);
-        return true;
+        vessel.getEntitiesOvertime(e -> true).thenAccept(collection -> collection.forEach(entity -> {
+            AText entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.parse(messages);
+            entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.process(entitiesText, entity);
+            viewer.sendMessage(entitiesText);
+        }));
     }
 }

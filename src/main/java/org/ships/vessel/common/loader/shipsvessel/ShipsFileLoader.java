@@ -15,9 +15,6 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
-import org.jetbrains.annotations.NotNull;
-import org.ships.algorthum.blockfinder.FindAirOvertimeBlockFinderUpdate;
-import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.config.parsers.VesselFlagWrappedParser;
 import org.ships.exceptions.NoLicencePresent;
@@ -38,6 +35,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -87,60 +85,44 @@ public class ShipsFileLoader implements ShipsLoader {
                                                     (VesselFlag.Builder<T, VesselFlag<T>>) builder);
                                         }
                                     })), i -> i.getId().replaceAll(":", " "), "Meta", "Flags");
+
+    private final static class StructureLoad {
+
+        private final ShipsVessel ship;
+
+        private StructureLoad(ShipsVessel shipsVessel) {
+            this.ship = shipsVessel;
+        }
+
+        public CompletableFuture<PositionableShipsStructure> load(BlockPosition position,
+                                                                  Collection<? extends Vector3<Integer>> structureList) {
+
+            if (structureList.isEmpty()) {
+                return ship.updateStructure().thenApply(structure -> {
+                    TranslateCore
+                            .getConsole()
+                            .sendMessage(AText.ofPlain(
+                                    Else.throwOr(NoLicencePresent.class, StructureLoad.this.ship::getId, "Unknown")
+                                            + " has loaded."));
+                    return structure;
+                });
+            }
+            PositionableShipsStructure pss = this.ship.getStructure();
+            pss.setRaw(structureList);
+            this.ship.setLoading(false);
+            TranslateCore
+                    .getConsole()
+                    .sendMessage(
+                            AText.ofPlain(Else.throwOr(NoLicencePresent.class, this.ship::getId, "") + " has loaded."));
+            return CompletableFuture.completedFuture(pss);
+
+        }
+    }
+
     protected final File file;
 
     public ShipsFileLoader(File file) {
         this.file = file;
-    }
-
-    public static File getVesselDataFolder() {
-        return new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData");
-    }
-
-    public static Set<ShipsVessel> loadAll(Consumer<? super LoadVesselException> function) {
-        Set<ShipsVessel> set = new HashSet<>();
-        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
-        types.forEach(st -> {
-            try {
-                File vesselDataFolder = getVesselDataFolder();
-                File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
-                File[] files = typeFolder.listFiles();
-                if (files == null) {
-                    return;
-                }
-                for (File file : files) {
-                    try {
-                        ShipsVessel vessel = new ShipsFileLoader(file).load();
-                        if (vessel == null) {
-                            continue;
-                        }
-                        set.add(vessel);
-                    } catch (LoadVesselException e) {
-                        TranslateCore
-                                .getConsole()
-                                .sendMessage(AText
-                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                                     .withColour(NamedTextColours.RED));
-                        function.accept(e);
-                    } catch (Throwable e) {
-                        TranslateCore
-                                .getConsole()
-                                .sendMessage(AText
-                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                                     .withColour(NamedTextColours.RED));
-                        e.printStackTrace();
-                    }
-                }
-            } catch (Throwable e) {
-                TranslateCore
-                        .getConsole()
-                        .sendMessage(AText
-                                             .ofPlain("Could not load any ships of " + st.getId())
-                                             .withColour(NamedTextColours.RED));
-                e.printStackTrace();
-            }
-        });
-        return set;
     }
 
     public void save(AbstractShipsVessel vessel) {
@@ -319,57 +301,53 @@ public class ShipsFileLoader implements ShipsLoader {
         stream.set(node, (T) value);
     }
 
-    private final static class StructureLoad {
+    public static File getVesselDataFolder() {
+        return new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData");
+    }
 
-        private final ShipsVessel ship;
-
-        private StructureLoad(ShipsVessel shipsVessel) {
-            this.ship = shipsVessel;
-        }
-
-        public void load(BlockPosition position, Collection<? extends Vector3<Integer>> structureList) {
-            if (structureList.isEmpty()) {
-                ShipsPlugin
-                        .getPlugin()
-                        .getConfig()
-                        .getDefaultFinder()
-                        .getConnectedBlocksOvertime(position,
-                                                    new FindAirOvertimeBlockFinderUpdate(StructureLoad.this.ship,
-                                                                                         new OvertimeBlockFinderUpdate() {
-                                                                                             @Override
-                                                                                             public void onShipsStructureUpdated(
-                                                                                                     @NotNull PositionableShipsStructure structure) {
-                                                                                                 StructureLoad.this.ship.setStructure(
-                                                                                                         structure);
-                                                                                                 StructureLoad.this.ship.setLoading(
-                                                                                                         false);
-                                                                                                 TranslateCore
-                                                                                                         .getConsole()
-                                                                                                         .sendMessage(
-                                                                                                                 AText.ofPlain(
-                                                                                                                         Else.throwOr(
-                                                                                                                                 NoLicencePresent.class,
-                                                                                                                                 StructureLoad.this.ship::getId,
-                                                                                                                                 "Unknown")
-                                                                                                                                 + " has loaded."));
-                                                                                             }
-
-                                                                                             @Override
-                                                                                             public BlockFindControl onBlockFind(
-                                                                                                     @NotNull PositionableShipsStructure currentStructure,
-                                                                                                     @NotNull BlockPosition block) {
-                                                                                                 return BlockFindControl.USE;
-                                                                                             }
-                                                                                         }));
-            } else {
-                PositionableShipsStructure pss = this.ship.getStructure();
-                pss.setRaw(structureList);
-                this.ship.setLoading(false);
+    public static Set<ShipsVessel> loadAll(Consumer<? super LoadVesselException> function) {
+        Set<ShipsVessel> set = new HashSet<>();
+        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
+        types.forEach(st -> {
+            try {
+                File vesselDataFolder = getVesselDataFolder();
+                File typeFolder = new File(vesselDataFolder, st.getId().replaceAll(":", "."));
+                File[] files = typeFolder.listFiles();
+                if (files == null) {
+                    return;
+                }
+                for (File file : files) {
+                    try {
+                        ShipsVessel vessel = new ShipsFileLoader(file).load();
+                        if (vessel == null) {
+                            continue;
+                        }
+                        set.add(vessel);
+                    } catch (LoadVesselException e) {
+                        TranslateCore
+                                .getConsole()
+                                .sendMessage(AText
+                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .withColour(NamedTextColours.RED));
+                        function.accept(e);
+                    } catch (Throwable e) {
+                        TranslateCore
+                                .getConsole()
+                                .sendMessage(AText
+                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .withColour(NamedTextColours.RED));
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Throwable e) {
                 TranslateCore
                         .getConsole()
-                        .sendMessage(AText.ofPlain(
-                                Else.throwOr(NoLicencePresent.class, this.ship::getId, "") + " has loaded."));
+                        .sendMessage(AText
+                                             .ofPlain("Could not load any ships of " + st.getId())
+                                             .withColour(NamedTextColours.RED));
+                e.printStackTrace();
             }
-        }
+        });
+        return set;
     }
 }

@@ -30,7 +30,7 @@ import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgume
 import org.ships.commands.argument.arguments.structure.ShipsStructureArgument;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
-import org.ships.vessel.common.loader.ShipsIDFinder;
+import org.ships.vessel.common.finder.IdVesselFinder;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
@@ -114,7 +114,7 @@ public class CreateShipCommand implements ArgumentCommand {
 
         String fullId = shipType.getId() + ":" + name.toLowerCase().replaceAll(" ", "_");
         try {
-            new ShipsIDFinder(fullId).load();
+            IdVesselFinder.load(fullId);
             if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Ship name already taken"));
             }

@@ -7,10 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.node.DedicatedNode;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class QuickBlockFinderWrapper implements BasicBlockFinder {
 
@@ -26,9 +28,9 @@ public class QuickBlockFinderWrapper implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-                                           @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
-        this.finder.getConnectedBlocksOvertime(position, runAfterFullSearch);
+    public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
+                                                                                    @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+        return this.finder.getConnectedBlocksOvertime(position, runAfterFullSearch);
     }
 
     @Override

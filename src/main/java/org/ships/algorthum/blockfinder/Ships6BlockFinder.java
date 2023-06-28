@@ -27,6 +27,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class Ships6BlockFinder implements BasicBlockFinder {
@@ -75,16 +76,20 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         private int stackLimit;
         private int stackDelay;
         private TimeUnit stackDelayUnit;
+        private CompletableFuture<PositionableShipsStructure> onComplete;
 
 
-        private Overtime(SyncBlockPosition position, OvertimeBlockFinderUpdate update, ConfigurationStream config) {
+        private Overtime(SyncBlockPosition position,
+                         OvertimeBlockFinderUpdate update,
+                         ConfigurationStream config,
+                         CompletableFuture<PositionableShipsStructure> onComplete) {
             this.pss = new AbstractPositionableShipsStructure(position);
             this.update = update;
             this.process.add(position);
             this.stackLimit = config.getInteger(STACK_LIMIT_NODE.getNode()).orElse(7);
             this.stackDelay = config.getInteger(STACK_DELAY.getNode()).orElse(1);
             this.stackDelayUnit = config.parse(STACK_DELAY_UNIT.getNode()).orElse(TimeUnit.MINECRAFT_TICKS);
-
+            this.onComplete = onComplete;
         }
 
         private final Consumer<Scheduler> runnable = (sch) -> {
@@ -120,7 +125,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                                     .build(ShipsPlugin.getPlugin())
                                     .run();
                         } else {
-                            this.update.onShipsStructureUpdated(this.pss);
+                            this.onComplete.complete(this.pss);
                         }
                     })
                     .setDisplayName("Ships 6 block finder")
@@ -182,13 +187,13 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     }
 
     @Override
-    public void getConnectedBlocksOvertime(@NotNull BlockPosition position,
-                                           @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
-        //ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
+    public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
+                                                                                    @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
+        CompletableFuture<PositionableShipsStructure> future = new CompletableFuture<>();
         ConfigurationStream configuration = this
                 .configuration()
                 .orElseThrow(() -> new RuntimeException("Configuration is optional empty"));
-        Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch, configuration);
+        Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch, configuration, future);
         TranslateCore
                 .getScheduleManager()
                 .schedule()
@@ -198,7 +203,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                 .setDisplayName("Ships 6 block finder")
                 .build(ShipsPlugin.getPlugin())
                 .run();
-
+        return future;
     }
 
     @Override
@@ -224,40 +229,6 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         return this;
     }
 
-    public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
-        int count = 0;
-        Direction[] directions = FourFacingDirection.withYDirections(FourFacingDirection.getFourFacingDirections());
-        PositionableShipsStructure pss = new AbstractPositionableShipsStructure(Position.toSync(position));
-        Collection<SyncBlockPosition> ret = new ArrayList<>();
-        Collection<SyncBlockPosition> target = new ArrayList<>();
-        Collection<SyncBlockPosition> process = new ArrayList<>();
-        process.add(Position.toSync(position));
-        while (count != this.limit) {
-            if (process.isEmpty()) {
-                ret.forEach(pss::addPositionRelativeToWorld);
-                return pss;
-            }
-            for (SyncBlockPosition proc : process) {
-                count++;
-                for (Direction face : directions) {
-                    SyncBlockPosition block = proc.getRelative(face);
-                    if (ret.stream().noneMatch(b -> b.equals(block))) {
-                        BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
-                        if (bi.getCollide() == CollideType.MATERIAL) {
-                            ret.add(block);
-                            target.add(block);
-                        }
-                    }
-                }
-            }
-            process.clear();
-            process.addAll(target);
-            target.clear();
-        }
-        ret.forEach(pss::addPositionRelativeToWorld);
-        return pss;
-    }
-
     @Override
     public String getId() {
         return "ships:blockfinder_ships_six";
@@ -275,10 +246,6 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
     @Override
     public Optional<File> configurationFile() {
-        return Optional.of(new File(TranslateCore.getPlatform().getPlatformConfigFolder(),
-                                    "Ships/Configuration/BlockFinder/Ships Six." + TranslateCore
-                                            .getPlatform()
-                                            .getConfigFormat()
-                                            .getMediaType()));
+        return Optional.empty();
     }
 }

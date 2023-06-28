@@ -6,19 +6,15 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
-import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
 import org.jetbrains.annotations.NotNull;
-import org.ships.algorthum.blockfinder.FindAirOvertimeBlockFinderUpdate;
-import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.common.types.typical.airship.Airship;
 import org.ships.vessel.converts.vessel.VesselConverter;
-import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,8 +29,9 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
 
     @Override
     public @NotNull ShipsVessel convert(@NotNull File file) throws IOException {
-        ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file,
-                TranslateCore.getPlatform().getConfigFormat());
+        ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file, TranslateCore
+                .getPlatform()
+                .getConfigFormat());
 
         String type = config.getString(new ConfigurationNode("ShipsData", "Type")).get();
         Integer percent = config
@@ -84,26 +81,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
             vessel.setMaxSpeed(engineSpeed);
             vessel.getCrew().put(owner, CrewPermission.CAPTAIN);
             ShipsPlugin.getPlugin().registerVessel(vessel);
-            ShipsPlugin
-                    .getPlugin()
-                    .getConfig()
-                    .getDefaultFinder()
-                    .setConnectedVessel(vessel)
-                    .getConnectedBlocksOvertime(vessel.getPosition(),
-                            new FindAirOvertimeBlockFinderUpdate(vessel, new OvertimeBlockFinderUpdate() {
-                                @Override
-                                public void onShipsStructureUpdated(@NotNull PositionableShipsStructure structure) {
-                                    vessel.setStructure(structure);
-                                    vessel.setLoading(false);
-                                }
-
-                                @Override
-                                public BlockFindControl onBlockFind(
-                                        @NotNull PositionableShipsStructure currentStructure,
-                                        @NotNull BlockPosition block) {
-                                    return BlockFindControl.USE;
-                                }
-                            }));
+            vessel.updateStructure().thenAccept(structure -> vessel.setLoading(false));
             return vessel;
         }
         throw new IOException("Unknown");

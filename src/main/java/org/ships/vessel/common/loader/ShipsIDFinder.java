@@ -7,6 +7,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Optional;
 
+@Deprecated(forRemoval = true)
 public class ShipsIDFinder implements ShipsLoader {
 
     protected final String id;
@@ -36,7 +37,8 @@ public class ShipsIDFinder implements ShipsLoader {
                         e.printStackTrace();
                         return false;
                     }
-                }).findFirst();
+                })
+                .findFirst();
         if (opVessel.isPresent()) {
             return opVessel.get();
         }

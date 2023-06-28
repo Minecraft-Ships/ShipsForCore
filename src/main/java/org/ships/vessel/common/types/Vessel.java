@@ -17,12 +17,14 @@ import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.movement.instruction.details.MovementDetails;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -35,6 +37,12 @@ public interface Vessel extends Positionable<BlockPosition> {
     @NotNull PositionableShipsStructure getStructure();
 
     void setStructure(@NotNull PositionableShipsStructure pss);
+
+    CompletableFuture<PositionableShipsStructure> updateStructure(OvertimeBlockFinderUpdate finder);
+
+    default CompletableFuture<PositionableShipsStructure> updateStructure() {
+        return updateStructure((currentStructure, block) -> OvertimeBlockFinderUpdate.BlockFindControl.USE);
+    }
 
 
     @NotNull ShipType<? extends Vessel> getType();
@@ -111,19 +119,28 @@ public interface Vessel extends Positionable<BlockPosition> {
 
     }
 
+    @Deprecated(forRemoval = true)
     default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
                                     Consumer<? super Collection<LiveEntity>> output) {
         this.getEntitiesAsynced(predicate, output, Throwable::printStackTrace);
     }
 
+    @Deprecated(forRemoval = true)
     default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
                                     Consumer<? super Collection<LiveEntity>> output,
                                     Consumer<Throwable> onException) {
-        this.getStructure().getChunksAsynced().thenAccept(chunks -> {
+        this.getEntitiesOvertime(predicate, onException).thenAccept(output);
+    }
+
+    default CompletableFuture<Collection<LiveEntity>> getEntitiesOvertime(Predicate<? super LiveEntity> predicate) {
+        return this.getEntitiesOvertime(predicate, Throwable::printStackTrace);
+    }
+
+    default CompletableFuture<Collection<LiveEntity>> getEntitiesOvertime(Predicate<? super LiveEntity> predicate,
+                                                                          Consumer<Throwable> onException) {
+        return this.getStructure().getChunksAsynced().thenApply(chunks -> {
             try {
                 Bounds<Integer> bounds = this.getStructure().getBounds();
-                Vector3<Integer> max = bounds.getIntMax();
-                Vector3<Integer> min = bounds.getIntMin();
                 bounds.add(-1, -1, -1);
                 bounds.add(1, Integer.MAX_VALUE, 1);
 
@@ -135,17 +152,16 @@ public interface Vessel extends Positionable<BlockPosition> {
                                 .map(Position::getPosition)
                                 .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
 
-                Set<LiveEntity> entities = entityPositions
+                return entityPositions
                         .entrySet()
                         .parallelStream()
                         .filter(entry -> bounds.contains(entry.getValue()))
                         .map(Map.Entry::getKey)
                         .filter(predicate)
                         .collect(Collectors.toSet());
-
-                output.accept(entities);
             } catch (Throwable e) {
                 onException.accept(e);
+                return Collections.emptyList();
             }
         });
     }

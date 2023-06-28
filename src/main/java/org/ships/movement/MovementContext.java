@@ -11,6 +11,7 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
@@ -31,6 +32,7 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -106,11 +108,11 @@ public class MovementContext {
         return ret;
     }
 
-    public void move(Vessel vessel) throws MoveException {
+    public CompletableFuture<Void> move(Vessel vessel, boolean updateStructure) throws MoveException {
         this.isVesselLoading(vessel);
         this.isVesselMoving(vessel);
         vessel.set(MovingFlag.class, this);
-        this.collectEntities(vessel, entities -> {
+        Consumer<? super Collection<LiveEntity>> consumer = entities -> {
             try {
                 this.movePostEntity(vessel);
             } catch (Throwable e) {
@@ -124,7 +126,14 @@ public class MovementContext {
                 }
                 e.printStackTrace();
             }
-        });
+        };
+        if (updateStructure) {
+            return vessel
+                    .updateStructure((currentStructure, block) -> OvertimeBlockFinderUpdate.BlockFindControl.USE)
+                    .thenCompose(update -> this.collectEntities(vessel))
+                    .thenAccept(consumer);
+        }
+        return this.collectEntities(vessel).thenAccept(consumer);
     }
 
     private void movePostEntity(Vessel vessel) throws Exception {
@@ -249,10 +258,10 @@ public class MovementContext {
 
     }
 
-    private void collectEntities(Vessel vessel, Consumer<Collection<LiveEntity>> after) {
-        vessel.getEntitiesAsynced(e -> true, e -> {
+    private CompletableFuture<Collection<LiveEntity>> collectEntities(Vessel vessel) {
+        return vessel.getEntitiesOvertime(e -> true).thenApply(e -> {
             e.forEach(entity -> this.saveEntity(vessel, entity, e.size()));
-            after.accept(e);
+            return e;
         });
     }
 
