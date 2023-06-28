@@ -275,10 +275,6 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
     @Override
     public Optional<File> configurationFile() {
-        return Optional.of(new File(TranslateCore.getPlatform().getPlatformConfigFolder(),
-                                    "Ships/Configuration/BlockFinder/Ships Six." + TranslateCore
-                                            .getPlatform()
-                                            .getConfigFormat()
-                                            .getMediaType()));
+        return Optional.empty();
     }
 }
