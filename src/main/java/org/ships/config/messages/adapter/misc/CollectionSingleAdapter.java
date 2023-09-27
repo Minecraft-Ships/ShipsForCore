@@ -26,20 +26,6 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         return "[0]";
     }
 
-    public String adapterText(MessageAdapter<T> adapter, int index) {
-        return adapter.adapterText() + "[" + index + "]";
-    }
-
-    @Override
-    @Deprecated
-    public String adapterTextFormat() {
-        return "!!" + this.adapterText() + "!!";
-    }
-
-    public String adapterTextFormat(MessageAdapter<T> adapter, int index) {
-        return "!!" + this.adapterText(adapter, index) + "!!";
-    }
-
     @Override
     public Set<String> examples() {
         return this.adapters
@@ -47,58 +33,6 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
                 .flatMap(ma -> ma.examples().parallelStream())
                 .map(example -> "!!" + example + "[1]!!")
                 .collect(Collectors.toSet());
-    }
-
-    @Override
-    public boolean containsAdapter(String plain) {
-        int target = 0;
-        Integer before = null;
-        boolean was = false;
-        for (; target < plain.length(); target++) {
-            char at = plain.charAt(target);
-            if (at != '!') {
-                was = false;
-                continue;
-            }
-            if (before != null) {
-                if (was) {
-                    break;
-                }
-                was = true;
-                continue;
-            }
-            if (was) {
-                was = false;
-                before = target - 1;
-                continue;
-            }
-            was = true;
-        }
-        if (before == null || target == plain.length() && !plain.endsWith("!!")) {
-            return false;
-        }
-        String adaptingWithFormat = plain.substring(before, target + 1);
-        String adapting = adaptingWithFormat.substring(2, adaptingWithFormat.length() - 2);
-        if (!adapting.endsWith("]")) {
-            return false;
-        }
-        int startAt = adapting.length() - 1;
-        for (; startAt >= -1; startAt--) {
-            if (startAt == -1) {
-                return false;
-            }
-            if (adapting.charAt(startAt) == '[') {
-                break;
-            }
-        }
-        String adapterText = adapting.substring(0, startAt);
-
-        return this.adapters.parallelStream().anyMatch(ma -> ma.containsAdapter(adapterText));
-    }
-
-    @Override
-    public boolean containsAdapter(AText text) {
-        return this.containsAdapter(text.toPlain());
     }
 
     @Override
@@ -185,5 +119,71 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         TranslateCore.getConsole().sendMessage(AText.ofPlain("Result: ").append(result));
         return result;
 
+    }
+
+    @Override
+    @Deprecated
+    public String adapterTextFormat() {
+        return "!!" + this.adapterText() + "!!";
+    }
+
+    @Override
+    public boolean containsAdapter(String plain) {
+        int target = 0;
+        Integer before = null;
+        boolean was = false;
+        for (; target < plain.length(); target++) {
+            char at = plain.charAt(target);
+            if (at != '!') {
+                was = false;
+                continue;
+            }
+            if (before != null) {
+                if (was) {
+                    break;
+                }
+                was = true;
+                continue;
+            }
+            if (was) {
+                was = false;
+                before = target - 1;
+                continue;
+            }
+            was = true;
+        }
+        if (before == null || target == plain.length() && !plain.endsWith("!!")) {
+            return false;
+        }
+        String adaptingWithFormat = plain.substring(before, target + 1);
+        String adapting = adaptingWithFormat.substring(2, adaptingWithFormat.length() - 2);
+        if (!adapting.endsWith("]")) {
+            return false;
+        }
+        int startAt = adapting.length() - 1;
+        for (; startAt >= -1; startAt--) {
+            if (startAt == -1) {
+                return false;
+            }
+            if (adapting.charAt(startAt) == '[') {
+                break;
+            }
+        }
+        String adapterText = adapting.substring(0, startAt);
+
+        return this.adapters.parallelStream().anyMatch(ma -> ma.containsAdapter(adapterText));
+    }
+
+    @Override
+    public boolean containsAdapter(AText text) {
+        return this.containsAdapter(text.toPlain());
+    }
+
+    public String adapterText(MessageAdapter<T> adapter, int index) {
+        return adapter.adapterText() + "[" + index + "]";
+    }
+
+    public String adapterTextFormat(MessageAdapter<T> adapter, int index) {
+        return "!!" + this.adapterText(adapter, index) + "!!";
     }
 }

@@ -67,6 +67,7 @@ dependencies {
         System.out.println("Could not find subModule of ShipsCore, using jit instead")
         api 'com.github.Minecraft-Ships:TranslateCore:master-SNAPSHOT'
     }
+    compileOnly 'net.kyori:adventure-api:4.12.0' //some reason this doesnt get picked up
     compileOnly 'org.jetbrains:annotations:20.1.0'
     testImplementation 'org.mockito:mockito-inline:4.11.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
