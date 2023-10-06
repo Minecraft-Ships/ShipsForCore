@@ -7,7 +7,7 @@ import org.core.permission.CorePermission;
 import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.Permissions;
@@ -26,12 +26,11 @@ import java.util.List;
 
 public class PlaneType extends AbstractShipType<Plane> implements FuelledShipType<Plane> {
 
+    private final int min;
     private FuelRequirement fuelRequirement;
     private MinSizeRequirement minSizeRequirement;
     private MaxSizeRequirement maxSizeRequirement;
-
     private Integer max;
-    private final int min;
 
     public PlaneType() {
         this("Plane", new File(ShipsPlugin.getPlugin().getConfigFolder(),
@@ -81,8 +80,8 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
     }
 
     @Override
-    public @NotNull Plane createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
-        return new Plane(ste, bPos, this);
+    public @NotNull Plane createNewVessel(@NotNull SignSide side, @NotNull SyncBlockPosition bPos) {
+        return new Plane(side, bPos, this);
     }
 
     @Override

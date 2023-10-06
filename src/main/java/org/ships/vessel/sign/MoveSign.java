@@ -1,11 +1,14 @@
 package org.ships.vessel.sign;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
+import org.core.utils.ComponentUtils;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.SixteenFacingDirection;
@@ -13,8 +16,8 @@ import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
@@ -22,6 +25,7 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.finder.VesselBlockFinder;
 import org.ships.vessel.common.types.Vessel;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -29,22 +33,22 @@ import java.util.Optional;
 
 public class MoveSign implements ShipsSign {
 
-    public List<AText> getSignText() {
-        return Arrays.asList(AText.ofPlain("[Move]").withColour(NamedTextColours.YELLOW), AText.ofPlain(""),
-                             AText.ofPlain("Speed"),
-                             AText.ofPlain(ShipsPlugin.getPlugin().getConfig().getDefaultMoveSpeed() + ""));
+    public List<Component> getSignText() {
+        return Arrays.asList(Component.text("[Move]").color(NamedTextColor.YELLOW), Component.empty(),
+                             Component.text("Speed"),
+                             Component.text(ShipsPlugin.getPlugin().getConfig().getDefaultMoveSpeed()));
     }
 
     @Override
-    public boolean isSign(List<? extends AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(this.getSignText().get(0));
+    public boolean isSign(List<? extends Component> lines) {
+        return lines.size() >= 1 && ComponentUtils
+                .toPlain(lines.get(0))
+                .equalsIgnoreCase(ComponentUtils.toPlain(this.getSignText().get(0)));
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
-        SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(this.getSignText());
-        return stes;
+    public void changeInto(@NotNull SignSide sign) throws IOException {
+        sign.setLines(this.getSignText());
     }
 
     @Override

@@ -6,7 +6,7 @@ import org.core.platform.plugin.Plugin;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -40,7 +40,7 @@ public interface ShipType<T extends Vessel> extends Identifiable {
 
     @NotNull ConfigurationStream.ConfigurationFile getFile();
 
-    @NotNull T createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos);
+    @NotNull T createNewVessel(@NotNull SignSide side, @NotNull SyncBlockPosition bPos);
 
     @NotNull BlockType[] getIgnoredTypes();
 
@@ -52,8 +52,9 @@ public interface ShipType<T extends Vessel> extends Identifiable {
 
     @NotNull CorePermission getMakePermission();
 
+    @Deprecated(forRemoval = true)
     default T createNewVessel(@NotNull LiveSignTileEntity position) {
-        return this.createNewVessel(position, position.getPosition());
+        return this.createNewVessel(position.getSide(true), position.getPosition());
     }
 
     default <E> @NotNull Optional<E> getFlag(@NotNull Class<E> class1) {

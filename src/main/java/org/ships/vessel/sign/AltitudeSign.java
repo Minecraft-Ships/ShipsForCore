@@ -1,19 +1,21 @@
 package org.ships.vessel.sign;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
+import org.core.utils.ComponentUtils;
 import org.core.utils.Else;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +28,7 @@ import org.ships.vessel.common.finder.VesselBlockFinder;
 import org.ships.vessel.common.flag.AltitudeLockFlag;
 import org.ships.vessel.common.types.Vessel;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -34,20 +37,27 @@ import java.util.function.BiConsumer;
 
 public class AltitudeSign implements ShipsSign {
 
-    public static final List<AText> SIGN = Arrays.asList(
-            AText.ofPlain("[Altitude]").withColour(NamedTextColours.YELLOW), AText.ofPlain("{Increase}"),
-            AText.ofPlain("decrease"), AText.ofPlain("1"));
+    public static final List<Component> SIGN;
 
-    @Override
-    public boolean isSign(List<? extends AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
+    static {
+        Component first = Component.text("[Altitude]").color(NamedTextColor.YELLOW);
+        Component second = Component.text("{Increase}");
+        Component third = Component.text("decrease");
+        Component fourth = Component.text(1);
+
+        SIGN = Arrays.asList(first, second, third, fourth);
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
-        SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(SIGN);
-        return stes;
+    public boolean isSign(List<? extends Component> lines) {
+        return lines.size() >= 1 && ComponentUtils
+                .toPlain(lines.get(0))
+                .equalsIgnoreCase(ComponentUtils.toPlain(SIGN.get(0)));
+    }
+
+    @Override
+    public void changeInto(@NotNull SignSide sign) throws IOException {
+        sign.setLines(SIGN);
     }
 
     @Override
@@ -60,11 +70,14 @@ public class AltitudeSign implements ShipsSign {
         if (!(lte instanceof LiveSignTileEntity stes)) {
             return false;
         }
+        Optional<SignSide> opSignSide = this.getSide(stes);
+        if (opSignSide.isEmpty()) {
+            return false;
+        }
+        SignSide side = opSignSide.get();
         boolean updateSpeed = player.isSneaking();
-        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
-
         if (updateSpeed) {
-            int altitude = Integer.parseInt(stes.getTextAt(3).map(AText::toPlain).orElse("0"));
+            int altitude = Integer.parseInt(side.getLineAt(3).map(ComponentUtils::toPlain).orElse("0"));
             VesselBlockFinder.findOvertime(position).thenAccept(entry -> {
                 ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                 Optional<Vessel> opVessel = entry.getValue();
@@ -72,11 +85,11 @@ public class AltitudeSign implements ShipsSign {
                     Vessel vessel = opVessel.get();
                     int newSpeed = altitude + 1;
                     if (newSpeed <= vessel.getAltitudeSpeed()) {
-                        stes.setTextAt(3, AText.ofPlain(newSpeed + ""));
+                        side.setLineAt(3, Component.text(newSpeed));
                     }
                     return;
                 }
-                player.sendMessage(AText.ofPlain("Couldnt find licence sign").withColour(NamedTextColours.RED));
+                player.sendMessage(Component.text("could not find the licence sign").color(NamedTextColor.RED));
                 entry
                         .getKey()
                         .getSyncedPositionsRelativeToWorld()
@@ -91,20 +104,23 @@ public class AltitudeSign implements ShipsSign {
                                 .getKey()
                                 .getSyncedPositionsRelativeToWorld()
                                 .forEach(bp -> bp.resetBlock(player)))
-                        .build(ShipsPlugin.getPlugin())
+                        .buildDelayed(ShipsPlugin.getPlugin())
                         .run();
 
             });
             return true;
         }
 
-        if (stes.getTextAt(1).isPresent() && stes.getTextAt(1).get().toPlain().contains("{")) {
-            stes.setTextAt(1, AText.ofPlain("Increase"));
-            stes.setTextAt(2, AText.ofPlain("{decrease}"));
+        Optional<Component> opSecondLine = side.getLineAt(1);
+
+
+        if (opSecondLine.isPresent() && ComponentUtils.toPlain(opSecondLine.get()).contains("{")) {
+            side.setLineAt(1, Component.text("Increase"));
+            side.setLineAt(2, Component.text("{decrease}"));
             return true;
         }
-        stes.setTextAt(1, AText.ofPlain("{Increase}"));
-        stes.setTextAt(2, AText.ofPlain("decrease"));
+        side.setLineAt(1, Component.text("{Increase}"));
+        side.setLineAt(2, Component.text("decrease"));
         return true;
     }
 
@@ -115,8 +131,13 @@ public class AltitudeSign implements ShipsSign {
             return false;
         }
         SignTileEntity ste = (SignTileEntity) opTileEntity.get();
-        Optional<String> opLine1 = ste.getTextAt(1).map(AText::toPlain);
-        Optional<String> opLine3 = ste.getTextAt(3).map(AText::toPlain);
+        Optional<SignSide> opSide = this.getSide(ste);
+        if (opSide.isEmpty()) {
+            return false;
+        }
+        SignSide side = opSide.get();
+        Optional<String> opLine1 = side.getLineAt(1).map(ComponentUtils::toPlain);
+        Optional<String> opLine3 = side.getLineAt(3).map(ComponentUtils::toPlain);
         if (!(opLine1.isPresent() && opLine3.isPresent())) {
             return false;
         }
@@ -127,7 +148,7 @@ public class AltitudeSign implements ShipsSign {
         if (updateSpeed) {
             int newSpeed = altitude - 1;
             if (newSpeed >= 0) {
-                ste.setTextAt(3, AText.ofPlain(newSpeed + ""));
+                side.setLineAt(3, Component.text(newSpeed));
             }
             return true;
         }

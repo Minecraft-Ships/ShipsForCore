@@ -3,6 +3,8 @@ package org.ships.vessel.common.types.typical.opship;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -17,12 +19,24 @@ import java.util.Map;
 @Deprecated(forRemoval = true)
 public class OPShip extends AbstractShipsVessel implements AirType {
 
+    @Deprecated(forRemoval = true)
     public OPShip(LiveTileEntity licence, ShipType<? extends OPShip> origin) throws NoLicencePresent {
         super(licence, origin);
     }
 
+    @Deprecated(forRemoval = true)
     public OPShip(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends OPShip> origin) {
         super(ste, position, origin);
+    }
+
+    public OPShip(@NotNull LiveSignTileEntity licence,
+                  boolean isFrontOfSign,
+                  @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        super(licence, isFrontOfSign, type);
+    }
+
+    public OPShip(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
+        super(signSide, position, type);
     }
 
     @Override

@@ -7,6 +7,8 @@ import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.item.ItemType;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -40,14 +42,26 @@ public class Airship extends AbstractShipsVessel implements AirType, FallableReq
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
+    @Deprecated(forRemoval = true)
     public Airship(ShipType<? extends Airship> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
         this.initRequirements();
     }
 
+    @Deprecated(forRemoval = true)
     public Airship(ShipType<? extends Airship> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
         this.initRequirements();
+    }
+
+    public Airship(@NotNull LiveSignTileEntity licence,
+                   boolean isFrontOfSign,
+                   @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        super(licence, isFrontOfSign, type);
+    }
+
+    public Airship(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
+        super(signSide, position, type);
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {
@@ -91,6 +105,12 @@ public class Airship extends AbstractShipsVessel implements AirType, FallableReq
         return Collections.unmodifiableCollection(this.requirements);
     }
 
+    @Override
+    public void setRequirement(Requirement<?> updated) {
+        this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
+        this.requirements.add(updated);
+    }
+
     public boolean isUsingBurner() {
         return this.getSpecialBlockRequirement().isEnabled();
     }
@@ -111,6 +131,13 @@ public class Airship extends AbstractShipsVessel implements AirType, FallableReq
 
     public int getFuelConsumption() {
         return this.getFuelRequirement().getConsumption();
+    }
+
+    public @NotNull Airship setFuelConsumption(@Nullable Integer fuel) {
+        FuelRequirement requirement = this.getFuelRequirement();
+        FuelRequirement copyRequirement = requirement.createCopyWithConsumption(fuel);
+        this.setRequirement(copyRequirement);
+        return this;
     }
 
     public @NotNull Vessel setMaxSize(@Nullable Integer size) {
@@ -137,13 +164,6 @@ public class Airship extends AbstractShipsVessel implements AirType, FallableReq
 
     public boolean isMinSizeSpecified() {
         return this.getMinBlocksRequirement().isMinSizeSpecified();
-    }
-
-    public @NotNull Airship setFuelConsumption(@Nullable Integer fuel) {
-        FuelRequirement requirement = this.getFuelRequirement();
-        FuelRequirement copyRequirement = requirement.createCopyWithConsumption(fuel);
-        this.setRequirement(copyRequirement);
-        return this;
     }
 
     public FuelSlot getFuelSlot() {
@@ -184,12 +204,6 @@ public class Airship extends AbstractShipsVessel implements AirType, FallableReq
     @Override
     public @NotNull AirshipType getType() {
         return (AirshipType) super.getType();
-    }
-
-    @Override
-    public void setRequirement(Requirement<?> updated) {
-        this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
-        this.requirements.add(updated);
     }
 
     @Override

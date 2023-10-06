@@ -1,5 +1,6 @@
 package org.ships.event.listener;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
@@ -17,6 +18,7 @@ import org.core.event.events.entity.EntityCommandEvent;
 import org.core.event.events.entity.EntityInteractEvent;
 import org.core.event.events.entity.EntitySpawnEvent;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.ComponentUtils;
 import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
@@ -31,7 +33,6 @@ import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -251,7 +252,8 @@ public class CoreEventListener implements EventListener {
             return;
         }
         boolean register = false;
-        Optional<AText> opFirstLine = event.getFrom().getTextAt(0);
+        var side = event.getChangingSide();
+        Optional<Component> opFirstLine = side.getLineAt(0);
         if (opFirstLine.isEmpty()) {
             return;
         }
@@ -259,7 +261,7 @@ public class CoreEventListener implements EventListener {
                 .getPlugin()
                 .getAll(ShipsSign.class)
                 .stream()
-                .filter(s -> s.isSign(event.getFrom().getText()))
+                .filter(s -> s.isSign(event.getChangingSide().getLines()))
                 .findFirst()
                 .orElse(null);
         if (sign == null) {
@@ -269,21 +271,20 @@ public class CoreEventListener implements EventListener {
         if (sign instanceof LicenceSign) {
             register = true;
         }
-        SignTileEntitySnapshot stes;
         try {
-            stes = sign.changeInto(event.getTo());
+            sign.changeInto(event.getChangingSide());
         } catch (IOException e) {
             event.setCancelled(true);
             event.getEntity().sendMessage(AText.ofPlain("Error: " + e.getMessage()).withColour(NamedTextColours.RED));
             return;
         }
         if (register) {
-            Optional<AText> opTypeText = stes.getTextAt(1);
+            Optional<Component> opTypeText = side.getLineAt(1);
             if (opTypeText.isEmpty()) {
                 event.setCancelled(true);
                 return;
             }
-            String typeText = opTypeText.get().toPlain();
+            String typeText = ComponentUtils.toPlain(opTypeText.get());
             Optional<ShipType<?>> opType = ShipsPlugin
                     .getPlugin()
                     .getAllShipTypes()
@@ -309,12 +310,12 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             try {
-                Optional<AText> opName = stes.getTextAt(2);
+                Optional<Component> opName = side.getLineAt(2);
                 if (opName.isEmpty()) {
                     event.setCancelled(true);
                     return;
                 }
-                String name = opName.get().toPlain();
+                String name = ComponentUtils.toPlain(opName.get());
                 IdVesselFinder.load("ships:" + type.getName().toLowerCase() + "." + name.toLowerCase());
                 event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_NAME.process(name));
                 event.setCancelled(true);
@@ -368,7 +369,7 @@ public class CoreEventListener implements EventListener {
                 if (finalBar != null) {
                     finalBar.setTitle(AText.ofPlain("Complete"));
                 }
-                Vessel vessel = type.createNewVessel(stes, event.getPosition());
+                Vessel vessel = type.createNewVessel(side, event.getPosition());
                 if (vessel instanceof TeleportToVessel) {
                     ((TeleportToVessel) vessel).setTeleportPosition(bp);
                 }
@@ -410,7 +411,6 @@ public class CoreEventListener implements EventListener {
                 }
             });
         }
-        event.setTo(stes);
     }
 
     @HEvent

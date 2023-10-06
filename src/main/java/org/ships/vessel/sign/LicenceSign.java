@@ -1,17 +1,20 @@
 package org.ships.vessel.sign;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.ComponentUtils;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -78,19 +81,18 @@ public class LicenceSign implements ShipsSign {
     }
 
     @Override
-    public boolean isSign(List<? extends AText> lines) {
-        return lines.size() >= 1 && lines.get(0).toPlain().equalsIgnoreCase("[Ships]");
+    public boolean isSign(List<? extends Component> lines) {
+        return lines.size() >= 1 && ComponentUtils.toPlain(lines.get(0)).equalsIgnoreCase("[Ships]");
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) throws IOException {
-        SignTileEntitySnapshot snapshot = sign.getSnapshot();
-        List<AText> lines = snapshot.getText();
+    public void changeInto(@NotNull SignSide sign) throws IOException {
+        List<Component> lines = sign.getLines();
         Optional<ShipType<?>> opType = ShipsPlugin
                 .getPlugin()
                 .getAllShipTypes()
                 .stream()
-                .filter(t -> lines.get(1).toPlain().equalsIgnoreCase(t.getDisplayName()))
+                .filter(t -> ComponentUtils.toPlain(lines.get(1)).equalsIgnoreCase(t.getDisplayName()))
                 .findFirst();
         if (opType.isEmpty()) {
             throw new IOException("Unknown Ship Type: Ship Types: " + ShipsPlugin
@@ -101,7 +103,7 @@ public class LicenceSign implements ShipsSign {
                     .collect(Collectors.joining(", ")));
         }
 
-        String name = lines.get(2).toPlain();
+        String name = ComponentUtils.toPlain(lines.get(2));
         if (name.replaceAll(" ", "").isEmpty()) {
             throw new IOException("Invalid name: Change 3rd line");
         }
@@ -112,17 +114,17 @@ public class LicenceSign implements ShipsSign {
             name = name.replaceAll(" ", "_");
         }
         name = (Character.toUpperCase(name.charAt(0))) + name.substring(1);
-        snapshot.setTextAt(0, AText.ofPlain("[Ships]").withColour(NamedTextColours.YELLOW));
-        snapshot.setTextAt(1, AText.ofPlain(opType.get().getDisplayName()).withColour(NamedTextColours.BLUE));
-        snapshot.setTextAt(2, AText.ofPlain(name).withColour(NamedTextColours.GREEN));
-        AText forth = ShipsPlugin
+
+        Component line1 = Component.text("[Ships]").color(NamedTextColor.YELLOW);
+        Component line2 = Component.text(opType.get().getDisplayName()).color(NamedTextColor.BLUE);
+        Component line3 = Component.text(name).color(NamedTextColor.GREEN);
+        Component line4 = ShipsPlugin
                 .getPlugin()
                 .getConfig()
                 .getTextOnLicenceForthLine()
-                .map(AText::ofLegacy)
-                .orElseGet(() -> lines.get(3).withColour(NamedTextColours.GREEN));
-        snapshot.setTextAt(3, forth);
-        return snapshot;
+                .map(t -> Component.text(t).color(NamedTextColor.GREEN))
+                .orElse(Component.empty());
+        sign.setLines(line1, line2, line3, line4);
     }
 
     @Override

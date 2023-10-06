@@ -9,7 +9,7 @@ import org.core.permission.CorePermission;
 import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -139,8 +139,8 @@ public class AirshipType extends AbstractShipType<Airship>
     }
 
     @Override
-    public @NotNull Airship createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
-        return new Airship(this, ste, bPos);
+    public @NotNull Airship createNewVessel(@NotNull SignSide side, @NotNull SyncBlockPosition bPos) {
+        return new Airship(side, bPos, this);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.ships.commands.argument.config;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -9,7 +9,7 @@ import org.core.command.argument.context.CommandContext;
 import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
+import org.core.source.command.CommandSource;
 import org.ships.commands.argument.arguments.config.ConfigKeyArgument;
 import org.ships.commands.argument.arguments.config.ConfigKeyValueArgument;
 import org.ships.config.Config;
@@ -42,13 +42,11 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(COMMAND_NAME, false, "config"),
-                new ExactArgument("set"),
-                new ExactArgument(CONFIG_TYPE, false, this.configNames),
-                new ConfigKeyArgument<>(CONFIG_KEY, this.config.get()),
-                new ConfigKeyValueArgument<>(CONFIG_VALUE,
-                        (context, argument) -> context.getArgument(this, CONFIG_KEY)));
+        return Arrays.asList(new ExactArgument(COMMAND_NAME, false, "config"), new ExactArgument("set"),
+                             new ExactArgument(CONFIG_TYPE, false, this.configNames),
+                             new ConfigKeyArgument<>(CONFIG_KEY, this.config.get()),
+                             new ConfigKeyValueArgument<>(CONFIG_VALUE, (context, argument) -> context.getArgument(this,
+                                                                                                                   CONFIG_KEY)));
     }
 
     @Override
@@ -63,28 +61,23 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext context, String... args) throws NotEnoughArguments {
-        if (!(context.getSource() instanceof CommandViewer)) {
-            return false;
-        }
-        CommandViewer viewer = (CommandViewer) context.getSource();
+        CommandSource viewer = context.getSource();
         DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<String, ?>> node = context.getArgument(this,
-                CONFIG_KEY);
+                                                                                                           CONFIG_KEY);
         Object argument = context.getArgument(this, CONFIG_VALUE);
         try {
             this.setNode(context);
-            viewer.sendMessage(AText
-                    .ofPlain("Set ")
-                    .append(AText.ofPlain(node.getKeyName()).withColour(NamedTextColours.AQUA))
-                    .append(AText.ofPlain(" as \"" + argument + "\"")));
+            viewer.sendMessage(Component.text(node.getKeyName()).color(NamedTextColor.AQUA),
+                               Component.text(" as \"" + argument + "\""));
         } catch (IOException e) {
-            viewer.sendMessage(AText.ofPlain("Failed to set value: " + e.getMessage()));
+            viewer.sendMessage(Component.text("Failed to set value: " + e.getMessage()));
         }
         return true;
     }
 
     private <T> void setNode(CommandContext context) throws IOException {
         DedicatedNode<T, T, ? extends ConfigurationNode.KnownParser<String, T>> node = context.getArgument(this,
-                CONFIG_KEY);
+                                                                                                           CONFIG_KEY);
         T argument = context.getArgument(this, CONFIG_VALUE);
 
         Config.KnownNodes config = this.config.get();

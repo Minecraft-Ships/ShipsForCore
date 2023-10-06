@@ -1,14 +1,12 @@
 package org.ships.commands.argument.ship.data;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.types.Vessel;
@@ -32,7 +30,7 @@ public abstract class AbstractShipsDataViewCommand implements ArgumentCommand {
 
     protected abstract List<CommandArgument<?>> getExtraArguments();
 
-    protected abstract AText getValue(CommandContext commandContext, Vessel vessel, String[] arguments);
+    protected abstract Component getValue(CommandContext commandContext, Vessel vessel, String[] arguments);
 
     @Override
     public List<CommandArgument<?>> getArguments() {
@@ -49,25 +47,14 @@ public abstract class AbstractShipsDataViewCommand implements ArgumentCommand {
     }
 
     @Override
-    public boolean hasPermission(CommandSource source) {
-        if (!(source instanceof CommandViewer)) {
-            return false;
-        }
-        return ArgumentCommand.super.hasPermission(source);
-    }
-
-    @Override
     public Optional<Permission> getPermissionNode() {
         return Optional.of(Permissions.CMD_SHIP_MODIFY_SPEED);
     }
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
-            return false;
-        }
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
-        viewer.sendMessage(this.getValue(commandContext, vessel, args));
+        commandContext.getSource().sendMessage(this.getValue(commandContext, vessel, args));
         return true;
     }
 }

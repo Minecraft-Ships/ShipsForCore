@@ -1,5 +1,7 @@
 package org.ships.vessel.sign;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
@@ -7,10 +9,12 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.viewer.CommandViewer;
+import org.core.utils.ComponentUtils;
 import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -24,6 +28,7 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.loader.ShipsUpdateBlockLoader;
 import org.ships.vessel.common.types.Vessel;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -33,9 +38,10 @@ import java.util.stream.Collectors;
 
 public class EOTSign implements ShipsSign {
 
-    private final List<AText> SIGN = Arrays.asList(AText.ofPlain("[EOT]").withColour(NamedTextColours.YELLOW),
-                                                   AText.ofPlain("Ahead").withColour(NamedTextColours.GREEN),
-                                                   AText.ofPlain("{Stop}"));
+    private final List<Component> SIGN = Arrays.asList(
+            Component.text("[EOT]").color(NamedTextColor.YELLOW),
+            Component.text("Ahead").color(NamedTextColor.GREEN),
+            Component.text("{Stop}"));
 
     public Collection<Scheduler> getScheduler(Vessel vessel) {
         return TranslateCore.getScheduleManager().getSchedules().stream().filter(e -> {
@@ -52,15 +58,13 @@ public class EOTSign implements ShipsSign {
     }
 
     @Override
-    public boolean isSign(List<? extends AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(this.SIGN.get(0));
+    public boolean isSign(List<? extends Component> lines) {
+        return lines.size() >= 1 && ComponentUtils.toPlain(lines.get(0)).equalsIgnoreCase(ComponentUtils.toPlain(this.SIGN.get(0)));
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
-        SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(this.SIGN);
-        return stes;
+    public void changeInto(@NotNull SignSide sign) throws IOException {
+        sign.setLines(this.SIGN);
     }
 
     @Override

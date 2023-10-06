@@ -8,6 +8,8 @@ import org.core.config.parser.parsers.StringToEnumParser;
 import org.core.inventory.item.ItemType;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -38,14 +40,26 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
             Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
+    @Deprecated(forRemoval = true)
     public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
         this.initRequirements();
     }
 
+    @Deprecated(forRemoval = true)
     public Submarine(ShipType<? extends Submarine> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
         this.initRequirements();
+    }
+
+    public Submarine(@NotNull LiveSignTileEntity licence,
+                     boolean isFrontOfSign,
+                     @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        super(licence, isFrontOfSign, type);
+    }
+
+    public Submarine(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
+        super(signSide, position, type);
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {

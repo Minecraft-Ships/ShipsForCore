@@ -1,33 +1,37 @@
 package org.ships.vessel.sign;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
-import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
+import org.core.utils.ComponentUtils;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.List;
 
 public class WheelSign implements ShipsSign {
 
-    public static final List<AText> SIGN = List.of(AText.ofPlain("[Wheel]").withColour(NamedTextColours.YELLOW),
-                                                   AText.ofPlain("\\\\||//").withColour(NamedTextColours.RED),
-                                                   AText.ofPlain("==||==").withColour(NamedTextColours.RED),
-                                                   AText.ofPlain("//||\\\\").withColour(NamedTextColours.RED));
+    public static final List<Component> SIGN = List.of(Component.text("[Wheel]").color(NamedTextColor.YELLOW),
+            Component.text("\\\\||//").color(TextColor.color(153, 102, 51)),
+            Component.text("==||==").color(TextColor.color(153, 102, 51)),
+            Component.text("//||\\\\").color(TextColor.color(153, 102, 51)));
 
     @Override
-    public boolean isSign(List<? extends AText> lines) {
-        return lines.size() >= 1 && lines.get(0).equalsIgnoreCase(SIGN.get(0));
+    public boolean isSign(List<? extends Component> lines) {
+        return lines.size() >= 1 && ComponentUtils
+                .toPlain(lines.get(0))
+                .equalsIgnoreCase(ComponentUtils.toPlain(SIGN.get(0)));
 
     }
 
     @Override
-    public SignTileEntitySnapshot changeInto(@NotNull SignTileEntity sign) {
-        SignTileEntitySnapshot stes = sign.getSnapshot();
-        stes.setText(SIGN);
-        return stes;
+    public void changeInto(@NotNull SignSide sign) throws IOException {
+        sign.setLines(SIGN);
     }
 
     @Override

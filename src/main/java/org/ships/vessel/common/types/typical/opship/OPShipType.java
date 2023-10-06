@@ -6,6 +6,7 @@ import org.core.permission.CorePermission;
 import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -54,8 +55,8 @@ public class OPShipType extends AbstractShipType<OPShip> {
     }
 
     @Override
-    public @NotNull OPShip createNewVessel(@NotNull SignTileEntity ste, @NotNull SyncBlockPosition bPos) {
-        return new OPShip(ste, bPos, this);
+    public @NotNull OPShip createNewVessel(@NotNull SignSide side, @NotNull SyncBlockPosition bPos) {
+        return new OPShip(side, bPos, this);
     }
 
     @Override

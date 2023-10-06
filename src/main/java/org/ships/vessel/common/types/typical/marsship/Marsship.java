@@ -6,6 +6,8 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -32,12 +34,23 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
+    public Marsship(@NotNull LiveSignTileEntity licence,
+                    boolean isFrontOfSign,
+                    @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        super(licence, isFrontOfSign, type);
+    }
 
+    public Marsship(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
+        super(signSide, position, type);
+    }
+
+    @Deprecated(forRemoval = true)
     public Marsship(ShipType<? extends Marsship> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
         this.initRequirements();
     }
 
+    @Deprecated(forRemoval = true)
     public Marsship(ShipType<? extends Marsship> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
         this.initRequirements();

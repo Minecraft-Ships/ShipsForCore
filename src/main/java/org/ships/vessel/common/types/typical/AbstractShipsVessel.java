@@ -3,11 +3,14 @@ package org.ships.vessel.common.types.typical;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.config.ConfigurationStream;
+import org.core.utils.ComponentUtils;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.ExactPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -30,6 +33,7 @@ import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
 import org.ships.vessel.common.types.Vessel;
+import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -44,6 +48,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected final @NotNull Set<VesselFlag<?>> flags = new HashSet<>(Collections.singletonList(new MovingFlag()));
     protected final @NotNull CrewPermission defaultPermission = CrewPermission.DEFAULT;
     protected final @NotNull Map<String, Vector3<Double>> teleportPositions = new HashMap<>();
+    private final boolean isFrontOfSign;
     protected @NotNull PositionableShipsStructure positionableShipsStructure;
     protected @NotNull File file;
     protected @NotNull ShipType<? extends AbstractShipsVessel> type;
@@ -52,35 +57,67 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected boolean isLoading = true;
     protected String cachedName;
 
+    @Deprecated(forRemoval = true)
     public AbstractShipsVessel(@NotNull LiveTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type)
             throws NoLicencePresent {
-        this.positionableShipsStructure = new AbstractPositionableShipsStructure(licence.getPosition());
-        this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
-                             "VesselData/" + this.getType().getId().replaceAll(":", ".") + "/" + this.getName() + "."
-                                     + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
-        this.init(type);
+        this((LiveSignTileEntity) licence, ShipsPlugin
+                .getPlugin()
+                .get(LicenceSign.class)
+                .flatMap(lic -> lic.getSide((LiveSignTileEntity) licence))
+                .orElseThrow(() -> new IllegalStateException("Invalid license sign"))
+                .isFront(), type);
     }
 
+    public AbstractShipsVessel(@NotNull LiveSignTileEntity licence,
+                               boolean isFrontOfSign,
+                               @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        try {
+            this.positionableShipsStructure = new AbstractPositionableShipsStructure(licence.getPosition());
+            this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                                 "VesselData/" + this.getType().getId().replaceAll(":", ".") + "/" + this.getName()
+                                         + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+            this.isFrontOfSign = isFrontOfSign;
+            this.init(type);
+        } catch (NoLicencePresent e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Deprecated(forRemoval = true)
     public AbstractShipsVessel(@NotNull SignTileEntity ste,
                                @NotNull SyncBlockPosition position,
                                @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        this(ShipsPlugin
+                     .getPlugin()
+                     .get(LicenceSign.class)
+                     .flatMap(licence -> licence.getSide(ste))
+                     .orElseThrow(() -> new IllegalStateException("Not valid sign")), position, type);
+    }
+
+    public AbstractShipsVessel(SignSide signSide,
+                               SyncBlockPosition position,
+                               ShipType<? extends AbstractShipsVessel> type) {
+        this.isFrontOfSign = signSide.isFront();
         this.positionableShipsStructure = new AbstractPositionableShipsStructure(position);
         this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData/" + ShipsPlugin
                 .getPlugin()
                 .getAllShipTypes()
                 .stream()
-                .filter(t -> ste
-                        .getTextAt(1)
+                .filter(t -> signSide
+                        .getLineAt(1)
+                        .map(ComponentUtils::toPlain)
                         .orElseThrow(() -> new IllegalStateException("Could not get line 1 of sign"))
-                        .toPlain()
                         .equalsIgnoreCase(t.getDisplayName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Could not find the shiptype"))
                 .getId()
-                .replaceAll(":", ".") + "/" + ste
-                .getTextAt(2)
-                .orElseThrow(() -> new IllegalArgumentException("Could not get name of ship"))
-                .toPlain() + "." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
+                .replaceAll(":", ".") + "/" + signSide
+                .getLineAt(2)
+                .map(ComponentUtils::toPlain)
+                .orElseThrow(() -> new IllegalArgumentException("Could not get name of ship")) + "." + TranslateCore
+                .getPlatform()
+                .getConfigFormat()
+                .getFileType()[0]);
         this.init(type);
     }
 

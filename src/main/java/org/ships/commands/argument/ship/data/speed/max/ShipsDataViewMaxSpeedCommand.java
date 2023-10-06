@@ -1,5 +1,6 @@
 package org.ships.commands.argument.ship.data.speed.max;
 
+import net.kyori.adventure.text.Component;
 import org.core.adventureText.AText;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -20,8 +21,8 @@ public class ShipsDataViewMaxSpeedCommand extends AbstractShipsDataViewCommand {
     }
 
     @Override
-    protected AText getValue(CommandContext commandContext, Vessel vessel, String[] arguments) {
+    protected Component getValue(CommandContext commandContext, Vessel vessel, String[] arguments) {
         int speed = vessel.getMaxSpeed();
-        return AText.ofPlain("Max Speed: " + speed);
+        return Component.text("Max Speed: " + speed);
     }
 }

@@ -15,6 +15,8 @@ import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntitySnapshot;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -46,14 +48,26 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
+    @Deprecated(forRemoval = true)
     public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
         super(licence, type);
         this.initRequirements();
     }
 
+    @Deprecated(forRemoval = true)
     public Plane(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends Plane> type) {
         super(ste, position, type);
         this.initRequirements();
+    }
+
+    public Plane(@NotNull LiveSignTileEntity licence,
+                 boolean isFrontOfSign,
+                 @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        super(licence, isFrontOfSign, type);
+    }
+
+    public Plane(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
+        super(signSide, position, type);
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {

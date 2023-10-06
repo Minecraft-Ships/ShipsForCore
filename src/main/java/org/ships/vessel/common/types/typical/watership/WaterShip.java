@@ -9,6 +9,8 @@ import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -39,16 +41,28 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
+    @Deprecated(forRemoval = true)
     public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
         super(licence, type);
         this.flags.add(new AltitudeLockFlag(true));
         this.initRequirements();
     }
 
+    @Deprecated(forRemoval = true)
     public WaterShip(ShipType<WaterShip> type, SignTileEntity ste, SyncBlockPosition position) {
         super(ste, position, type);
         this.flags.add(new AltitudeLockFlag(true));
         this.initRequirements();
+    }
+
+    public WaterShip(@NotNull LiveSignTileEntity licence,
+                     boolean isFrontOfSign,
+                     @NotNull ShipType<? extends AbstractShipsVessel> type) {
+        super(licence, isFrontOfSign, type);
+    }
+
+    public WaterShip(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
+        super(signSide, position, type);
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {

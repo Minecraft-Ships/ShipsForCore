@@ -74,16 +74,12 @@ public class EOTExecutor implements Consumer<Scheduler> {
                 .getPlugin()
                 .get(EOTSign.class)
                 .orElseThrow(() -> new RuntimeException("EOT sign could not be found"));
-        if (!signTools.isSign(liveSignTileEntity.getText())) {
-            if (scheduler instanceof Scheduler.Native nativeScheduler) {
-                nativeScheduler.cancel();
-            }
+        if (!signTools.isSign(liveSignTileEntity)) {
+            scheduler.cancel();
             return;
         }
         if (!signTools.isAhead(liveSignTileEntity)) {
-            if (scheduler instanceof Scheduler.Native nativeScheduler) {
-                nativeScheduler.cancel();
-            }
+            scheduler.cancel();
             return;
         }
         Optional<DirectionalData> opDirectionalData = liveSignTileEntity
@@ -91,9 +87,7 @@ public class EOTExecutor implements Consumer<Scheduler> {
                 .getBlockDetails()
                 .getDirectionalData();
         if (opDirectionalData.isEmpty()) {
-            if (scheduler instanceof Scheduler.Native nativeScheduler) {
-                nativeScheduler.cancel();
-            }
+            scheduler.cancel();
             return;
         }
         DirectionalData directionalData = opDirectionalData.get();
