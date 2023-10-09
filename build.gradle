@@ -3,19 +3,10 @@ plugins {
     id 'maven-publish'
 }
 
-tasks.register('standaloneBukkit') {
-    finalizedBy jar
-    doFirst {
-        buildStandAlone()
-        buildBukkitStandAlone('org.core.implementation.bukkit.platform.plugin.boot.TranslateCoreBoot')
-    }
-}
-
 tasks.register('standaloneFolia') {
     finalizedBy jar
     doFirst {
         buildStandAlone()
-        buildBukkitStandAlone('org.core.implementation.folia.platform.plugin.boot.TranslateCoreBoot')
     }
 }
 
@@ -33,19 +24,6 @@ ext.buildStandAlone = { implementationEntrypoint ->
     System.out.println("Standalone: " + path.absolutePath)
     def writer = new FileWriter(path)
     writer.write("stand-alone=org.ships.plugin.ShipsPlugin")
-    writer.flush()
-    writer.close()
-}
-
-ext.buildBukkitStandAlone = { implementationEntrypoint ->
-    def pluginPath = file(project.buildDir.path + '/resources/main/plugin.yml')
-    pluginPath.createNewFile()
-    def writer = new FileWriter(pluginPath);
-    writer.write("name: Ships\n")
-    writer.write("version: " + project.version + "\n")
-    writer.write('main: ' + implementationEntrypoint.toString() + "\n")
-    writer.write("api-version: 1.15\n")
-    writer.write("authors: [mosemister]\n")
     writer.flush()
     writer.close()
 }
