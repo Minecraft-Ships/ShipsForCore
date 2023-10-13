@@ -3,31 +3,6 @@ plugins {
     id 'maven-publish'
 }
 
-tasks.register('standaloneFolia') {
-    finalizedBy jar
-    doFirst {
-        buildStandAlone()
-    }
-}
-
-tasks.register('standaloneSponge') {
-    finalizedBy jar
-    doFirst {
-        buildStandAlone()
-    }
-}
-
-ext.buildStandAlone = { implementationEntrypoint ->
-    def path = file(project.buildDir.path + '/resources/main/META-INF/translate-core.properties')
-    path.parentFile.mkdirs()
-    path.createNewFile()
-    System.out.println("Standalone: " + path.absolutePath)
-    def writer = new FileWriter(path)
-    writer.write("stand-alone=org.ships.plugin.ShipsPlugin")
-    writer.flush()
-    writer.close()
-}
-
 test {
     useJUnitPlatform()
 }
