@@ -59,10 +59,14 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
                      boolean isFrontOfSign,
                      @NotNull ShipType<? extends AbstractShipsVessel> type) {
         super(licence, isFrontOfSign, type);
+        this.flags.add(new AltitudeLockFlag(true));
+        this.initRequirements();
     }
 
     public WaterShip(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
         super(signSide, position, type);
+        this.flags.add(new AltitudeLockFlag(true));
+        this.initRequirements();
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {

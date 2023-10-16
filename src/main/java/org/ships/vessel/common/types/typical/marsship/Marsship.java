@@ -38,10 +38,12 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
                     boolean isFrontOfSign,
                     @NotNull ShipType<? extends AbstractShipsVessel> type) {
         super(licence, isFrontOfSign, type);
+        this.initRequirements();
     }
 
     public Marsship(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
         super(signSide, position, type);
+        this.initRequirements();
     }
 
     @Deprecated(forRemoval = true)

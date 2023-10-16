@@ -56,10 +56,12 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
                      boolean isFrontOfSign,
                      @NotNull ShipType<? extends AbstractShipsVessel> type) {
         super(licence, isFrontOfSign, type);
+        this.initRequirements();
     }
 
     public Submarine(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
         super(signSide, position, type);
+        this.initRequirements();
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {

@@ -58,10 +58,12 @@ public class Airship extends AbstractShipsVessel implements AirType, FallableReq
                    boolean isFrontOfSign,
                    @NotNull ShipType<? extends AbstractShipsVessel> type) {
         super(licence, isFrontOfSign, type);
+        this.initRequirements();
     }
 
     public Airship(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
         super(signSide, position, type);
+        this.initRequirements();
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {

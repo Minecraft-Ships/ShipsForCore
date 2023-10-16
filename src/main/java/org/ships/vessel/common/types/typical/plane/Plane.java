@@ -64,10 +64,12 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
                  boolean isFrontOfSign,
                  @NotNull ShipType<? extends AbstractShipsVessel> type) {
         super(licence, isFrontOfSign, type);
+        this.initRequirements();
     }
 
     public Plane(SignSide signSide, SyncBlockPosition position, ShipType<? extends AbstractShipsVessel> type) {
         super(signSide, position, type);
+        this.initRequirements();
     }
 
     public MaxSizeRequirement getMaxBlocksRequirement() {

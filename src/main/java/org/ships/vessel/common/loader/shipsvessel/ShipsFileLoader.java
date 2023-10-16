@@ -126,6 +126,14 @@ public class ShipsFileLoader implements ShipsLoader {
     }
 
     public void save(AbstractShipsVessel vessel) {
+        try {
+            saveToFile(vessel);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveToFile(AbstractShipsVessel vessel) {
         ConfigurationStream.ConfigurationFile file = TranslateCore.createConfigurationFile(this.file, TranslateCore
                 .getPlatform()
                 .getConfigFormat());
