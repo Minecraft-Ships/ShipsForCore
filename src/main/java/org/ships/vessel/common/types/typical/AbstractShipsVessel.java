@@ -1,9 +1,10 @@
 package org.ships.vessel.common.types.typical;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.config.ConfigurationStream;
 import org.core.utils.ComponentUtils;
+import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
@@ -149,15 +150,16 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         if (!(type instanceof SizedShipType<?> sizedType)) {
             return Optional.empty();
         }
-        return sizedType.getMaxSize();
+        return sizedType.getMaximumSizeRequirement().getMaxSize().stream().boxed().findAny();
     }
 
     @Override
     public @NotNull String getName() throws NoLicencePresent {
         this.cachedName = this
                 .getSign()
-                .getTextAt(2)
-                .map(AText::toPlain)
+                .getSide(this.isFrontOfSign)
+                .getLineAt(2)
+                .map(ComponentUtils::toPlain)
                 .orElseThrow(() -> new IllegalStateException("Could not find name of ship"));
         return this.cachedName;
     }
@@ -214,13 +216,10 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         if (opFlag.isEmpty()) {
             Optional<? extends VesselFlag<T>> opNewFlag = ShipsPlugin.getPlugin().get(flag);
             if (opNewFlag.isEmpty()) {
-                AText error = AText.ofPlain(
-                        "Class of " + flag.getName() + " is not registered in ShipsPlugin. " + "Failed to set for ");
-                try {
-                    TranslateCore.getConsole().sendMessage(error.append(AText.ofPlain(this.getId())));
-                } catch (NoLicencePresent noLicencePresent) {
-                    TranslateCore.getConsole().sendMessage(error.append(AText.ofPlain("unknown")));
-                }
+                Component error = Component.text(
+                        "Class of '" + flag.getName() + "' is not registered in ShipsPlugin.Failed to set for '"
+                                + Else.throwOr(NoLicencePresent.class, () -> this.getId(), "unknown") + "'");
+                TranslateCore.getConsole().sendMessage(error);
                 return this;
             }
             VesselFlag<T> vFlag = opNewFlag.get();
