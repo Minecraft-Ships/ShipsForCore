@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.info;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -17,13 +17,11 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
     }
 
     @Override
-    public AText getDefault() {
-        return AText
-                .ofPlain("%" + Message.VESSEL_INFO_KEY.adapterText() + "%: ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText
-                                .ofPlain("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%")
-                                .withColour(NamedTextColours.GOLD));
+    public Component getDefaultMessage() {
+        return Component
+                .text("%" + Message.VESSEL_INFO_KEY.adapterText() + "%: ")
+                .color(NamedTextColor.AQUA)
+                .append(Component.text("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%").color(NamedTextColor.GOLD));
     }
 
     @Override
@@ -39,9 +37,9 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
     }
 
     @Override
-    public AText process(@NotNull AText text, Map.Entry<String, String> obj) {
-        text = Message.VESSEL_INFO_VALUE.process(obj.getKey(), text);
-        text = Message.VESSEL_INFO_KEY.process(obj.getValue(), text);
+    public Component processMessage(@NotNull Component text, Map.Entry<String, String> obj) {
+        text = Message.VESSEL_INFO_VALUE.processMessage(obj.getKey(), text);
+        text = Message.VESSEL_INFO_KEY.processMessage(obj.getValue(), text);
         return text;
     }
 

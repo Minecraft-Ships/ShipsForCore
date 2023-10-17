@@ -1,7 +1,7 @@
 package org.ships.config.messages.adapter.entity;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.entity.Entity;
 import org.core.entity.living.human.AbstractHuman;
 import org.core.entity.living.human.player.LivePlayer;
@@ -31,8 +31,8 @@ public class EntityNameAdapter implements MessageAdapter<Entity<?>> {
     }
 
     @Override
-    public AText process(@NotNull Entity<?> obj) {
-        AText t = obj.getCustomName().orElse(AText.ofPlain(obj.getType().getName()));
-        return Else.canCast(obj, Player.class, p -> AText.ofPlain(p.getName()), e -> t);
+    public Component processMessage(@NotNull Entity<?> obj) {
+        Component t = obj.getCustomNameComponent().orElse(Component.text(obj.getType().getName()));
+        return Else.canCast(obj, Player.class, p -> Component.text(p.getName()), e -> t);
     }
 }

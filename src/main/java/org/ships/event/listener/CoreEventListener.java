@@ -1,9 +1,9 @@
 package org.ships.event.listener;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.entity.scene.droppeditem.DroppedItem;
@@ -158,7 +158,7 @@ public class CoreEventListener implements EventListener {
             SyncExactPosition position = sPos.toExactPosition().getRelative(vector);
             if (!position.equals(player.getPosition())) {
                 player.setPosition(position);
-                player.sendMessage(AdventureMessageConfig.INFO_PLAYER_SPAWNED_ON_SHIP.process(vessel));
+                player.sendMessage(AdventureMessageConfig.INFO_PLAYER_SPAWNED_ON_SHIP.processMessage(vessel));
                 map.remove(player.getUniqueId());
                 vessel.set(PlayerStatesFlag.class, map);
             }
@@ -225,7 +225,7 @@ public class CoreEventListener implements EventListener {
         ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
             if (ShipsPlugin.getPlugin().getLockedSignManager().isLocked(position)) {
                 LivePlayer player = event.getEntity();
-                AText text = AdventureMessageConfig.ERROR_SHIPS_SIGN_IS_MOVING.parse();
+                Component text = AdventureMessageConfig.ERROR_SHIPS_SIGN_IS_MOVING.parseMessage();
                 player.sendMessage(text);
                 return;
             }
@@ -275,7 +275,7 @@ public class CoreEventListener implements EventListener {
             sign.changeInto(event.getChangingSide());
         } catch (IOException e) {
             event.setCancelled(true);
-            event.getEntity().sendMessage(AText.ofPlain("Error: " + e.getMessage()).withColour(NamedTextColours.RED));
+            event.getEntity().sendMessage(Component.text("Error: " + e.getMessage()).color(NamedTextColor.RED));
             return;
         }
         if (register) {
@@ -292,7 +292,7 @@ public class CoreEventListener implements EventListener {
                     .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
                     .findAny();
             if (opType.isEmpty()) {
-                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.process(typeText));
+                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.processMessage(typeText));
                 event.setCancelled(true);
                 return;
             }
@@ -300,8 +300,8 @@ public class CoreEventListener implements EventListener {
             if (!(event.getEntity().hasPermission(type.getMakePermission()) || event
                     .getEntity()
                     .hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
-                AText text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.process(
-                        AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parse(
+                Component text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.processMessage(
+                        AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parseMessage(
                                 ShipsPlugin.getPlugin().getAdventureMessageConfig()),
                         new AbstractMap.SimpleImmutableEntry<>(event.getEntity(),
                                                                type.getMakePermission().getPermissionValue()));
@@ -397,8 +397,8 @@ public class CoreEventListener implements EventListener {
                         if (!(opTileEntity.get() instanceof SignTileEntity ste)) {
                             return;
                         }
-                        ste.setText(Collections.emptySet());
-                    }).build(ShipsPlugin.getPlugin()).run();
+                        ste.getSide(event.getChangingSide().isFront()).setLines(Collections.emptyList());
+                    }).buildDelayed(ShipsPlugin.getPlugin()).run();
                     return;
                 }
                 vessel.setLoading(false);
@@ -543,8 +543,8 @@ public class CoreEventListener implements EventListener {
                 ShipsPlugin.getPlugin().unregisterVessel(vessel);
                 if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer eventBreak) {
                     LivePlayer player = eventBreak.getEntity();
-                    player.sendMessage(AText.ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown")
-                                                             + " removed successfully"));
+                    player.sendMessage(Component.text(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown")
+                                                              + " removed successfully"));
                 }
 
             });

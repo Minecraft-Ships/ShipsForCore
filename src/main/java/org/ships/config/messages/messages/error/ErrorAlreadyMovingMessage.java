@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -17,8 +17,8 @@ public class ErrorAlreadyMovingMessage implements Message<Vessel> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain(
+    public Component getDefaultMessage() {
+        return Component.text(
                 Message.VESSEL_ID.adapterTextFormat() + " is already moving. Please wait for it to finish");
     }
 
@@ -30,12 +30,12 @@ public class ErrorAlreadyMovingMessage implements Message<Vessel> {
     }
 
     @Override
-    public AText process(@NotNull AText text, Vessel obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.process(text);
+    public Component processMessage(@NotNull Component text, Vessel obj) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
+            text = adapter.processMessage(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(obj, text);
+            text = adapter.processMessage(obj, text);
         }
         return text;
     }

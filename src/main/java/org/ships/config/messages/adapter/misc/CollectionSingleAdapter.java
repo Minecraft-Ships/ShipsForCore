@@ -1,12 +1,17 @@
 package org.ships.config.messages.adapter.misc;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
+import org.core.utils.ComponentUtils;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>> {
@@ -36,14 +41,13 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
     }
 
     @Override
-    @Deprecated
-    public AText process(@NotNull Collection<T> obj) {
-        return this.process(obj, AText.ofPlain(this.examples().iterator().next()));
+    public Component processMessage(@NotNull Collection<T> obj) {
+        return this.processMessage(obj, Component.text(this.examples().iterator().next()));
     }
 
     @Override
-    public AText process(@NotNull Collection<T> obj, @NotNull AText message) {
-        String plain = message.toPlain();
+    public Component processMessage(@NotNull Collection<T> obj, @NotNull Component message) {
+        String plain = ComponentUtils.toPlain(message);
         int target = 0;
         Integer before = null;
         boolean was = false;
@@ -93,30 +97,39 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         List<T> list = new ArrayList<>(obj);
         String adapterText = adapting.substring(0, startAt);
         T indexedValue = list.get(index);
-        Optional<AText> opReplacement = this.adapters.parallelStream().filter(ma -> {
+        Optional<Component> opReplacement = this.adapters.parallelStream().filter(ma -> {
             boolean check = ma.containsAdapter("%" + adapterText + "%");
             TranslateCore
                     .getConsole()
-                    .sendMessage(AText
-                                         .ofPlain("MA: " + ma.adapterText() + ": Check:  " + check)
-                                         .withColour(NamedTextColours.RED));
+                    .sendMessage(
+                            Component.text("MA: " + ma.adapterText() + ": Check:  " + check).color(NamedTextColor.RED));
             return check;
         }).map(ma -> {
-            AText process = ma.process(indexedValue, AText.ofPlain("%" + adapterText + "%"));
+            Component process = ma.processMessage(indexedValue, Component.text("%" + adapterText + "%"));
             TranslateCore
                     .getConsole()
-                    .sendMessage(AText
-                                         .ofPlain("MA: " + ma.adapterText() + ": Value: " + process.toPlain())
-                                         .withColour(NamedTextColours.RED));
+                    .sendMessage(Component
+                                         .text("MA: " + ma.adapterText() + ": Value: " + ComponentUtils.toPlain(
+                                                 process))
+                                         .color(NamedTextColor.RED));
             return process;
         }).findAny();
 
-        TranslateCore.getConsole().sendMessage(AText.ofPlain("Message: " + message.toPlain()));
-        TranslateCore.getConsole().sendMessage(AText.ofPlain("Found: " + opReplacement.map(AText::toPlain)));
-        TranslateCore.getConsole().sendMessage(AText.ofPlain("Changing: " + adaptingWithFormat));
+        TranslateCore.getConsole().sendMessage(Component.text("Message: ").append(message));
+        TranslateCore
+                .getConsole()
+                .sendMessage(Component.text("Found: ").append(opReplacement.orElse(Component.empty())));
+        TranslateCore.getConsole().sendMessage(Component.text("Changing: " + adaptingWithFormat));
 
-        AText result = opReplacement.map(text -> message.withAllAs(adaptingWithFormat, text)).orElse(message);
-        TranslateCore.getConsole().sendMessage(AText.ofPlain("Result: ").append(result));
+        Component result = opReplacement
+                .map(text -> message.replaceText(TextReplacementConfig
+                                                         .builder()
+                                                         .match(Pattern.compile(adaptingWithFormat,
+                                                                                Pattern.CASE_INSENSITIVE))
+                                                         .replacement(text)
+                                                         .build()))
+                .orElse(message);
+        TranslateCore.getConsole().sendMessage(Component.text("Result: ").append(result));
         return result;
 
     }
@@ -175,8 +188,14 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
     }
 
     @Override
+    @Deprecated
     public boolean containsAdapter(AText text) {
         return this.containsAdapter(text.toPlain());
+    }
+
+    @Override
+    public boolean containsAdapter(@NotNull Component component) {
+        return MessageAdapter.super.containsAdapter(component);
     }
 
     public String adapterText(MessageAdapter<T> adapter, int index) {

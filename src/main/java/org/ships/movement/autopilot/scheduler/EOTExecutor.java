@@ -3,6 +3,7 @@ package org.ships.movement.autopilot.scheduler;
 import org.core.TranslateCore;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
+import org.core.source.Messageable;
 import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
 import org.core.world.boss.ServerBossBar;
@@ -25,9 +26,9 @@ import java.util.function.Consumer;
 public class EOTExecutor implements Consumer<Scheduler> {
 
     private final @NotNull Vessel vessel;
-    private final @Nullable CommandViewer player;
+    private final @Nullable Messageable player;
 
-    public EOTExecutor(@NotNull Vessel vessel, @Nullable CommandViewer player) {
+    public EOTExecutor(@NotNull Vessel vessel, @Nullable Messageable player) {
         this.vessel = vessel;
         this.player = player;
     }
@@ -36,7 +37,12 @@ public class EOTExecutor implements Consumer<Scheduler> {
         return this.vessel;
     }
 
+    @Deprecated(forRemoval = true)
     public @NotNull Optional<CommandViewer> getPlayer() {
+        return getMessenger().filter(t -> t instanceof CommandViewer).map(t -> (CommandViewer) t);
+    }
+
+    public @NotNull Optional<Messageable> getMessenger(){
         return Optional.ofNullable(this.player);
     }
 

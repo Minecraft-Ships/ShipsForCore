@@ -73,7 +73,7 @@ public class AutopilotToArgumentCommand implements ArgumentCommand {
         FlightPath flightPath = new FlightPathBuilder().ofAutopilot(vessel.getPosition(), position, 240).build();
 
         MovementDetailsBuilder details = new MovementDetailsBuilder().setException(new SimpleMovementException(
-                commandContext.getSource() instanceof CommandViewer ? new CommandViewer[]{(CommandViewer) commandContext.getSource()} : new CommandViewer[0]));
+                commandContext.getSource()));
 
         FlightPathFlag flag = new FlightPathFlag();
         flag.setValue(flightPath);

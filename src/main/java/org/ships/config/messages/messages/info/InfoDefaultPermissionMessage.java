@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.info;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -18,11 +18,11 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText
-                .ofPlain("Default Permission: ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText.ofPlain("%" + Message.CREW_ID.adapterText() + "%").withColour(NamedTextColours.GOLD));
+    public Component getDefaultMessage() {
+        return Component
+                .text("Default Permission: ")
+                .color(NamedTextColor.AQUA)
+                .append(Component.text("%" + Message.CREW_ID.adapterText() + "%").color(NamedTextColor.GOLD));
     }
 
     @Override
@@ -35,9 +35,9 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
     }
 
     @Override
-    public AText process(@NotNull AText text, CrewPermission obj) {
+    public Component processMessage(@NotNull Component text, CrewPermission obj) {
         for (MessageAdapter<CrewPermission> adapter : this.getExactAdapters()) {
-            text = adapter.process(obj, text);
+            text = adapter.processMessage(obj, text);
         }
         return text;
     }

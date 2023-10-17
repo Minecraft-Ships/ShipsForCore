@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.world.position.impl.Position;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
@@ -20,8 +20,8 @@ public class ErrorCollideDetectedMessage implements Message<CollideDetectedMessa
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain("Found blocks in the way");
+    public Component getDefaultMessage() {
+        return Component.text("Found blocks in the way");
     }
 
     private Collection<CollectionAdapter<Position<?>>> getPositionAdapters() {
@@ -37,15 +37,15 @@ public class ErrorCollideDetectedMessage implements Message<CollideDetectedMessa
     }
 
     @Override
-    public AText process(@NotNull AText text, CollideDetectedMessageData obj) {
+    public Component processMessage(@NotNull Component text, CollideDetectedMessageData obj) {
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
             if (adapter.containsAdapter(text)) {
-                text = adapter.process(obj.getVessel(), text);
+                text = adapter.processMessage(obj.getVessel(), text);
             }
         }
         for (CollectionAdapter<Position<?>> adapter : this.getPositionAdapters()) {
             if (adapter.containsAdapter(text)) {
-                text = adapter.process(obj.getPositions().parallelStream().collect(Collectors.toSet()), text);
+                text = adapter.processMessage(obj.getPositions().parallelStream().collect(Collectors.toSet()), text);
             }
         }
         return text;

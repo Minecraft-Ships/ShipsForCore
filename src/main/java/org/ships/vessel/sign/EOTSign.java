@@ -3,12 +3,10 @@ package org.ships.vessel.sign;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
-import org.core.source.viewer.CommandViewer;
+import org.core.source.Messageable;
 import org.core.utils.ComponentUtils;
 import org.core.utils.Else;
 import org.core.vector.type.Vector3;
@@ -16,7 +14,6 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.block.entity.sign.SignTileEntitySnapshot;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.NoLicencePresent;
@@ -38,10 +35,9 @@ import java.util.stream.Collectors;
 
 public class EOTSign implements ShipsSign {
 
-    private final List<Component> SIGN = Arrays.asList(
-            Component.text("[EOT]").color(NamedTextColor.YELLOW),
-            Component.text("Ahead").color(NamedTextColor.GREEN),
-            Component.text("{Stop}"));
+    private final List<Component> SIGN = Arrays.asList(Component.text("[EOT]").color(NamedTextColor.YELLOW),
+                                                       Component.text("Ahead").color(NamedTextColor.GREEN),
+                                                       Component.text("{Stop}"));
 
     public Collection<Scheduler> getScheduler(Vessel vessel) {
         return TranslateCore.getScheduleManager().getSchedules().stream().filter(e -> {
@@ -54,12 +50,19 @@ public class EOTSign implements ShipsSign {
     }
 
     public boolean isAhead(SignTileEntity entity) {
-        return entity.getTextAt(1).isPresent() && entity.getTextAt(1).get().contains("{", false);
+        Optional<SignSide> opSide = this.getSide(entity);
+        if (opSide.isEmpty()) {
+            return false;
+        }
+        SignSide side = opSide.get();
+        return side.getLineAt(1).map(ComponentUtils::toPlain).map(line -> line.contains("{")).orElse(false);
     }
 
     @Override
     public boolean isSign(List<? extends Component> lines) {
-        return lines.size() >= 1 && ComponentUtils.toPlain(lines.get(0)).equalsIgnoreCase(ComponentUtils.toPlain(this.SIGN.get(0)));
+        return !lines.isEmpty() && ComponentUtils
+                .toPlain(lines.get(0))
+                .equalsIgnoreCase(ComponentUtils.toPlain(this.SIGN.get(0)));
     }
 
     @Override
@@ -99,9 +102,14 @@ public class EOTSign implements ShipsSign {
                     .setDelay(0)
                     .setDisplayName("Back to Synced")
                     .setRunner((thisSch) -> {
+                        Optional<SignSide> opSide = this.getSide(stes);
+                        if (opSide.isEmpty()) {
+                            return;
+                        }
+                        SignSide side = opSide.get();
                         if (this.isAhead(stes)) {
-                            stes.setTextAt(1, AText.ofPlain("Ahead").withColour(NamedTextColours.GREEN));
-                            stes.setTextAt(2, AText.ofPlain("{Stop}"));
+                            side.setLineAt(1, Component.text("Ahead").color(NamedTextColor.GREEN));
+                            side.setLineAt(2, Component.text("{Stop}"));
                             vessel.set(new EotFlag.Builder().buildEmpty());
 
                             this
@@ -121,8 +129,8 @@ public class EOTSign implements ShipsSign {
                                     });
                             return;
                         }
-                        stes.setTextAt(1, AText.ofPlain("{Ahead}").withColour(NamedTextColours.GREEN));
-                        stes.setTextAt(2, AText.ofPlain("Stop"));
+                        side.setLineAt(1, Component.text("{Ahead}").color(NamedTextColor.GREEN));
+                        side.setLineAt(2, Component.text("Stop"));
 
                         TranslateCore
                                 .getScheduleManager()
@@ -132,19 +140,18 @@ public class EOTSign implements ShipsSign {
                                 .setRunner(new EOTExecutor(vessel, player))
                                 .setDelay(ShipsPlugin.getPlugin().getConfig().getEOTDelay())
                                 .setDelayUnit(ShipsPlugin.getPlugin().getConfig().getEOTDelayUnit())
-                                .build(ShipsPlugin.getPlugin())
+                                .buildDelayed(ShipsPlugin.getPlugin())
                                 .run();
                     })
                     .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                    .build(ShipsPlugin.getPlugin())
+                    .buildDelayed(ShipsPlugin.getPlugin())
                     .run();
         };
     }
 
-    private Consumer<LoadVesselException> onException(CommandViewer player) {
-        return ex -> player.sendMessage(AText
-                                                .ofPlain("Could not find connected ship (" + ex.getMessage() + ")")
-                                                .withColour(NamedTextColours.RED));
+    private Consumer<LoadVesselException> onException(Messageable player) {
+        return ex -> player.sendMessage(
+                Component.text("Could not find connected ship (" + ex.getMessage() + ")").color(NamedTextColor.RED));
     }
 
     @Override

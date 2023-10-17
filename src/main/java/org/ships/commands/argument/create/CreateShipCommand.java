@@ -1,7 +1,7 @@
 package org.ships.commands.argument.create;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.CommandArgumentResult;
@@ -15,13 +15,13 @@ import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
 import org.core.utils.Bounds;
 import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
 import org.core.world.position.Positionable;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.structure.Structure;
@@ -38,6 +38,7 @@ import org.ships.vessel.sign.LicenceSign;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -115,43 +116,36 @@ public class CreateShipCommand implements ArgumentCommand {
         String fullId = shipType.getId() + ":" + name.toLowerCase().replaceAll(" ", "_");
         try {
             IdVesselFinder.load(fullId);
-            if (commandContext.getSource() instanceof CommandViewer viewer) {
-                viewer.sendMessage(AText.ofPlain("Ship name already taken"));
-            }
+            commandContext.getSource().sendMessage(Component.text("Ship name already taken"));
             return false;
         } catch (LoadVesselException e) {
         }
 
         SyncBlockPosition start = world.getPosition(x, y, z);
         structure.place(new StructurePlacementBuilder().setPosition(start));
-
-        if (commandContext.getSource() instanceof CommandViewer viewer) {
-            viewer.sendMessage(AText.ofPlain("placing"));
-        }
-
-        LiveSignTileEntity signTileEntity;
+        commandContext.getSource().sendMessage(Component.text("placing"));
+        Map.Entry<LiveSignTileEntity, Boolean> signTileEntity;
         try {
             signTileEntity = this.findLicence(structure, start);
         } catch (IllegalStateException e) {
-            if (commandContext.getSource() instanceof CommandViewer viewer) {
-                viewer.sendMessage(AText.ofPlain("Invalid structure file"));
-            }
+            commandContext.getSource().sendMessage(Component.text("Invalid structure file"));
+
             return false;
         }
-        signTileEntity.setText(AText.ofPlain("[Ships]").withColour(NamedTextColours.YELLOW),
-                               AText.ofPlain(shipType.getDisplayName()).withColour(NamedTextColours.BLUE),
-                               AText.ofPlain(name).withColour(NamedTextColours.GREEN));
-        Vessel vessel = shipType.createNewVessel(signTileEntity);
+        List<Component> lines = Arrays.asList(Component.text("[Ships]").color(NamedTextColor.YELLOW),
+                                              Component.text(shipType.getDisplayName()).color(NamedTextColor.BLUE),
+                                              Component.text(name).color(NamedTextColor.GREEN));
+        SignSide side = signTileEntity.getKey().getSide(signTileEntity.getValue());
+        side.setLines(lines);
+        Vessel vessel = shipType.createNewVessel(side, signTileEntity.getKey().getPosition());
         ShipsPlugin.getPlugin().registerVessel(vessel);
         vessel.save();
-        if (commandContext.getSource() instanceof CommandViewer viewer) {
-            viewer.sendMessage(AText.ofPlain("Created ship"));
-        }
+        commandContext.getSource().sendMessage(Component.text("Created ship"));
         vessel.setLoading(false);
         return true;
     }
 
-    private LiveSignTileEntity findLicence(Structure structure, Position<Integer> start) {
+    private Map.Entry<LiveSignTileEntity, Boolean> findLicence(Structure structure, Position<Integer> start) {
         Bounds<Integer> bounds = new Bounds<>(start.getPosition(), start.getPosition().plus(structure.getSize()));
         Vector3<Integer> minInt = bounds.getIntMin();
         Vector3<Integer> maxInt = bounds.getIntMax();
@@ -166,13 +160,12 @@ public class CreateShipCommand implements ArgumentCommand {
                     if (!(opTile.get() instanceof LiveSignTileEntity ste)) {
                         continue;
                     }
-                    if (ShipsPlugin
+                    LicenceSign licence = ShipsPlugin
                             .getPlugin()
                             .get(LicenceSign.class)
-                            .orElseThrow(
-                                    () -> new RuntimeException("Could " + "not " + "find licence sign in register."))
-                            .isSign(ste)) {
-                        return ste;
+                            .orElseThrow(() -> new RuntimeException("Could not find licence sign in register."));
+                    if (licence.isSign(ste)) {
+                        return Map.entry(ste, licence.getSide(ste).map(SignSide::isFront).orElse(false));
                     }
                 }
             }

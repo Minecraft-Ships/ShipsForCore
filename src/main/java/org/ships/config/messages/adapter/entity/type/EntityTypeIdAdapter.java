@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.entity.type;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -20,7 +20,7 @@ public class EntityTypeIdAdapter implements MessageAdapter<EntityType<?, ?>> {
     }
 
     @Override
-    public AText process(@NotNull EntityType<?, ?> obj) {
-        return AText.ofPlain(obj.getId());
+    public Component processMessage(@NotNull EntityType<?, ?> obj) {
+        return Component.text(obj.getId());
     }
 }

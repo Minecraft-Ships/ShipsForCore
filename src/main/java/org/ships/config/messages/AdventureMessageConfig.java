@@ -1,7 +1,7 @@
 package org.ships.config.messages;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.ships.config.Config;
@@ -87,15 +87,15 @@ public class AdventureMessageConfig implements Config.KnownNodes {
                 .getPlatform()
                 .getConfigFormat()
                 .getFileType()[0]);
-        this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
+        this.file = TranslateCore.getConfigManager().read(file, TranslateCore.getPlatform().getConfigFormat());
         this.recreateFile();
     }
 
     @Override
-    public Set<DedicatedNode<AText, AText, ConfigurationNode.KnownParser.SingleKnown<AText>>> getNodes() {
+    public Set<DedicatedNode<Component, Component, ConfigurationNode.KnownParser.SingleKnown<Component>>> getNodes() {
         return this.messages
                 .stream()
-                .map(m -> new ObjectDedicatedNode<>(m.getKnownPath(), String.join(".", m.getPath())))
+                .map(m -> new ObjectDedicatedNode<>(m.getConfigNode(), String.join(".", m.getPath())))
                 .collect(Collectors.toSet());
     }
 
@@ -108,8 +108,8 @@ public class AdventureMessageConfig implements Config.KnownNodes {
     public void recreateFile() {
         this.messages
                 .stream()
-                .filter(m -> this.file.getString(m.getKnownPath()).isEmpty())
-                .forEach(m -> this.file.set(m.getKnownPath(), m.getDefault()));
+                .filter(m -> this.file.getString(m.getConfigNode()).isEmpty())
+                .forEach(m -> this.file.set(m.getConfigNode(), m.getDefaultMessage()));
         this.file.save();
     }
 }

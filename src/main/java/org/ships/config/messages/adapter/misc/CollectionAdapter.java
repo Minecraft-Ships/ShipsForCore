@@ -1,6 +1,7 @@
 package org.ships.config.messages.adapter.misc;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
@@ -32,19 +33,11 @@ public class CollectionAdapter<T> implements MessageAdapter<Collection<T>> {
     }
 
     @Override
-    public AText process(@NotNull Collection<T> obj) {
-        List<AText> list = obj.parallelStream().map(this.adapter::process).toList();
+    public Component processMessage(@NotNull Collection<T> obj) {
+        List<Component> list = obj.parallelStream().map(this.adapter::processMessage).toList();
         if (list.isEmpty()) {
-            return AText.ofPlain("none");
+            return Component.text("none");
         }
-        AText ret = null;
-        for (AText text : list) {
-            if (ret == null) {
-                ret = text;
-                continue;
-            }
-            ret = ret.append(AText.ofPlain(", ")).append(text);
-        }
-        return ret;
+        return Component.join(JoinConfiguration.builder().separator(Component.text(", ")).build(), list);
     }
 }

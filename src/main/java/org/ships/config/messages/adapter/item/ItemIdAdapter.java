@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.item;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.inventory.item.ItemType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -19,7 +19,7 @@ public class ItemIdAdapter implements MessageAdapter<ItemType> {
     }
 
     @Override
-    public AText process(@NotNull ItemType obj) {
-        return AText.ofPlain(obj.getId());
+    public Component processMessage(@NotNull ItemType obj) {
+        return Component.text(obj.getId());
     }
 }

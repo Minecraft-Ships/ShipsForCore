@@ -1,7 +1,7 @@
 package org.ships.commands.argument.fix;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -42,13 +42,11 @@ public class NoGravityArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof LivePlayer)) {
+        if (!(source instanceof LivePlayer player)) {
             return false;
         }
-        LivePlayer player = (LivePlayer) source;
         player.setGravity(true);
-        player.sendMessage(
-                AText.ofPlain("Other plugins maybe disrupted by this fix").withColour(NamedTextColours.YELLOW));
+        player.sendMessage(Component.text("Other plugins maybe disrupted by this fix").color(NamedTextColor.YELLOW));
         return true;
     }
 }

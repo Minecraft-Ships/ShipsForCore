@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -18,10 +18,10 @@ public class ErrorCannotCreateOntopMessage implements Message<Vessel> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText
-                .ofPlain("Cannot create your ship ontop of " + Message.VESSEL_NAME.adapterTextFormat())
-                .withColour(NamedTextColours.RED);
+    public Component getDefaultMessage() {
+        return Component
+                .text("Cannot create your ship ontop of " + Message.VESSEL_NAME.adapterTextFormat())
+                .color(NamedTextColor.RED);
     }
 
     @Override
@@ -32,12 +32,12 @@ public class ErrorCannotCreateOntopMessage implements Message<Vessel> {
     }
 
     @Override
-    public AText process(@NotNull AText text, Vessel obj) {
+    public Component processMessage(@NotNull Component text, Vessel obj) {
         for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.process(text);
+            text = adapter.processMessage(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(obj, text);
+            text = adapter.processMessage(obj, text);
         }
         return text;
     }

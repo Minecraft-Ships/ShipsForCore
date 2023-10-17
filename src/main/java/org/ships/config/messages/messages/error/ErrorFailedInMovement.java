@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -16,8 +16,8 @@ public class ErrorFailedInMovement implements Message<Vessel> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain("A unknown error occurred when moving");
+    public Component getDefaultMessage() {
+        return Component.text("A unknown error occurred when moving");
     }
 
     @Override
@@ -26,9 +26,9 @@ public class ErrorFailedInMovement implements Message<Vessel> {
     }
 
     @Override
-    public AText process(@NotNull AText text, Vessel obj) {
+    public Component processMessage(@NotNull Component text, Vessel obj) {
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(obj, text);
+            text = adapter.processMessage(obj, text);
         }
         return text;
     }

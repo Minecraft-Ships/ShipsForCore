@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.specific.number;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
@@ -32,7 +32,7 @@ public class NumberAdapter<N extends Number> implements MessageAdapter<N> {
     }
 
     @Override
-    public AText process(@NotNull N obj) {
-        return AText.ofPlain(this.to.apply(obj) + "");
+    public Component processMessage(@NotNull N obj) {
+        return Component.text(this.to.apply(obj) + "");
     }
 }

@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.permission;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.permissions.Permissions;
@@ -20,7 +20,7 @@ public class PermissionNodeAdapter implements MessageAdapter<String> {
     }
 
     @Override
-    public AText process(@NotNull String obj) {
-        return AText.ofPlain(obj);
+    public Component processMessage(@NotNull String obj) {
+        return Component.text(obj);
     }
 }

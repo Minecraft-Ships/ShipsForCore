@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.info;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -16,8 +16,8 @@ public class InfoEntitiesLineMessage implements Message<Object> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain("Entities:").withColour(NamedTextColours.AQUA);
+    public Component getDefaultMessage() {
+        return Component.text("Entities:").color(NamedTextColor.AQUA);
     }
 
     @Override
@@ -26,8 +26,7 @@ public class InfoEntitiesLineMessage implements Message<Object> {
     }
 
     @Override
-    @Deprecated
-    public AText process(@NotNull AText text, Object obj) {
+    public Component processMessage(@NotNull Component text, Object obj) {
         return text;
     }
 }

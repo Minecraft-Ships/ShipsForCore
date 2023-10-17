@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.vessel.crew;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.permissions.vessel.CrewPermission;
@@ -20,7 +20,7 @@ public class CrewNameAdapter implements MessageAdapter<CrewPermission> {
     }
 
     @Override
-    public AText process(@NotNull CrewPermission obj) {
-        return AText.ofPlain(obj.getName());
+    public Component processMessage(@NotNull CrewPermission obj) {
+        return Component.text(obj.getName());
     }
 }

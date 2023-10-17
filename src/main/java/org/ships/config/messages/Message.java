@@ -1,6 +1,8 @@
 package org.ships.config.messages;
 
+import net.kyori.adventure.text.Component;
 import org.core.adventureText.AText;
+import org.core.adventureText.adventure.AdventureText;
 import org.core.config.ConfigurationNode;
 import org.core.config.parser.StringParser;
 import org.core.entity.Entity;
@@ -140,26 +142,56 @@ public interface Message<R> {
 
     String[] getPath();
 
-    AText getDefault();
+    @Deprecated(forRemoval = true)
+    default AText getDefault() {
+        return new AdventureText(getDefaultMessage());
+    }
+
+    Component getDefaultMessage();
 
     Collection<MessageAdapter<?>> getAdapters();
 
-    AText process(@NotNull AText text, R obj);
+    @Deprecated(forRemoval = true)
+    default AText process(@NotNull AText text, R obj) {
+        return new AdventureText(processMessage(text.asComponent(), obj));
+    }
 
+    Component processMessage(@NotNull Component text, R obj);
+
+    @Deprecated(forRemoval = true)
     default AText process(R obj) {
         return this.process(this.parse(), obj);
     }
 
+    default Component processMessage(R obj) {
+        return this.processMessage(this.parseMessage(), obj);
+    }
+
+    @Deprecated(forRemoval = true)
     default ConfigurationNode.KnownParser.SingleKnown<AText> getKnownPath() {
         return new ConfigurationNode.KnownParser.SingleKnown<>(StringParser.STRING_TO_TEXT, this.getPath());
     }
 
+    default ConfigurationNode.KnownParser.SingleKnown<Component> getConfigNode() {
+        return new ConfigurationNode.KnownParser.SingleKnown<>(StringParser.STRING_TO_COMPONENT, this.getPath());
+    }
+
+    @Deprecated(forRemoval = true)
     default AText parse(AdventureMessageConfig config) {
         return config.getFile().parse(this.getKnownPath()).orElse(this.getDefault());
     }
 
+    default Component parseMessage(AdventureMessageConfig config) {
+        return config.getFile().parse(this.getConfigNode()).orElse(this.getDefaultMessage());
+    }
+
+    @Deprecated(forRemoval = true)
     default AText parse() {
         return this.parse(ShipsPlugin.getPlugin().getAdventureMessageConfig());
+    }
+
+    default Component parseMessage() {
+        return this.parseMessage(ShipsPlugin.getPlugin().getAdventureMessageConfig());
     }
 
     default Collection<String> suggestAdapter(String peek) {

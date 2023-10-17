@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.info;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -18,11 +18,11 @@ public class InfoFlagMessage implements Message<VesselFlag<?>> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText
-                .ofPlain("Flags: ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText.ofPlain(Message.VESSEL_FLAG_ID.adapterTextFormat()).withColour(NamedTextColours.GOLD));
+    public Component getDefaultMessage() {
+        return Component
+                .text("Flags: ")
+                .color(NamedTextColor.AQUA)
+                .append(Component.text(Message.VESSEL_FLAG_ID.adapterTextFormat()).color(NamedTextColor.GOLD));
     }
 
     @Override
@@ -36,9 +36,9 @@ public class InfoFlagMessage implements Message<VesselFlag<?>> {
     }
 
     @Override
-    public AText process(@NotNull AText text, VesselFlag<?> obj) {
+    public Component processMessage(@NotNull Component text, VesselFlag<?> obj) {
         for (MessageAdapter<VesselFlag<?>> adapter : this.getExactAdapters()) {
-            text = adapter.process(obj, text);
+            text = adapter.processMessage(obj, text);
         }
         return text;
     }

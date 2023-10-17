@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.info;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
@@ -17,8 +17,8 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain(Message.ENTITY_NAME.adapterTextFormat()).withColour(NamedTextColours.GOLD);
+    public Component getDefaultMessage() {
+        return Component.text(Message.ENTITY_NAME.adapterTextFormat()).color(NamedTextColor.GOLD);
     }
 
     @Override
@@ -27,9 +27,9 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
     }
 
     @Override
-    public AText process(@NotNull AText text, Entity<?> obj) {
+    public Component processMessage(@NotNull Component text, Entity<?> obj) {
         for (MessageAdapter<Entity<?>> adapter : this.getExactAdapters()) {
-            text = adapter.process(obj, text);
+            text = adapter.processMessage(obj, text);
         }
         return text;
 

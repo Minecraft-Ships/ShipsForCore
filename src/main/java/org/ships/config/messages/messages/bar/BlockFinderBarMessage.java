@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.bar;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -17,8 +17,8 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain(
+    public Component getDefaultMessage() {
+        return Component.text(
                 Message.STRUCTURE_SIZE.adapterTextFormat() + " / " + Message.CONFIG_TRACK_LIMIT.adapterTextFormat());
     }
 
@@ -31,12 +31,12 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
     }
 
     @Override
-    public AText process(@NotNull AText text, PositionableShipsStructure obj) {
+    public Component processMessage(@NotNull Component text, PositionableShipsStructure obj) {
         for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.process(text);
+            text = adapter.processMessage(text);
         }
         for (MessageAdapter<PositionableShipsStructure> adapter : Message.STRUCTURE_ADAPTERS) {
-            text = adapter.process(obj, text);
+            text = adapter.processMessage(obj, text);
         }
         return text;
     }

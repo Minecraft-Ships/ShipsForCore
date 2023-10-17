@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.jetbrains.annotations.NotNull;
@@ -23,11 +23,11 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " cannot move due to " + Message
+    public Component getDefaultMessage() {
+        return Component.text(Message.VESSEL_ID.adapterTextFormat() + " cannot move due to " + Message
                 .asCollectionSingle(Message.LOCATION_ADAPTERS)
                 .adapterTextFormat(new MappedAdapter<>(Message.BLOCK_TYPE_NAME, Position::getBlockType), 0)
-                                     + " in way");
+                                      + " in way");
     }
 
     @Override
@@ -39,12 +39,12 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
     }
 
     @Override
-    public AText process(@NotNull AText text, Map.Entry<Vessel, Collection<BlockPosition>> obj) {
+    public Component processMessage(@NotNull Component text, Map.Entry<Vessel, Collection<BlockPosition>> obj) {
         text = Message
                 .asCollectionSingle(Message.LOCATION_ADAPTERS)
-                .process(obj.getValue().parallelStream().collect(Collectors.toSet()), text);
+                .processMessage(obj.getValue().parallelStream().collect(Collectors.toSet()), text);
         for (MessageAdapter<Vessel> ma : Message.VESSEL_ADAPTERS) {
-            text = ma.process(obj.getKey(), text);
+            text = ma.processMessage(obj.getKey(), text);
         }
         return text;
     }

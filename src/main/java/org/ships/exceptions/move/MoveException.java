@@ -1,6 +1,9 @@
 package org.ships.exceptions.move;
 
+import net.kyori.adventure.text.Component;
 import org.core.adventureText.AText;
+import org.core.adventureText.adventure.AdventureText;
+import org.core.utils.ComponentUtils;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.movement.MovementContext;
@@ -9,27 +12,32 @@ import java.io.IOException;
 
 public class MoveException extends IOException {
 
-    private final @NotNull AText errorMessage;
+    private final @NotNull Component errorMessage;
     private final @NotNull MovementContext context;
     private final @NotNull Message<?> message;
     private final @NotNull Object data;
 
     public <T> MoveException(@NotNull MovementContext context, @NotNull Message<T> message, @NotNull T data) {
-        this(context, message.process(data), message, data);
+        this(context, message.processMessage(data), message, data);
     }
 
     public <T> MoveException(@NotNull MovementContext context,
-                             @NotNull AText errorMessage,
+                             @NotNull Component errorMessage,
                              @NotNull Message<T> message,
                              @NotNull T data) {
-        super(errorMessage.toPlain());
+        super(ComponentUtils.toPlain(errorMessage));
         this.context = context;
         this.errorMessage = errorMessage;
         this.message = message;
         this.data = data;
     }
 
+    @Deprecated(forRemoval = true)
     public @NotNull AText getErrorMessageText() {
+        return new AdventureText(this.errorMessage);
+    }
+
+    public Component getErrorMessage(){
         return this.errorMessage;
     }
 

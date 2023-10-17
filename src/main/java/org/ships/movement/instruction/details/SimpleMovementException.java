@@ -1,7 +1,7 @@
 package org.ships.movement.instruction.details;
 
 import org.core.entity.LiveEntity;
-import org.core.source.viewer.CommandViewer;
+import org.core.source.Messageable;
 import org.core.world.boss.ServerBossBar;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 
 public class SimpleMovementException implements BiConsumer<MovementContext, Throwable> {
 
-    private final Collection<CommandViewer> messageReceivers = new HashSet<>();
+    private final Collection<Messageable> messageReceivers = new HashSet<>();
 
-    public SimpleMovementException(CommandViewer... viewers) {
+    public SimpleMovementException(Messageable... viewers) {
         this(List.of(viewers));
     }
 
-    public SimpleMovementException(Collection<CommandViewer> messageReceivers) {
+    public SimpleMovementException(Collection<Messageable> messageReceivers) {
         this.messageReceivers.addAll(messageReceivers);
     }
 

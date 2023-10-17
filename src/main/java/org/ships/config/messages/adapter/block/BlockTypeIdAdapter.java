@@ -1,7 +1,7 @@
 package org.ships.config.messages.adapter.block;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +27,7 @@ public class BlockTypeIdAdapter implements MessageAdapter<BlockType> {
     }
 
     @Override
-    public AText process(@NotNull BlockType obj) {
-        return AText.ofPlain(obj.getId());
+    public Component processMessage(@NotNull BlockType obj) {
+        return Component.text(obj.getId());
     }
 }

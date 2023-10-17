@@ -1,5 +1,6 @@
 package org.ships.config.messages.messages.error;
 
+import net.kyori.adventure.text.Component;
 import org.core.adventureText.AText;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
@@ -18,8 +19,8 @@ public class ErrorFailedToFindNamedBlockMessage implements Message<NamedBlockMes
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain("Failed to find %Block Name%");
+    public Component getDefaultMessage() {
+        return Component.text("Failed to find %Block Name%");
     }
 
     @Override
@@ -32,18 +33,18 @@ public class ErrorFailedToFindNamedBlockMessage implements Message<NamedBlockMes
     }
 
     @Override
-    public AText process(@NotNull AText text, NamedBlockMessageData obj) {
+    public Component processMessage(@NotNull Component text, NamedBlockMessageData obj) {
         if (Message.NAMED_BLOCK_NAME.containsAdapter(text)) {
-            text = Message.NAMED_BLOCK_NAME.process(obj.getNamedBlock(), text);
+            text = Message.NAMED_BLOCK_NAME.processMessage(obj.getNamedBlock(), text);
         }
         for (MessageAdapter<Vessel> adapters : Message.VESSEL_ADAPTERS) {
             if (adapters.containsAdapter(text)) {
-                text = adapters.process(obj.getVessel(), text);
+                text = adapters.processMessage(obj.getVessel(), text);
             }
         }
         for (MessageAdapter<BlockType> adapters : Message.BLOCK_TYPE_ADAPTERS) {
             if (adapters.containsAdapter(text)) {
-                text = adapters.process(obj.getType(), text);
+                text = adapters.processMessage(obj.getType(), text);
             }
         }
         return text;
