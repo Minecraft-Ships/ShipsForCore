@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -16,8 +16,8 @@ public class ErrorPreventMovementMessage implements Message<Vessel> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain("An admin has disabled movement for your ship");
+    public Component getDefaultMessage() {
+        return Component.text("An admin has disabled movement for your ship");
     }
 
     @Override
@@ -26,10 +26,10 @@ public class ErrorPreventMovementMessage implements Message<Vessel> {
     }
 
     @Override
-    public AText process(@NotNull AText text, Vessel obj) {
+    public Component processMessage(@NotNull Component text, Vessel obj) {
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
             if (adapter.containsAdapter(text)) {
-                text = adapter.process(obj, text);
+                text = adapter.processMessage(obj, text);
             }
         }
         return text;

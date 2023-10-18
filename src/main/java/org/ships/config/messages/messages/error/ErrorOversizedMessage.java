@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -18,9 +18,9 @@ public class ErrorOversizedMessage implements Message<Map.Entry<Vessel, Integer>
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain(Message.VESSEL_ID.adapterTextFormat() + " is over the max size of "
-                                     + Message.VESSEL_SIZE_ERROR.adapterTextFormat());
+    public Component getDefaultMessage() {
+        return Component.text(Message.VESSEL_ID.adapterTextFormat() + " is over the max size of "
+                                      + Message.VESSEL_SIZE_ERROR.adapterTextFormat());
     }
 
     @Override
@@ -33,14 +33,14 @@ public class ErrorOversizedMessage implements Message<Map.Entry<Vessel, Integer>
     }
 
     @Override
-    public AText process(@NotNull AText text, Map.Entry<Vessel, Integer> obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.process(text);
+    public Component processMessage(@NotNull Component text, Map.Entry<Vessel, Integer> obj) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
+            text = adapter.processMessage(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(obj.getKey(), text);
+            text = adapter.processMessage(obj.getKey(), text);
         }
-        return Message.VESSEL_SIZE_ERROR.process(obj.getValue(), text);
+        return Message.VESSEL_SIZE_ERROR.processMessage(obj.getValue(), text);
 
     }
 }

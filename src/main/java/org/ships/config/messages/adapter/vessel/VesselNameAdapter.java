@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.vessel;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.utils.Else;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -32,7 +32,7 @@ public class VesselNameAdapter implements MessageAdapter<Vessel> {
     }
 
     @Override
-    public AText process(@NotNull Vessel obj) {
-        return AText.ofPlain(Else.throwOr(NoLicencePresent.class, obj::getName, "Unknown"));
+    public Component processMessage(@NotNull Vessel obj) {
+        return Component.text(Else.throwOr(NoLicencePresent.class, obj::getName, "Unknown"));
     }
 }

@@ -1,5 +1,6 @@
 package org.ships.config.messages.adapter.vessel.flag;
 
+import net.kyori.adventure.text.Component;
 import org.core.adventureText.AText;
 import org.core.utils.Else;
 import org.core.utils.Identifiable;
@@ -22,8 +23,8 @@ public class VesselFlagIdAdapter implements MessageAdapter<VesselFlag<?>> {
     }
 
     @Override
-    public AText process(@NotNull VesselFlag<?> obj) {
-        return AText.ofPlain(Else.canCast(obj, VesselFlag.Serializable.class, (v) -> v.getId() + ":" + v.serialize(),
-                                          Identifiable::getId));
+    public Component processMessage(@NotNull VesselFlag<?> obj) {
+        return Component.text(Else.canCast(obj, VesselFlag.Serializable.class, (v) -> v.getId() + ":" + v.serialize(),
+                                           Identifiable::getId));
     }
 }

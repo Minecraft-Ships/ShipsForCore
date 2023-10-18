@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.world.position.impl.Position;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
@@ -21,12 +21,12 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
     }
 
     @Override
-    public AText getDefault() {
-        return AText
-                .ofPlain("Cannot find ")
-                .withColour(NamedTextColours.RED)
-                .append(AText.ofPlain("[Ships]").withColour(NamedTextColours.YELLOW))
-                .append(AText.ofPlain(" sign").withColour(NamedTextColours.RED));
+    public Component getDefaultMessage() {
+        return Component
+                .text("Cannot find ")
+                .color(NamedTextColor.RED)
+                .append(Component.text("[Ships]").color(NamedTextColor.YELLOW))
+                .append(Component.text(" sign").color(NamedTextColor.RED));
     }
 
     @Override
@@ -39,13 +39,13 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
     }
 
     @Override
-    public AText process(@NotNull AText text, PositionableShipsStructure obj) {
+    public Component processMessage(@NotNull Component text, PositionableShipsStructure obj) {
         Collection<Position<?>> positions = obj
                 .getAsyncedPositionsRelativeToWorld()
                 .parallelStream()
                 .collect(Collectors.toSet());
         for (CollectionSingleAdapter<Position<?>> adapter : this.getExactAdapters()) {
-            text = adapter.process(positions, text);
+            text = adapter.processMessage(positions, text);
         }
         return text;
     }

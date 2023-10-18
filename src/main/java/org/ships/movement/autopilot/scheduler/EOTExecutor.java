@@ -42,7 +42,7 @@ public class EOTExecutor implements Consumer<Scheduler> {
         return getMessenger().filter(t -> t instanceof CommandViewer).map(t -> (CommandViewer) t);
     }
 
-    public @NotNull Optional<Messageable> getMessenger(){
+    public @NotNull Optional<Messageable> getMessenger() {
         return Optional.ofNullable(this.player);
     }
 
@@ -105,7 +105,7 @@ public class EOTExecutor implements Consumer<Scheduler> {
             builder.setBossBar(bossBar);
         }
 
-        CommandViewer[] viewers = this.player == null ? new CommandViewer[0] : new CommandViewer[]{this.player};
+        Messageable[] viewers = this.player == null ? new Messageable[0] : new Messageable[]{this.player};
 
         builder.setException(new SimpleMovementException(viewers));
 

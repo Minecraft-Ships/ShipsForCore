@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.vessel.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
@@ -20,7 +20,7 @@ public class VesselSizeErrorAdapter implements MessageAdapter<Integer> {
     }
 
     @Override
-    public AText process(@NotNull Integer obj) {
-        return AText.ofPlain(obj.toString());
+    public Component processMessage(@NotNull Integer obj) {
+        return Component.text(obj);
     }
 }

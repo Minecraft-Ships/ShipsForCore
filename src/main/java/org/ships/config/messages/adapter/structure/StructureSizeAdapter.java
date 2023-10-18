@@ -1,5 +1,6 @@
 package org.ships.config.messages.adapter.structure;
 
+import net.kyori.adventure.text.Component;
 import org.core.adventureText.AText;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -21,7 +22,7 @@ public class StructureSizeAdapter implements MessageAdapter<PositionableShipsStr
     }
 
     @Override
-    public AText process(@NotNull PositionableShipsStructure obj) {
-        return AText.ofPlain((obj.getOriginalRelativePositionsToCenter().size() + 1) + "");
+    public Component processMessage(@NotNull PositionableShipsStructure obj) {
+        return Component.text((obj.getOriginalRelativePositionsToCenter().size() + 1) + "");
     }
 }

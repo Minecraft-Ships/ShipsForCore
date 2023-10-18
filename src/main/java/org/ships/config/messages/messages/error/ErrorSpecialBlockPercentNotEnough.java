@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
@@ -24,8 +24,8 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain(
+    public Component getDefaultMessage() {
+        return Component.text(
                 "Found " + Message.PERCENT_FOUND.adapterTextFormat() + " of one of " + new CollectionAdapter<>(
                         Message.BLOCK_TYPE_NAME).adapterTextFormat());
     }
@@ -42,17 +42,17 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
     }
 
     @Override
-    public AText process(@NotNull AText text, RequirementPercentMessageData obj) {
+    public Component processMessage(@NotNull Component text, RequirementPercentMessageData obj) {
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
             if (adapter.containsAdapter(text)) {
-                text = adapter.process(obj.getVessel(), text);
+                text = adapter.processMessage(obj.getVessel(), text);
             }
         }
         if (Message.PERCENT_FOUND.containsAdapter(text)) {
-            text = Message.PERCENT_FOUND.process(obj.getPercentageMet(), text);
+            text = Message.PERCENT_FOUND.processMessage(obj.getPercentageMet(), text);
         }
         if (Message.TOTAL_FOUND_BLOCKS.containsAdapter(text)) {
-            text = Message.TOTAL_FOUND_BLOCKS.process(obj.getBlocksMeetingRequirements(), text);
+            text = Message.TOTAL_FOUND_BLOCKS.processMessage(obj.getBlocksMeetingRequirements(), text);
         }
         if (!(obj.getVessel() instanceof VesselRequirement vesselRequirement)) {
             return text;
@@ -66,7 +66,7 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
         for (MessageAdapter<BlockType> adapter : Message.BLOCK_TYPE_ADAPTERS) {
             MessageAdapter<Collection<BlockType>> collectionAdapter = new CollectionAdapter<>(adapter);
             if (collectionAdapter.containsAdapter(text)) {
-                text = collectionAdapter.process(blocks, text);
+                text = collectionAdapter.processMessage(blocks, text);
             }
         }
         return text;

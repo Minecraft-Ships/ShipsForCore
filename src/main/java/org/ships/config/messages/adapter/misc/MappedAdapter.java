@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.misc;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 
@@ -30,17 +30,14 @@ public class MappedAdapter<M, T> implements MessageAdapter<M> {
     }
 
     @Override
-    public AText process(@NotNull M obj) {
-        return this.adapter.process(this.function.apply(obj));
+    public Component processMessage(@NotNull M obj) {
+        return this.adapter.processMessage(this.function.apply(obj));
     }
 
     @Override
-    public AText process(@NotNull M obj, @NotNull AText message) {
+    public Component processMessage(@NotNull M obj, @NotNull Component message) {
         T mapped = this.function.apply(obj);
-        if (mapped == null) {
-            System.out.println("Mapped: null");
-        }
-        return this.adapter.process(mapped, message);
+        return this.adapter.processMessage(mapped, message);
     }
 
     @Override
@@ -54,7 +51,7 @@ public class MappedAdapter<M, T> implements MessageAdapter<M> {
     }
 
     @Override
-    public boolean containsAdapter(AText text) {
+    public boolean containsAdapter(@NotNull Component text) {
         return this.adapter.containsAdapter(text);
     }
 }

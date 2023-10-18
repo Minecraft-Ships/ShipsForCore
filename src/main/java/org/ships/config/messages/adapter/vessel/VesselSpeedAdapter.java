@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.vessel;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.vessel.common.types.Vessel;
@@ -21,7 +21,7 @@ public class VesselSpeedAdapter implements MessageAdapter<Vessel> {
     }
 
     @Override
-    public AText process(@NotNull Vessel obj) {
-        return AText.ofPlain(obj.getMaxSpeed() + "");
+    public Component processMessage(@NotNull Vessel obj) {
+        return Component.text(obj.getMaxSpeed() + "");
     }
 }

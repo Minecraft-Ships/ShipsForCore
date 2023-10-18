@@ -1,5 +1,7 @@
 package org.ships.config.messages.messages.error;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.world.position.block.BlockType;
@@ -20,10 +22,10 @@ public class ErrorTooManyOfBlockMessage implements Message<Map.Entry<Vessel, Blo
     }
 
     @Override
-    public AText getDefault() {
-        return AText
-                .ofPlain("Too many of " + Message.BLOCK_TYPE_NAME.adapterTextFormat() + " found")
-                .withColour(NamedTextColours.RED);
+    public Component getDefaultMessage() {
+        return Component
+                .text("Too many of " + Message.BLOCK_TYPE_NAME.adapterTextFormat() + " found")
+                .color(NamedTextColor.RED);
     }
 
     @Override
@@ -36,15 +38,15 @@ public class ErrorTooManyOfBlockMessage implements Message<Map.Entry<Vessel, Blo
     }
 
     @Override
-    public AText process(@NotNull AText text, Map.Entry<Vessel, BlockType> obj) {
+    public Component processMessage(@NotNull Component text, Map.Entry<Vessel, BlockType> obj) {
         for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.process(text);
+            text = adapter.processMessage(text);
         }
         for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            text = adapter.process(obj.getKey(), text);
+            text = adapter.processMessage(obj.getKey(), text);
         }
         for (MessageAdapter<BlockType> adapter : Message.BLOCK_TYPE_ADAPTERS) {
-            text = adapter.process(obj.getValue(), text);
+            text = adapter.processMessage(obj.getValue(), text);
         }
         return text;
     }

@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.inventory.item.ItemType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
@@ -24,8 +24,8 @@ public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessage
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain(
+    public Component getDefaultMessage() {
+        return Component.text(
                 "Not enough fuel, you need " + Message.FUEL_LEFT_REQUIREMENT.adapterTextFormat() + " more of either "
                         + new CollectionAdapter<>(Message.ITEM_NAME).adapterTextFormat());
     }
@@ -48,16 +48,16 @@ public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessage
     }
 
     @Override
-    public AText process(@NotNull AText text, FuelRequirementMessageData obj) {
+    public Component processMessage(@NotNull Component text, FuelRequirementMessageData obj) {
         Vessel vessel = obj.getVessel();
         for (MessageAdapter<Vessel> vesselAdapter : Message.VESSEL_ADAPTERS) {
             if (vesselAdapter.containsAdapter(text)) {
-                text = vesselAdapter.process(obj.getVessel(), text);
+                text = vesselAdapter.processMessage(obj.getVessel(), text);
             }
         }
         for (CollectionAdapter<ItemType> adapters : this.getFuelTypesAdapters()) {
             if (adapters.containsAdapter(text)) {
-                text = adapters.process(obj.getFuelTypes(), text);
+                text = adapters.processMessage(obj.getFuelTypes(), text);
             }
         }
         if (!(vessel instanceof VesselRequirement requirement)) {
@@ -69,14 +69,14 @@ public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessage
         }
         FuelRequirement fuelRequirement = opFuelRequirement.get();
         if (Message.FUEL_CONSUMPTION_REQUIREMENT.containsAdapter(text)) {
-            text = Message.FUEL_CONSUMPTION_REQUIREMENT.process(fuelRequirement.getConsumption(), text);
+            text = Message.FUEL_CONSUMPTION_REQUIREMENT.processMessage(fuelRequirement.getConsumption(), text);
         }
         if (Message.FUEL_FOUND_REQUIREMENT.containsAdapter(text)) {
-            text = Message.FUEL_FOUND_REQUIREMENT.process(obj.getToTakeAmount(), text);
+            text = Message.FUEL_FOUND_REQUIREMENT.processMessage(obj.getToTakeAmount(), text);
         }
         if (Message.FUEL_LEFT_REQUIREMENT.containsAdapter(text)) {
-            text = Message.FUEL_LEFT_REQUIREMENT.process(fuelRequirement.getConsumption() - obj.getToTakeAmount(),
-                                                         text);
+            text = Message.FUEL_LEFT_REQUIREMENT.processMessage(
+                    fuelRequirement.getConsumption() - obj.getToTakeAmount(), text);
         }
 
         return text;

@@ -1,6 +1,6 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
@@ -16,8 +16,8 @@ public class ErrorNoSpeedSetMessage implements Message<BlockPosition> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain("Speed has not been set on sign");
+    public Component getDefaultMessage() {
+        return Component.text("Speed has not been set on sign");
     }
 
     @Override
@@ -26,10 +26,10 @@ public class ErrorNoSpeedSetMessage implements Message<BlockPosition> {
     }
 
     @Override
-    public AText process(@NotNull AText text, BlockPosition obj) {
+    public Component processMessage(@NotNull Component text, BlockPosition obj) {
         for (MessageAdapter<?> adapter : this.getAdapters()) {
             if (adapter.containsAdapter(text)) {
-                text = ((MessageAdapter<BlockPosition>) adapter).process(obj, text);
+                text = ((MessageAdapter<BlockPosition>) adapter).processMessage(obj, text);
             }
         }
         return text;

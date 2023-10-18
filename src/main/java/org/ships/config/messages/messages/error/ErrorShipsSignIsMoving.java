@@ -1,7 +1,7 @@
 package org.ships.config.messages.messages.error;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -17,8 +17,8 @@ public class ErrorShipsSignIsMoving implements Message<Object> {
     }
 
     @Override
-    public AText getDefault() {
-        return AText.ofPlain("Ships sign is already moving ship").withColour(NamedTextColours.RED);
+    public Component getDefaultMessage() {
+        return Component.text("Ships sign is already moving ship").color(NamedTextColor.RED);
     }
 
     @Override
@@ -27,10 +27,9 @@ public class ErrorShipsSignIsMoving implements Message<Object> {
     }
 
     @Override
-    @Deprecated
-    public AText process(@NotNull AText text, Object obj) {
-        for (ConfigAdapter adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.process(text);
+    public Component processMessage(@NotNull Component text, Object obj) {
+        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
+            text = adapter.processMessage(text);
         }
         return text;
     }

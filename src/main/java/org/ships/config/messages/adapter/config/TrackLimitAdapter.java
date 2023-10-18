@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.config;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.plugin.ShipsPlugin;
@@ -20,12 +20,12 @@ public class TrackLimitAdapter implements ConfigAdapter<Integer> {
     }
 
     @Override
-    public AText process(@NotNull Integer obj) {
-        return AText.ofPlain(obj + "");
+    public Component processMessage(@NotNull Integer obj) {
+        return Component.text(obj);
     }
 
     @Override
-    public AText process(@NotNull ShipsConfig config) {
-        return AText.ofPlain(config.getDefaultTrackSize() + "");
+    public Component processMessage(@NotNull ShipsConfig config) {
+        return Component.text(config.getDefaultTrackSize());
     }
 }

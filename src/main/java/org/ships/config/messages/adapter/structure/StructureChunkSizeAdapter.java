@@ -1,6 +1,6 @@
 package org.ships.config.messages.adapter.structure;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.vessel.structure.PositionableShipsStructure;
@@ -21,7 +21,7 @@ public class StructureChunkSizeAdapter implements MessageAdapter<PositionableShi
     }
 
     @Override
-    public AText process(@NotNull PositionableShipsStructure obj) {
-        return AText.ofPlain(obj.getChunks().size() + "");
+    public Component processMessage(@NotNull PositionableShipsStructure obj) {
+        return Component.text(obj.getChunks().size() + "");
     }
 }
