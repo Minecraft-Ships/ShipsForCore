@@ -10,7 +10,6 @@ import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleKeyArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleValueArgument;
@@ -55,20 +54,15 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
         return this.runGeneric(commandContext, args);
     }
 
-    private <T> boolean runGeneric(CommandContext commandContext, String... args) {
+    private <T> boolean runGeneric(CommandContext commandContext, String... args) throws NotEnoughArguments {
         ShipType<?> type = commandContext.getArgument(this, SHIP_TYPE);
         ConfigurationNode.KnownParser.SingleKnown<T> parser = commandContext.getArgument(this, CONFIG_KEY);
         T value = commandContext.getArgument(this, CONFIG_VALUE);
         ConfigurationStream.ConfigurationFile file = type.getFile();
         file.set(parser, value);
         file.save();
-
-        if (!(commandContext.getSource() instanceof CommandViewer)) {
-            return true;
-        }
-        CommandViewer viewer = (CommandViewer) commandContext.getSource();
         AText text = AText.ofPlain("Value has been set").withColour(NamedTextColours.AQUA);
-        viewer.sendMessage(text);
+        commandContext.getSource().sendMessage(text);
         return true;
     }
 }

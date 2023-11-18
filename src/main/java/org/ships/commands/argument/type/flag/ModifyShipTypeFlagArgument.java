@@ -2,14 +2,13 @@ package org.ships.commands.argument.type.flag;
 
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
+import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.StringParserArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.config.parser.StringParser;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.flag.ShipTypeFlagArgument;
 import org.ships.permissions.Permissions;
@@ -30,13 +29,18 @@ public class ModifyShipTypeFlagArgument implements ArgumentCommand {
                                                                                                      (c, a, v) -> !v
                                                                                                              .getFlags()
                                                                                                              .isEmpty());
-    private final ShipTypeFlagArgument VESSEL_TYPE_FLAG = new ShipTypeFlagArgument("flag", (c, a) -> c.getArgument(this,
-                                                                                                                   this.VESSEL_TYPE));
+    private final ShipTypeFlagArgument VESSEL_TYPE_FLAG = new ShipTypeFlagArgument("flag",
+                                                                                   (c, a) -> CommandArgumentResult.from(
+                                                                                           a, c.getArgument(this,
+                                                                                                            this.VESSEL_TYPE)));
     private final StringParserArgument<Object> FLAG_PARSER = new StringParserArgument<>("flagValue",
-                                                                                        (c, a) -> (StringParser<Object>) c
-                                                                                                .getArgument(this,
-                                                                                                             this.VESSEL_TYPE_FLAG)
-                                                                                                .getParser(),
+                                                                                        (c, a) -> CommandArgumentResult.from(
+                                                                                                a,
+                                                                                                (StringParser<Object>) c
+                                                                                                        .getArgument(
+                                                                                                                this,
+                                                                                                                this.VESSEL_TYPE_FLAG)
+                                                                                                        .getParser()),
                                                                                         (a, p) -> "Could not understand the value you entered");
 
     @Override
@@ -53,14 +57,6 @@ public class ModifyShipTypeFlagArgument implements ArgumentCommand {
     @Override
     public Optional<Permission> getPermissionNode() {
         return Optional.of(Permissions.CMD_SHIPTYPE_MODIFY_FLAG);
-    }
-
-    @Override
-    public boolean hasPermission(CommandSource source) {
-        if (!(source instanceof CommandViewer)) {
-            return false;
-        }
-        return ArgumentCommand.super.hasPermission(source);
     }
 
     @Override

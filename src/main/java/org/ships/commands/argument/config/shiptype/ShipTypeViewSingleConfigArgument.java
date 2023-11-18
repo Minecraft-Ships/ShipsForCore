@@ -9,6 +9,7 @@ import org.core.command.argument.context.CommandContext;
 import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
+import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleKeyArgument;
@@ -51,11 +52,8 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
         return this.runGeneric(commandContext);
     }
 
-    private <T> boolean runGeneric(CommandContext commandContext) {
-        if (!(commandContext.getSource() instanceof CommandViewer)) {
-            return false;
-        }
-        CommandViewer viewer = (CommandViewer) commandContext.getSource();
+    private <T> boolean runGeneric(CommandContext commandContext) throws NotEnoughArguments {
+        CommandSource viewer = commandContext.getSource();
         ShipType<?> type = commandContext.getArgument(this, SHIP_TYPE);
         ConfigurationNode.KnownParser<String, T> parser = commandContext.getArgument(this, CONFIG_KEY);
         Optional<T> opResult = type.getFile().parse(parser);

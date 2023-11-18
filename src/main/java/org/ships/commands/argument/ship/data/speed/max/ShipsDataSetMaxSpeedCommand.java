@@ -6,7 +6,7 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.arguments.simple.number.IntegerArgument;
 import org.core.command.argument.context.CommandContext;
-import org.core.source.viewer.CommandViewer;
+import org.core.exceptions.NotEnoughArguments;
 import org.core.utils.Else;
 import org.ships.commands.argument.ship.data.AbstractShipsDataSetCommand;
 import org.ships.exceptions.NoLicencePresent;
@@ -25,22 +25,20 @@ public class ShipsDataSetMaxSpeedCommand extends AbstractShipsDataSetCommand {
 
     @Override
     protected List<CommandArgument<?>> getExtraArguments() {
-        return Arrays.asList(
-                this.SPEED_ARGUMENT,
-                this.SPEED_VALUE_ARGUMENT
-        );
+        return Arrays.asList(this.SPEED_ARGUMENT, this.SPEED_VALUE_ARGUMENT);
     }
 
     @Override
-    protected boolean apply(CommandContext commandContext, Vessel vessel, String[] arguments) {
-        Integer value = commandContext.getArgument(this, this.SPEED_VALUE_ARGUMENT);
+    protected boolean apply(CommandContext context, Vessel vessel, String[] arguments) throws NotEnoughArguments {
+        Integer value = context.getArgument(this, this.SPEED_VALUE_ARGUMENT);
         vessel.setMaxSpeed(value);
-        if (commandContext.getSource() instanceof CommandViewer viewer) {
-            int displayValue = Objects.requireNonNullElseGet(value, () -> vessel.getType().getDefaultMaxSpeed());
-            viewer.sendMessage(AText.ofPlain(
-                    "Updated " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " max speed to " +
-                            displayValue));
-        }
+        int displayValue = Objects.requireNonNullElseGet(value, () -> vessel.getType().getDefaultMaxSpeed());
+        context
+                .getSource()
+                .sendMessage(AText.ofPlain(
+                        "Updated " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " max speed to "
+                                + displayValue));
+
         return true;
     }
 }

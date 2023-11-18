@@ -2,6 +2,7 @@ package org.ships.commands.argument.arguments.identifiable.shiptype.flag;
 
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.CommandArgumentResult;
+import org.core.command.argument.ParseCommandArgument;
 import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.utils.Identifiable;
@@ -9,19 +10,17 @@ import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class ShipTypeFlagArgument implements CommandArgument<VesselFlag<?>> {
 
     private final String id;
-    private final BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ?
-            extends ShipType<?>> getter;
+    private final ParseCommandArgument<? extends ShipType<?>> getter;
 
-    public ShipTypeFlagArgument(String id,
-            BiFunction<? super CommandContext, ? super CommandArgumentContext<VesselFlag<?>>, ? extends ShipType<?>> getter) {
+    public ShipTypeFlagArgument(String id, ParseCommandArgument<? extends ShipType<?>> getter) {
         this.id = id;
         this.getter = getter;
     }
@@ -33,11 +32,12 @@ public class ShipTypeFlagArgument implements CommandArgument<VesselFlag<?>> {
 
     @Override
     public CommandArgumentResult<VesselFlag<?>> parse(CommandContext context,
-            CommandArgumentContext<VesselFlag<?>> argument) throws IOException {
+                                                      CommandArgumentContext<VesselFlag<?>> argument)
+            throws IOException {
         String arg = argument.getFocusArgument();
-        ShipType<?> type = this
-                .getter
-                .apply(context, argument);
+        ShipType<?> type = this.getter
+                .parse(context, new CommandArgumentContext<>(null, argument.getFirstArgument(), context.getCommand()))
+                .getValue();
         VesselFlag<?> flag = type
                 .getFlags()
                 .stream()
@@ -51,14 +51,19 @@ public class ShipTypeFlagArgument implements CommandArgument<VesselFlag<?>> {
     @Override
     public List<String> suggest(CommandContext commandContext, CommandArgumentContext<VesselFlag<?>> argument) {
         String arg = argument.getFocusArgument();
-        return this
-                .getter
-                .apply(commandContext, argument)
-                .getFlags()
-                .stream()
-                .map(Identifiable::getId)
-                .filter(id -> id.contains(arg))
-                .sorted(Comparator.naturalOrder())
-                .collect(Collectors.toList());
+        try {
+            return this.getter
+                    .parse(commandContext,
+                           new CommandArgumentContext<>(null, argument.getFirstArgument(), commandContext.getCommand()))
+                    .getValue()
+                    .getFlags()
+                    .stream()
+                    .map(Identifiable::getId)
+                    .filter(id -> id.contains(arg))
+                    .sorted(Comparator.naturalOrder())
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            return Collections.emptyList();
+        }
     }
 }

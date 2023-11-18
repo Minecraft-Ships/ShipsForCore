@@ -7,6 +7,7 @@ import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.arguments.simple.number.FloatArgument;
 import org.core.command.argument.context.CommandContext;
+import org.core.exceptions.NotEnoughArguments;
 import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.ship.data.AbstractShipsDataSetCommand;
@@ -41,7 +42,7 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
     }
 
     @Override
-    protected boolean apply(CommandContext context, Vessel vessel, String[] arguments) {
+    protected boolean apply(CommandContext context, Vessel vessel, String[] arguments) throws NotEnoughArguments {
         if (!(vessel instanceof VesselRequirement requirementVessel)) {
             return false;
         }
@@ -54,15 +55,15 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
         Float value = context.getArgument(this, PERCENT_VALUE_ARGUMENT);
         if (value != null) {
             if (value > 100) {
-                if (context.getSource() instanceof CommandViewer viewer) {
-                    viewer.sendMessage(AText.ofPlain("Percent cannot be above 100%").withColour(NamedTextColours.RED));
-                }
+                context
+                        .getSource()
+                        .sendMessage(AText.ofPlain("Percent cannot be above 100%").withColour(NamedTextColours.RED));
+
                 return false;
             }
             if (value < 0) {
-                if (context.getSource() instanceof CommandViewer viewer) {
-                    viewer.sendMessage(AText.ofPlain("Percent cannot be below 0%").withColour(NamedTextColours.RED));
-                }
+                    context.getSource().sendMessage(AText.ofPlain("Percent cannot be below 0%").withColour(NamedTextColours.RED));
+
                 return false;
             }
         }

@@ -35,7 +35,8 @@ public abstract class AbstractShipsDataSetCommand implements ArgumentCommand {
 
     protected abstract List<CommandArgument<?>> getExtraArguments();
 
-    protected abstract boolean apply(CommandContext context, Vessel vessel, String[] arguments);
+    protected abstract boolean apply(CommandContext context, Vessel vessel, String[] arguments)
+            throws NotEnoughArguments;
 
     @Override
     public List<CommandArgument<?>> getArguments() {
