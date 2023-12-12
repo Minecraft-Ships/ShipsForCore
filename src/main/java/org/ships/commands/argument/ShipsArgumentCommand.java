@@ -36,6 +36,7 @@ import org.ships.commands.argument.ship.structure.ShipStructureSaveCommand;
 import org.ships.commands.argument.ship.teleport.ShipsShipTeleportSetArgument;
 import org.ships.commands.argument.ship.teleport.ShipsShipTeleportToArgument;
 import org.ships.commands.argument.ship.track.ShipsShipTrackArgumentCommand;
+import org.ships.commands.argument.ship.track.ShipsShipTrackRegionArgumentCommand;
 import org.ships.commands.argument.ship.unlock.ShipsShipUnlockArgumentCommand;
 import org.ships.commands.argument.type.ShipsCreateShipTypeArgument;
 import org.ships.commands.argument.type.ShipsDeleteShipTypeArgument;
@@ -88,6 +89,7 @@ public class ShipsArgumentCommand implements ArgumentLauncher, CommandLauncher {
 
         COMMANDS.add(new ShipsShipInfoArgumentCommand());
         COMMANDS.add(new ShipsShipTrackArgumentCommand());
+        COMMANDS.add(new ShipsShipTrackRegionArgumentCommand());
         COMMANDS.add(new ShipsShipTeleportToArgument());
         COMMANDS.add(new ShipsShipTeleportSetArgument());
         COMMANDS.add(new ShipsShipUnlockArgumentCommand());

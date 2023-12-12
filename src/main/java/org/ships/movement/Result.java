@@ -33,28 +33,6 @@ public class Result extends ArrayList<Result.Run> {
                                                            Run.COMMON_SET_SUCCESSFUL, Run.COMMON_SAVE, Run.REMOVE_BAR,
                                                            Run.COMMON_RERUN_EOT, Run.COMMON_RERUN_AUTO_PILOT);
 
-    public Result() {
-    }
-
-    public Result(Run... run) {
-        super(Arrays.asList(run));
-    }
-
-    public Result(Collection<? extends Run> collection) {
-        super(collection);
-    }
-
-    public void run(Vessel vessel, MovementContext context) {
-        this.forEach(e -> {
-            ResultEvent.PreRun event = new ResultEvent.PreRun(vessel, this, e, context);
-            TranslateCore.getEventManager().callEvent(event);
-            if (event.isCancelled()) {
-                return;
-            }
-            e.run(vessel, context);
-        });
-    }
-
     public interface Run {
 
         Run COMMON_RERUN_EOT = (v, c) -> {
@@ -119,7 +97,9 @@ public class Result extends ArrayList<Result.Run> {
             Vector3<Double> position = entity.getPosition().getPosition().minus(before.toExactPosition().getPosition());
             Vector3<Double> position2 = after.toExactPosition().getPosition();
             position = position2.plus(position);
-            entity.setPosition(position);
+            if (!entity.setPosition(position)) {
+                System.err.println("Teleport failed. Likely due to a plugin cancelling");
+            }
             entity.setYaw(yaw);
             entity.setRoll(roll);
             entity.setPitch(pitch);
@@ -169,5 +149,27 @@ public class Result extends ArrayList<Result.Run> {
 
         void run(Vessel vessel, MovementContext context);
 
+    }
+
+    public Result() {
+    }
+
+    public Result(Run... run) {
+        super(Arrays.asList(run));
+    }
+
+    public Result(Collection<? extends Run> collection) {
+        super(collection);
+    }
+
+    public void run(Vessel vessel, MovementContext context) {
+        this.forEach(e -> {
+            ResultEvent.PreRun event = new ResultEvent.PreRun(vessel, this, e, context);
+            TranslateCore.getEventManager().callEvent(event);
+            if (event.isCancelled()) {
+                return;
+            }
+            e.run(vessel, context);
+        });
     }
 }

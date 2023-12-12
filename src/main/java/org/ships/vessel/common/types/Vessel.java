@@ -1,6 +1,7 @@
 package org.ships.vessel.common.types;
 
 import org.core.entity.LiveEntity;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.utils.Bounds;
 import org.core.utils.MathUtils;
 import org.core.vector.type.Vector2;
@@ -142,7 +143,7 @@ public interface Vessel extends Positionable<BlockPosition> {
             try {
                 Bounds<Integer> bounds = this.getStructure().getBounds();
                 bounds.add(-1, -1, -1);
-                bounds.add(1, Integer.MAX_VALUE, 1);
+                bounds.add(1, 5, 1);
 
                 Map<LiveEntity, Vector3<Integer>> entityPositions = chunks
                         .stream()
@@ -152,13 +153,14 @@ public interface Vessel extends Positionable<BlockPosition> {
                                 .map(Position::getPosition)
                                 .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
 
-                return entityPositions
-                        .entrySet()
-                        .parallelStream()
-                        .filter(entry -> bounds.contains(entry.getValue()))
-                        .map(Map.Entry::getKey)
-                        .filter(predicate)
-                        .collect(Collectors.toSet());
+                return entityPositions.entrySet().parallelStream().filter(entry -> {
+                    if (entry.getKey() instanceof LivePlayer player) {
+                        var position = player.getPosition();
+                        var equal = position.toBlockPosition().getPosition().equals(entry.getValue());
+                        System.out.println("test");
+                    }
+                    return bounds.contains(entry.getValue());
+                }).map(Map.Entry::getKey).filter(predicate).collect(Collectors.toSet());
             } catch (Throwable e) {
                 onException.accept(e);
                 return Collections.emptyList();
