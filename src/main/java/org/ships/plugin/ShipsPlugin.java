@@ -1,8 +1,8 @@
 package org.ships.plugin;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.command.CommandRegister;
 import org.core.logger.Logger;
 import org.core.platform.plugin.CorePlugin;
@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 16.1;
+    public static final double PRERELEASE_VERSION = 16.2;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
@@ -215,21 +215,18 @@ public class ShipsPlugin implements CorePlugin {
 
     public void getLoadedMessages() {
         ConsoleSource source = TranslateCore.getConsole();
-        source.sendMessage(
-                AText.ofPlain("------[Ships Loaded Information][Start]------").withColour(NamedTextColours.RED));
-        source.sendMessage(AText
-                                   .ofPlain("Ships Version: ")
-                                   .withColour(NamedTextColours.AQUA)
-                                   .append(AText.ofPlain(this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-"
-                                                                 + PRERELEASE_VERSION)));
-        source.sendMessage(AText
-                                   .ofPlain("Vessels: ")
-                                   .withColour(NamedTextColours.AQUA)
-                                   .append(AText
-                                                   .ofPlain("" + this.vessels.size())
-                                                   .withColour(NamedTextColours.YELLOW)));
-        source.sendMessage(
-                AText.ofPlain("------[Ships Loaded Information][End]------").withColour(NamedTextColours.RED));
+        source.sendMessage(Component.text("------[Ships Loaded Information][Start]------").color(NamedTextColor.RED));
+        source.sendMessage(Component
+                                   .text("Ships Version: ")
+                                   .color(NamedTextColor.AQUA)
+                                   .append(Component.text(
+                                           this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-"
+                                                   + PRERELEASE_VERSION)));
+        source.sendMessage(Component
+                                   .text("Vessels: ")
+                                   .color(NamedTextColor.AQUA)
+                                   .append(Component.text("" + this.vessels.size()).color(NamedTextColor.YELLOW)));
+        source.sendMessage(Component.text("------[Ships Loaded Information][End]------").color(NamedTextColor.RED));
     }
 
     public void loadVesselTypeFlagData() {
@@ -351,8 +348,9 @@ public class ShipsPlugin implements CorePlugin {
                     PluginUpdate context = successfulResult.getUpdate();
                     String fullVersionName = context.getName();
                     String currentVersionName =
-                            "Ships -B " + this.getPluginVersion().asString() + ".0 R2 " + PRERELEASE_TAG + " "
-                                    + PRERELEASE_VERSION;
+                            "Ships -" + TranslateCore.getPlatform().getImplementationDetails().getTagChar() + " " + this
+                                    .getPluginVersion()
+                                    .asString() + ".0 R2 " + PRERELEASE_TAG + " " + PRERELEASE_VERSION;
                     if (fullVersionName.equals(currentVersionName)) {
                         return;
                     }

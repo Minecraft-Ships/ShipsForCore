@@ -1,8 +1,8 @@
 package org.ships.commands.argument.ship.track;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -12,7 +12,6 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.schedule.unit.TimeUnit;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
 import org.core.world.position.block.BlockTypes;
 import org.ships.commands.argument.arguments.ShipIdArgument;
@@ -48,22 +47,12 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public boolean hasPermission(CommandSource source) {
-        if (source instanceof LivePlayer) {
-            return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
-        }
-        return false;
-    }
-
-    @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         CommandSource source = commandContext.getSource();
         if (!(source instanceof LivePlayer player)) {
-            if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(
-                        AText.ofPlain("Player only command").withColour(NamedTextColours.RED));
-            }
+            source.sendMessage(Component.text("Player only command").color(NamedTextColor.RED));
+
             return true;
         }
         vessel
@@ -83,5 +72,13 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
                 .build(ShipsPlugin.getPlugin())
                 .run();
         return true;
+    }
+
+    @Override
+    public boolean hasPermission(CommandSource source) {
+        if (source instanceof LivePlayer) {
+            return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
+        }
+        return false;
     }
 }
