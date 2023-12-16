@@ -66,43 +66,7 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return this.getOutsidePositionsRelativeToCenter();
     }
 
-    default Bounds<Integer> getBounds() {
-        Set<Vector3<Integer>> positions = this
-                .getOutsidePositionsRelativeToWorld()
-                .parallelStream()
-                .collect(Collectors.toSet());
-        if (positions.isEmpty()) {
-            throw new IllegalStateException("No structure found");
-        }
-        Vector3<Integer> randomVector = positions.iterator().next();
-        int minX = randomVector.getX();
-        int minY = randomVector.getY();
-        int minZ = randomVector.getZ();
-        int maxX = minX;
-        int maxY = minY;
-        int maxZ = minZ;
-        for (Vector3<Integer> vector : positions) {
-            if (minX <= vector.getX()) {
-                minX = vector.getX();
-            }
-            if (minY <= vector.getY()) {
-                minY = vector.getY();
-            }
-            if (minZ <= vector.getZ()) {
-                minZ = vector.getZ();
-            }
-            if (maxX >= vector.getX()) {
-                maxX = vector.getX();
-            }
-            if (maxY >= vector.getY()) {
-                maxY = vector.getY();
-            }
-            if (maxZ >= vector.getZ()) {
-                maxZ = vector.getZ();
-            }
-        }
-        return new Bounds<>(Vector3.valueOf(minX, minY, minZ), Vector3.valueOf(maxX, maxY, maxZ));
-    }
+    Bounds<Integer> getBounds();
 
     default Collection<Vector3<Integer>> getRelativePositionsToCenter() {
         Collection<Vector3<Integer>> originalPositions = new HashSet<>(this.getOriginalRelativePositionsToCenter());

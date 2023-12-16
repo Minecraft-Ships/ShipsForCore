@@ -29,6 +29,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     private final Collection<Vector3<Integer>> outsideWest = new LinkedTransferQueue<>();
 
     private SyncBlockPosition position;
+    private Bounds<Integer> cachedBounds;
 
 
     public AbstractPositionableShipsStructure(SyncBlockPosition position) {
@@ -42,6 +43,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     public PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos) {
+        this.cachedBounds = null;
         this.position = pos;
         return this;
     }
@@ -113,6 +115,48 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
+    public Bounds<Integer> getBounds() {
+        if (this.cachedBounds != null) {
+            return this.cachedBounds;
+        }
+        Set<Vector3<Integer>> positions = this
+                .getOutsidePositionsRelativeToWorld()
+                .parallelStream()
+                .collect(Collectors.toSet());
+        if (positions.isEmpty()) {
+            throw new IllegalStateException("No structure found");
+        }
+        Vector3<Integer> randomVector = positions.iterator().next();
+        int minX = randomVector.getX();
+        int minY = randomVector.getY();
+        int minZ = randomVector.getZ();
+        int maxX = minX;
+        int maxY = minY;
+        int maxZ = minZ;
+        for (Vector3<Integer> vector : positions) {
+            if (minX <= vector.getX()) {
+                minX = vector.getX();
+            }
+            if (minY <= vector.getY()) {
+                minY = vector.getY();
+            }
+            if (minZ <= vector.getZ()) {
+                minZ = vector.getZ();
+            }
+            if (maxX >= vector.getX()) {
+                maxX = vector.getX();
+            }
+            if (maxY >= vector.getY()) {
+                maxY = vector.getY();
+            }
+            if (maxZ >= vector.getZ()) {
+                maxZ = vector.getZ();
+            }
+        }
+        return new Bounds<>(Vector3.valueOf(minX, minY, minZ), Vector3.valueOf(maxX, maxY, maxZ));
+    }
+
+    @Override
     public Collection<Vector3<Integer>> getOriginalRelativePositionsToCenter() {
         return this.vectors;
     }
@@ -132,9 +176,11 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
             if (x < add.getX()) {
                 this.outsideEast.remove(opEast.get());
                 this.outsideEast.add(add);
+                this.cachedBounds = null;
             }
         } else {
             this.outsideEast.add(add);
+            this.cachedBounds = null;
         }
 
         Optional<Vector3<Integer>> opWest = this.outsideWest
@@ -147,9 +193,11 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
             if (x > add.getX()) {
                 this.outsideWest.remove(opWest.get());
                 this.outsideWest.add(add);
+                this.cachedBounds = null;
             }
         } else {
             this.outsideWest.add(add);
+            this.cachedBounds = null;
         }
 
         Optional<Vector3<Integer>> opNorth = this.outsideNorth
@@ -162,9 +210,11 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
             if (z > add.getZ()) {
                 this.outsideNorth.remove(opNorth.get());
                 this.outsideNorth.add(add);
+                this.cachedBounds = null;
             }
         } else {
             this.outsideNorth.add(add);
+            this.cachedBounds = null;
         }
 
         Optional<Vector3<Integer>> opSouth = this.outsideSouth
@@ -177,9 +227,11 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
             if (z < add.getX()) {
                 this.outsideSouth.remove(opSouth.get());
                 this.outsideSouth.add(add);
+                this.cachedBounds = null;
             }
         } else {
             this.outsideSouth.add(add);
+            this.cachedBounds = null;
         }
         return this.vectors.add(add);
     }
@@ -188,12 +240,14 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     public boolean removePositionRelativeToCenter(@NotNull Vector3<Integer> remove) {
         Vector3<Integer> original = this.getPosition().getPosition();
         Vector3<Integer> next = this.position.getPosition();
+        this.cachedBounds = null;
         return this.vectors.remove(next.minus(original));
     }
 
     @Override
     public @NotNull AbstractPositionableShipsStructure clear() {
         this.vectors.clear();
+        this.cachedBounds = null;
         return this;
     }
 
