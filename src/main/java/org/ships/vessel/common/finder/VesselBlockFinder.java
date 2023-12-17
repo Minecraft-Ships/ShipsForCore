@@ -2,7 +2,9 @@ package org.ships.vessel.common.finder;
 
 import org.core.vector.type.Vector3;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
@@ -20,20 +22,24 @@ import java.util.stream.Collectors;
 
 public final class VesselBlockFinder {
 
-    public static Vessel findCached(BlockPosition position) throws LoadVesselException {
+    public static Vessel findCached(@NotNull BlockPosition position) throws LoadVesselException {
+        return findCachedVessel(position).orElseThrow(() -> new LoadVesselException(
+                "Block position is not part of a ship: " + position.getX() + ", " + position.getY() + ", "
+                        + position.getZ() + ", " + position.getWorld().getName()));
+    }
+
+    private static Optional<Vessel> findCachedVessel(@NotNull Position<Integer> position) {
         return ShipsPlugin
                 .getPlugin()
                 .getVessels()
                 .stream()
+                .filter(v -> v.getStructure().getBounds().contains(position.getPosition()))
                 .filter(v -> {
                     PositionableShipsStructure pss = v.getStructure();
                     Collection<ASyncBlockPosition> collection = pss.getAsyncedPositionsRelativeToWorld();
                     return collection.parallelStream().anyMatch(p -> p.getPosition().equals(position.getPosition()));
                 })
-                .findAny()
-                .orElseThrow(() -> new LoadVesselException(
-                        "Block position is not part of a ship: " + position.getX() + ", " + position.getY() + ", "
-                                + position.getZ() + ", " + position.getWorld().getName()));
+                .findAny();
     }
 
     public static CompletableFuture<Map.Entry<PositionableShipsStructure, Optional<Vessel>>> findOvertime(BlockPosition position) {
@@ -42,6 +48,13 @@ public final class VesselBlockFinder {
 
     public static CompletableFuture<Map.Entry<PositionableShipsStructure, Optional<Vessel>>> findOvertime(BlockPosition position,
                                                                                                           BiConsumer<PositionableShipsStructure, BlockPosition> consumer) {
+        Optional<Vessel> opVessel = findCachedVessel(position);
+        if (opVessel.isPresent()) {
+            Map.Entry<@NotNull PositionableShipsStructure, Optional<Vessel>> ret = Map.entry(
+                    opVessel.get().getStructure(), opVessel);
+            return CompletableFuture.completedFuture(ret);
+        }
+
         Map<Vector3<Integer>, Vessel> map = ShipsPlugin
                 .getPlugin()
                 .getVessels()

@@ -43,7 +43,6 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     public PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos) {
-        this.cachedBounds = null;
         this.position = pos;
         return this;
     }

@@ -8,12 +8,14 @@ import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.ExactPosition;
+import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -185,13 +187,42 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 .getDefaultFinder()
                 .setConnectedVessel(this)
                 .getConnectedBlocksOvertime(this.getPosition(), update)
-                .thenCompose(updated -> {
-                    if (AbstractShipsVessel.this instanceof WaterType) {
-                        return updated.fillAir();
+                .thenApplyAsync(updatedStructure -> {
+                    Set<Vector3<Integer>> updatedBlocks = updatedStructure
+                            .getAsyncedPositionsRelativeToWorld()
+                            .parallelStream()
+                            .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
+                            .map(Position::getPosition)
+                            .collect(Collectors.toSet());
+
+                    PositionableShipsStructure currentStructure = this.getStructure();
+                    boolean sameStructure = currentStructure
+                            .getAsyncedPositionsRelativeToWorld()
+                            .parallelStream()
+                            .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
+                            .map(Position::getPosition)
+                            .allMatch(updatedBlocks::contains);
+                    if (sameStructure) {
+                        currentStructure.setPosition(updatedStructure.getPosition());
                     }
-                    return CompletableFuture.completedFuture(updated);
+                    return Map.entry(currentStructure, sameStructure);
                 })
-                .thenCompose(updated -> {
+                .thenCompose(entry -> {
+                    PositionableShipsStructure updated = entry.getKey();
+                    if (entry.getValue()) {
+                        return CompletableFuture.completedFuture(entry);
+                    }
+                    if (AbstractShipsVessel.this instanceof WaterType) {
+                        CompletableFuture<PositionableShipsStructure> filled = updated.fillAir();
+                        return filled.thenApply(structure -> Map.entry(structure, entry.getValue()));
+                    }
+                    return CompletableFuture.completedFuture(entry);
+                })
+                .thenCompose(entry -> {
+                    PositionableShipsStructure updated = entry.getKey();
+                    if (entry.getValue()) {
+                        return CompletableFuture.completedFuture(updated);
+                    }
                     this.setStructure(updated);
                     if (AbstractShipsVessel.this instanceof WaterType) {
                         return updated.fillAir();

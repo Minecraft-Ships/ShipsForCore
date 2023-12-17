@@ -1,5 +1,7 @@
 package org.ships.vessel.common.finder;
 
+import org.core.utils.ComponentUtils;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
@@ -9,7 +11,11 @@ import org.ships.vessel.sign.LicenceSign;
 
 import java.util.Optional;
 
-public class ShipsSignVesselFinder {
+public final class ShipsSignVesselFinder {
+
+    private ShipsSignVesselFinder() {
+        throw new RuntimeException("Should not run");
+    }
 
     public static Vessel find(SignTileEntity signTileEntity) throws LoadVesselException {
         LicenceSign ls = ShipsPlugin
@@ -21,7 +27,13 @@ public class ShipsSignVesselFinder {
             throw new LoadVesselException("Unable to read sign");
         }
 
-        String typeS = signTileEntity.getTextAt(1).orElseThrow(() -> new RuntimeException("You broke logic")).toPlain();
+        SignSide signSide = ls
+                .getSide(signTileEntity)
+                .orElseThrow(() -> new RuntimeException("Could not find side of sign"));
+
+
+        String typeS = ComponentUtils.toPlain(
+                signSide.getLineAt(1).orElseThrow(() -> new RuntimeException("Could not read line 2")));
         Optional<ShipType<?>> opType = ShipsPlugin
                 .getPlugin()
                 .getAllShipTypes()
@@ -32,7 +44,9 @@ public class ShipsSignVesselFinder {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }
 
-        String name = signTileEntity.getTextAt(2).get().toPlain().toLowerCase();
+        String name = ComponentUtils
+                .toPlain(signSide.getLineAt(2).orElseThrow(() -> new RuntimeException("Could not read line 3")))
+                .toLowerCase();
         String id = "ships:" + opType.get().getName().toLowerCase() + "." + name;
         return IdVesselFinder.load(id);
     }
