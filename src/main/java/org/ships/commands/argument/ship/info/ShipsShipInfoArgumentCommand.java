@@ -1,15 +1,15 @@
 package org.ships.commands.argument.ship.info;
 
-import org.array.utils.ArrayUtils;
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
+import org.core.source.Messageable;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
 import org.core.utils.Identifiable;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
@@ -55,47 +56,61 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
-            return false;
-        }
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
-        displayInfo(viewer, vessel);
+        displayInfo(commandContext.getSource(), vessel);
         return true;
     }
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        return source instanceof CommandViewer;
+        return true;
     }
 
     private static <T> String flagToString(Function<? super VesselFlag<T>, String> to, VesselFlag<T> flag) {
         return to.apply(flag) + flag.getValue().map(v -> ": " + flag.getParser().unparse(v)).orElse("");
     }
 
-    public static void displayInfo(CommandViewer viewer, Vessel vessel) {
+    public static void displayInfo(Messageable viewer, Vessel vessel) {
         AdventureMessageConfig messages = ShipsPlugin.getPlugin().getAdventureMessageConfig();
-        AText infoName = AdventureMessageConfig.INFO_NAME
-                .parse(messages)
-                .withAllAs("%" + Message.VESSEL_NAME.adapterText() + "%",
-                           AText.ofPlain(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown")));
+        Component infoName = AdventureMessageConfig.INFO_NAME
+                .parseMessage(messages)
+                .replaceText(TextReplacementConfig
+                                     .builder()
+                                     .match("%" + Message.VESSEL_NAME.adapterText() + "%")
+                                     .replacement(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
+                                     .build());
         if (vessel instanceof IdentifiableShip ship) {
-            AText infoId = AdventureMessageConfig.INFO_ID
-                    .parse(messages)
-                    .withAllAs("%" + Message.VESSEL_ID.adapterText() + "%",
-                               AText.ofPlain(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown")));
+            Component infoId = AdventureMessageConfig.INFO_ID
+                    .parseMessage(messages)
+                    .replaceText(TextReplacementConfig
+                                         .builder()
+                                         .match("%" + Message.VESSEL_ID.adapterText() + "%")
+                                         .replacement(Else.throwOr(NoLicencePresent.class, ship::getId, "Unknown"))
+                                         .build());
             viewer.sendMessage(infoId);
         }
-        AText maxSpeed = AdventureMessageConfig.INFO_MAX_SPEED
-                .parse(messages)
-                .withAllAs("%" + Message.VESSEL_SPEED.adapterText() + "%", AText.ofPlain(vessel.getMaxSpeed() + ""));
-        AText altitudeSpeed = AdventureMessageConfig.INFO_ALTITUDE_SPEED
-                .parse(messages)
-                .withAllAs("%" + Message.VESSEL_SPEED.adapterText() + "%",
-                           AText.ofPlain(vessel.getAltitudeSpeed() + ""));
-        AText size = AdventureMessageConfig.INFO_SIZE
-                .parse(messages)
-                .withAllAs("%" + Message.VESSEL_SIZE.adapterText() + "%",
-                           AText.ofPlain(vessel.getStructure().getOriginalRelativePositionsToCenter().size() + ""));
+        Component maxSpeed = AdventureMessageConfig.INFO_MAX_SPEED
+                .parseMessage(messages)
+                .replaceText(TextReplacementConfig
+                                     .builder()
+                                     .match("%" + Message.VESSEL_SPEED.adapterText() + "%")
+                                     .replacement(vessel.getMaxSpeed() + "")
+                                     .build());
+        Component altitudeSpeed = AdventureMessageConfig.INFO_ALTITUDE_SPEED
+                .parseMessage(messages)
+                .replaceText(TextReplacementConfig
+                                     .builder()
+                                     .match("%" + Message.VESSEL_SPEED.adapterText() + "%")
+                                     .replacement(vessel.getAltitudeSpeed() + "")
+                                     .build());
+        Component size = AdventureMessageConfig.INFO_SIZE
+                .parseMessage(messages)
+                .replaceText(TextReplacementConfig
+                                     .builder()
+                                     .match("%" + Message.STRUCTURE_SIZE.adapterText() + "%")
+                                     .replacement(
+                                             vessel.getStructure().getOriginalRelativePositionsToCenter().size() + "")
+                                     .build());
 
         viewer.sendMessage(infoName);
         viewer.sendMessage(maxSpeed);
@@ -104,40 +119,74 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
 
         if (vessel instanceof CrewStoredVessel ship) {
             CrewPermission perm = ship.getDefaultPermission();
-            AText permission = AdventureMessageConfig.INFO_DEFAULT_PERMISSION
-                    .parse(messages)
-                    .withAllAs("%" + Message.CREW_ID.adapterText() + "%", AText
-                            .ofPlain(perm.getId())
-                            .withAllAs("%" + Message.CREW_NAME.adapterText() + "%", AText.ofPlain(perm.getName())));
+
+            Component replacementPermissionName = Component
+                    .text(perm.getId())
+                    .replaceText(TextReplacementConfig
+                                         .builder()
+                                         .match("%" + Message.CREW_NAME.adapterText() + "%")
+                                         .replacement(perm.getName())
+                                         .build());
+
+            Component permission = AdventureMessageConfig.INFO_DEFAULT_PERMISSION
+                    .parseMessage(messages)
+                    .replaceText(TextReplacementConfig
+                                         .builder()
+                                         .match("%" + Message.CREW_ID.adapterText() + "%")
+                                         .replacement(replacementPermissionName)
+                                         .build());
             viewer.sendMessage(permission);
         }
         if (vessel instanceof ShipsVessel) {
             @NotNull Map<String, String> info = ((ShipsVessel) vessel).getExtraInformation();
             info.forEach((key, value) -> {
-                AText built = AdventureMessageConfig.INFO_VESSEL_INFO
-                        .parse(messages)
-                        .withAllAs("%" + Message.VESSEL_INFO_KEY.adapterText() + "%", AText.ofPlain(key))
-                        .withAllAs("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%", AText.ofPlain(value));
+                Component built = AdventureMessageConfig.INFO_VESSEL_INFO
+                        .parseMessage(messages)
+                        .replaceText(TextReplacementConfig
+                                             .builder()
+                                             .match("%" + Message.VESSEL_INFO_KEY.adapterText() + "%")
+                                             .replacement(key)
+                                             .build())
+                        .replaceText(TextReplacementConfig
+                                             .builder()
+                                             .match("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%")
+                                             .replacement(value)
+                                             .build());
                 viewer.sendMessage(built);
             });
         }
         if (vessel instanceof ShipsVessel) {
-            String flagIds = ArrayUtils.toString("\n - ", vf -> flagToString(Identifiable::getId, vf),
-                                                 ((ShipsVessel) vessel).getFlags());
-            String flagNames = ArrayUtils.toString("\n - ", vf -> flagToString(Identifiable::getName, vf),
-                                                   ((ShipsVessel) vessel).getFlags());
+            String flagIds = ((ShipsVessel) vessel)
+                    .getFlags()
+                    .stream()
+                    .map(vf -> flagToString(Identifiable::getId, vf))
+                    .collect(Collectors.joining("\n - "));
 
-            AText text = AdventureMessageConfig.INFO_FLAG
-                    .parse(messages)
-                    .withAllAs("%" + Message.VESSEL_FLAG_ID.adapterText() + "%", AText.ofPlain(flagIds))
-                    .withAllAs("%" + Message.VESSEL_FLAG_NAME.adapterText() + "%", AText.ofPlain(flagNames));
+            String flagNames = ((ShipsVessel) vessel)
+                    .getFlags()
+                    .stream()
+                    .map(vf -> flagToString(Identifiable::getName, vf))
+                    .collect(Collectors.joining("\n - "));
+
+            Component text = AdventureMessageConfig.INFO_FLAG
+                    .parseMessage(messages)
+                    .replaceText(TextReplacementConfig
+                                         .builder()
+                                         .match("%" + Message.VESSEL_FLAG_ID.adapterText() + "%")
+                                         .replacement(flagIds)
+                                         .build())
+                    .replaceText(TextReplacementConfig
+                                         .builder()
+                                         .match("%" + Message.VESSEL_FLAG_NAME.adapterText() + "%")
+                                         .replacement(flagNames)
+                                         .build());
             viewer.sendMessage(text);
         }
 
-        viewer.sendMessage(AdventureMessageConfig.INFO_ENTITIES_LINE.parse(messages));
+        viewer.sendMessage(AdventureMessageConfig.INFO_ENTITIES_LINE.parseMessage(messages));
         vessel.getEntitiesOvertime(e -> true).thenAccept(collection -> collection.forEach(entity -> {
-            AText entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.parse(messages);
-            entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.process(entitiesText, entity);
+            Component entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.parseMessage(messages);
+            entitiesText = AdventureMessageConfig.INFO_ENTITIES_LIST.processMessage(entitiesText, entity);
             viewer.sendMessage(entitiesText);
         }));
     }

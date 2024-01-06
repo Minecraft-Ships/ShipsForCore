@@ -4,11 +4,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
-import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>> {
     @Override
@@ -25,21 +27,16 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(this.getExactAdapters());
-    }
-
-    private Set<MessageAdapter<String>> getExactAdapters() {
-        Set<MessageAdapter<String>> set = new HashSet<>();
-        set.add(Message.VESSEL_INFO_VALUE);
-        set.add(Message.VESSEL_INFO_KEY);
-        return set;
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL_INFO);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, Map.Entry<String, String> obj) {
-        text = Message.VESSEL_INFO_VALUE.processMessage(obj.getKey(), text);
-        text = Message.VESSEL_INFO_KEY.processMessage(obj.getValue(), text);
+        var infoAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL_INFO).toList();
+        for (var adapter : infoAdapters) {
+            text = adapter.processMessage(obj, text);
+        }
         return text;
     }
 

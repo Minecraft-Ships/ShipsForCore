@@ -4,15 +4,16 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class ErrorInvalidShipNameMessage implements Message<String> {
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "Creation", "InvalidShipName"};
+        return new String[]{"Error", "Creation", "Invalid Ship Name"};
     }
 
     @Override
@@ -21,18 +22,17 @@ public class ErrorInvalidShipNameMessage implements Message<String> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        Set<MessageAdapter<?>> set = new HashSet<>();
-        set.add(Message.INVALID_NAME);
-        set.addAll(Message.CONFIG_ADAPTERS);
-        return set;
+    public Collection<AdapterCategory<?>> getCategories() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Collection<MessageAdapter<?>> getAdapters() {
+        return List.of(Message.INVALID_NAME);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, String obj) {
-        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.processMessage(text);
-        }
         return Message.INVALID_NAME.processMessage(obj, text);
     }
 }

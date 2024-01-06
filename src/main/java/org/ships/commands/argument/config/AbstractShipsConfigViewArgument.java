@@ -71,7 +71,7 @@ public class AbstractShipsConfigViewArgument implements ArgumentCommand {
 
     private <T> String readNode(DedicatedNode<T, T, ? extends ConfigurationNode.KnownParser<String, T>> node) {
         Optional<T> opValue = this.config.get().getFile().parse(node.getNode());
-        if (!opValue.isPresent()) {
+        if (opValue.isEmpty()) {
             return "<no value>";
         }
         return node.getNode().getParser().unparse(opValue.get());

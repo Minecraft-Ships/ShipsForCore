@@ -1,7 +1,7 @@
 package org.ships.commands.argument.config.shiptype;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -10,7 +10,6 @@ import org.core.config.ConfigurationNode;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleKeyArgument;
 import org.ships.permissions.Permissions;
@@ -29,12 +28,10 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(COMMAND_NAME, false, "config"),
-                new ExactArgument("view"),
-                new ExactArgument(CONFIG_TYPE, false, "shiptype"),
-                new ShipIdentifiableArgument<>(SHIP_TYPE, ShipType.class),
-                new ShipTypeSingleKeyArgument(CONFIG_KEY));
+        return Arrays.asList(new ExactArgument(COMMAND_NAME, false, "config"), new ExactArgument("view"),
+                             new ExactArgument(CONFIG_TYPE, false, "shiptype"),
+                             new ShipIdentifiableArgument<>(SHIP_TYPE, ShipType.class),
+                             new ShipTypeSingleKeyArgument(CONFIG_KEY));
     }
 
     @Override
@@ -57,13 +54,13 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
         ShipType<?> type = commandContext.getArgument(this, SHIP_TYPE);
         ConfigurationNode.KnownParser<String, T> parser = commandContext.getArgument(this, CONFIG_KEY);
         Optional<T> opResult = type.getFile().parse(parser);
-        if (!opResult.isPresent()) {
-            viewer.sendMessage(AText.ofPlain("No Value found at node. Is it for this ShipType?"));
+        if (opResult.isEmpty()) {
+            viewer.sendMessage(Component.text("No Value found at node. Is it for this ShipType?"));
             return true;
         }
-        viewer.sendMessage(AText
-                .ofPlain("Value is '" + parser.getParser().unparse(opResult.get()) + "'")
-                .withColour(NamedTextColours.AQUA));
+        viewer.sendMessage(Component
+                                   .text("Value is '" + parser.getParser().unparse(opResult.get()) + "'")
+                                   .color(NamedTextColor.AQUA));
         return true;
     }
 }

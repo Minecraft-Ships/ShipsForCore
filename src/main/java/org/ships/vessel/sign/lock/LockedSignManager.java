@@ -30,21 +30,18 @@ public class LockedSignManager {
         WorldExtent world = vessel.getPosition().getWorld();
         Bounds<Integer> bounds = vessel.getStructure().getBounds();
         return locked.parallelStream().filter(lock -> {
-            if (lock.getLockedTo().equals(vessel)) {
+            if (lock.getLockedTo().map(lockedTo -> lockedTo.equals(vessel)).orElse(false)) {
                 return true;
             }
             if (!lock.getPosition().getWorld().equals(world)) {
                 return false;
             }
-            if (bounds.contains(lock.getPosition().getPosition())) {
-                return true;
-            }
-            return false;
+            return bounds.contains(lock.getPosition().getPosition());
         }).collect(Collectors.toUnmodifiableSet());
     }
 
     public boolean isLocked(Position<?> position) {
-        BlockPosition blockPos = Position.toBlock(position);
+        BlockPosition blockPos = position.toBlockPosition();
         return this.getLockedSigns().parallelStream().anyMatch(lock -> lock.getPosition().equals(blockPos));
     }
 
@@ -53,11 +50,11 @@ public class LockedSignManager {
     }
 
     public void lock(@NotNull Position<?> position, @Nullable Vessel to) {
-        this.lockedSigns.add(new SignLock(to, Position.toBlock(position)));
+        this.lockedSigns.add(new SignLock(to, position.toBlockPosition()));
     }
 
     public void unlock(@NotNull Position<?> position) {
-        BlockPosition block = Position.toBlock(position);
+        BlockPosition block = position.toBlockPosition();
         this.lockedSigns
                 .parallelStream()
                 .filter(p -> p.getPosition().equals(block))

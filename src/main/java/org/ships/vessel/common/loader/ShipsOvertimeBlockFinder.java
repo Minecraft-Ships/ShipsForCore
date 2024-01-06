@@ -65,7 +65,7 @@ public class ShipsOvertimeBlockFinder {
 
         Map.Entry<Byte, Vessel> passed = new AbstractMap.SimpleEntry<>((byte) 0, null);
 
-        if (!config.isStructureAutoUpdating()) {
+        if (config.isStructureClickUpdating()) {
             CompletableFuture<Vessel> future = new CompletableFuture<>();
             ShipsPlugin.getPlugin().getVessels().forEach(v -> {
                 PositionableShipsStructure pss = v.getStructure();

@@ -1,16 +1,18 @@
 package org.ships.vessel.sign;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.entity.EntitySnapshot;
+import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
-import org.core.source.viewer.CommandViewer;
+import org.core.source.Messageable;
+import org.core.utils.BarUtils;
 import org.core.utils.ComponentUtils;
 import org.core.utils.Else;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -19,6 +21,7 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
@@ -154,23 +157,25 @@ public class AltitudeSign implements ShipsSign {
         }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int blockLimit = config.getDefaultTrackSize();
-        ServerBossBar bossBar = null;
+        BossBar bossBar = null;
         if (config.isBossBarVisible()) {
-            bossBar = TranslateCore.createBossBar().setTitle(AText.ofPlain("0 / " + blockLimit)).register(player);
+            bossBar = BossBar.bossBar(Component.text("0 / " + blockLimit), 0, BossBar.Color.PURPLE,
+                                      BossBar.Overlay.PROGRESS);
+            player.showBossBar(bossBar);
         }
-        final ServerBossBar finalBar = bossBar;
+        final BossBar finalBar = bossBar;
         final int finalAltitude = altitude;
         ShipsPlugin.getPlugin().getLockedSignManager().lock(position);
 
         VesselBlockFinder.findOvertime(position, (currentStructure, block) -> {
             int foundBlocks = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
+            int newTotal = Math.max(blockLimit, foundBlocks);
             if (finalBar != null) {
-                finalBar.setTitle(AText.ofPlain(foundBlocks + " / " + blockLimit));
-                try {
-                    finalBar.setValue(foundBlocks, blockLimit);
-                } catch (IllegalArgumentException ignore) {
+                finalBar.name(Component.text(foundBlocks + "/" + newTotal));
 
-                }
+                float progress = newTotal / (float) foundBlocks;
+                progress = progress / 100;
+                finalBar.progress(progress);
             }
         }).thenAccept(entry -> {
             if (entry.getValue().isPresent()) {
@@ -186,7 +191,7 @@ public class AltitudeSign implements ShipsSign {
                     .setDelay(5)
                     .setDelayUnit(TimeUnit.SECONDS)
                     .setRunner((sched) -> foundStructure.forEach(bp -> bp.resetBlock(player)))
-                    .build(ShipsPlugin.getPlugin())
+                    .buildDelayed(ShipsPlugin.getPlugin())
                     .run();
         });
 
@@ -203,34 +208,37 @@ public class AltitudeSign implements ShipsSign {
         return "Altitude Sign";
     }
 
-    private void onVesselMove(CommandViewer player,
+    private void onVesselMove(Messageable player,
                               BlockPosition position,
-                              ServerBossBar bossBar,
+                              @Nullable BossBar bossBar,
                               int altitude,
                               String line1,
                               Vessel vessel) {
         Optional<Boolean> opFlag = vessel.getValue(AltitudeLockFlag.class);
         if (opFlag.isPresent() && bossBar != null) {
             if (opFlag.get()) {
-                bossBar.deregisterPlayers();
-                player.sendMessage(AText.ofPlain("The altitude is locked on this ship"));
+                BarUtils.getPlayers(bossBar).forEach(user -> user.hideBossBar(bossBar));
+                player.sendMessage(Component.text("The altitude is locked on this ship"));
                 ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
                 return;
             }
         }
         MovementDetailsBuilder builder = new MovementDetailsBuilder();
-        builder.setBossBar(bossBar);
+        builder.setAdventureBossBar(bossBar);
         builder.setClickedBlock(position);
-        vessel.getEntities().stream().filter(e -> e instanceof LivePlayer).forEach(e -> {
-            if (bossBar == null) {
-                return;
-            }
-            bossBar.register((LivePlayer) e);
-        });
+        if (bossBar != null) {
+            vessel.getEntitiesOvertime(user -> user instanceof Audience).thenAccept(entities -> {
+                for (LiveEntity entity : entities) {
+                    ((Audience) entity).showBossBar(bossBar);
+                }
+            });
+        }
 
         BiConsumer<MovementContext, Throwable> exception = (context, exc) -> {
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+            context
+                    .getAdventureBossBar()
+                    .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar)));
             context
                     .getEntities()
                     .keySet()
@@ -241,7 +249,7 @@ public class AltitudeSign implements ShipsSign {
             if (!(exc instanceof MoveException e)) {
                 return;
             }
-            player.sendMessage(e.getErrorMessageText());
+            player.sendMessage(e.getErrorMessage());
         };
 
         builder.setException(exception);

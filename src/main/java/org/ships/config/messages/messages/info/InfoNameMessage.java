@@ -5,11 +5,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class InfoNameMessage implements Message<Vessel> {
     @Override
@@ -26,18 +27,27 @@ public class InfoNameMessage implements Message<Vessel> {
     }
 
     @Override
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL);
+    }
+
+    @Override
     public Set<MessageAdapter<?>> getAdapters() {
         return new HashSet<>(this.getExactAdapters());
     }
 
     @Override
     public Component processMessage(@NotNull Component text, Vessel obj) {
-        for (MessageAdapter<Vessel> adapter : this.getExactAdapters()) {
+        var vesselAdapter = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+
+
+        for (MessageAdapter<Vessel> adapter : vesselAdapter) {
             text = adapter.processMessage(obj, text);
         }
         return text;
     }
 
+    @Deprecated(forRemoval = true)
     public Set<MessageAdapter<Vessel>> getExactAdapters() {
         return Collections.singleton(Message.VESSEL_NAME);
     }

@@ -8,7 +8,6 @@ import org.core.command.argument.arguments.operation.OptionalArgument;
 import org.core.command.argument.arguments.simple.number.FloatArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.ship.data.AbstractShipsDataSetCommand;
 import org.ships.vessel.common.assits.VesselRequirement;
@@ -62,7 +61,9 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
                 return false;
             }
             if (value < 0) {
-                    context.getSource().sendMessage(AText.ofPlain("Percent cannot be below 0%").withColour(NamedTextColours.RED));
+                context
+                        .getSource()
+                        .sendMessage(AText.ofPlain("Percent cannot be below 0%").withColour(NamedTextColours.RED));
 
                 return false;
             }
@@ -70,7 +71,6 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
         SpecialBlocksRequirement parent = opRequirement
                 .get()
                 .getParent()
-                .map(r -> (SpecialBlocksRequirement) r)
                 .orElseThrow(() -> new RuntimeException("Requirement found on vessel must have parent"));
         SpecialBlocksRequirement updated = parent.createChildWithPercentage(value);
         requirementVessel.setRequirement(updated);

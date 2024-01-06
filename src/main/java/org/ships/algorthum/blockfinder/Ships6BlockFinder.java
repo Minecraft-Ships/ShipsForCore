@@ -9,7 +9,6 @@ import org.core.schedule.unit.TimeUnit;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,9 +31,9 @@ import java.util.function.Consumer;
 
 public class Ships6BlockFinder implements BasicBlockFinder {
 
-    private class Overtime {
+    private final class Overtime {
 
-        private class OvertimeSection {
+        private final class OvertimeSection {
 
             private final Direction[] directions = FourFacingDirection.withYDirections(
                     FourFacingDirection.getFourFacingDirections());
@@ -122,14 +121,14 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                                     .setDelayUnit(stackDelayUnit)
                                     .setRunner(this.runnable)
                                     .setDisplayName("Ships 6 ASync Block Finder")
-                                    .build(ShipsPlugin.getPlugin())
+                                    .buildDelayed(ShipsPlugin.getPlugin())
                                     .run();
                         } else {
                             this.onComplete.complete(this.pss);
                         }
                     })
                     .setDisplayName("Ships 6 block finder")
-                    .build(ShipsPlugin.getPlugin());
+                    .buildDelayed(ShipsPlugin.getPlugin());
 
             for (List<SyncBlockPosition> list : collections) {
                 scheduler = TranslateCore
@@ -153,7 +152,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                         })
                         .setToRunAfter(scheduler)
                         .setDisplayName("Ships 6 Block finder")
-                        .build(ShipsPlugin.getPlugin());
+                        .buildDelayed(ShipsPlugin.getPlugin());
             }
             scheduler.run();
         };
@@ -193,7 +192,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
         ConfigurationStream configuration = this
                 .configuration()
                 .orElseThrow(() -> new RuntimeException("Configuration is optional empty"));
-        Overtime overtime = new Overtime(Position.toSync(position), runAfterFullSearch, configuration, future);
+        Overtime overtime = new Overtime(position.toSyncPosition(), runAfterFullSearch, configuration, future);
         TranslateCore
                 .getScheduleManager()
                 .schedule()
@@ -201,7 +200,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                 .setDelayUnit(configuration.parse(STACK_DELAY_UNIT.getNode()).orElse(TimeUnit.MINECRAFT_TICKS))
                 .setRunner(overtime.runnable)
                 .setDisplayName("Ships 6 block finder")
-                .build(ShipsPlugin.getPlugin())
+                .buildDelayed(ShipsPlugin.getPlugin())
                 .run();
         return future;
     }

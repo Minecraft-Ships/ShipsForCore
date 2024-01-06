@@ -31,8 +31,7 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
 
     public ShipIdArgument(String id) {
         this(id, (source, vessel) -> {
-            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
+            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
                 User player = (User) source;
                 return crewVessel.getPermission(player.getUniqueId()).canCommand();
             }
@@ -40,8 +39,9 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
         }, v -> "Your crew permission does not allow for commands");
     }
 
-    public ShipIdArgument(String id, BiPredicate<? super CommandSource, ? super Vessel> predicate,
-            Function<? super Vessel, String> failMessage) {
+    public ShipIdArgument(String id,
+                          BiPredicate<? super CommandSource, ? super Vessel> predicate,
+                          Function<? super Vessel, String> failMessage) {
         this.id = id;
         this.predicate = predicate;
         this.failMessage = failMessage;
@@ -53,8 +53,8 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
     }
 
     @Override
-    public CommandArgumentResult<V> parse(CommandContext context, CommandArgumentContext<V> argument) throws
-            IOException {
+    public CommandArgumentResult<V> parse(CommandContext context, CommandArgumentContext<V> argument)
+            throws IOException {
         String id = context.getCommand()[argument.getFirstArgument()];
         Optional<IdentifiableShip> opVessel = ShipsPlugin
                 .getPlugin()
@@ -70,7 +70,7 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
                     }
                 })
                 .findAny();
-        if (!(opVessel.isPresent())) {
+        if (opVessel.isEmpty()) {
             throw new IOException("No Vessel by that name");
         }
         if (!this.predicate.test(context.getSource(), opVessel.get())) {

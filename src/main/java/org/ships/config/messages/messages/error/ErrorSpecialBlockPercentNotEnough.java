@@ -5,7 +5,9 @@ import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.misc.CollectionAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.config.messages.messages.error.data.RequirementPercentMessageData;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
@@ -13,29 +15,31 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPercentMessageData> {
 
+
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "SpecialBlocks", "NotEnough"};
+        return new String[]{"Error", "Requirement", "Blocks", "Not Enough"};
     }
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text(
-                "Found " + Message.PERCENT_FOUND.adapterTextFormat() + " of one of " + new CollectionAdapter<>(
-                        Message.BLOCK_TYPE_NAME).adapterTextFormat());
+        return Component.text("You have " + Message.PERCENT_FOUND.adapterTextFormat() + "% of one of "
+                                      + Message.BLOCK_NAMES.adapterTextFormat() + ". You require more");
+    }
+
+    @Override
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL, AdapterCategories.BLOCK_GROUP);
     }
 
     @Override
     public Collection<MessageAdapter<?>> getAdapters() {
-        Collection<MessageAdapter<?>> collection = new HashSet<>();
-        collection.addAll(Message.VESSEL_ADAPTERS);
-        collection.addAll(
-                Message.BLOCK_TYPE_ADAPTERS.parallelStream().map(CollectionAdapter::new).collect(Collectors.toSet()));
+        Collection<MessageAdapter<?>> collection = new HashSet<>(Message.super.getAdapters());
         collection.add(Message.PERCENT_FOUND);
         collection.add(Message.TOTAL_FOUND_BLOCKS);
         return collection;
@@ -43,32 +47,28 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
 
     @Override
     public Component processMessage(@NotNull Component text, RequirementPercentMessageData obj) {
-        for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
-            if (adapter.containsAdapter(text)) {
-                text = adapter.processMessage(obj.getVessel(), text);
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<MessageAdapter<Collection<BlockType>>> blockGroupsAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.BLOCK_GROUP)
+                .toList();
+
+        for (MessageAdapter<Vessel> adapter : vesselAdapters) {
+            text = adapter.processMessage(obj.getVessel(), text);
+        }
+
+        if (obj.getVessel() instanceof VesselRequirement shipVessel) {
+            Optional<SpecialBlocksRequirement> opRequirement = shipVessel.getRequirement(
+                    SpecialBlocksRequirement.class);
+            if (opRequirement.isPresent()) {
+                for (MessageAdapter<Collection<BlockType>> adapter : blockGroupsAdapters) {
+                    text = adapter.processMessage(opRequirement.get().getSpecifiedBlocks(), text);
+                }
             }
         }
-        if (Message.PERCENT_FOUND.containsAdapter(text)) {
-            text = Message.PERCENT_FOUND.processMessage(obj.getPercentageMet(), text);
-        }
-        if (Message.TOTAL_FOUND_BLOCKS.containsAdapter(text)) {
-            text = Message.TOTAL_FOUND_BLOCKS.processMessage(obj.getBlocksMeetingRequirements(), text);
-        }
-        if (!(obj.getVessel() instanceof VesselRequirement vesselRequirement)) {
-            return text;
-        }
-        Optional<SpecialBlocksRequirement> opRequirement = vesselRequirement.getRequirement(
-                SpecialBlocksRequirement.class);
-        if (opRequirement.isEmpty()) {
-            return text;
-        }
-        Collection<BlockType> blocks = opRequirement.get().getBlocks();
-        for (MessageAdapter<BlockType> adapter : Message.BLOCK_TYPE_ADAPTERS) {
-            MessageAdapter<Collection<BlockType>> collectionAdapter = new CollectionAdapter<>(adapter);
-            if (collectionAdapter.containsAdapter(text)) {
-                text = collectionAdapter.processMessage(blocks, text);
-            }
-        }
+
+        text = Message.PERCENT_FOUND.processMessage(obj.getPercentageMet(), text);
+        text = Message.TOTAL_FOUND_BLOCKS.processMessage(obj.getBlocksMeetingRequirements(), text);
+
         return text;
     }
 }

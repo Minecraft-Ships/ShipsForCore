@@ -1,12 +1,13 @@
 package org.ships.movement.autopilot.scheduler;
 
-import org.core.TranslateCore;
-import org.core.entity.living.human.player.LivePlayer;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
+import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.source.Messageable;
 import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -100,9 +101,13 @@ public class EOTExecutor implements Consumer<Scheduler> {
 
         MovementDetailsBuilder builder = new MovementDetailsBuilder();
         if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-            ServerBossBar bossBar = TranslateCore.createBossBar();
-            this.vessel.getEntities(LivePlayer.class).forEach(bossBar::register);
-            builder.setBossBar(bossBar);
+            BossBar bossBar = BossBar.bossBar(Component.empty(), 0, BossBar.Color.PURPLE, BossBar.Overlay.PROGRESS);
+            this.vessel.getEntitiesOvertime(entity -> entity instanceof Audience).thenAccept(entities -> {
+                for (LiveEntity entity : entities) {
+                    ((Audience) entity).showBossBar(bossBar);
+                }
+            });
+            builder.setAdventureBossBar(bossBar);
         }
 
         Messageable[] viewers = this.player == null ? new Messageable[0] : new Messageable[]{this.player};

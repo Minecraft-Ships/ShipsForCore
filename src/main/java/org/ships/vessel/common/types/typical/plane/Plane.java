@@ -121,7 +121,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     }
 
     @Override
-    public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
+    public @NotNull Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(@NotNull ConfigurationStream file) {
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configFuelConsumption, this.getFuelConsumption());
         map.put(this.configFuelSlot, this.getFuelSlot());
@@ -130,7 +130,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     }
 
     @Override
-    public AbstractShipsVessel deserializeExtra(ConfigurationStream file) {
+    public @NotNull AbstractShipsVessel deserializeExtra(@NotNull ConfigurationStream file) {
         FuelRequirement fuelRequirements = this.getFuelRequirement();
         Optional<Integer> opConsumption = file.getInteger(this.configFuelConsumption);
         if (opConsumption.isPresent()) {
@@ -148,7 +148,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
     }
 
     @Override
-    public void setRequirement(Requirement<?> updated) {
+    public void setRequirement(@NotNull Requirement<?> updated) {
         this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }

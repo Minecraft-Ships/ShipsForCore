@@ -31,24 +31,18 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(this.SHIP_ARGUMENT),
-                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-                    if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                        CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                        User player = (User) source;
-                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
-                    }
-                    return vessel instanceof CrewStoredVessel;
-                }, v -> "Vessel does not accept crew"),
-                new ExactArgument(this.SHIP_CREW_ARGUMENT),
-                new ExactArgument(this.SHIP_VIEW_ARGUMENT),
-                new OptionalArgument<>(
-                        new RemainingArgument<>
-                                (this.SHIP_CREW_PERMISSION_ARGUMENT,
-                                        new ShipIdentifiableArgument<>(
-                                                this.SHIP_CREW_PERMISSION_ARGUMENT,
-                                                CrewPermission.class)),
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
+                             new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
+                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
+                                     User player = (User) source;
+                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                 }
+                                 return vessel instanceof CrewStoredVessel;
+                             }, v -> "Vessel does not accept crew"), new ExactArgument(this.SHIP_CREW_ARGUMENT),
+                             new ExactArgument(this.SHIP_VIEW_ARGUMENT), new OptionalArgument<>(
+                        new RemainingArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT,
+                                                new ShipIdentifiableArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT,
+                                                                               CrewPermission.class)),
                         Collections.emptyList()));
     }
 
@@ -81,9 +75,9 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
             vessel
                     .getCrew(crewPermission)
                     .stream()
-                    .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore
-                            .getServer()
-                            .getOfflineUser(uuid).get(), Optional.<User>empty()))
+                    .map(uuid -> Else.throwOr(Exception.class,
+                                              () -> TranslateCore.getServer().getOfflineUser(uuid).get(),
+                                              Optional.<User>empty()))
 
                     .filter(Optional::isPresent)
                     .map(Optional::get)

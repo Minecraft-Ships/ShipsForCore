@@ -17,6 +17,7 @@ import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
@@ -206,7 +207,7 @@ public class LicenceSign implements ShipsSign {
         return false;
     }
 
-    private void displayInfo(@NotNull LivePlayer player, @NotNull SyncBlockPosition position) throws IOException {
+    private void displayInfo(@NotNull LivePlayer player, @NotNull SyncPosition<Integer> position) throws IOException {
         Vessel s = ShipsSignVesselFinder.find((SignTileEntity) position
                 .getTileEntity()
                 .orElseThrow(() -> new RuntimeException("Unknown [ships] sign")));

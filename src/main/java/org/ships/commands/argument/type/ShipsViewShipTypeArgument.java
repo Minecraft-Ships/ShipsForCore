@@ -40,10 +40,9 @@ public class ShipsViewShipTypeArgument implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof CommandViewer)) {
+        if (!(source instanceof CommandViewer viewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer) source;
         Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
         types.forEach(st -> viewer.sendMessage(AText.ofPlain(" - " + st.getDisplayName())));
         return true;

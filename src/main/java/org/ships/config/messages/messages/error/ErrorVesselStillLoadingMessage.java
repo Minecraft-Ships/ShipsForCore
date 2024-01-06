@@ -5,16 +5,18 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 public class ErrorVesselStillLoadingMessage implements Message<Vessel> {
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "StillLoading"};
+        return new String[]{"Error", "Still Loading"};
     }
 
     @Override
@@ -26,18 +28,15 @@ public class ErrorVesselStillLoadingMessage implements Message<Vessel> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        Set<MessageAdapter<?>> set = new HashSet<>(Message.VESSEL_ADAPTERS);
-        set.addAll(Message.CONFIG_ADAPTERS);
-        return set;
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL);
     }
+
 
     @Override
     public Component processMessage(@NotNull Component text, Vessel obj) {
-        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.processMessage(text);
-        }
-        for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj, text);
         }
         return text;

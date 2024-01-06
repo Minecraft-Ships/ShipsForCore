@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ShipsInfoArgumentCommand implements ArgumentCommand {
 
@@ -43,13 +42,6 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
     @Override
     public Optional<Permission> getPermissionNode() {
         return Optional.of(Permissions.CMD_INFO);
-    }
-
-    private AText readVersion(PlatformDetails details) {
-        return AText
-                .ofPlain(details.getName() + ": ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText.ofPlain(details.getVersion().asString()).withColour(NamedTextColours.GOLD));
     }
 
     @Override
@@ -83,7 +75,7 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
             List<AText> typeText = shipTypes
                     .stream()
                     .map(s -> AText.ofPlain(s.getDisplayName()).withColour(NamedTextColours.GOLD))
-                    .collect(Collectors.toList());
+                    .toList();
             AText text = null;
             for (ShipType<?> shipType : shipTypes) {
                 AText displayName = AText.ofPlain(shipType.getDisplayName()).withColour(NamedTextColours.GOLD);
@@ -96,5 +88,12 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
             viewer.sendMessage(text);
         }
         return true;
+    }
+
+    private AText readVersion(PlatformDetails details) {
+        return AText
+                .ofPlain(details.getName() + ": ")
+                .withColour(NamedTextColours.AQUA)
+                .append(AText.ofPlain(details.getVersion().asString()).withColour(NamedTextColours.GOLD));
     }
 }

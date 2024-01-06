@@ -5,11 +5,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 public class InfoAltitudeSpeedMessage implements Message<Vessel> {
     @Override
@@ -26,17 +28,16 @@ public class InfoAltitudeSpeedMessage implements Message<Vessel> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        Set<MessageAdapter<?>> set = new HashSet<>(Message.CONFIG_ADAPTERS);
-        set.add(Message.VESSEL_SPEED);
-        return set;
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, Vessel obj) {
-        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.processMessage(text);
+        List<MessageAdapter<Vessel>> vesselCategory = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        for (MessageAdapter<Vessel> adapter : vesselCategory) {
+            text = adapter.processMessage(obj);
         }
-        return Message.VESSEL_SIZE.processMessage(obj, text);
+        return text;
     }
 }

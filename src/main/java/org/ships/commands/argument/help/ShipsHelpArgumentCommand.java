@@ -35,17 +35,11 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
     }
 
     @Override
-    public boolean hasPermission(CommandSource source) {
-        return true;
-    }
-
-    @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof CommandViewer)) {
+        if (!(source instanceof CommandViewer viewer)) {
             return false;
         }
-        CommandViewer viewer = (CommandViewer) source;
         Collection<ArgumentCommand> commands = new TreeSet<>((o1, o2) -> {
             List<CommandArgument<?>> a1 = o1.getArguments();
             List<CommandArgument<?>> a2 = o2.getArguments();
@@ -90,14 +84,18 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
                 viewer.sendMessage(AText.ofPlain(cmd.getDescription()).withColour(NamedTextColours.YELLOW));
                 continue;
             }
-            viewer.sendMessage(
-                    AText.ofPlain(arguments.get(0).getUsage() + ":")
-                            .withColour(NamedTextColours.AQUA)
-                            .append(
-                                    AText
-                                            .ofPlain(cmd.getDescription())
-                                            .withColour(NamedTextColours.YELLOW)));
+            viewer.sendMessage(AText
+                                       .ofPlain(arguments.get(0).getUsage() + ":")
+                                       .withColour(NamedTextColours.AQUA)
+                                       .append(AText
+                                                       .ofPlain(cmd.getDescription())
+                                                       .withColour(NamedTextColours.YELLOW)));
         }
+        return true;
+    }
+
+    @Override
+    public boolean hasPermission(CommandSource source) {
         return true;
     }
 }

@@ -1,10 +1,12 @@
 package org.ships.movement;
 
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.entity.Entity;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
+import org.core.utils.BarUtils;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
@@ -52,8 +54,13 @@ public class MovementContext {
         return this.details.getClickedBlock();
     }
 
+    @Deprecated(forRemoval = true)
     public Optional<ServerBossBar> getBossBar() {
         return this.details.getBossBar();
+    }
+
+    public Optional<BossBar> getAdventureBossBar() {
+        return this.details.getAdventureBossBar();
     }
 
     public boolean isStrictMovement() {
@@ -116,7 +123,9 @@ public class MovementContext {
             try {
                 this.movePostEntity(vessel);
             } catch (Throwable e) {
-                this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+                this
+                        .getAdventureBossBar()
+                        .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar)));
                 vessel.set(new MovingFlag());
                 entities.forEach(entity -> entity.setGravity(true));
                 this.getException().accept(this, e);
@@ -137,9 +146,9 @@ public class MovementContext {
     }
 
     private void movePostEntity(Vessel vessel) throws Exception {
-        this.getBossBar().ifPresent(bossBar -> {
-            bossBar.setValue(100);
-            bossBar.setTitle(AText.ofPlain("Processing: Pre"));
+        this.getAdventureBossBar().ifPresent(bossBar -> {
+            bossBar.progress(1);
+            bossBar.name(Component.text("Processing: Pre"));
         });
 
         if (ShipsPlugin.getPlugin().getPreventMovementManager().isMovementPrevented()) {
@@ -149,32 +158,32 @@ public class MovementContext {
         if (this.isPreMoveEventCancelled(vessel)) {
             return;
         }
-        this.getBossBar().ifPresent(bossBar -> {
-            bossBar.setTitle(AText.ofPlain("Checking requirements: Sign"));
-            bossBar.setValue(25);
+        this.getAdventureBossBar().ifPresent(bossBar -> {
+            bossBar.name(Component.text("Checking requirements: Sign"));
+            bossBar.progress(0.25f);
         });
         if (vessel instanceof SignBasedVessel signBasedVessel) {
             this.isLicenceSignValid(signBasedVessel);
         }
-        this.getBossBar().ifPresent(bossBar -> {
-            bossBar.setTitle(AText.ofPlain("Checking requirements: Vessel specific"));
-            bossBar.setValue(50);
+        this.getAdventureBossBar().ifPresent(bossBar -> {
+            bossBar.name(Component.text("Checking requirements: Vessel specific"));
+            bossBar.progress(0.50f);
         });
         if (vessel instanceof VesselRequirement vesselRequirement) {
             this.isRequirementsValid(vesselRequirement);
         }
-        this.getBossBar().ifPresent(bossBar -> {
-            bossBar.setTitle(AText.ofPlain("Checking requirements: Collide"));
-            bossBar.setValue(75);
+        this.getAdventureBossBar().ifPresent(bossBar -> {
+            bossBar.name(Component.text("Checking requirements: Collide"));
+            bossBar.progress(0.75f);
         });
 
         this.isClearFromColliding(vessel);
         if (vessel instanceof VesselRequirement vesselRequirement) {
             this.processRequirements(vesselRequirement);
         }
-        this.getBossBar().ifPresent(bossBar -> {
-            bossBar.setValue(100);
-            bossBar.setTitle(AText.ofPlain("Processing: Movement setup"));
+        this.getAdventureBossBar().ifPresent(bossBar -> {
+            bossBar.progress(1);
+            bossBar.name(Component.text("Processing: Movement setup"));
         });
         this.processMovement(vessel);
     }
@@ -185,10 +194,10 @@ public class MovementContext {
             throw new Exception("MoveEvent Main was cancelled");
         }
         this.entities.keySet().forEach(e -> e.getCreatedFrom().ifPresent(entity -> entity.setGravity(false)));
-        this.getBossBar().ifPresent(bossBar -> bossBar.setTitle(AText.ofPlain("Processing: Moving")));
+        this.getAdventureBossBar().ifPresent(bossBar -> bossBar.name(Component.text("Processing: Moving")));
 
         Result result = this.getMovement().move(vessel, this);
-        this.getBossBar().ifPresent(bossBar -> bossBar.setTitle(AText.ofPlain("Processing: Post Moving")));
+        this.getAdventureBossBar().ifPresent(bossBar -> bossBar.name(Component.text("Processing: Post Moving")));
         result.run(vessel, this);
         for (PostMovement postMovement : this.getPostMovementProcess()) {
             postMovement.postMove(vessel);
@@ -196,7 +205,7 @@ public class MovementContext {
     }
 
     private void processRequirements(VesselRequirement vessel) throws MoveException {
-        this.getBossBar().ifPresent(bossBar -> bossBar.setTitle(AText.ofPlain("Processing: Requirements")));
+        this.getAdventureBossBar().ifPresent(bossBar -> bossBar.name(Component.text("Processing: Requirements")));
         vessel.finishRequirements(this);
     }
 
@@ -249,10 +258,8 @@ public class MovementContext {
         if (!TranslateCore.getPlatform().callEvent(preEvent).isCancelled()) {
             return false;
         }
-        this.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
-        this.getClicked().ifPresent(clicked -> {
-            ShipsPlugin.getPlugin().getLockedSignManager().unlock(clicked);
-        });
+        this.getAdventureBossBar().ifPresent(bar -> BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar)));
+        this.getClicked().ifPresent(clicked -> ShipsPlugin.getPlugin().getLockedSignManager().unlock(clicked));
         vessel.set(MovingFlag.class, null);
         return true;
 
@@ -260,7 +267,13 @@ public class MovementContext {
 
     private CompletableFuture<Collection<LiveEntity>> collectEntities(Vessel vessel) {
         return vessel.getEntitiesOvertime(e -> true).thenApply(e -> {
-            e.forEach(entity -> this.saveEntity(vessel, entity, e.size()));
+            e.forEach(entity -> {
+                try {
+                    this.saveEntity(vessel, entity, e.size());
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                }
+            });
             return e;
         });
     }
@@ -291,10 +304,12 @@ public class MovementContext {
             return;
         }
         this.entities.put(snapshot, mBlock.get());
-        this.getBossBar().ifPresent(bossBar -> {
-            bossBar.setTitle(AText.ofPlain("Collecting entities: " + this.entities.size()));
-            bossBar.setValue(this.entities.size(), totalSize);
+        this.getAdventureBossBar().ifPresent(bossBar -> {
+            float progress = this.entities.size() / (float)totalSize;
+            progress = progress / 100;
 
+            bossBar.name(Component.text("Collecting entities: " + this.entities.size()));
+            bossBar.progress(progress);
         });
     }
 

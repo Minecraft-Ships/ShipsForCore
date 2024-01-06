@@ -4,16 +4,15 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
-import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 public class ErrorShipsSignIsMoving implements Message<Object> {
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "ShipSignIsMoving"};
+        return new String[]{"Error", "Sign", "Ship Sign Is Moving"};
     }
 
     @Override
@@ -22,15 +21,12 @@ public class ErrorShipsSignIsMoving implements Message<Object> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(Message.CONFIG_ADAPTERS);
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of();
     }
 
     @Override
     public Component processMessage(@NotNull Component text, Object obj) {
-        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.processMessage(text);
-        }
         return text;
     }
 }

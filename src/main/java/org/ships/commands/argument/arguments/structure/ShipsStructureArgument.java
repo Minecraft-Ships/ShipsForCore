@@ -26,14 +26,13 @@ public class ShipsStructureArgument implements CommandArgument<Structure> {
     }
 
     @Override
-    public CommandArgumentResult<Structure> parse(CommandContext context,
-            CommandArgumentContext<Structure> argument) throws IOException {
+    public CommandArgumentResult<Structure> parse(CommandContext context, CommandArgumentContext<Structure> argument)
+            throws IOException {
         String t = argument.getFocusArgument();
         Optional<Structure> opStructure = TranslateCore
                 .getPlatform()
                 .getStructures()
                 .parallelStream()
-                .parallel()
                 .filter(structure -> structure.getId().isPresent())
                 .filter(structure -> structure.getPlugin().isPresent())
                 .filter(structure -> t.equalsIgnoreCase(
@@ -52,7 +51,6 @@ public class ShipsStructureArgument implements CommandArgument<Structure> {
                 .getPlatform()
                 .getStructures()
                 .parallelStream()
-                .parallel()
                 .filter(structure -> structure.getId().isPresent())
                 .filter(structure -> structure.getPlugin().isPresent())
                 .map(structure -> structure.getPlugin().get().getPluginId() + ":" + structure.getId().get())

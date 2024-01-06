@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,12 +25,26 @@ public class CollectionAdapter<T> implements MessageAdapter<Collection<T>> {
     }
 
     @Override
+    public Class<?> adaptingType() {
+        return Collection.class;
+    }
+
+    @Override
     public Set<String> examples() {
         return this.adapter
                 .examples()
                 .parallelStream()
                 .map(example -> example.replaceAll(this.adapter.adapterTextFormat(), this.adapterTextFormat()))
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Collection<AdapterCategory<Collection<T>>> categories() {
+        return this.adapter
+                .categories()
+                .parallelStream()
+                .map(category -> category.<Collection<T>>map(this.adaptingType()))
+                .toList();
     }
 
     @Override

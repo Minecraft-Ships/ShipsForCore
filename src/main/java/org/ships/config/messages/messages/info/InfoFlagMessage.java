@@ -5,11 +5,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.vessel.common.flag.VesselFlag;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 public class InfoFlagMessage implements Message<VesselFlag<?>> {
     @Override
@@ -26,18 +28,16 @@ public class InfoFlagMessage implements Message<VesselFlag<?>> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(this.getExactAdapters());
-    }
-
-
-    private Set<MessageAdapter<VesselFlag<?>>> getExactAdapters() {
-        return new HashSet<>(Arrays.asList(Message.VESSEL_FLAG_ID, Message.VESSEL_FLAG_NAME));
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL_FLAG);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, VesselFlag<?> obj) {
-        for (MessageAdapter<VesselFlag<?>> adapter : this.getExactAdapters()) {
+        List<MessageAdapter<VesselFlag<?>>> flagAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL_FLAG)
+                .toList();
+        for (MessageAdapter<VesselFlag<?>> adapter : flagAdapters) {
             text = adapter.processMessage(obj, text);
         }
         return text;

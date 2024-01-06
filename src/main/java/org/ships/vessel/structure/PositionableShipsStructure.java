@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -95,13 +96,16 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
 
     boolean removePositionRelativeToCenter(Vector3<Integer> remove);
 
+    void copyInto(@NotNull PositionableShipsStructure structure);
+
+    boolean matchRelativeToCenter(PositionableShipsStructure structure);
+
     @Deprecated(forRemoval = true)
     default boolean removePosition(Vector3<Integer> remove) {
         return this.removePositionRelativeToCenter(remove);
     }
 
     PositionableShipsStructure clear();
-
 
     @Deprecated
     default PositionableShipsStructure setRaw(Collection<? extends Vector3<Integer>> collection) {
@@ -154,7 +158,7 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
                 .getRelativePositions()
                 .stream()
                 .map(vector -> (T) position.getRelative(vector))
-                .collect(Collectors.toUnmodifiableSet());
+                .collect(Collectors.toCollection(LinkedTransferQueue::new));
     }
 
     default Set<ChunkExtent> getChunks() {

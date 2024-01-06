@@ -17,11 +17,11 @@ public class CollideDetectedMessageData {
         this.positions = Collections.unmodifiableCollection(positions);
     }
 
-    public Vessel getVessel() {
+    public @NotNull Vessel getVessel() {
         return this.vessel;
     }
 
-    public Collection<BlockPosition> getPositions() {
+    public @NotNull Collection<BlockPosition> getPositions() {
         return this.positions;
     }
 }

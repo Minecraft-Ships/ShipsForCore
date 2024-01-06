@@ -103,11 +103,6 @@ public class ShipsConfig implements Config.KnownNodes {
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Bar", "Visible"),
             "Boss.Bar.Visible", (f, v) -> f.set(v.getKey(), v.getValue()));
 
-    @Deprecated(forRemoval = true)
-    protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_AUTO = new RawDedicatedNode<>(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Auto"),
-            "Structure.Auto.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
-    @Deprecated(forRemoval = true)
     protected final RawDedicatedNode<Boolean, ConfigurationNode.KnownParser.SingleKnown<Boolean>> STRUCTURE_UPDATE_CLICK = new RawDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Structure", "Update", "Click"),
             "Structure.Click.Update", (f, v) -> f.set(v.getKey(), v.getValue()));
@@ -161,7 +156,6 @@ public class ShipsConfig implements Config.KnownNodes {
             this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAY.getNode(), 1);
             this.file.set(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
             this.file.set(this.ADVANCED_BLOCKFINDER_STACK_LIMIT.getNode(), 7);
-            this.file.set(this.STRUCTURE_UPDATE_AUTO.getNode(), true);
         }
         if (this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode()).isEmpty()) {
             modified = true;
@@ -287,14 +281,8 @@ public class ShipsConfig implements Config.KnownNodes {
         return this.file.parse(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
-    @Deprecated(forRemoval = true)
     public boolean isStructureClickUpdating() {
         return this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode(), false);
-    }
-
-    @Deprecated(forRemoval = true)
-    public boolean isStructureAutoUpdating() {
-        return this.file.getBoolean(this.STRUCTURE_UPDATE_AUTO.getNode(), true);
     }
 
     @Deprecated(forRemoval = true)
@@ -374,8 +362,8 @@ public class ShipsConfig implements Config.KnownNodes {
                                 this.ADVANCED_MOVEMENT_STACK_LIMIT, this.ADVANCED_TRACK_LIMIT, this.DISABLED_WORLDS,
                                 this.EOT_DELAY, this.EOT_DELAY_UNIT, this.EOT_SPEED, this.EOT_ENABLED, this.FALL_DELAY,
                                 this.FALL_DELAY_UNIT, this.FALL_ENABLED, this.FALL_SPEED,
-                                this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, this.STRUCTURE_UPDATE_AUTO,
-                                this.STRUCTURE_UPDATE_CLICK, this.STRUCTURE_PREVENT_EXPLOSION, this.SIGN_MOVE_SPEED,
-                                this.VISIBLE_BOSS_BAR, this.UPDATE_ENABLED, this.LICENCE_SIGN_TEXT_4TH);
+                                this.MOVEMENT_REQUIREMENTS_CHECK_MAX_BLOCK_TYPE, this.STRUCTURE_UPDATE_CLICK,
+                                this.STRUCTURE_PREVENT_EXPLOSION, this.SIGN_MOVE_SPEED, this.VISIBLE_BOSS_BAR,
+                                this.UPDATE_ENABLED, this.LICENCE_SIGN_TEXT_4TH);
     }
 }

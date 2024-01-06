@@ -1,7 +1,7 @@
 package org.ships.algorthum.movement;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
@@ -34,27 +34,38 @@ public class Ships6Movement implements BasicMovement {
 
         private final List<? extends MovingBlock> toProcess;
         private final Integer waterLevel;
-        private final int attempt;
+        private final int current;
+        private final int totalBlocks;
         private final MovementContext context;
 
-        private RemoveBlocks(Integer level, int attempt, MovementContext context, List<? extends MovingBlock> blocks) {
+        private RemoveBlocks(Integer level,
+                             int current,
+                             int totalBlocks,
+                             MovementContext context,
+                             List<? extends MovingBlock> blocks) {
             this.toProcess = blocks;
             this.waterLevel = level;
-            this.attempt = attempt;
+            this.current = current;
+            this.totalBlocks = totalBlocks;
             this.context = context;
         }
 
         @Override
         public void accept(Scheduler scheduler) {
-            for (int A = 0; A < this.toProcess.size(); A++) {
-                final int B = A;
-                this.context.getBossBar().ifPresent(bar -> {
-                    try {
-                        bar.setValue((this.attempt - 1) + B, this.context.getMovingStructure().size());
-                    } catch (IllegalArgumentException ignore) {
-                    }
+            for (int index = 0; index < this.toProcess.size(); index++) {
+                final int finalIndex = index;
+                this.context.getAdventureBossBar().ifPresent(bar -> {
+                    int blocksFound = this.current + finalIndex;
+                    int totalBlocks = Math.max(this.totalBlocks, blocksFound);
+
+                    float progress = (float) blocksFound / totalBlocks;
+                    bar.progress(progress);
+                    progress = Math.max(progress, 0);
+                    progress = Math.min(progress, 1);
+                    bar.name(Component.text("Removing: " + blocksFound + " / " + totalBlocks));
+
                 });
-                MovingBlock m = this.toProcess.get(A);
+                MovingBlock m = this.toProcess.get(index);
                 if (this.waterLevel != null && this.waterLevel >= m.getBeforePosition().getY()) {
                     m.removeBeforePositionUnderWater();
                 } else {
@@ -67,28 +78,30 @@ public class Ships6Movement implements BasicMovement {
     private static final class SetBlocks implements Consumer<Scheduler> {
 
         private final List<? extends MovingBlock> toProcess;
-        private final int attempt;
         private final MovementContext context;
+        private final int current;
         private final int totalBlocks;
 
 
-        private SetBlocks(int attempt, int totalBlocks, MovementContext context, List<? extends MovingBlock> blocks) {
+        private SetBlocks(int current, int totalBlocks, MovementContext context, List<? extends MovingBlock> blocks) {
             this.toProcess = blocks;
             this.context = context;
-            this.attempt = attempt;
+            this.current = current;
             this.totalBlocks = totalBlocks;
         }
 
         @Override
         public void accept(Scheduler scheduler) {
-            for (int A = 0; A < this.toProcess.size(); A++) {
-                MovingBlock m = this.toProcess.get(A);
-                final int B = A;
-                this.context.getBossBar().ifPresent(bar -> {
-                    try {
-                        bar.setValue(this.attempt * B, (this.totalBlocks * 2) + 1);
-                    } catch (IllegalArgumentException ignore) {
-                    }
+            for (int index = 0; index < this.toProcess.size(); index++) {
+                MovingBlock m = this.toProcess.get(index);
+                final int finalIndex = index;
+                this.context.getAdventureBossBar().ifPresent(bar -> {
+                    int currentBlock = this.current + finalIndex;
+                    float progress = (float) currentBlock / totalBlocks;
+                    progress = Math.max(progress, 0);
+                    progress = Math.min(progress, 1);
+                    bar.progress(progress);
+                    bar.name(Component.text("Placing: " + currentBlock + " / " + this.totalBlocks));
                 });
                 Stream.of(this.context.getMidMovementProcess()).forEach(mid -> mid.move(m));
                 m.setMovingTo();
@@ -118,15 +131,17 @@ public class Ships6Movement implements BasicMovement {
         TimeUnit stackDelayUnit = config.parse(STACK_DELAY_UNIT.getNode()).orElse(TimeUnit.MINECRAFT_TICKS);
         int stackDelay = config.parse(STACK_DELAY.getNode()).orElse(1);
 
-        context.getBossBar().ifPresent(b -> b.setValue(0));
+        context.getAdventureBossBar().ifPresent(b -> b.progress(0));
         //ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
         List<MovingBlock> currentlyAdding = new ArrayList<>();
-        for (int A = 0; A < blocks.size(); A++) {
-            final int B = A;
-            context.getBossBar().ifPresent(bar -> bar.setValue(B, blocks.size() * 3));
-            MovingBlock block = blocks.get(A);
+        context.getAdventureBossBar().ifPresent(bar -> bar.name(Component.text("Movement: optimising ")));
+        final int total = blocks.size();
+        for (int index = 0; index < blocks.size(); index++) {
+            float progress = index / (float) total;
+            context.getAdventureBossBar().ifPresent(bar -> bar.progress(progress));
+            MovingBlock block = blocks.get(index);
             if (currentlyAdding.size() >= stackLimit) {
                 blocksToProcess.add(currentlyAdding);
                 currentlyAdding = new ArrayList<>();
@@ -135,13 +150,14 @@ public class Ships6Movement implements BasicMovement {
         }
         blocksToProcess.add(currentlyAdding);
         Integer waterLevel = vessel.getWaterLevel().orElse(null);
-        final int total = blocks.size();
         Scheduler scheduler = TranslateCore
                 .getScheduleManager()
                 .schedule()
                 .setDisplayName("Post Movement")
                 .setRunner((sch) -> {
-                    context.getBossBar().ifPresent(bar -> bar.setTitle(AText.ofPlain("Processing: Post movement")));
+                    context
+                            .getAdventureBossBar()
+                            .ifPresent(bar -> bar.name(Component.text("Processing: Post movement")));
                     for (PostMovement movement : context.getPostMovementProcess()) {
                         movement.postMove(vessel);
                     }
@@ -152,19 +168,22 @@ public class Ships6Movement implements BasicMovement {
                     result.run(vessel, context);
                     vessel.set(MovingFlag.class, null);
                 })
-                .build(ShipsPlugin.getPlugin());
+                .buildDelayed(ShipsPlugin.getPlugin());
+        int placedBlocks = 0;
         for (int A = 0; A < blocksToProcess.size(); A++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(A);
             scheduler = TranslateCore
                     .getScheduleManager()
                     .schedule()
                     .setDisplayName("Set Block")
-                    .setRunner(new SetBlocks(A, total, context, blocks2))
+                    .setRunner(new SetBlocks(placedBlocks + A, total, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(stackDelay)
                     .setDelayUnit(stackDelayUnit)
-                    .build(ShipsPlugin.getPlugin());
+                    .buildDelayed(ShipsPlugin.getPlugin());
+            placedBlocks = placedBlocks + blocks2.size();
         }
+        placedBlocks = 0;
         scheduler = TranslateCore
                 .getScheduleManager()
                 .schedule()
@@ -173,18 +192,19 @@ public class Ships6Movement implements BasicMovement {
                 .setToRunAfter(scheduler)
                 .setDelay(stackDelay)
                 .setDelayUnit(stackDelayUnit)
-                .build(ShipsPlugin.getPlugin());
-        for (int A = 0; A < blocksToProcess.size(); A++) {
-            List<MovingBlock> blocks2 = blocksToProcess.get(A);
+                .buildDelayed(ShipsPlugin.getPlugin());
+        for (int index = 0; index < blocksToProcess.size(); index++) {
+            List<MovingBlock> blocks2 = blocksToProcess.get(index);
             scheduler = TranslateCore
                     .getScheduleManager()
                     .schedule()
                     .setDisplayName("Remove Blocks")
-                    .setRunner(new RemoveBlocks(waterLevel, A, context, blocks2))
+                    .setRunner(new RemoveBlocks(waterLevel, placedBlocks + index, total, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(stackDelay)
                     .setDelayUnit(stackDelayUnit)
-                    .build(ShipsPlugin.getPlugin());
+                    .buildDelayed(ShipsPlugin.getPlugin());
+            placedBlocks = placedBlocks + blocks2.size();
         }
         if (scheduler == null) {
             throw new MoveException(context, AdventureMessageConfig.ERROR_FAILED_IN_MOVEMENT, vessel);
@@ -214,6 +234,7 @@ public class Ships6Movement implements BasicMovement {
         return Optional.of(new File(TranslateCore.getPlatform().getPlatformConfigFolder(),
                                     "Ships/Configuration/Movement/Ships Six." + TranslateCore
                                             .getPlatform()
-                                            .getConfigFormat().getFileType()[0]));
+                                            .getConfigFormat()
+                                            .getFileType()[0]));
     }
 }

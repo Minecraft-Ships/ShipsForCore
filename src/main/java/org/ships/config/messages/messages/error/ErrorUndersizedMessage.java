@@ -4,50 +4,51 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.specific.number.NumberAdapter;
 import org.ships.vessel.common.types.Vessel;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer>> {
+
+    public static final NumberAdapter<Integer> UNDERSIZED_BY = new NumberAdapter<>("Over Sized By");
+
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "Undersized"};
+        return new String[]{"Error", "Requirement", "Under Sized"};
     }
 
     @Override
     public Component getDefaultMessage() {
         return Component.text(Message.VESSEL_ID.adapterTextFormat() + " is under the min size of "
-                                      + Message.VESSEL_SIZE_ERROR.adapterTextFormat());
+                                      + UNDERSIZED_BY.adapterTextFormat());
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        Set<MessageAdapter<?>> set = new HashSet<>();
-        set.addAll(Message.VESSEL_ADAPTERS);
-        set.addAll(Message.CONFIG_ADAPTERS);
-        set.addAll(this.getErrorAdapters());
-        return set;
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL);
     }
 
-    private Set<MessageAdapter<Integer>> getErrorAdapters() {
-        return Collections.singleton(Message.VESSEL_SIZE_ERROR);
+    @Override
+    public Collection<MessageAdapter<?>> getAdapters() {
+        Collection<MessageAdapter<?>> set = new HashSet<>(Message.super.getAdapters());
+        set.add(UNDERSIZED_BY);
+        return Collections.unmodifiableCollection(set);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, Map.Entry<Vessel, Integer> obj) {
-        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.processMessage(text);
-        }
-        for (MessageAdapter<Vessel> adapter : Message.VESSEL_ADAPTERS) {
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj.getKey(), text);
         }
-        for (MessageAdapter<Integer> adapter : this.getErrorAdapters()) {
-            text = adapter.processMessage(obj.getValue(), text);
-        }
+        text = UNDERSIZED_BY.processMessage(obj.getValue(), text);
+
         return text;
+
     }
 }

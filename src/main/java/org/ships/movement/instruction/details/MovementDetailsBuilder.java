@@ -1,5 +1,7 @@
 package org.ships.movement.instruction.details;
 
+import net.kyori.adventure.bossbar.BossBar;
+import org.core.TranslateCore;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +15,7 @@ import java.util.function.BiConsumer;
 public class MovementDetailsBuilder {
 
     private BlockPosition clickedBlock;
-    private ServerBossBar bossBar;
+    private BossBar bossBar;
     private MidMovement[] midMovementEvents;
     private PostMovement[] postMovementEvents;
     private BiConsumer<MovementContext, ? super Throwable> exception;
@@ -46,12 +48,22 @@ public class MovementDetailsBuilder {
         return this;
     }
 
+    @Deprecated(forRemoval = true)
     public ServerBossBar getBossBar() {
+        return TranslateCore.createBossBar(getAdventureBossBar());
+    }
+
+    @Deprecated(forRemoval = true)
+    public MovementDetailsBuilder setBossBar(ServerBossBar bossBar) {
+        return setAdventureBossBar(bossBar.bossBar());
+    }
+
+    public BossBar getAdventureBossBar() {
         return this.bossBar;
     }
 
-    public MovementDetailsBuilder setBossBar(ServerBossBar bossBar) {
-        this.bossBar = bossBar;
+    public MovementDetailsBuilder setAdventureBossBar(BossBar bar) {
+        this.bossBar = bar;
         return this;
     }
 

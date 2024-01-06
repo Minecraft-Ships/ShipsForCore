@@ -17,6 +17,7 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
@@ -25,7 +26,10 @@ import org.ships.vessel.common.finder.VesselBlockFinder;
 import org.ships.vessel.common.types.Vessel;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class MoveSign implements ShipsSign {
@@ -156,7 +160,7 @@ public class MoveSign implements ShipsSign {
     }
 
     private void onVesselMove(Messageable player,
-                              SyncBlockPosition position,
+                              BlockPosition position,
                               int speed,
                               MovementDetailsBuilder builder,
                               Vessel vessel) {

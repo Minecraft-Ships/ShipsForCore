@@ -5,10 +5,10 @@ import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
 import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.utils.ComponentUtils;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -32,12 +32,26 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
     }
 
     @Override
+    public Class<?> adaptingType() {
+        return Collection.class;
+    }
+
+    @Override
     public Set<String> examples() {
         return this.adapters
                 .parallelStream()
                 .flatMap(ma -> ma.examples().parallelStream())
                 .map(example -> "!!" + example + "[1]!!")
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Collection<AdapterCategory<Collection<T>>> categories() {
+        return this.adapters
+                .parallelStream()
+                .flatMap(adapter -> adapter.categories().stream())
+                .map(adapter -> (AdapterCategory<Collection<T>>) adapter)
+                .toList();
     }
 
     @Override

@@ -56,7 +56,7 @@ public interface CrewStoredVessel extends Vessel {
                 .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(),
                         null))
                 .filter(Objects::nonNull)
-                .map(Optional::get)
+                .map(Optional::orElseThrow)
                 .collect(Collectors.toSet());
     }
 
@@ -72,7 +72,7 @@ public interface CrewStoredVessel extends Vessel {
                 .map(uuid -> Else.throwOr(Exception.class, () -> TranslateCore.getServer().getOfflineUser(uuid).get(),
                         null))
                 .filter(Objects::nonNull)
-                .map(Optional::get)
+                .map(Optional::orElseThrow)
                 .collect(Collectors.toSet());
     }
 

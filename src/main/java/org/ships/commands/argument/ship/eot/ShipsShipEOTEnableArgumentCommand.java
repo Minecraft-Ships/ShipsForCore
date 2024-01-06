@@ -72,13 +72,12 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
         }
         Collection<SyncBlockPosition> eotSigns = vessel.getStructure().getAll(sign);
         if (eotSigns.size() == 1) {
-            if (!(source instanceof LivePlayer)) {
+            if (!(source instanceof LivePlayer player)) {
                 if (source instanceof CommandViewer) {
                     ((CommandViewer) source).sendMessage(AText.ofPlain("Can only enable eot as a player"));
                 }
                 return false;
             }
-            LivePlayer player = (LivePlayer) source;
             LiveTileEntity lste = eotSigns.stream().findAny().get().getTileEntity().get();
             sign.onSecondClick(player, lste.getPosition());
             return true;

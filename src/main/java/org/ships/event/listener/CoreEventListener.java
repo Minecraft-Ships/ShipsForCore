@@ -1,9 +1,9 @@
 package org.ships.event.listener;
 
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.entity.scene.droppeditem.DroppedItem;
@@ -13,15 +13,15 @@ import org.core.event.HEvent;
 import org.core.event.events.block.BlockChangeEvent;
 import org.core.event.events.block.ExplosionEvent;
 import org.core.event.events.block.tileentity.SignChangeEvent;
+import org.core.event.events.command.PlayerCommandEvent;
 import org.core.event.events.connection.ClientConnectionEvent;
-import org.core.event.events.entity.EntityCommandEvent;
 import org.core.event.events.entity.EntityInteractEvent;
 import org.core.event.events.entity.EntitySpawnEvent;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.BarUtils;
 import org.core.utils.ComponentUtils;
 import org.core.utils.Else;
 import org.core.vector.type.Vector3;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.details.BlockDetails;
@@ -32,12 +32,13 @@ import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.ExactPosition;
+import org.core.world.position.impl.Position;
+import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncExactPosition;
-import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.blocks.instruction.CollideType;
@@ -73,7 +74,7 @@ import java.util.concurrent.CompletableFuture;
 public class CoreEventListener implements EventListener {
 
     @HEvent
-    public void onPlayerCommand(EntityCommandEvent event) {
+    public void onPlayerCommand(PlayerCommandEvent event) {
         Optional<String> opLoginCommand = ShipsPlugin.getPlugin().getConfig().getDefaultLoginCommand();
         if (opLoginCommand.isEmpty()) {
             return;
@@ -88,7 +89,7 @@ public class CoreEventListener implements EventListener {
                 .setDelay(2)
                 .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                 .setRunner((sch) -> this.onPlayerJoin(event.getEntity()))
-                .build(ShipsPlugin.getPlugin())
+                .buildDelayed(ShipsPlugin.getPlugin())
                 .run();
     }
 
@@ -99,20 +100,22 @@ public class CoreEventListener implements EventListener {
         if (!config.isStructureClickUpdating()) {
             return;
         }
-        for (Direction direction : Direction.withYDirections(FourFacingDirection.getFourFacingDirections())) {
-            SyncBlockPosition position = event.getPosition().getRelative(direction);
-            if (list.getBlockInstruction(position.getBlockType()).getCollide() != CollideType.MATERIAL) {
-                continue;
-            }
-
-            VesselBlockFinder.findOvertime(position).thenAccept(entry -> {
-                Optional<Vessel> opVessel = entry.getValue();
-                if (opVessel.isEmpty()) {
-                    return;
-                }
-                opVessel.get().getStructure().addPositionRelativeToWorld(position);
-            });
+        ASyncBlockPosition asyncPos = event.getPosition().toAsyncPosition();
+        Optional<CompletableFuture<Map.Entry<PositionableShipsStructure, Optional<Vessel>>>> opFuture = Arrays
+                .stream(Direction.withYDirections(FourFacingDirection.getFourFacingDirections()))
+                .map(asyncPos::getRelative)
+                .filter(position -> list.getBlockInstruction(position.getBlockType()).getCollide()
+                        != CollideType.MATERIAL)
+                .map(VesselBlockFinder::findOvertime)
+                .findAny();
+        if (opFuture.isEmpty()) {
+            return;
         }
+        CompletableFuture<Map.Entry<PositionableShipsStructure, Optional<Vessel>>> future = opFuture.get();
+        future
+                .thenApply(Map.Entry::getValue)
+                .thenAccept(opVessel -> opVessel.ifPresent(
+                        vessel -> vessel.getStructure().addPositionRelativeToWorld(asyncPos)));
     }
 
     @HEvent
@@ -167,7 +170,7 @@ public class CoreEventListener implements EventListener {
         }
     }
 
-    public void onPlayerLeave(User player, ExactPosition position) {
+    public void onPlayerLeave(User player, Position<Double> position) {
         BlockPosition block = position.toBlockPosition().getRelative(FourFacingDirection.DOWN);
         ShipsPlugin
                 .getPlugin()
@@ -252,7 +255,7 @@ public class CoreEventListener implements EventListener {
             return;
         }
         boolean register = false;
-        var side = event.getChangingSide();
+        SignSide side = event.getChangingSide();
         Optional<Component> opFirstLine = side.getLineAt(0);
         if (opFirstLine.isEmpty()) {
             return;
@@ -317,7 +320,7 @@ public class CoreEventListener implements EventListener {
                 }
                 String name = ComponentUtils.toPlain(opName.get());
                 IdVesselFinder.load("ships:" + type.getName().toLowerCase() + "." + name.toLowerCase());
-                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_NAME.process(name));
+                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_NAME.processMessage(name));
                 event.setCancelled(true);
                 return;
             } catch (LoadVesselException ignored) {
@@ -327,47 +330,45 @@ public class CoreEventListener implements EventListener {
                 for (Direction direction : FourFacingDirection.getFourFacingDirections()) {
                     SyncBlockPosition position = event.getPosition().getRelative(direction);
                     Vessel vessel = VesselBlockFinder.findCached(position);
-                    event.getEntity().sendMessage(AdventureMessageConfig.ERROR_CANNOT_CREATE_ONTOP.process(vessel));
+                    event
+                            .getEntity()
+                            .sendMessage(AdventureMessageConfig.ERROR_CANNOT_CREATE_ONTOP.processMessage(vessel));
                     event.setCancelled(true);
                     return;
                 }
             } catch (LoadVesselException ignored) {
             }
             int trackSize = config.getDefaultTrackSize();
-            ServerBossBar bar = null;
+            BossBar bar = null;
             if (ShipsPlugin.getPlugin().getConfig().isBossBarVisible()) {
-                bar = TranslateCore.createBossBar().register(event.getEntity());
+                bar = BossBar.bossBar(Component.empty(), 0, BossBar.Color.PURPLE, BossBar.Overlay.PROGRESS);
             }
-            final ServerBossBar finalBar = bar;
+            final BossBar finalBar = bar;
             SyncExactPosition bp = event.getEntity().getPosition();
 
-            config.getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), new OvertimeBlockFinderUpdate() {
-                @Override
-                public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                                                    @NotNull BlockPosition block) {
-                    if (finalBar != null) {
-                        TranslateCore
-                                .getScheduleManager()
-                                .schedule()
-                                .setDisplayName("OnBlockFind Message")
-                                .setRunner((sch) -> {
-                                    if (finalBar.getValue() > trackSize) {
-                                        return;
-                                    }
-                                    AText text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.process(
-                                            currentStructure);
-                                    int blockAmount = (currentStructure.getOriginalRelativePositionsToCenter().size()
-                                            + 1);
-                                    finalBar.setTitle(text);
-                                    finalBar.setValue(blockAmount, trackSize);
-                                })
-                                .build(ShipsPlugin.getPlugin());
-                    }
-                    return BlockFindControl.USE;
+            config.getDefaultFinder().getConnectedBlocksOvertime(event.getPosition(), (currentStructure, block) -> {
+                if (finalBar != null) {
+                    TranslateCore
+                            .getScheduleManager()
+                            .schedule()
+                            .setDisplayName("OnBlockFind Message")
+                            .setRunner((sch) -> {
+                                if ((finalBar.progress() * 100) > trackSize) {
+                                    return;
+                                }
+                                Component text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.processMessage(
+                                        currentStructure);
+                                int blockAmount = (currentStructure.getOriginalRelativePositionsToCenter().size() + 1);
+                                float progress = (trackSize / (float) Math.max(trackSize, blockAmount));
+                                finalBar.name(text);
+                                finalBar.progress(progress);
+                            })
+                            .buildDelayed(ShipsPlugin.getPlugin());
                 }
+                return OvertimeBlockFinderUpdate.BlockFindControl.USE;
             }).thenCompose(structure -> {
                 if (finalBar != null) {
-                    finalBar.setTitle(AText.ofPlain("Complete"));
+                    finalBar.name(Component.text("Complete"));
                 }
                 Vessel vessel = type.createNewVessel(side, event.getPosition());
                 if (vessel instanceof TeleportToVessel) {
@@ -386,7 +387,7 @@ public class CoreEventListener implements EventListener {
                 TranslateCore.getEventManager().callEvent(preEvent);
                 if (preEvent.isCancelled()) {
                     if (finalBar != null) {
-                        finalBar.deregisterPlayers();
+                        BarUtils.getPlayers(finalBar).forEach(user -> user.hideBossBar(finalBar));
                     }
                     event.setCancelled(true);
                     TranslateCore.getScheduleManager().schedule().setDisplayName("event cancelled").setRunner((sch) -> {
@@ -407,7 +408,7 @@ public class CoreEventListener implements EventListener {
                 VesselCreateEvent postEvent = new VesselCreateEvent.Post.BySign(vessel, event.getEntity());
                 TranslateCore.getEventManager().callEvent(postEvent);
                 if (finalBar != null) {
-                    finalBar.deregisterPlayers();
+                    BarUtils.getPlayers(finalBar).forEach(player -> player.hideBossBar(finalBar));
                 }
             });
         }
@@ -543,8 +544,10 @@ public class CoreEventListener implements EventListener {
                 ShipsPlugin.getPlugin().unregisterVessel(vessel);
                 if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer eventBreak) {
                     LivePlayer player = eventBreak.getEntity();
-                    player.sendMessage(Component.text(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown")
-                                                              + " removed successfully"));
+                    String name = vessel
+                            .getCachedName()
+                            .orElseGet(() -> Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"));
+                    player.sendMessage(Component.text(name + " removed successfully"));
                 }
 
             });

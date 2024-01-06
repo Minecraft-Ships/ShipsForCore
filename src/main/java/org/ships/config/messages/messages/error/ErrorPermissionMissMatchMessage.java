@@ -1,24 +1,23 @@
 package org.ships.config.messages.messages.error;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.core.entity.Entity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 public class ErrorPermissionMissMatchMessage implements Message<Map.Entry<LivePlayer, String>> {
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "Permission", "MissMatch"};
+        return new String[]{"Error", "Permission", "Miss Match"};
     }
 
     @Override
@@ -29,26 +28,23 @@ public class ErrorPermissionMissMatchMessage implements Message<Map.Entry<LivePl
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        Set<MessageAdapter<?>> set = new HashSet<>();
-        set.add(Message.PERMISSION_NODE);
-        set.addAll(Message.CONFIG_ADAPTERS);
-        set.addAll(Message.ENTITY_ADAPTERS);
-        return set;
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.PLAYER, AdapterCategories.PERMISSION);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, Map.Entry<LivePlayer, String> obj) {
-        text = text.replaceText(TextReplacementConfig
-                                        .builder()
-                                        .replacement(obj.getValue())
-                                        .match(Pattern.compile(Message.PERMISSION_NODE.adapterTextFormat(),
-                                                               Pattern.CASE_INSENSITIVE))
-                                        .build());
-        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.processMessage(text);
+        List<MessageAdapter<String>> permissionAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.PERMISSION)
+                .toList();
+        List<MessageAdapter<LivePlayer>> playerAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.PLAYER)
+                .toList();
+
+        for (MessageAdapter<String> adapter : permissionAdapters) {
+            text = adapter.processMessage(obj.getValue(), text);
         }
-        for (MessageAdapter<Entity<?>> adapter : Message.ENTITY_ADAPTERS) {
+        for (MessageAdapter<LivePlayer> adapter : playerAdapters) {
             text = adapter.processMessage(obj.getKey(), text);
         }
         return text;

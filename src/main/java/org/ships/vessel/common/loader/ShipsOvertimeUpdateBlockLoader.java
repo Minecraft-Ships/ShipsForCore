@@ -85,15 +85,18 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                                 new UnableToFindLicenceSign(structure, "Failed to find licence sign"));
                         return Optional.empty();
                     }
+
                     PositionableShipsStructure structure2 = new AbstractPositionableShipsStructure(opBlock.get());
-                    structure.getSyncedPositionsRelativeToWorld().forEach(structure2::addPositionRelativeToWorld);
+                    structure.copyInto(structure2);
+
+                    LiveTileEntity tileEntity = structure2
+                            .getPosition()
+                            .getTileEntity()
+                            .orElseThrow(() -> new IllegalStateException("Could not get tile entity"));
                     try {
-                        LiveTileEntity tileEntity = structure2
-                                .getPosition()
-                                .getTileEntity()
-                                .orElseThrow(() -> new IllegalStateException("Could not get tile entity"));
                         Vessel vessel = ShipsSignVesselFinder.find((SignTileEntity) tileEntity);
                         vessel.setStructure(structure2);
+
                         ShipsOvertimeUpdateBlockLoader.this.onStructureUpdate(vessel);
                         return Optional.of(vessel);
                     } catch (LoadVesselException e) {

@@ -146,7 +146,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     }
 
     @Override
-    public @NotNull Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(ConfigurationStream file) {
+    public @NotNull Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(@NotNull ConfigurationStream file) {
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configSpecialBlockType, this.getSpecialBlocks());
         map.put(this.configSpecialBlockPercent, this.getSpecialBlocksPercent());
@@ -154,7 +154,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     }
 
     @Override
-    public AbstractShipsVessel deserializeExtra(ConfigurationStream file) {
+    public @NotNull AbstractShipsVessel deserializeExtra(@NotNull ConfigurationStream file) {
         SpecialBlocksRequirement requirements = this.getSpecialBlocksRequirement();
         Optional<Double> opSpecialBlockPercent = file.getDouble(this.configSpecialBlockPercent);
         if (opSpecialBlockPercent.isPresent()) {
@@ -167,7 +167,7 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     }
 
     @Override
-    public void setRequirement(Requirement<?> updated) {
+    public void setRequirement(@NotNull Requirement<?> updated) {
         this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }

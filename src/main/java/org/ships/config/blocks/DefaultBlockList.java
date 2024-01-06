@@ -49,15 +49,15 @@ public class DefaultBlockList implements BlockList {
                 return Collections.unmodifiableCollection(this.blocks);
             }
         }
-        Collection<BlockInstruction> blockInstructions = new LinkedList<>(this.blocks);
+        Collection<BlockInstruction> blockInstructions = new LinkedTransferQueue<>(this.blocks);
         blockInstructions.addAll(this.blocks);
-        Set<MoveIntoBlockInstruction> moveIn = ShipsPlugin
+        Collection<MoveIntoBlockInstruction> moveIn = ShipsPlugin
                 .getPlugin()
                 .getAllShipTypes()
                 .parallelStream()
                 .flatMap(type -> Stream.of(type.getIgnoredTypes()))
                 .map(MoveIntoBlockInstruction::new)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedTransferQueue::new));
         blockInstructions.addAll(moveIn);
         return Collections.unmodifiableCollection(blockInstructions);
     }

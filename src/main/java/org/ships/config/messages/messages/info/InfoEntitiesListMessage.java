@@ -6,9 +6,12 @@ import org.core.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 public class InfoEntitiesListMessage implements Message<Entity<?>> {
     @Override
@@ -22,20 +25,18 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(this.getExactAdapters());
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.ENTITY);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, Entity<?> obj) {
-        for (MessageAdapter<Entity<?>> adapter : this.getExactAdapters()) {
+        List<MessageAdapter<Entity<?>>> entityAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.ENTITY)
+                .toList();
+        for (MessageAdapter<Entity<?>> adapter : entityAdapters) {
             text = adapter.processMessage(obj, text);
         }
         return text;
-
-    }
-
-    private Set<MessageAdapter<Entity<?>>> getExactAdapters() {
-        return new HashSet<>(Message.ENTITY_ADAPTERS);
     }
 }

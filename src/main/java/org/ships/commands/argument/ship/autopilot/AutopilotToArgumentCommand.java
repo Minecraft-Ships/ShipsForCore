@@ -9,7 +9,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.movement.autopilot.path.FlightPath;
@@ -72,8 +71,8 @@ public class AutopilotToArgumentCommand implements ArgumentCommand {
         Vector3<Integer> position = commandContext.getArgument(this, POSITION_ARGUMENT);
         FlightPath flightPath = new FlightPathBuilder().ofAutopilot(vessel.getPosition(), position, 240).build();
 
-        MovementDetailsBuilder details = new MovementDetailsBuilder().setException(new SimpleMovementException(
-                commandContext.getSource()));
+        MovementDetailsBuilder details = new MovementDetailsBuilder().setException(
+                new SimpleMovementException(commandContext.getSource()));
 
         FlightPathFlag flag = new FlightPathFlag();
         flag.setValue(flightPath);

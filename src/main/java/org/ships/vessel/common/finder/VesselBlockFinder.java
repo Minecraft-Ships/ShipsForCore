@@ -32,12 +32,15 @@ public final class VesselBlockFinder {
         return ShipsPlugin
                 .getPlugin()
                 .getVessels()
-                .stream()
+                .parallelStream()
                 .filter(v -> v.getStructure().getBounds().contains(position.getPosition()))
                 .filter(v -> {
                     PositionableShipsStructure pss = v.getStructure();
                     Collection<ASyncBlockPosition> collection = pss.getAsyncedPositionsRelativeToWorld();
-                    return collection.parallelStream().anyMatch(p -> p.getPosition().equals(position.getPosition()));
+                    return collection
+                            .parallelStream()
+                            .map(Position::getPosition)
+                            .anyMatch(p -> p.equals(position.getPosition()));
                 })
                 .findAny();
     }

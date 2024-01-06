@@ -1,18 +1,16 @@
 package org.ships.commands.argument.ship.moveto;
 
-import org.core.TranslateCore;
-import org.core.adventureText.AText;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.position.vector.Vector3IntegerArgument;
 import org.core.command.argument.context.CommandContext;
-import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.config.configuration.ShipsConfig;
@@ -64,16 +62,15 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
         int trackLimit = config.getDefaultTrackSize();
 
         if (config.isBossBarVisible()) {
-            ServerBossBar bar = TranslateCore.createBossBar();
-            if (commandContext.getSource() instanceof LivePlayer) {
-                bar.register((LivePlayer) commandContext.getSource());
+            BossBar bar = BossBar.bossBar(Component.text("0 / " + trackLimit), 0, BossBar.Color.PURPLE,
+                                          BossBar.Overlay.PROGRESS);
+            if (commandContext.getSource() instanceof Audience audience) {
+                audience.showBossBar(bar);
             }
-            bar.setTitle(AText.ofPlain("0 / " + trackLimit));
-            builder.setBossBar(bar);
+            builder.setAdventureBossBar(bar);
         }
 
-        CommandViewer[] viewers = commandContext.getSource() instanceof CommandViewer ? new CommandViewer[]{((CommandViewer) commandContext.getSource())} : new CommandViewer[0];
-        builder.setException(new SimpleMovementException(viewers));
+        builder.setException(new SimpleMovementException(commandContext.getSource()));
 
         vessel.moveTowards(vector3, builder.build());
 

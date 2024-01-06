@@ -8,7 +8,6 @@ import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignSide;
-import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,15 +28,12 @@ public class SubmarineType extends AbstractShipType<Submarine>
         implements SpecialBlocksShipType<Submarine>, FuelledShipType<Submarine> {
 
 
+    private final int min;
     private FuelRequirement fuelRequirement;
     private SpecialBlocksRequirement specialBlocksRequirement;
-
     private MinSizeRequirement minSizeRequirement;
     private MaxSizeRequirement maxSizeRequirement;
-
-
     private @Nullable Integer max;
-    private final int min;
 
     public SubmarineType() {
         this("Submarine", new File(ShipsPlugin.getPlugin().getConfigFolder(),

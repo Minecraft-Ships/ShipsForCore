@@ -21,7 +21,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
 
     public ShipsLicenceSignFinder(SyncPosition<Integer> position) throws IOException {
         Optional<LiveTileEntity> opEntity = position.getTileEntity();
-        if (!opEntity.isPresent()) {
+        if (opEntity.isEmpty()) {
             throw new IOException("Block is not a sign");
         }
         if (!(opEntity.get() instanceof LiveSignTileEntity)) {
@@ -50,7 +50,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
                 .stream()
                 .filter(st -> st.getDisplayName().equalsIgnoreCase(typeS))
                 .findAny();
-        if (!opType.isPresent()) {
+        if (opType.isEmpty()) {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }
         String name = this.ste.getTextAt(2).get().toPlain().toLowerCase();

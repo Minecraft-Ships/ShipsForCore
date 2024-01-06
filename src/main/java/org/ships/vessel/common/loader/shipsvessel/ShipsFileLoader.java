@@ -39,6 +39,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ShipsFileLoader implements ShipsLoader {
 
@@ -219,11 +220,10 @@ public class ShipsFileLoader implements ShipsLoader {
                 .orElseThrow(() -> new IllegalStateException(
                         "Could not get licence sign from register. Something is really wrong"));
         Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {
+        if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity lste)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
         if (!sign.isSign(lste)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
@@ -263,7 +263,7 @@ public class ShipsFileLoader implements ShipsLoader {
                     new ConfigurationNode(ArrayUtils.join(String.class, c.getPath(), new String[]{"Y"})));
             Optional<Double> opTelZ2 = file.getDouble(
                     new ConfigurationNode(ArrayUtils.join(String.class, c.getPath(), new String[]{"Z"})));
-            if (opTelX2.isPresent() && opTelY2.isPresent() && opTelZ2.isPresent()) {
+            if (Stream.of(opTelX2, opTelY2, opTelZ2).allMatch(Optional::isPresent)) {
                 double pX = opTelX2.get();
                 double pY = opTelY2.get();
                 double pZ = opTelZ2.get();

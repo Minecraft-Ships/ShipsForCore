@@ -13,10 +13,7 @@ import org.ships.movement.MovingBlock;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.*;
 
 public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequirement> {
 
@@ -48,7 +45,7 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
 
     public Collection<BlockType> getSpecifiedBlocks() {
         if (this.specialBlocks != null) {
-            return this.specialBlocks;
+            return Collections.unmodifiableCollection(this.specialBlocks);
         }
         if (this.parent == null) {
             throw new RuntimeException("You skipped the constructor checks");
@@ -76,7 +73,7 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
 
     public @NotNull Collection<BlockType> getBlocks() {
         if (this.specialBlocks != null) {
-            return this.specialBlocks;
+            return Collections.unmodifiableCollection(this.specialBlocks);
         }
         if (this.parent == null) {
             throw new RuntimeException("You skipped the constructor checks");
@@ -140,27 +137,10 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
         return new SpecialBlocksRequirement(this);
     }
 
-    public @NotNull SpecialBlocksRequirement createChildWithPercentage(@Nullable Float value) {
-        return new SpecialBlocksRequirement(this, value, null);
-    }
-
-    public @NotNull SpecialBlocksRequirement createChildWithBlocks(@Nullable Collection<BlockType> blocks) {
-        return new SpecialBlocksRequirement(this, null, blocks);
-    }
-
     @Override
     public @NotNull SpecialBlocksRequirement createCopy() {
         return new SpecialBlocksRequirement(this.parent, this.specialBlocksPercentage, this.specialBlocks);
     }
-
-    public @NotNull SpecialBlocksRequirement createCopyWithPercentage(@Nullable Float value) {
-        return new SpecialBlocksRequirement(this.parent, value, this.specialBlocks);
-    }
-
-    public @NotNull SpecialBlocksRequirement createCopyWithBlocks(@Nullable Collection<BlockType> blocks) {
-        return new SpecialBlocksRequirement(this.parent, this.specialBlocksPercentage, blocks);
-    }
-
 
     @Override
     public Optional<SpecialBlocksRequirement> getParent() {
@@ -182,6 +162,22 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
             return;
         }
         this.serializeParent(stream);
+    }
+
+    public @NotNull SpecialBlocksRequirement createChildWithPercentage(@Nullable Float value) {
+        return new SpecialBlocksRequirement(this, value, null);
+    }
+
+    public @NotNull SpecialBlocksRequirement createChildWithBlocks(@Nullable Collection<BlockType> blocks) {
+        return new SpecialBlocksRequirement(this, null, blocks);
+    }
+
+    public @NotNull SpecialBlocksRequirement createCopyWithPercentage(@Nullable Float value) {
+        return new SpecialBlocksRequirement(this.parent, value, this.specialBlocks);
+    }
+
+    public @NotNull SpecialBlocksRequirement createCopyWithBlocks(@Nullable Collection<BlockType> blocks) {
+        return new SpecialBlocksRequirement(this.parent, this.specialBlocksPercentage, blocks);
     }
 
     private void serializeParent(@NotNull ConfigurationStream stream) {

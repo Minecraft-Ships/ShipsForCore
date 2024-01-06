@@ -1,7 +1,7 @@
 package org.ships.commands.argument.blocklist;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypeArgument;
@@ -10,6 +10,7 @@ import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
+import org.core.source.Messageable;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.BlockType;
@@ -44,31 +45,31 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
     }
 
     @Override
+    public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
+        if (!(commandContext.getSource() instanceof CommandViewer)) {
+            return false;
+        }
+        Messageable viewer = commandContext.getSource();
+        BlockType type = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
+        BlockInstruction bi = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(type);
+        Component collideType = Component
+                .text("CollideType: ")
+                .color(NamedTextColor.AQUA)
+                .append(Component.text(bi.getCollide().name()).color(NamedTextColor.YELLOW));
+        Component blockLimit = Component
+                .text("BlockLimit: ")
+                .color(NamedTextColor.AQUA)
+                .append(Component.text(String.valueOf(bi.getBlockLimit())).color(NamedTextColor.YELLOW));
+        viewer.sendMessage(collideType);
+        viewer.sendMessage(blockLimit);
+        return true;
+    }
+
+    @Override
     public boolean hasPermission(CommandSource source) {
         if (source instanceof LivePlayer) {
             return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
         }
         return source instanceof CommandViewer;
-    }
-
-    @Override
-    public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer)) {
-            return false;
-        }
-        CommandViewer viewer = (CommandViewer) commandContext.getSource();
-        BlockType type = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
-        BlockInstruction bi = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(type);
-        AText collideType = AText
-                .ofPlain("CollideType: ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText.ofPlain(bi.getCollide().name()).withColour(NamedTextColours.YELLOW));
-        AText blockLimit = AText
-                .ofPlain("BlockLimit: ")
-                .withColour(NamedTextColours.AQUA)
-                .append(AText.ofPlain(String.valueOf(bi.getBlockLimit())).withColour(NamedTextColours.YELLOW));
-        viewer.sendMessage(collideType);
-        viewer.sendMessage(blockLimit);
-        return true;
     }
 }

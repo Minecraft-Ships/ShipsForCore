@@ -2,17 +2,22 @@ package org.ships.config.messages.messages.error;
 
 import net.kyori.adventure.text.Component;
 import org.core.world.position.impl.BlockPosition;
+import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class ErrorNoSpeedSetMessage implements Message<BlockPosition> {
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "NoSpeedSet"};
+        return new String[]{"Error", "Sign", "No Speed Set"};
     }
 
     @Override
@@ -21,16 +26,18 @@ public class ErrorNoSpeedSetMessage implements Message<BlockPosition> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return Message.LOCATION_ADAPTERS.parallelStream().collect(Collectors.toSet());
+    public Collection<AdapterCategory<?>> getCategories() {
+        return Collections.singletonList(AdapterCategories.POSITION);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, BlockPosition obj) {
-        for (MessageAdapter<?> adapter : this.getAdapters()) {
-            if (adapter.containsAdapter(text)) {
-                text = ((MessageAdapter<BlockPosition>) adapter).processMessage(obj, text);
-            }
+        List<MessageAdapter<SyncPosition<? extends Number>>> positionAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.POSITION)
+                .toList();
+        for (MessageAdapter<SyncPosition<? extends Number>> adapter : positionAdapters) {
+            text = adapter.processMessage(obj.toSyncPosition(), text);
+
         }
         return text;
     }

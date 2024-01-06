@@ -66,12 +66,12 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         this((LiveSignTileEntity) licence, ShipsPlugin
                 .getPlugin()
                 .get(LicenceSign.class)
-                .flatMap(lic -> lic.getSide((LiveSignTileEntity) licence))
+                .flatMap(lic -> lic.getSide((SignTileEntity) licence))
                 .orElseThrow(() -> new IllegalStateException("Invalid license sign"))
                 .isFront(), type);
     }
 
-    public AbstractShipsVessel(@NotNull LiveSignTileEntity licence,
+    public AbstractShipsVessel(@SuppressWarnings("TypeMayBeWeakened") @NotNull LiveSignTileEntity licence,
                                boolean isFrontOfSign,
                                @NotNull ShipType<? extends AbstractShipsVessel> type) {
         try {
@@ -249,7 +249,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
             if (opNewFlag.isEmpty()) {
                 Component error = Component.text(
                         "Class of '" + flag.getName() + "' is not registered in ShipsPlugin.Failed to set for '"
-                                + Else.throwOr(NoLicencePresent.class, () -> this.getId(), "unknown") + "'");
+                                + Else.throwOr(NoLicencePresent.class, this::getId, "unknown") + "'");
                 TranslateCore.getConsole().sendMessage(error);
                 return this;
             }

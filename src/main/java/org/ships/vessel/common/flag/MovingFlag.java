@@ -7,6 +7,14 @@ import java.util.Optional;
 
 public class MovingFlag implements VesselFlag<MovementContext> {
 
+    public static class Builder extends VesselFlag.Builder<MovementContext, MovingFlag> {
+
+        @Override
+        protected MovingFlag buildEmpty() {
+            return new MovingFlag();
+        }
+    }
+
     protected MovementContext context;
 
     public MovingFlag() {
@@ -29,7 +37,7 @@ public class MovingFlag implements VesselFlag<MovementContext> {
 
     @Override
     public StringParser<MovementContext> getParser() {
-        return new StringParser<MovementContext>() {
+        return new StringParser<>() {
             @Override
             public Optional<MovementContext> parse(String original) {
                 return Optional.empty();
@@ -55,13 +63,5 @@ public class MovingFlag implements VesselFlag<MovementContext> {
     @Override
     public String getName() {
         return "Is Moving";
-    }
-
-    public static class Builder extends VesselFlag.Builder<MovementContext, MovingFlag> {
-
-        @Override
-        protected MovingFlag buildEmpty() {
-            return new MovingFlag();
-        }
     }
 }

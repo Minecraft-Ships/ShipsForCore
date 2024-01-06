@@ -4,11 +4,13 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.config.ConfigAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 public class BlockFinderBarMessage implements Message<PositionableShipsStructure> {
     @Override
@@ -23,19 +25,16 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        Set<MessageAdapter<?>> set = new HashSet<>();
-        set.addAll(Message.STRUCTURE_ADAPTERS);
-        set.addAll(Message.CONFIG_ADAPTERS);
-        return set;
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL_STRUCTURE);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, PositionableShipsStructure obj) {
-        for (ConfigAdapter<?> adapter : Message.CONFIG_ADAPTERS) {
-            text = adapter.processMessage(text);
-        }
-        for (MessageAdapter<PositionableShipsStructure> adapter : Message.STRUCTURE_ADAPTERS) {
+        List<MessageAdapter<PositionableShipsStructure>> vesselAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL_STRUCTURE)
+                .toList();
+        for (MessageAdapter<PositionableShipsStructure> adapter : vesselAdapters) {
             text = adapter.processMessage(obj, text);
         }
         return text;

@@ -6,8 +6,6 @@ import org.ships.movement.MovingBlockSet;
 import org.ships.movement.instruction.actions.MidMovement;
 import org.ships.movement.instruction.actions.PostMovement;
 
-import java.util.function.Consumer;
-
 public class MovementInstruction {
 
     private final @NotNull MovingBlockSet movingBlocks;

@@ -5,11 +5,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.permissions.vessel.CrewPermission;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
     @Override
@@ -26,17 +28,14 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(this.getExactAdapters());
-    }
-
-    private Set<MessageAdapter<CrewPermission>> getExactAdapters() {
-        return new HashSet<>(Arrays.asList(Message.CREW_NAME, Message.CREW_ID));
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.CREW_PERMISSION);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, CrewPermission obj) {
-        for (MessageAdapter<CrewPermission> adapter : this.getExactAdapters()) {
+        var permissionAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.CREW_PERMISSION).toList();
+        for (MessageAdapter<CrewPermission> adapter : permissionAdapters) {
             text = adapter.processMessage(obj, text);
         }
         return text;

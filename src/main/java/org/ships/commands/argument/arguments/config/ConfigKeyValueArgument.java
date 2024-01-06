@@ -49,7 +49,7 @@ public class ConfigKeyValueArgument<A, V, N extends ConfigurationNode.KnownParse
     @Override
     public List<String> suggest(CommandContext context, CommandArgumentContext<V> argument) throws NotEnoughArguments {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        DedicatedNode<A, V, N> node = null;
+        DedicatedNode<A, V, N> node;
         try {
             node = this.function
                     .parse(context,

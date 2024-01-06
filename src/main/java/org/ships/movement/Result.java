@@ -5,8 +5,8 @@ import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.BarUtils;
 import org.core.vector.type.Vector3;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.event.vessel.move.ResultEvent;
@@ -86,7 +86,9 @@ public class Result extends ArrayList<Result.Run> {
             v.set(flag);
         };
 
-        Run REMOVE_BAR = (v, c) -> c.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+        Run REMOVE_BAR = (v, c) -> c
+                .getAdventureBossBar()
+                .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar)));
 
         Run COMMON_TELEPORT_ENTITIES = (v, c) -> c.getEntities().forEach((entity, value) -> {
             double pitch = entity.getPitch();

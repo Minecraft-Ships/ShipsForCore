@@ -6,7 +6,6 @@ import org.core.schedule.unit.TimeUnit;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +51,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
                         this.getNextBlock(event, block, directions);
                     }
                 }
-                if (this.shipsStructure.addPositionRelativeToWorld(Position.toSync(block))) {
+                if (this.shipsStructure.addPositionRelativeToWorld(block.toSyncPosition())) {
                     if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                         return;
                     }
@@ -65,7 +64,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     private PositionableShipsStructure getConnectedBlocks(@NotNull ASyncBlockPosition position,
                                                           @Nullable OvertimeBlockFinderUpdate update) {
         this.blockCount = 0;
-        this.shipsStructure = new AbstractPositionableShipsStructure(Position.toSync(position));
+        this.shipsStructure = new AbstractPositionableShipsStructure(position.toSyncPosition());
         this.list = ShipsPlugin.getPlugin().getBlockList();
         Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
         this.getNextBlock(update, position, directions);
@@ -100,10 +99,10 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                             .setDisplayName("ToSync")
                             .setRunner((s1) -> future.complete(positions))
-                            .build(ShipsPlugin.getPlugin())
+                            .buildDelayed(ShipsPlugin.getPlugin())
                             .run();
                 })
-                .build(ShipsPlugin.getPlugin())
+                .buildDelayed(ShipsPlugin.getPlugin())
                 .run();
         return future;
     }
@@ -133,7 +132,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
     }
 
     public PositionableShipsStructure getConnectedBlocks(BlockPosition position) {
-        ASyncBlockPosition asyncPos = Position.toASync(position);
+        ASyncBlockPosition asyncPos = position.toAsyncPosition();
         return this.getConnectedBlocks(asyncPos, null);
     }
 

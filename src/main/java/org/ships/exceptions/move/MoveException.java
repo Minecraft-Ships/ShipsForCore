@@ -37,7 +37,7 @@ public class MoveException extends IOException {
         return new AdventureText(this.errorMessage);
     }
 
-    public Component getErrorMessage(){
+    public @NotNull Component getErrorMessage() {
         return this.errorMessage;
     }
 

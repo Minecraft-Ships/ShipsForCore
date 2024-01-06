@@ -34,17 +34,19 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
-                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-                    if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                        CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                        User player = (User) source;
-                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
-                    }
-                    return vessel instanceof TeleportToVessel;
-                }, v -> "Ship is not teleport capable"), new ExactArgument(this.SHIP_TELEPORT_ARGUMENT),
-                new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(this.SHIP_LOCATION,
-                        new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, v) -> v instanceof TeleportToVessel,
-                                v -> "Ship is not teleport capable"), 1), "Default"));
+                             new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
+                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
+                                     User player = (User) source;
+                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                 }
+                                 return vessel instanceof TeleportToVessel;
+                             }, v -> "Ship is not teleport capable"), new ExactArgument(this.SHIP_TELEPORT_ARGUMENT),
+                             new OptionalArgument<>(ShipTeleportLocationArgument.fromArgumentAt(this.SHIP_LOCATION,
+                                                                                                new ShipIdArgument<>(
+                                                                                                        this.SHIP_ID_ARGUMENT,
+                                                                                                        (source, v) -> v instanceof TeleportToVessel,
+                                                                                                        v -> "Ship is not teleport capable"),
+                                                                                                1), "Default"));
     }
 
     @Override
@@ -58,23 +60,14 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
     }
 
     @Override
-    public boolean hasPermission(CommandSource source) {
-        if (source instanceof LivePlayer) {
-            return ((LivePlayer) source).hasPermission(Permissions.CMD_SHIP_TELEPORT);
-        }
-        return false;
-    }
-
-    @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof LivePlayer)) {
+        if (!(source instanceof LivePlayer player)) {
             if (source instanceof CommandViewer) {
                 ((CommandViewer) source).sendMessage(AText.ofPlain("Teleport requires to be ran as a player"));
             }
             return false;
         }
-        LivePlayer player = (LivePlayer) source;
         TeleportToVessel tVessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         String telPos = commandContext.getArgument(this, this.SHIP_LOCATION);
         ExactPosition position = tVessel.getTeleportPositions().get(telPos);
@@ -84,5 +77,13 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
         }
         player.setPosition(position);
         return true;
+    }
+
+    @Override
+    public boolean hasPermission(CommandSource source) {
+        if (source instanceof LivePlayer) {
+            return ((LivePlayer) source).hasPermission(Permissions.CMD_SHIP_TELEPORT);
+        }
+        return false;
     }
 }

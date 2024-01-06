@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 16.3;
+    public static final double PRERELEASE_VERSION = 16.4;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
@@ -338,29 +338,32 @@ public class ShipsPlugin implements CorePlugin {
 
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         if (config.isUpdateEnabled()) {
-            TranslateCore.getPlatform().getUpdateChecker(DevBukkitUpdateChecker.ID).ifPresent(devBukkit -> {
-                devBukkit.checkForUpdate(new DevBukkitUpdateOption(36846)).thenAcceptAsync((result) -> {
-                    if (result instanceof FailedResult failed) {
-                        this.logger.error("Failed to update: " + failed.getReason());
-                        return;
-                    }
-                    SuccessfulResult successfulResult = (SuccessfulResult) result;
-                    PluginUpdate context = successfulResult.getUpdate();
-                    String fullVersionName = context.getName();
-                    String currentVersionName =
-                            "Ships -" + TranslateCore.getPlatform().getImplementationDetails().getTagChar() + " " + this
-                                    .getPluginVersion()
-                                    .asString() + ".0 R2 " + PRERELEASE_TAG + " " + PRERELEASE_VERSION;
-                    if (fullVersionName.equals(currentVersionName)) {
-                        return;
-                    }
-                    this.logger.log("An update can be downloaded");
-                    this.logger.log("\tCurrent Version: " + currentVersionName);
-                    this.logger.log("\tUpdated Version: " + fullVersionName);
-                    this.logger.log("\tFor Minecraft: " + context.getVersion());
-                    this.logger.log("\tDownload At: " + context.getDownloadURL().toExternalForm());
-                });
-            });
+            TranslateCore
+                    .getPlatform()
+                    .getUpdateChecker(DevBukkitUpdateChecker.ID)
+                    .ifPresent(devBukkit -> devBukkit
+                            .checkForUpdate(new DevBukkitUpdateOption(36846))
+                            .thenAcceptAsync((result) -> {
+                                if (result instanceof FailedResult failed) {
+                                    this.logger.error("Failed to update: " + failed.getReason());
+                                    return;
+                                }
+                                SuccessfulResult successfulResult = (SuccessfulResult) result;
+                                PluginUpdate context = successfulResult.getUpdate();
+                                String fullVersionName = context.getName();
+                                String currentVersionName =
+                                        "Ships -" + TranslateCore.getPlatform().getImplementationDetails().getTagChar()
+                                                + " " + this.getPluginVersion().asString() + ".0 R2 " + PRERELEASE_TAG
+                                                + " " + PRERELEASE_VERSION;
+                                if (fullVersionName.equals(currentVersionName)) {
+                                    return;
+                                }
+                                this.logger.log("An update can be downloaded");
+                                this.logger.log("\tCurrent Version: " + currentVersionName);
+                                this.logger.log("\tUpdated Version: " + fullVersionName);
+                                this.logger.log("\tFor Minecraft: " + context.getVersion());
+                                this.logger.log("\tDownload At: " + context.getDownloadURL().toExternalForm());
+                            }));
         }
     }
 

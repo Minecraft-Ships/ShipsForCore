@@ -1,5 +1,7 @@
 package org.ships.movement.instruction.details;
 
+import net.kyori.adventure.bossbar.BossBar;
+import org.core.TranslateCore;
 import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +17,7 @@ import java.util.function.BiConsumer;
 public class MovementDetails {
 
     private final @Nullable BlockPosition clickedBlock;
-    private final @Nullable ServerBossBar bossBar;
+    private final @Nullable BossBar bossBar;
     private final MidMovement[] midMovementEvents;
     private final PostMovement[] postMovementEvents;
     private final Boolean updateStucture;
@@ -24,7 +26,7 @@ public class MovementDetails {
 
     public MovementDetails(MovementDetailsBuilder builder) {
         this.clickedBlock = builder.getClickedBlock();
-        this.bossBar = builder.getBossBar();
+        this.bossBar = builder.getAdventureBossBar();
         this.midMovementEvents = builder.getMidMovementEvents();
         this.postMovementEvents = builder.getPostMovementEvents();
         this.exception = builder.getException();
@@ -35,10 +37,7 @@ public class MovementDetails {
     }
 
     public boolean isUpdatingStructure() {
-        if (this.updateStucture == null) {
-            return true;
-        }
-        return this.updateStucture;
+        return Objects.requireNonNullElse(this.updateStucture, true);
     }
 
     public @NotNull BiConsumer<MovementContext, ? super Throwable> getException() {
@@ -49,7 +48,12 @@ public class MovementDetails {
         return Optional.ofNullable(this.clickedBlock);
     }
 
+    @Deprecated(forRemoval = true)
     public Optional<ServerBossBar> getBossBar() {
+        return getAdventureBossBar().map(TranslateCore::createBossBar);
+    }
+
+    public Optional<BossBar> getAdventureBossBar() {
         return Optional.ofNullable(this.bossBar);
     }
 
@@ -64,7 +68,7 @@ public class MovementDetails {
     public MovementDetailsBuilder toBuilder() {
         return new MovementDetailsBuilder()
                 .setClickedBlock(this.clickedBlock)
-                .setBossBar(this.bossBar)
+                .setAdventureBossBar(this.bossBar)
                 .setMidMovementEvents(this.midMovementEvents)
                 .setPostMovementEvents(this.postMovementEvents)
                 .setException(this.exception);

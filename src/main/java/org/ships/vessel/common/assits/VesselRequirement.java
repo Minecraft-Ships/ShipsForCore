@@ -15,11 +15,7 @@ public interface VesselRequirement extends Vessel {
 
     default <R extends Requirement<?>> Optional<R> getRequirement(Class<R> clazz) {
         Collection<Requirement<?>> requirements = this.getRequirements();
-        return requirements
-                .parallelStream()
-                .filter(clazz::isInstance)
-                .findAny()
-                .map(requirement -> (R) requirement);
+        return requirements.parallelStream().filter(clazz::isInstance).findAny().map(requirement -> (R) requirement);
     }
 
     default void checkRequirements(@NotNull MovementContext context) throws MoveException {

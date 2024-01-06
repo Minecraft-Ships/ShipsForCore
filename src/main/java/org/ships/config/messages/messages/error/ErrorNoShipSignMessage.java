@@ -2,22 +2,21 @@ package org.ships.config.messages.messages.error;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.core.world.position.impl.Position;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
-import org.ships.config.messages.adapter.misc.CollectionSingleAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 public class ErrorNoShipSignMessage implements Message<PositionableShipsStructure> {
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "Move", "NoShipsSign"};
+        return new String[]{"Error", "Sign", "No Ships Sign"};
     }
 
     @Override
@@ -30,22 +29,17 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return new HashSet<>(this.getExactAdapters());
-    }
-
-    private Set<CollectionSingleAdapter<Position<?>>> getExactAdapters() {
-        return Message.LOCATION_ADAPTERS.parallelStream().map(Message::asCollectionSingle).collect(Collectors.toSet());
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL_STRUCTURE);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, PositionableShipsStructure obj) {
-        Collection<Position<?>> positions = obj
-                .getAsyncedPositionsRelativeToWorld()
-                .parallelStream()
-                .collect(Collectors.toSet());
-        for (CollectionSingleAdapter<Position<?>> adapter : this.getExactAdapters()) {
-            text = adapter.processMessage(positions, text);
+        List<MessageAdapter<PositionableShipsStructure>> structureAdapter = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL_STRUCTURE)
+                .toList();
+        for (MessageAdapter<PositionableShipsStructure> adapter : structureAdapter) {
+            text = adapter.processMessage(obj, text);
         }
         return text;
     }

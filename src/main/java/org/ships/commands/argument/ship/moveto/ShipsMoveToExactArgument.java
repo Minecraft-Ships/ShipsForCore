@@ -1,7 +1,8 @@
 package org.ships.commands.argument.ship.moveto;
 
-import org.core.TranslateCore;
-import org.core.adventureText.AText;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -14,13 +15,11 @@ import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
-import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
+import org.core.utils.BarUtils;
 import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.Positionable;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
@@ -50,29 +49,15 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT), new ShipIdArgument<>(this.SHIP_ID_ARGUMENT),
-                             new ExactArgument(this.SHIP_MOVE_TO_ARGUMENT), new ExactArgument(this.SHIP_EXACT_ARGUMENT),
-                             new Vector3IntegerArgument(this.SHIP_VECTOR_ARGUMENT,
+        return Arrays.asList(new ExactArgument(SHIP_ARGUMENT), new ShipIdArgument<>(SHIP_ID_ARGUMENT),
+                             new ExactArgument(SHIP_MOVE_TO_ARGUMENT), new ExactArgument(SHIP_EXACT_ARGUMENT),
+                             new Vector3IntegerArgument(SHIP_VECTOR_ARGUMENT,
                                                         this.createSuggestion(p -> p.getX().intValue()),
                                                         this.createSuggestion(p -> p.getY().intValue()),
                                                         this.createSuggestion(p -> p.getZ().intValue())),
                              SHIP_WORLD_ARGUMENT
 
         );
-    }
-
-    private SuggestionArgument<Integer> createSuggestion(Function<? super Position<? extends Number>, Integer> function) {
-        return new SuggestionArgument<Integer>(new IntegerArgument(this.SHIP_VECTOR_ARGUMENT)) {
-            @Override
-            public List<String> suggest(CommandContext commandContext, CommandArgumentContext<Integer> argument) {
-                if (commandContext.getSource() instanceof Positionable) {
-                    Positionable<? extends Number> source = (Positionable<? extends Number>) commandContext.getSource();
-                    Position<?> pos = source.getPosition();
-                    return Collections.singletonList("" + function.apply(pos));
-                }
-                return Collections.emptyList();
-            }
-        };
     }
 
     @Override
@@ -87,45 +72,61 @@ public class ShipsMoveToExactArgument implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
-        Vector3<Integer> vector3 = commandContext.getArgument(this, this.SHIP_VECTOR_ARGUMENT);
-        WorldExtent world = commandContext.getArgument(this, this.SHIP_WORLD_ARGUMENT);
+        Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
+        Vector3<Integer> vector3 = commandContext.getArgument(this, SHIP_VECTOR_ARGUMENT);
+        WorldExtent world = commandContext.getArgument(this, SHIP_WORLD_ARGUMENT);
         if (world == null) {
             world = vessel.getPosition().getWorld();
         }
 
-
-        SyncBlockPosition position = Position.toSync(Position.toBlock(world.getPosition(vector3)));
+        SyncBlockPosition position = world.getPosition(vector3).toBlockPosition().toSyncPosition();
         MovementDetailsBuilder builder = new MovementDetailsBuilder();
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int trackLimit = config.getDefaultTrackSize();
 
         if (config.isBossBarVisible()) {
-            ServerBossBar bar = TranslateCore.createBossBar();
-            if (commandContext.getSource() instanceof LivePlayer) {
-                bar.register((LivePlayer) commandContext.getSource());
+            BossBar bar = BossBar.bossBar(Component.text("0 / " + trackLimit), 0, BossBar.Color.PURPLE,
+                                          BossBar.Overlay.PROGRESS);
+            if (commandContext.getSource() instanceof Audience audience) {
+                audience.showBossBar(bar);
             }
-            bar.setTitle(AText.ofPlain("0 / " + trackLimit));
-            builder.setBossBar(bar);
+            builder.setAdventureBossBar(bar);
         }
         builder.setException((context, exc) -> {
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+            context.getAdventureBossBar().ifPresent(bar -> {
+                BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar));
+            });
+
             if (exc instanceof MoveException e) {
-                if (commandContext.getSource() instanceof CommandViewer viewer) {
-                    viewer.sendMessage(e.getErrorMessageText());
-                }
+                commandContext.getSource().sendMessage(e.getErrorMessage());
             } else {
                 exc.printStackTrace();
             }
-            context.getEntities().keySet().forEach(s -> {
-                if (s instanceof EntitySnapshot.NoneDestructibleSnapshot) {
-                    ((EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) s).getEntity().setGravity(true);
-                }
-            });
+            context
+                    .getEntities()
+                    .keySet()
+                    .stream()
+                    .filter(snapshot -> snapshot instanceof EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>)
+                    .map(snapshot -> (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) snapshot)
+                    .forEach(snapshot -> snapshot.getEntity().setGravity(true));
         });
 
         vessel.moveTo(position, builder.build());
         return true;
+    }
+
+    private SuggestionArgument<Integer> createSuggestion(Function<? super Position<? extends Number>, Integer> function) {
+        return new SuggestionArgument<>(new IntegerArgument(SHIP_VECTOR_ARGUMENT)) {
+            @Override
+            public List<String> suggest(CommandContext commandContext, CommandArgumentContext<Integer> argument) {
+                if (commandContext.getSource() instanceof Positionable) {
+                    Positionable<? extends Number> source = (Positionable<? extends Number>) commandContext.getSource();
+                    Position<?> pos = source.getPosition();
+                    return Collections.singletonList("" + function.apply(pos));
+                }
+                return Collections.emptyList();
+            }
+        };
     }
 }

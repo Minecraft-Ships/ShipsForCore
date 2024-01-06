@@ -5,22 +5,27 @@ import org.core.inventory.item.ItemType;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
+import org.ships.config.messages.adapter.category.AdapterCategories;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.config.messages.adapter.misc.CollectionAdapter;
+import org.ships.config.messages.adapter.specific.number.NumberAdapter;
 import org.ships.config.messages.messages.error.data.FuelRequirementMessageData;
-import org.ships.vessel.common.assits.VesselRequirement;
-import org.ships.vessel.common.requirement.FuelRequirement;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessageData> {
+
+    public static final NumberAdapter<Integer> TAKE_AMOUNT = new NumberAdapter<>("Take Amount");
+
+
     @Override
     public String[] getPath() {
-        return new String[]{"Error", "Fuel", "Not Enough"};
+        return new String[]{"Error", "Requirement", "Fuel", "Not Enough"};
     }
 
     @Override
@@ -30,55 +35,39 @@ public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessage
                         + new CollectionAdapter<>(Message.ITEM_NAME).adapterTextFormat());
     }
 
-    private Collection<CollectionAdapter<ItemType>> getFuelTypesAdapters() {
-        return Message.ITEM_ADAPTERS.parallelStream().map(CollectionAdapter::new).collect(Collectors.toSet());
-    }
-
-    private Collection<MessageAdapter<Integer>> getAmountAdapters() {
-        return List.of(Message.FUEL_FOUND_REQUIREMENT, Message.FUEL_CONSUMPTION_REQUIREMENT);
+    @Override
+    public Collection<AdapterCategory<?>> getCategories() {
+        return List.of(AdapterCategories.VESSEL,
+                       AdapterCategories.ITEM_TYPE.<Collection<ItemType>>map(Collection.class));
     }
 
     @Override
     public Collection<MessageAdapter<?>> getAdapters() {
-        Collection<MessageAdapter<?>> adapters = new HashSet<>();
-        adapters.addAll(Message.VESSEL_ADAPTERS);
-        adapters.addAll(this.getAmountAdapters());
-        adapters.addAll(this.getFuelTypesAdapters());
-        return adapters;
+        Collection<MessageAdapter<?>> adapters = new HashSet<>(Message.super.getAdapters());
+        adapters.add(TAKE_AMOUNT);
+        return Collections.unmodifiableCollection(adapters);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, FuelRequirementMessageData obj) {
         Vessel vessel = obj.getVessel();
-        for (MessageAdapter<Vessel> vesselAdapter : Message.VESSEL_ADAPTERS) {
-            if (vesselAdapter.containsAdapter(text)) {
-                text = vesselAdapter.processMessage(obj.getVessel(), text);
-            }
-        }
-        for (CollectionAdapter<ItemType> adapters : this.getFuelTypesAdapters()) {
-            if (adapters.containsAdapter(text)) {
-                text = adapters.processMessage(obj.getFuelTypes(), text);
-            }
-        }
-        if (!(vessel instanceof VesselRequirement requirement)) {
-            return text;
-        }
-        Optional<FuelRequirement> opFuelRequirement = requirement.getRequirement(FuelRequirement.class);
-        if (opFuelRequirement.isEmpty()) {
-            return text;
-        }
-        FuelRequirement fuelRequirement = opFuelRequirement.get();
-        if (Message.FUEL_CONSUMPTION_REQUIREMENT.containsAdapter(text)) {
-            text = Message.FUEL_CONSUMPTION_REQUIREMENT.processMessage(fuelRequirement.getConsumption(), text);
-        }
-        if (Message.FUEL_FOUND_REQUIREMENT.containsAdapter(text)) {
-            text = Message.FUEL_FOUND_REQUIREMENT.processMessage(obj.getToTakeAmount(), text);
-        }
-        if (Message.FUEL_LEFT_REQUIREMENT.containsAdapter(text)) {
-            text = Message.FUEL_LEFT_REQUIREMENT.processMessage(
-                    fuelRequirement.getConsumption() - obj.getToTakeAmount(), text);
-        }
+        int toTakeAmount = obj.getToTakeAmount();
+        Collection<ItemType> fuelTypes = obj.getFuelTypes();
 
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<CollectionAdapter<ItemType>> itemTypeAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.ITEM_TYPE)
+                .map(CollectionAdapter::new)
+                .toList();
+
+
+        for (MessageAdapter<Vessel> vesselAdapter : vesselAdapters) {
+            text = vesselAdapter.processMessage(vessel, text);
+        }
+        for (MessageAdapter<Collection<ItemType>> itemAdapter : itemTypeAdapters) {
+            text = itemAdapter.processMessage(fuelTypes, text);
+        }
+        text = TAKE_AMOUNT.processMessage(toTakeAmount, text);
         return text;
     }
 }

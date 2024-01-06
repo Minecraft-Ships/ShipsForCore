@@ -36,6 +36,22 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         this.position = position;
     }
 
+    public boolean isEmpty() {
+        if (!this.vectors.isEmpty()) {
+            return false;
+        }
+        if (!this.outsideEast.isEmpty()) {
+            return false;
+        }
+        if (!this.outsideNorth.isEmpty()) {
+            return false;
+        }
+        if (!this.outsideSouth.isEmpty()) {
+            return false;
+        }
+        return this.outsideWest.isEmpty();
+    }
+
     @Override
     public SyncBlockPosition getPosition() {
         return this.position;
@@ -241,6 +257,25 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         Vector3<Integer> next = this.position.getPosition();
         this.cachedBounds = null;
         return this.vectors.remove(next.minus(original));
+    }
+
+    @Override
+    public void copyInto(@NotNull PositionableShipsStructure structure) {
+        if (structure instanceof AbstractPositionableShipsStructure abstractStructure && isEmpty()) {
+            this.cachedBounds = abstractStructure.cachedBounds;
+            this.vectors.addAll(abstractStructure.vectors);
+            this.outsideNorth.addAll(abstractStructure.outsideNorth);
+            this.outsideEast.addAll(abstractStructure.outsideEast);
+            this.outsideSouth.addAll(abstractStructure.outsideSouth);
+            this.outsideWest.addAll(abstractStructure.outsideWest);
+            return;
+        }
+        structure.getRelativePositionsToCenter().parallelStream().forEach(this::addPositionRelativeToCenter);
+    }
+
+    @Override
+    public boolean matchRelativeToCenter(PositionableShipsStructure structure) {
+        return this.getRelativePositionsToCenter().equals(structure.getRelativePositionsToCenter());
     }
 
     @Override

@@ -168,7 +168,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
     }
 
     @Override
-    public Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(@NotNull ConfigurationStream file) {
+    public @NotNull Map<ConfigurationNode.KnownParser<?, ?>, Object> serialize(@NotNull ConfigurationStream file) {
         Map<ConfigurationNode.KnownParser<?, ?>, Object> map = new HashMap<>();
         map.put(this.configSpecialBlockType, this.getSpecialBlocks());
         map.put(this.configSpecialBlockPercent, this.getSpecialBlocksPercent());
@@ -179,7 +179,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
     }
 
     @Override
-    public AbstractShipsVessel deserializeExtra(@NotNull ConfigurationStream file) {
+    public @NotNull AbstractShipsVessel deserializeExtra(@NotNull ConfigurationStream file) {
         SpecialBlocksRequirement specialBlocksRequirement = this.getSpecialBlocksRequirement();
         FuelRequirement fuelRequirement = this.getFuelRequirement();
 
@@ -210,7 +210,7 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
     }
 
     @Override
-    public void setRequirement(Requirement<?> updated) {
+    public void setRequirement(@NotNull Requirement<?> updated) {
         this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
         this.requirements.add(updated);
     }

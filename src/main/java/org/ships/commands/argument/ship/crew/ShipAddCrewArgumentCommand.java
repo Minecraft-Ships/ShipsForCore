@@ -32,21 +32,18 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(this.SHIP_ARGUMENT),
-                new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-                    if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                        CrewStoredVessel crewVessel = (CrewStoredVessel) vessel;
-                        User player = (User) source;
-                        return crewVessel.getPermission(player.getUniqueId()).canCommand();
-                    }
-                    return vessel instanceof CrewStoredVessel;
-                }, v -> "Vessel does not accept crew"),
-                new ExactArgument(this.SHIP_CREW_ARGUMENT),
-                new ExactArgument(this.SHIP_VIEW_ARGUMENT),
-                new ShipIdentifiableArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT, CrewPermission.class),
-                new RemainingArgument<>(this.SHIP_PLAYERS_ARGUMENT, new UserArgument(this.SHIP_PLAYERS_ARGUMENT))
-        );
+        return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
+                             new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
+                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
+                                     User player = (User) source;
+                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                 }
+                                 return vessel instanceof CrewStoredVessel;
+                             }, v -> "Vessel does not accept crew"), new ExactArgument(this.SHIP_CREW_ARGUMENT),
+                             new ExactArgument(this.SHIP_VIEW_ARGUMENT),
+                             new ShipIdentifiableArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT, CrewPermission.class),
+                             new RemainingArgument<>(this.SHIP_PLAYERS_ARGUMENT,
+                                                     new UserArgument(this.SHIP_PLAYERS_ARGUMENT)));
     }
 
     @Override

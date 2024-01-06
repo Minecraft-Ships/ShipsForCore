@@ -1,13 +1,13 @@
 package org.ships.commands.argument.type.modify.read;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
+import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
@@ -52,13 +52,14 @@ public class ReadSpecialBlocksTypeArgumentCommand implements ArgumentCommand {
         Collection<BlockType> specialBlocksTypes = specialBlocksRequirement.getBlocks();
         float percentage = specialBlocksRequirement.getPercentage();
 
-        if (commandContext.getSource() instanceof CommandViewer viewer) {
-            viewer.sendMessage(AText.ofPlain("Special Block Types: " + specialBlocksTypes
-                    .stream()
-                    .map(type -> type.getName())
-                    .collect(Collectors.joining(", "))));
-            viewer.sendMessage(AText.ofPlain("Percentage: " + percentage));
-        }
+        commandContext
+                .getSource()
+                .sendMessage(Component.text("Special Block Types: " + specialBlocksTypes
+                        .stream()
+                        .map(Identifiable::getName)
+                        .collect(Collectors.joining(", "))));
+        commandContext.getSource().sendMessage(Component.text("Percentage: " + percentage));
+
         return true;
     }
 }

@@ -2,13 +2,11 @@ package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
 import org.core.config.ConfigurationNode;
-import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.Position;
 import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,11 +65,10 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                 .setDelay(0)
                 .setRunner((scheduler) -> {
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(
-                            Position.toSync(position));
+                            position.toSyncPosition());
                     LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new LinkedTransferQueue<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-                    toProcess.add(new AbstractMap.SimpleImmutableEntry<>(Position.toASync(position),
-                                                                         FourFacingDirection.NONE));
+                    toProcess.add(Map.entry(position.toAsyncPosition(), FourFacingDirection.NONE));
                     while (!toProcess.isEmpty() && structure.getOriginalRelativePositionsToCenter().size() < limit
                             && !ShipsPlugin.getPlugin().isShuttingDown()) {
                         Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositionsToCenter();
@@ -117,7 +114,7 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 return;
                             }
-                            structure.addPositionRelativeToWorld(Position.toSync(posEntry.getKey()));
+                            structure.addPositionRelativeToWorld(posEntry.getKey().toSyncPosition());
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 shouldKill.set(true);
                                 TranslateCore
@@ -127,11 +124,9 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                                         .setRunner((context) -> future.complete(structure))
                                         .setDisplayName("Ships 6 async release")
-                                        .build(ShipsPlugin.getPlugin())
+                                        .buildDelayed(ShipsPlugin.getPlugin())
                                         .run();
-                                if (scheduler instanceof Scheduler.Native nativeSch) {
-                                    nativeSch.cancel();
-                                }
+                                scheduler.cancel();
                             }
                         });
                         if (shouldKill.get()) {
@@ -146,14 +141,12 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                             .setRunner((context) -> future.complete(structure))
                             .setDisplayName("Ships 6 async release")
-                            .build(ShipsPlugin.getPlugin())
+                            .buildDelayed(ShipsPlugin.getPlugin())
                             .run();
-                    if (scheduler instanceof Scheduler.Native nativeSch) {
-                        nativeSch.cancel();
-                    }
+                    scheduler.cancel();
                 })
                 .setDisplayName("Ships 6 async structure finder")
-                .build(ShipsPlugin.getPlugin())
+                .buildDelayed(ShipsPlugin.getPlugin())
                 .run();
         return future;
     }

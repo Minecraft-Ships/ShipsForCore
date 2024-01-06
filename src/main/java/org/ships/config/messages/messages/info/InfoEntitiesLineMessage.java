@@ -4,10 +4,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
-import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.category.AdapterCategory;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
 public class InfoEntitiesLineMessage implements Message<Object> {
     @Override
@@ -21,8 +21,8 @@ public class InfoEntitiesLineMessage implements Message<Object> {
     }
 
     @Override
-    public Set<MessageAdapter<?>> getAdapters() {
-        return Collections.emptySet();
+    public Collection<AdapterCategory<?>> getCategories() {
+        return Collections.emptyList();
     }
 
     @Override

@@ -1,11 +1,12 @@
 package org.ships.movement.autopilot.scheduler;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
-import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.Scheduler;
+import org.core.utils.BarUtils;
 import org.core.utils.time.TimeRange;
-import org.core.world.boss.ServerBossBar;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
@@ -28,17 +29,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class FallExecutor implements Consumer<Scheduler> {
-
-    public static Scheduler createScheduler() {
-        return TranslateCore
-                .getScheduleManager()
-                .schedule()
-                .setRunner(new FallExecutor())
-                .setDelayUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
-                .setDelay(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
-                .setDisplayName("Ships fall scheduler")
-                .build(ShipsPlugin.getPlugin());
-    }
 
     @Override
     public void accept(Scheduler scheduler) {
@@ -69,23 +59,29 @@ public class FallExecutor implements Consumer<Scheduler> {
                         }
                         MovementDetailsBuilder builder = new MovementDetailsBuilder();
                         if (config.isBossBarVisible()) {
-                            ServerBossBar bossBar = TranslateCore.createBossBar().setTitle(AText.ofPlain("Falling"));
+                            BossBar bar = BossBar.bossBar(Component.text("Failling"), 0, BossBar.Color.PURPLE,
+                                                          BossBar.Overlay.PROGRESS);
                             v
-                                    .getEntities()
-                                    .stream()
-                                    .filter(e -> e instanceof LivePlayer)
-                                    .forEach(e -> bossBar.register((LivePlayer) e));
-                            builder.setBossBar(bossBar);
+                                    .getEntitiesOvertime(entity -> entity instanceof Audience)
+                                    .thenAccept(entities -> entities.forEach(
+                                            entity -> ((Audience) entity).showBossBar(bar)));
+                            builder.setAdventureBossBar(bar);
                         }
                         builder.setPostMovementEvents(vessel -> vessel.set(new CooldownFlag(
-                                new TimeRange((int) config.getFallingDelayUnit().toTicks(config.getFallingDelay())))));
+                                new TimeRange(config.getFallingDelayUnit().toTicks(config.getFallingDelay())))));
                         BiConsumer<MovementContext, ? super Throwable> exception = (context, exc) -> {
-                            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+                            context.getAdventureBossBar().ifPresent(bar -> {
+                                BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar));
+                            });
                             v.getEntities().forEach(e -> e.setGravity(true));
                             if (!(exc instanceof MoveException e)) {
                                 return;
                             }
-                            context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+
+                            context
+                                    .getAdventureBossBar()
+                                    .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar)));
+
                             if (!e.getDisplayMessage().equals(AdventureMessageConfig.ERROR_COLLIDE_DETECTED)) {
                                 return;
                             }
@@ -111,5 +107,16 @@ public class FallExecutor implements Consumer<Scheduler> {
         if (config.isFallingEnabled()) {
             createScheduler().run();
         }
+    }
+
+    public static Scheduler createScheduler() {
+        return TranslateCore
+                .getScheduleManager()
+                .schedule()
+                .setRunner(new FallExecutor())
+                .setDelayUnit(ShipsPlugin.getPlugin().getConfig().getFallingDelayUnit())
+                .setDelay(ShipsPlugin.getPlugin().getConfig().getFallingDelay())
+                .setDisplayName("Ships fall scheduler")
+                .buildDelayed(ShipsPlugin.getPlugin());
     }
 }

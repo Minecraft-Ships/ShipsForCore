@@ -3,8 +3,6 @@ package org.ships.vessel.sign;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.utils.ComponentUtils;
 import org.core.world.position.block.entity.sign.SignSide;
@@ -17,9 +15,9 @@ import java.util.List;
 public class WheelSign implements ShipsSign {
 
     public static final List<Component> SIGN = List.of(Component.text("[Wheel]").color(NamedTextColor.YELLOW),
-            Component.text("\\\\||//").color(TextColor.color(153, 102, 51)),
-            Component.text("==||==").color(TextColor.color(153, 102, 51)),
-            Component.text("//||\\\\").color(TextColor.color(153, 102, 51)));
+                                                       Component.text("\\\\||//").color(TextColor.color(153, 102, 51)),
+                                                       Component.text("==||==").color(TextColor.color(153, 102, 51)),
+                                                       Component.text("//||\\\\").color(TextColor.color(153, 102, 51)));
 
     @Override
     public boolean isSign(List<? extends Component> lines) {
