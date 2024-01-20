@@ -11,6 +11,7 @@ import org.ships.config.messages.adapter.category.AdapterCategory;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class InfoNameMessage implements Message<Vessel> {
     @Override
@@ -38,7 +39,7 @@ public class InfoNameMessage implements Message<Vessel> {
 
     @Override
     public Component processMessage(@NotNull Component text, Vessel obj) {
-        var vesselAdapter = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        var vesselAdapter = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(Collectors.toList());
 
 
         for (MessageAdapter<Vessel> adapter : vesselAdapter) {

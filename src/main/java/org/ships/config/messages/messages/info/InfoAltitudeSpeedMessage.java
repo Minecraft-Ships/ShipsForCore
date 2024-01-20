@@ -12,6 +12,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InfoAltitudeSpeedMessage implements Message<Vessel> {
     @Override
@@ -34,7 +35,8 @@ public class InfoAltitudeSpeedMessage implements Message<Vessel> {
 
     @Override
     public Component processMessage(@NotNull Component text, Vessel obj) {
-        List<MessageAdapter<Vessel>> vesselCategory = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<MessageAdapter<Vessel>> vesselCategory = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
+                Collectors.toList());
         for (MessageAdapter<Vessel> adapter : vesselCategory) {
             text = adapter.processMessage(obj);
         }

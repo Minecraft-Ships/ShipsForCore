@@ -13,6 +13,7 @@ import org.ships.config.messages.adapter.category.AdapterCategory;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ErrorPermissionMissMatchMessage implements Message<Map.Entry<LivePlayer, String>> {
     @Override
@@ -36,10 +37,10 @@ public class ErrorPermissionMissMatchMessage implements Message<Map.Entry<LivePl
     public Component processMessage(@NotNull Component text, Map.Entry<LivePlayer, String> obj) {
         List<MessageAdapter<String>> permissionAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.PERMISSION)
-                .toList();
+                .collect(Collectors.toList());
         List<MessageAdapter<LivePlayer>> playerAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.PLAYER)
-                .toList();
+                .collect(Collectors.toList());
 
         for (MessageAdapter<String> adapter : permissionAdapters) {
             text = adapter.processMessage(obj.getValue(), text);

@@ -13,6 +13,7 @@ import org.ships.config.messages.adapter.category.AdapterCategory;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ErrorNoSpeedSetMessage implements Message<BlockPosition> {
     @Override
@@ -34,7 +35,7 @@ public class ErrorNoSpeedSetMessage implements Message<BlockPosition> {
     public Component processMessage(@NotNull Component text, BlockPosition obj) {
         List<MessageAdapter<SyncPosition<? extends Number>>> positionAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.POSITION)
-                .toList();
+                .collect(Collectors.toList());
         for (MessageAdapter<SyncPosition<? extends Number>> adapter : positionAdapters) {
             text = adapter.processMessage(obj.toSyncPosition(), text);
 

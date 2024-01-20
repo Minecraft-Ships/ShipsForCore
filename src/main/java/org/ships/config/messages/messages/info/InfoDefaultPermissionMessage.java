@@ -12,6 +12,7 @@ import org.ships.permissions.vessel.CrewPermission;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
     @Override
@@ -34,7 +35,9 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
 
     @Override
     public Component processMessage(@NotNull Component text, CrewPermission obj) {
-        var permissionAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.CREW_PERMISSION).toList();
+        var permissionAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.CREW_PERMISSION)
+                .collect(Collectors.toList());
         for (MessageAdapter<CrewPermission> adapter : permissionAdapters) {
             text = adapter.processMessage(obj, text);
         }

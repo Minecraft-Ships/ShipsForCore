@@ -13,6 +13,7 @@ import org.ships.config.messages.adapter.category.AdapterCategory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 abstract class BlockGroupAdapter implements MessageAdapter<Collection<BlockType>> {
@@ -56,7 +57,7 @@ abstract class BlockGroupAdapter implements MessageAdapter<Collection<BlockType>
                 .getGroups()
                 .parallelStream()
                 .filter(blockGroup -> obj.parallelStream().anyMatch(type -> type.getGroups().contains(blockGroup)))
-                .toList();
+                .collect(Collectors.toList());
 
         var blockGroups = getValidBlockGroups(blockTypes, potentialBlockGroups);
 
@@ -85,7 +86,7 @@ abstract class BlockGroupAdapter implements MessageAdapter<Collection<BlockType>
                 .parallelStream()
                 .filter(group -> Arrays.stream(group.getGrouped()).allMatch(types::contains))
                 .sorted(Comparator.comparing(group -> group.getGrouped().length))
-                .toList();
+                .collect(Collectors.toList());
         Collection<BlockGroup> ret = new ArrayList<>();
         for (BlockGroup group : allMatchGroups) {
             if (Stream.of(group.getGrouped()).allMatch(types::contains)) {

@@ -13,6 +13,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ErrorNotMovingOnMessage implements Message<NotMovingOnMessageData> {
     @Override
@@ -32,10 +33,12 @@ public class ErrorNotMovingOnMessage implements Message<NotMovingOnMessageData> 
 
     @Override
     public Component processMessage(@NotNull Component text, NotMovingOnMessageData obj) {
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL)
+                .collect(Collectors.toList());
         List<MessageAdapter<Collection<BlockType>>> blockAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.BLOCK_GROUP)
-                .toList();
+                .collect(Collectors.toList());
 
         for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj.getVessel(), text);

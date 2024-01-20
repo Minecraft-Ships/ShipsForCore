@@ -12,6 +12,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ErrorNoShipSignMessage implements Message<PositionableShipsStructure> {
     @Override
@@ -37,7 +38,7 @@ public class ErrorNoShipSignMessage implements Message<PositionableShipsStructur
     public Component processMessage(@NotNull Component text, PositionableShipsStructure obj) {
         List<MessageAdapter<PositionableShipsStructure>> structureAdapter = MessageAdapters
                 .getAdaptersFor(AdapterCategories.VESSEL_STRUCTURE)
-                .toList();
+                .collect(Collectors.toList());
         for (MessageAdapter<PositionableShipsStructure> adapter : structureAdapter) {
             text = adapter.processMessage(obj, text);
         }

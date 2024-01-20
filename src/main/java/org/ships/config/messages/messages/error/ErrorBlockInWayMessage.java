@@ -16,6 +16,7 @@ import org.ships.config.messages.adapter.misc.MappedAdapter;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collection<BlockPosition>>> {
 
@@ -57,14 +58,15 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
         List<CollectionAdapter<SyncPosition<? extends Number>>> locationAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.POSITION)
                 .map(CollectionAdapter::new)
-                .toList();
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+                .collect(Collectors.toList());
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
+                Collectors.toList());
 
         List<? extends SyncPosition<? extends Number>> locations = obj
                 .getValue()
                 .stream()
                 .map(pos -> (SyncPosition<? extends Number>) pos)
-                .toList();
+                .collect(Collectors.toList());
 
         for (MessageAdapter<Collection<SyncPosition<? extends Number>>> adapter : locationAdapters) {
             text = adapter.processMessage((Collection<SyncPosition<? extends Number>>) locations, text);

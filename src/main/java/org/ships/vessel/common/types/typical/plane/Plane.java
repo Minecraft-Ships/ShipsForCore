@@ -180,7 +180,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
                     .getFuelTypes()
                     .stream()
                     .anyMatch(type -> slot.getItem().map(item -> item.getType().equals(type)).orElse(false));
-        }).toList();
+        }).collect(Collectors.toList());
         return acceptedSlots.isEmpty();
     }
 

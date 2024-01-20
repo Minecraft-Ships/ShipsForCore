@@ -8,6 +8,7 @@ import org.ships.config.messages.adapter.category.AdapterCategory;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class MapToAdapter<O, T> implements MessageAdapter<O> {
 
@@ -38,7 +39,7 @@ public class MapToAdapter<O, T> implements MessageAdapter<O> {
 
     @Override
     public Collection<AdapterCategory<O>> categories() {
-        return this.adapter.categories().parallelStream().map(t -> t.<O>map(this.adapterType)).toList();
+        return this.adapter.categories().parallelStream().map(t -> t.<O>map(this.adapterType)).collect(Collectors.toList());
     }
 
     @Override

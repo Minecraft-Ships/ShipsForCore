@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessageData> {
 
@@ -54,11 +55,12 @@ public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessage
         int toTakeAmount = obj.getToTakeAmount();
         Collection<ItemType> fuelTypes = obj.getFuelTypes();
 
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
+                Collectors.toList());
         List<CollectionAdapter<ItemType>> itemTypeAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.ITEM_TYPE)
                 .map(CollectionAdapter::new)
-                .toList();
+                .collect(Collectors.toList());
 
 
         for (MessageAdapter<Vessel> vesselAdapter : vesselAdapters) {

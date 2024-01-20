@@ -12,6 +12,7 @@ import org.ships.config.messages.adapter.category.AdapterCategory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InfoEntitiesListMessage implements Message<Entity<?>> {
     @Override
@@ -33,7 +34,7 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
     public Component processMessage(@NotNull Component text, Entity<?> obj) {
         List<MessageAdapter<Entity<?>>> entityAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.ENTITY)
-                .toList();
+                .collect(Collectors.toList());
         for (MessageAdapter<Entity<?>> adapter : entityAdapters) {
             text = adapter.processMessage(obj, text);
         }

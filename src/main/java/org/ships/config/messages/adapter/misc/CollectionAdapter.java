@@ -44,12 +44,12 @@ public class CollectionAdapter<T> implements MessageAdapter<Collection<T>> {
                 .categories()
                 .parallelStream()
                 .map(category -> category.<Collection<T>>map(this.adaptingType()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     public Component processMessage(@NotNull Collection<T> obj) {
-        List<Component> list = obj.parallelStream().map(this.adapter::processMessage).toList();
+        List<Component> list = obj.parallelStream().map(this.adapter::processMessage).collect(Collectors.toList());
         if (list.isEmpty()) {
             return Component.text("none");
         }

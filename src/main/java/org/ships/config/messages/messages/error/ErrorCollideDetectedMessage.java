@@ -15,6 +15,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ErrorCollideDetectedMessage implements Message<CollideDetectedMessageData> {
     @Override
@@ -39,15 +40,17 @@ public class ErrorCollideDetectedMessage implements Message<CollideDetectedMessa
         List<CollectionAdapter<SyncPosition<? extends Number>>> positionAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.POSITION)
                 .map(CollectionAdapter::new)
-                .toList();
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+                .collect(Collectors.toList());
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL)
+                .collect(Collectors.toList());
 
         var positions = obj
                 .getPositions()
                 .stream()
                 .map(BlockPosition::toSyncPosition)
                 .map(pos -> (SyncPosition<? extends Number>) pos)
-                .toList();
+                .collect(Collectors.toList());
 
         for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj.getVessel(), text);

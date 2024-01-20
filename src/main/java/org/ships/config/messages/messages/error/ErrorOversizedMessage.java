@@ -11,6 +11,7 @@ import org.ships.config.messages.adapter.specific.number.NumberAdapter;
 import org.ships.vessel.common.types.Vessel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ErrorOversizedMessage implements Message<Map.Entry<Vessel, Integer>> {
 
@@ -41,7 +42,8 @@ public class ErrorOversizedMessage implements Message<Map.Entry<Vessel, Integer>
 
     @Override
     public Component processMessage(@NotNull Component text, Map.Entry<Vessel, Integer> obj) {
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
+                Collectors.toList());
         for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj.getKey(), text);
         }

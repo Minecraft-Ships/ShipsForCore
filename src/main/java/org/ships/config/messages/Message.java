@@ -183,7 +183,7 @@ public interface Message<R> {
                 .flatMap(MessageAdapters::getAdaptersFor)
                 .distinct()
                 .map(adapter -> (MessageAdapter<?>) adapter)
-                .toList();
+                .collect(Collectors.toList());
         return new LinkedTransferQueue<>(adapters);
     }
 

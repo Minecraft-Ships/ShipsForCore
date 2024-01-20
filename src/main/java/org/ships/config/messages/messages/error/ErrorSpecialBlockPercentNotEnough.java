@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPercentMessageData> {
 
@@ -47,10 +48,11 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
 
     @Override
     public Component processMessage(@NotNull Component text, RequirementPercentMessageData obj) {
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
+                Collectors.toList());
         List<MessageAdapter<Collection<BlockType>>> blockGroupsAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.BLOCK_GROUP)
-                .toList();
+                .collect(Collectors.toList());
 
         for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj.getVessel(), text);

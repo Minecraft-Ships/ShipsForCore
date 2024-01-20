@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ShipsInfoArgumentCommand implements ArgumentCommand {
 
@@ -72,7 +73,7 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
             List<AText> typeText = shipTypes
                     .stream()
                     .map(s -> AText.ofPlain(s.getDisplayName()).withColour(NamedTextColours.GOLD))
-                    .toList();
+                    .collect(Collectors.toList());
             AText text = null;
             for (ShipType<?> shipType : shipTypes) {
                 AText displayName = AText.ofPlain(shipType.getDisplayName()).withColour(NamedTextColours.GOLD);

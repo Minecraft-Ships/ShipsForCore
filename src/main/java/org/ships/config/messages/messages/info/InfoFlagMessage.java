@@ -12,6 +12,7 @@ import org.ships.vessel.common.flag.VesselFlag;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InfoFlagMessage implements Message<VesselFlag<?>> {
     @Override
@@ -36,7 +37,7 @@ public class InfoFlagMessage implements Message<VesselFlag<?>> {
     public Component processMessage(@NotNull Component text, VesselFlag<?> obj) {
         List<MessageAdapter<VesselFlag<?>>> flagAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.VESSEL_FLAG)
-                .toList();
+                .collect(Collectors.toList());
         for (MessageAdapter<VesselFlag<?>> adapter : flagAdapters) {
             text = adapter.processMessage(obj, text);
         }

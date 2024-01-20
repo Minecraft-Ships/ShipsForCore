@@ -11,6 +11,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BlockFinderBarMessage implements Message<PositionableShipsStructure> {
     @Override
@@ -33,7 +34,7 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
     public Component processMessage(@NotNull Component text, PositionableShipsStructure obj) {
         List<MessageAdapter<PositionableShipsStructure>> vesselAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.VESSEL_STRUCTURE)
-                .toList();
+                .collect(Collectors.toList());
         for (MessageAdapter<PositionableShipsStructure> adapter : vesselAdapters) {
             text = adapter.processMessage(obj, text);
         }

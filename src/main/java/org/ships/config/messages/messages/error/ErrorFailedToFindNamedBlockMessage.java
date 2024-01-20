@@ -14,6 +14,7 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ErrorFailedToFindNamedBlockMessage implements Message<NamedBlockMessageData> {
 
@@ -41,10 +42,11 @@ public class ErrorFailedToFindNamedBlockMessage implements Message<NamedBlockMes
 
     @Override
     public Component processMessage(@NotNull Component text, NamedBlockMessageData obj) {
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
+                Collectors.toList());
         List<MessageAdapter<BlockType>> blockTypeAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.BLOCK_TYPE)
-                .toList();
+                .collect(Collectors.toList());
 
         for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj.getVessel(), text);

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.stream.Collectors;
 
 public final class Messages {
 
@@ -72,7 +73,7 @@ public final class Messages {
                                       }
                                   })
                                   .filter(Objects::nonNull)
-                                  .toList());
+                                  .collect(Collectors.toList()));
         }
         return cached;
     }

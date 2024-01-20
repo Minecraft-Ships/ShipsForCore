@@ -51,7 +51,7 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
                 .parallelStream()
                 .flatMap(adapter -> adapter.categories().stream())
                 .map(adapter -> (AdapterCategory<Collection<T>>) adapter)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

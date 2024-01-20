@@ -11,6 +11,7 @@ import org.ships.vessel.common.types.Vessel;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ErrorAlreadyMovingMessage implements Message<Vessel> {
     @Override
@@ -31,7 +32,7 @@ public class ErrorAlreadyMovingMessage implements Message<Vessel> {
 
     @Override
     public Component processMessage(@NotNull Component text, Vessel obj) {
-        var vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).toList();
+        var vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(Collectors.toList());
 
         for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj, text);

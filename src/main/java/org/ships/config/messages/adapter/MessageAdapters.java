@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class MessageAdapters {
@@ -102,7 +103,7 @@ public final class MessageAdapters {
                         }
                     })
                     .filter(Objects::nonNull)
-                    .toList();
+                    .collect(Collectors.toList());
             cached.addAll(streamed);
         }
         return cached;
