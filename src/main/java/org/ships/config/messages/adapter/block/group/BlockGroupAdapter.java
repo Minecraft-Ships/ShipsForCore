@@ -68,7 +68,8 @@ abstract class BlockGroupAdapter implements MessageAdapter<Collection<BlockType>
 
         Stream<Component> components = blockTypes.stream().map(this.toString);
         components = Stream.concat(components, blockGroups.stream().map(this.toString));
-        return Component.join(JoinConfiguration.builder().separator(Component.text(", ")).build(), components.toList());
+        return Component.join(JoinConfiguration.builder().separator(Component.text(", ")).build(),
+                              components.collect(Collectors.toList()));
     }
 
     private Collection<BlockGroup> getValidBlockGroups(Collection<BlockType> types, Collection<BlockGroup> groups) {
