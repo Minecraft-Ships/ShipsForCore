@@ -98,7 +98,8 @@ public class DefaultBlockList implements BlockList {
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Could not find Block instruction for " + blockInstruction.getType().getName()));
-        if (bi instanceof ModifiableBlockInstruction mbi) {
+        if (bi instanceof ModifiableBlockInstruction) {
+            ModifiableBlockInstruction mbi = (ModifiableBlockInstruction)bi;
             mbi.setCollide(blockInstruction.getCollide());
             mbi.setBlockLimit(
                     blockInstruction.getBlockLimit().isPresent() ? blockInstruction.getBlockLimit().getAsInt() : null);

@@ -39,9 +39,10 @@ public interface ShipsVessel
             throw new NoLicencePresent(this);
         }
         LiveTileEntity tile = opTile.get();
-        if (!(tile instanceof LiveSignTileEntity sign)) {
+        if (!(tile instanceof LiveSignTileEntity)) {
             throw new NoLicencePresent(this);
         }
+        LiveSignTileEntity sign = (LiveSignTileEntity)tile;
         LicenceSign licenceSign = ShipsPlugin
                 .getPlugin()
                 .get(LicenceSign.class)

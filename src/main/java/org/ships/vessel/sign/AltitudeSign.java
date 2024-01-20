@@ -70,9 +70,10 @@ public class AltitudeSign implements ShipsSign {
             return false;
         }
         LiveTileEntity lte = opTile.get();
-        if (!(lte instanceof LiveSignTileEntity stes)) {
+        if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
+        SignTileEntity stes = (SignTileEntity) lte;
         Optional<SignSide> opSignSide = this.getSide(stes);
         if (opSignSide.isEmpty()) {
             return false;
@@ -246,9 +247,10 @@ public class AltitudeSign implements ShipsSign {
                     .filter(e -> e instanceof EntitySnapshot.NoneDestructibleSnapshot)
                     .map(e -> (EntitySnapshot.NoneDestructibleSnapshot<?>) e)
                     .forEach(e -> e.setGravity(true));
-            if (!(exc instanceof MoveException e)) {
+            if (!(exc instanceof MoveException)) {
                 return;
             }
+            MoveException e = (MoveException)exc;
             player.sendMessage(e.getErrorMessage());
         };
 

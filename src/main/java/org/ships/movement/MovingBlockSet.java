@@ -62,9 +62,10 @@ public class MovingBlockSet extends HashSet<MovingBlock> {
                 return false;
             }
             TileEntitySnapshot<? extends TileEntity> snapshot = opTiledEntity.get();
-            if (!(snapshot instanceof SignTileEntity ste)) {
+            if (!(snapshot instanceof SignTileEntity)) {
                 return false;
             }
+            SignTileEntity ste = (SignTileEntity) snapshot;
             return sign.isSign(ste);
         });
     }

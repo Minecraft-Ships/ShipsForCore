@@ -56,7 +56,8 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
             text = adapter.processMessage(obj.getVessel(), text);
         }
 
-        if (obj.getVessel() instanceof VesselRequirement shipVessel) {
+        if (obj.getVessel() instanceof VesselRequirement) {
+            VesselRequirement shipVessel = (VesselRequirement)obj.getVessel();
             Optional<SpecialBlocksRequirement> opRequirement = shipVessel.getRequirement(
                     SpecialBlocksRequirement.class);
             if (opRequirement.isPresent()) {

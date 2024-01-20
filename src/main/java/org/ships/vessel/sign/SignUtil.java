@@ -83,10 +83,11 @@ public interface SignUtil {
             if (bar != null) {
                 BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar));
             }
-            if (!(e instanceof UnableToFindLicenceSign e1)) {
+            if (!(e instanceof UnableToFindLicenceSign)) {
                 this.player.sendMessage(Component.text(e.getReason()).color(NamedTextColor.RED));
                 return;
             }
+            UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
             this.player.sendMessage(Component.text(e1.getReason()).color(NamedTextColor.RED));
             e1
                     .getFoundStructure()
@@ -124,9 +125,10 @@ public interface SignUtil {
                                            Position<?> position,
                                            LivePlayer player,
                                            @Nullable BossBar bar) {
-        if (!(vessel instanceof CrewStoredVessel stored)) {
+        if (!(vessel instanceof CrewStoredVessel)) {
             return false;
         }
+        CrewStoredVessel stored = (CrewStoredVessel) vessel;
 
         if (bar != null) {
             bar.name(Component.text("Checking permissions"));
@@ -162,14 +164,15 @@ public interface SignUtil {
                 BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar));
             }
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            if (exc instanceof MoveException e) {
+            if (exc instanceof MoveException) {
+                MoveException e = (MoveException)exc;
                 player.sendMessage(e.getErrorMessage());
             }
             context
                     .getEntities()
                     .keySet()
                     .stream()
-                    .filter(snapshot -> snapshot instanceof EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>)
+                    .filter(snapshot -> snapshot instanceof EntitySnapshot.NoneDestructibleSnapshot)
                     .map(snapshot -> (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) snapshot)
                     .forEach(s -> s.getEntity().setGravity(true));
         };

@@ -59,9 +59,9 @@ public class ConfigKeyValueArgument<A, V, N extends ConfigurationNode.KnownParse
             return Collections.emptyList();
         }
         Parser<String, V> parser = node.getNode().getParser();
-        if (!(parser instanceof StringParser.Suggestible<V> sugParser)) {
+        if (!(parser instanceof StringParser.Suggestible)) {
             return Collections.emptyList();
         }
-        return sugParser.getStringSuggestions(arg);
+        return ((StringParser.Suggestible<V>)parser).getStringSuggestions(arg);
     }
 }

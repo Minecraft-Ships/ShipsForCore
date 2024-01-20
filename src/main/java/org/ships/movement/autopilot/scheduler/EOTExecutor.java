@@ -60,9 +60,10 @@ public class EOTExecutor implements Consumer<Scheduler> {
             return Optional.empty();
         }
         LiveTileEntity tileEntity = opTileEntity.get();
-        if (!(tileEntity instanceof LiveSignTileEntity liveSignTileEntity)) {
+        if (!(tileEntity instanceof LiveSignTileEntity)) {
             return Optional.empty();
         }
+        LiveSignTileEntity liveSignTileEntity = (LiveSignTileEntity) tileEntity;
         return Optional.of(liveSignTileEntity);
     }
 
@@ -70,9 +71,7 @@ public class EOTExecutor implements Consumer<Scheduler> {
     public void accept(Scheduler scheduler) {
         Optional<LiveSignTileEntity> opLiveSignTileEntity = this.getSign();
         if (opLiveSignTileEntity.isEmpty()) {
-            if (scheduler instanceof Scheduler.Native nativeScheduler) {
-                nativeScheduler.cancel();
-            }
+            scheduler.cancel();
             return;
         }
         LiveSignTileEntity liveSignTileEntity = opLiveSignTileEntity.get();

@@ -50,11 +50,11 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof LivePlayer player)) {
+        if (!(source instanceof LivePlayer)) {
             source.sendMessage(Component.text("Player only command").color(NamedTextColor.RED));
-
             return true;
         }
+        LivePlayer player = (LivePlayer)source;
         vessel
                 .getStructure()
                 .getSyncedPositionsRelativeToWorld()

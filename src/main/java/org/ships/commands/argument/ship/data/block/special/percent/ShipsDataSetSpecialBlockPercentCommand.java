@@ -28,10 +28,10 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
 
     public ShipsDataSetSpecialBlockPercentCommand() {
         super(new ShipIdArgument<>("ship_id", (source, vessel) -> {
-            if (!(vessel instanceof VesselRequirement requirementVessel)) {
+            if (!(vessel instanceof VesselRequirement)) {
                 return false;
             }
-            return requirementVessel.getRequirement(SpecialBlocksRequirement.class).isPresent();
+            return ((VesselRequirement) vessel).getRequirement(SpecialBlocksRequirement.class).isPresent();
         }, vessel -> "No special blocks apply to this ship"));
     }
 
@@ -42,9 +42,10 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
 
     @Override
     protected boolean apply(CommandContext context, Vessel vessel, String[] arguments) throws NotEnoughArguments {
-        if (!(vessel instanceof VesselRequirement requirementVessel)) {
+        if (!(vessel instanceof VesselRequirement)) {
             return false;
         }
+        VesselRequirement requirementVessel = (VesselRequirement)vessel;
         Optional<SpecialBlocksRequirement> opRequirement = requirementVessel.getRequirement(
                 SpecialBlocksRequirement.class);
         if (opRequirement.isEmpty()) {

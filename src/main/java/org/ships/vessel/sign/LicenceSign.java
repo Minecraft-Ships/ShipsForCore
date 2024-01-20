@@ -144,13 +144,14 @@ public class LicenceSign implements ShipsSign {
                     .setDelay(5)
                     .setDelayUnit(TimeUnit.SECONDS)
                     .setRunner((sched) -> foundStructure.forEach(bp -> bp.resetBlock(player)))
-                    .build(ShipsPlugin.getPlugin())
+                    .buildDelayed(ShipsPlugin.getPlugin())
                     .run();
             return true;
         } catch (IOException e) {
             Optional<LiveTileEntity> opTile = position.getTileEntity();
             if (opTile.isPresent()) {
-                if (opTile.get() instanceof LiveSignTileEntity lste) {
+                if (opTile.get() instanceof LiveSignTileEntity) {
+                    SignTileEntity lste = (SignTileEntity) opTile.get();
                     String type = lste.getTextAt(1).map(AText::toPlain).orElse("");
                     String name = lste.getTextAt(2).map(AText::toPlain).orElse("");
                     Optional<ShipType<?>> opType = ShipsPlugin

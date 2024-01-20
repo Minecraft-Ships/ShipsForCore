@@ -162,15 +162,15 @@ public class MovementContext {
             bossBar.name(Component.text("Checking requirements: Sign"));
             bossBar.progress(0.25f);
         });
-        if (vessel instanceof SignBasedVessel signBasedVessel) {
-            this.isLicenceSignValid(signBasedVessel);
+        if (vessel instanceof SignBasedVessel) {
+            this.isLicenceSignValid((SignBasedVessel)vessel);
         }
         this.getAdventureBossBar().ifPresent(bossBar -> {
             bossBar.name(Component.text("Checking requirements: Vessel specific"));
             bossBar.progress(0.50f);
         });
-        if (vessel instanceof VesselRequirement vesselRequirement) {
-            this.isRequirementsValid(vesselRequirement);
+        if (vessel instanceof VesselRequirement) {
+            this.isRequirementsValid((VesselRequirement) vessel);
         }
         this.getAdventureBossBar().ifPresent(bossBar -> {
             bossBar.name(Component.text("Checking requirements: Collide"));
@@ -178,8 +178,8 @@ public class MovementContext {
         });
 
         this.isClearFromColliding(vessel);
-        if (vessel instanceof VesselRequirement vesselRequirement) {
-            this.processRequirements(vesselRequirement);
+        if (vessel instanceof VesselRequirement) {
+            this.processRequirements((VesselRequirement) vessel);
         }
         this.getAdventureBossBar().ifPresent(bossBar -> {
             bossBar.progress(1);

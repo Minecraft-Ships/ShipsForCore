@@ -35,9 +35,9 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
                              new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
+                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                                      User player = (User) source;
-                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                     return ((CrewStoredVessel)vessel).getPermission(player.getUniqueId()).canCommand();
                                  }
                                  return vessel instanceof TeleportToVessel;
                              }, v -> "Ship is not teleport capable"), new ExactArgument(this.SHIP_TELEPORT_ARGUMENT),
@@ -62,12 +62,11 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof LivePlayer player)) {
-            if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(AText.ofPlain("Teleport requires to be ran as a player"));
-            }
+        if (!(source instanceof LivePlayer)) {
+                source.sendMessage(AText.ofPlain("Teleport requires to be ran as a player"));
             return false;
         }
+        LivePlayer player = (LivePlayer) source;
         TeleportToVessel tVessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         String telPos = commandContext.getArgument(this, this.SHIP_LOCATION);
         ExactPosition position = tVessel.getTeleportPositions().get(telPos);

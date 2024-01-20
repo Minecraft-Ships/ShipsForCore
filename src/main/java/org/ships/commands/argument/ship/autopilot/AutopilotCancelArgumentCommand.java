@@ -27,16 +27,16 @@ public class AutopilotCancelArgumentCommand implements ArgumentCommand {
                                                                                            if (opFlag.isEmpty()) {
                                                                                                return false;
                                                                                            }
-                                                                                           if (commandSource instanceof LivePlayer player
+                                                                                           if (commandSource instanceof LivePlayer
                                                                                                    && Permissions.CMD_SHIP_AUTOPILOT_USE_OWN.hasPermission(
-                                                                                                   player)) {
+                                                                                                   ((LivePlayer) commandSource))) {
                                                                                                return true;
                                                                                            }
-                                                                                           if (commandSource instanceof User user
-                                                                                                   && vessel instanceof CrewStoredVessel crewVessel) {
-                                                                                               return crewVessel
+                                                                                           if (commandSource instanceof User
+                                                                                                   && vessel instanceof CrewStoredVessel) {
+                                                                                               return ((CrewStoredVessel) vessel)
                                                                                                        .getPermission(
-                                                                                                               user.getUniqueId())
+                                                                                                               ((User) commandSource).getUniqueId())
                                                                                                        .canCommand();
                                                                                            }
                                                                                            return false;

@@ -44,21 +44,18 @@ import java.util.function.Function;
 
 public class CreateShipCommand implements ArgumentCommand {
 
-    private static final OptionalArgument<Integer> X = new OptionalArgument<>(new IntegerArgument("x"), new Parse<>(
-            pos -> pos.getX().intValue()));
-    private static final OptionalArgument<Integer> Y = new OptionalArgument<>(new IntegerArgument("y"), new Parse<>(
-            pos -> pos.getY().intValue()));
-    private static final OptionalArgument<Integer> Z = new OptionalArgument<>(new IntegerArgument("z"), new Parse<>(
-            pos -> pos.getZ().intValue()));
-    private static final OptionalArgument<WorldExtent> WORLD = new OptionalArgument<>(new WorldArgument("world"),
-                                                                                      new Parse<>(Position::getWorld));
     private static final ShipIdentifiableArgument<ShipType<?>> SHIP_TYPE = new ShipIdentifiableArgument<>("ship_type",
                                                                                                           (Class<ShipType<?>>) (Object) ShipType.class);
     private static final ShipsStructureArgument STRUCTURE = new ShipsStructureArgument("structure");
     private static final StringArgument NAME = new StringArgument("name");
 
-    private record Parse<T>(Function<? super Position<? extends Number>, ? extends T> function)
-            implements ParseCommandArgument<T> {
+    private class Parse<T> implements ParseCommandArgument<T> {
+
+        private final Function<? super Position<? extends Number>, ? extends T> function;
+
+        public Parse(Function<? super Position<? extends Number>, ? extends T> function) {
+            this.function = function;
+        }
 
         @Override
         public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument)
@@ -72,6 +69,15 @@ public class CreateShipCommand implements ArgumentCommand {
         }
 
     }
+
+    private final OptionalArgument<WorldExtent> WORLD = new OptionalArgument<>(new WorldArgument("world"),
+                                                                               new Parse<>(Position::getWorld));
+    private final OptionalArgument<Integer> X = new OptionalArgument<>(new IntegerArgument("x"),
+                                                                       new Parse<>(pos -> pos.getX().intValue()));
+    private final OptionalArgument<Integer> Y = new OptionalArgument<>(new IntegerArgument("y"),
+                                                                       new Parse<>(pos -> pos.getY().intValue()));
+    private final OptionalArgument<Integer> Z = new OptionalArgument<>(new IntegerArgument("z"),
+                                                                       new Parse<>(pos -> pos.getZ().intValue()));
 
     @Override
     public List<CommandArgument<?>> getArguments() {
@@ -157,9 +163,10 @@ public class CreateShipCommand implements ArgumentCommand {
                     if (opTile.isEmpty()) {
                         continue;
                     }
-                    if (!(opTile.get() instanceof LiveSignTileEntity ste)) {
+                    if (!(opTile.get() instanceof LiveSignTileEntity)) {
                         continue;
                     }
+                    LiveSignTileEntity ste = (LiveSignTileEntity) opTile.get();
                     LicenceSign licence = ShipsPlugin
                             .getPlugin()
                             .get(LicenceSign.class)

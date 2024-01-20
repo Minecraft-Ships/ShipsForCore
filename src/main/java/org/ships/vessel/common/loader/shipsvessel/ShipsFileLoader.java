@@ -220,10 +220,11 @@ public class ShipsFileLoader implements ShipsLoader {
                 .orElseThrow(() -> new IllegalStateException(
                         "Could not get licence sign from register. Something is really wrong"));
         Optional<LiveTileEntity> opTile = position.getTileEntity();
-        if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity lste)) {
+        if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
         }
+        LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
         if (!sign.isSign(lste)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
@@ -245,9 +246,10 @@ public class ShipsFileLoader implements ShipsLoader {
         }
         ShipType<?> type = opShipType.get();
         Vessel vessel = type.createNewVessel(lste);
-        if (!(vessel instanceof ShipsVessel ship)) {
+        if (!(vessel instanceof ShipsVessel)) {
             throw new FileLoadVesselException(this.file, "ShipType requires to be ShipsVessel");
         }
+        ShipsVessel ship = (ShipsVessel)vessel;
 
         file.getInteger(SPEED_ALTITUDE).ifPresent(ship::setAltitudeSpeed);
         file.getInteger(SPEED_MAX).ifPresent(ship::setMaxSpeed);

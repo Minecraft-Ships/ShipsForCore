@@ -35,10 +35,11 @@ public class SimpleMovementException implements BiConsumer<MovementContext, Thro
                 .collect(Collectors.toSet());
         entities.forEach(entity -> entity.setGravity(true));
         context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
-        if (!(throwable instanceof MoveException e)) {
+        if (!(throwable instanceof MoveException)) {
             throwable.printStackTrace();
             return;
         }
+        MoveException e = (MoveException) throwable;
         this.messageReceivers.forEach(viewer -> viewer.sendMessage(e.getErrorMessageText()));
     }
 }

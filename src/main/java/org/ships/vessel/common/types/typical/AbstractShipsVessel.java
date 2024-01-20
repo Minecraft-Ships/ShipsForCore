@@ -135,23 +135,26 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     protected void initRequirements() {
-        if (!(this instanceof VesselRequirement requirement)) {
+        if (!(this instanceof VesselRequirement)) {
             //this if check will be removed when the OPShip is removed
             return;
         }
-        if (!(this.type instanceof AbstractShipType<?> shipsType)) {
+        VesselRequirement requirement = (VesselRequirement) this;
+        if (!(this.type instanceof AbstractShipType<?>)) {
             //requirements may become standard
             return;
         }
+        AbstractShipType<?> shipsType = (AbstractShipType<?>) this.type;
         shipsType.getDefaultRequirements().stream().map(Requirement::createChild).forEach(requirement::setRequirement);
 
     }
 
     public Optional<Integer> getMaxSize() {
         ShipType<?> type = this.getType();
-        if (!(type instanceof SizedShipType<?> sizedType)) {
+        if (!(type instanceof SizedShipType<?>)) {
             return Optional.empty();
         }
+        SizedShipType<?> sizedType = (SizedShipType<?>) type;
         return sizedType.getMaximumSizeRequirement().getMaxSize().stream().boxed().findAny();
     }
 

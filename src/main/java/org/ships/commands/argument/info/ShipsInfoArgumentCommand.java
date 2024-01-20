@@ -46,10 +46,7 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        CommandSource source = commandContext.getSource();
-        if (!(source instanceof CommandViewer viewer)) {
-            return true;
-        }
+        CommandSource viewer = commandContext.getSource();
         Collection<ShipType<?>> shipTypes = ShipsPlugin.getPlugin().getAllShipTypes();
         viewer.sendMessage(AText.ofPlain("----[Ships]----").withColour(NamedTextColours.YELLOW));
         viewer.sendMessage(AText

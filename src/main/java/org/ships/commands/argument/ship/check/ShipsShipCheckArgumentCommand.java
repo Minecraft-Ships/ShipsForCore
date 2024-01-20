@@ -10,7 +10,6 @@ import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
@@ -46,12 +45,13 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
                                  if (!(vessel instanceof VesselRequirement)) {
                                      return false;
                                  }
-                                 if (source instanceof LivePlayer player
-                                         && Permissions.CMD_SHIP_TRACK_OWN.hasPermission(player)) {
+                                 if (source instanceof LivePlayer && Permissions.CMD_SHIP_TRACK_OWN.hasPermission(
+                                         (LivePlayer) source)) {
                                      return true;
-                                 } else if ((source instanceof User player
-                                         && vessel instanceof CrewStoredVessel crewVessel)) {
-                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                 } else if ((source instanceof User && vessel instanceof CrewStoredVessel)) {
+                                     return ((CrewStoredVessel) vessel)
+                                             .getPermission(((User) source).getUniqueId())
+                                             .canCommand();
                                  }
                                  return false;
                              }, vessel -> "Does not have any requirements"), new ExactArgument(SHIP_CHECK_ARGUMENT));
@@ -70,16 +70,14 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof CommandViewer viewer)) {
-            return false;
-        }
         Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
-        if (vessel instanceof Fallable fVessel) {
-            viewer.sendMessage(AText.ofPlain("Will Fall: " + fVessel.shouldFall()));
+        if (vessel instanceof Fallable) {
+            source.sendMessage(AText.ofPlain("Will Fall: " + ((Fallable)vessel).shouldFall()));
         }
-        if (!(vessel instanceof VesselRequirement rVessel)) {
+        if (!(vessel instanceof VesselRequirement)) {
             return true;
         }
+        VesselRequirement rVessel = (VesselRequirement) vessel;
         MovingBlockSet set = rVessel
                 .getStructure()
                 .getSyncedPositionsRelativeToWorld()
@@ -93,10 +91,10 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
 
         try {
             rVessel.checkRequirements(context);
-            viewer.sendMessage(AText.ofPlain("Meets Requirements: true"));
+            source.sendMessage(AText.ofPlain("Meets Requirements: true"));
         } catch (MoveException e) {
-            viewer.sendMessage(AText.ofPlain("Meets Requirements: false"));
-            viewer.sendMessage(e.getErrorMessageText());
+            source.sendMessage(AText.ofPlain("Meets Requirements: false"));
+            source.sendMessage(e.getErrorMessageText());
         }
 
         return true;

@@ -12,6 +12,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
+import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
 import org.ships.commands.argument.arguments.ShipIdArgument;
@@ -33,9 +34,9 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
                              new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
+                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                                      User player = (User) source;
-                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                     return ((CrewStoredVessel)vessel).getPermission(player.getUniqueId()).canCommand();
                                  }
                                  return vessel instanceof CrewStoredVessel;
                              }, v -> "Vessel does not accept crew"), new ExactArgument(this.SHIP_CREW_ARGUMENT),
@@ -58,9 +59,7 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
-            return false;
-        }
+        CommandSource viewer = commandContext.getSource();
         Collection<CrewPermission> permissionsToShow = new HashSet<>(
                 commandContext.getArgument(this, this.SHIP_CREW_PERMISSION_ARGUMENT));
 

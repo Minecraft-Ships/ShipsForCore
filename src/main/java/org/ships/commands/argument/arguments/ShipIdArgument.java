@@ -31,9 +31,9 @@ public class ShipIdArgument<V extends Vessel> implements CommandArgument<V> {
 
     public ShipIdArgument(String id) {
         this(id, (source, vessel) -> {
-            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
+            if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                 User player = (User) source;
-                return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                return ((CrewStoredVessel)vessel).getPermission(player.getUniqueId()).canCommand();
             }
             return true;
         }, v -> "Your crew permission does not allow for commands");

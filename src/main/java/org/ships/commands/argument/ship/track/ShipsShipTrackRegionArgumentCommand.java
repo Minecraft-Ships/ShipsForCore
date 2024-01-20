@@ -48,10 +48,11 @@ public class ShipsShipTrackRegionArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         Vessel vessel = commandContext.getArgument(this, this.idArgument);
-        if (!(commandContext.getSource() instanceof LivePlayer player)) {
+        if (!(commandContext.getSource() instanceof LivePlayer)) {
             commandContext.getSource().sendMessage(Component.text("Player only command").color(NamedTextColor.RED));
             return true;
         }
+        LivePlayer player = (LivePlayer)commandContext.getSource();
         Bounds<Integer> bounds = vessel.getStructure().getBounds();
         BlockDetails bedrock = BlockTypes.BEDROCK.getDefaultBlockDetails();
         WorldExtent world = vessel.getPosition().getWorld();

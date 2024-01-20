@@ -152,7 +152,8 @@ public class ShipsPlugin implements CorePlugin {
     public void loadVessels() {
         ShipsConfig config = this.getConfig();
         this.vessels.addAll(ShipsFileLoader.loadAll((e) -> {
-            if (e instanceof FileLoadVesselException flve && config.willDeleteFilesIfFailedToLoad()) {
+            if (e instanceof FileLoadVesselException && config.willDeleteFilesIfFailedToLoad()) {
+                FileLoadVesselException flve = (FileLoadVesselException) e;
                 flve.getFile().delete();
             }
             e.printStackTrace();
@@ -344,7 +345,8 @@ public class ShipsPlugin implements CorePlugin {
                     .ifPresent(devBukkit -> devBukkit
                             .checkForUpdate(new DevBukkitUpdateOption(36846))
                             .thenAcceptAsync((result) -> {
-                                if (result instanceof FailedResult failed) {
+                                if (result instanceof FailedResult) {
+                                    FailedResult failed = (FailedResult) result;
                                     this.logger.error("Failed to update: " + failed.getReason());
                                     return;
                                 }

@@ -43,10 +43,10 @@ public final class AdapterCategories {
             if (VESSEL_FLAG.canAccept(adapter)) {
                 MessageAdapter<? super VesselFlag<?>> flagAdapter = VESSEL_FLAG.onAccept(adapter);
                 return new MapToAdapter<>(Vessel.class, new CollectionAdapter<>(flagAdapter), vessel -> {
-                    if (!(vessel instanceof ShipsVessel ship)) {
+                    if (!(vessel instanceof ShipsVessel)) {
                         return Collections.emptyList();
                     }
-                    return new ArrayList<>(ship.getFlags());
+                    return new ArrayList<>(((ShipsVessel)vessel).getFlags());
                 });
             }
             if (VESSEL_STRUCTURE.canAccept(adapter)) {

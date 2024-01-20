@@ -2,7 +2,6 @@ package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
 import org.core.config.ConfigurationNode;
-import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
@@ -127,11 +126,9 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                                         .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                                         .setRunner((context) -> future.complete(structure))
                                         .setDisplayName("Ships 6 async release")
-                                        .build(ShipsPlugin.getPlugin())
+                                        .buildDelayed(ShipsPlugin.getPlugin())
                                         .run();
-                                if (scheduler instanceof Scheduler.Native nativeSch) {
-                                    nativeSch.cancel();
-                                }
+                                scheduler.cancel();
                             }
                         });
                         if (shouldKill.get()) {
@@ -146,14 +143,12 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                             .setRunner((context) -> future.complete(structure))
                             .setDisplayName("Ships 6 async release")
-                            .build(ShipsPlugin.getPlugin())
+                            .buildDelayed(ShipsPlugin.getPlugin())
                             .run();
-                    if (scheduler instanceof Scheduler.Native nativeSch) {
-                        nativeSch.cancel();
-                    }
+                    scheduler.cancel();
                 })
                 .setDisplayName("Ships 6 async structure finder")
-                .build(ShipsPlugin.getPlugin())
+                .buildDelayed(ShipsPlugin.getPlugin())
                 .run();
         return future;
     }

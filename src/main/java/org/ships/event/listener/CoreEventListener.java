@@ -214,9 +214,10 @@ public class CoreEventListener implements EventListener {
         if (opTE.isEmpty()) {
             return;
         }
-        if (!(opTE.get() instanceof LiveSignTileEntity lste)) {
+        if (!(opTE.get() instanceof LiveSignTileEntity)) {
             return;
         }
+        SignTileEntity lste = (SignTileEntity) opTE.get();
         CollideType collideType = ShipsPlugin
                 .getPlugin()
                 .getBlockList()
@@ -395,9 +396,10 @@ public class CoreEventListener implements EventListener {
                         if (opTileEntity.isEmpty()) {
                             return;
                         }
-                        if (!(opTileEntity.get() instanceof SignTileEntity ste)) {
+                        if (!(opTileEntity.get() instanceof SignTileEntity)) {
                             return;
                         }
+                        SignTileEntity ste = (SignTileEntity) opTileEntity.get();
                         ste.getSide(event.getChangingSide().isFront()).setLines(Collections.emptyList());
                     }).buildDelayed(ShipsPlugin.getPlugin()).run();
                     return;
@@ -523,9 +525,10 @@ public class CoreEventListener implements EventListener {
                 if (config.isStructureClickUpdating()) {
                     vessel.getStructure().removePositionRelativeToWorld(event.getPosition());
                 }
-                if (vessel instanceof CrewStoredVessel csVessel
-                        && event instanceof BlockChangeEvent.Break.Pre.ByPlayer eventBreak) {
+                if (vessel instanceof CrewStoredVessel && event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
+                    BlockChangeEvent.Break.Pre.ByPlayer eventBreak = (BlockChangeEvent.Break.Pre.ByPlayer) event;
                     LivePlayer player = eventBreak.getEntity();
+                    CrewStoredVessel csVessel = (CrewStoredVessel) vessel;
                     if (!(csVessel.getPermission(player.getUniqueId()).canRemove() || (player.hasPermission(
                             vessel.getType().getMoveOtherPermission())))) {
                         event.getPosition().setBlock(beforeDetails);
@@ -542,7 +545,8 @@ public class CoreEventListener implements EventListener {
                     }
                 }
                 ShipsPlugin.getPlugin().unregisterVessel(vessel);
-                if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer eventBreak) {
+                if (event instanceof BlockChangeEvent.Break.Pre.ByPlayer) {
+                    BlockChangeEvent.Break.Pre.ByPlayer eventBreak = (BlockChangeEvent.Break.Pre.ByPlayer) event;
                     LivePlayer player = eventBreak.getEntity();
                     String name = vessel
                             .getCachedName()

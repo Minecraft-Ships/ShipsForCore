@@ -42,9 +42,10 @@ public class NoGravityArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) {
         CommandSource source = commandContext.getSource();
-        if (!(source instanceof LivePlayer player)) {
+        if (!(source instanceof LivePlayer)) {
             return false;
         }
+        LivePlayer player = (LivePlayer)source;
         player.setGravity(true);
         player.sendMessage(Component.text("Other plugins maybe disrupted by this fix").color(NamedTextColor.YELLOW));
         return true;

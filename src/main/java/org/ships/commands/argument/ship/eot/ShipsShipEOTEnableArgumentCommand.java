@@ -9,7 +9,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.schedule.Scheduler;
 import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -64,20 +63,18 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
                     liveSignTileEntity.setTextAt(1, AText.ofPlain("Ahead"));
                     liveSignTileEntity.setTextAt(2, AText.ofPlain("{Stop}"));
                 });
-                if (s instanceof Scheduler.Native nativeSch) {
-                    nativeSch.cancel();
-                }
+                s.cancel();
             });
             return true;
         }
         Collection<SyncBlockPosition> eotSigns = vessel.getStructure().getAll(sign);
         if (eotSigns.size() == 1) {
-            if (!(source instanceof LivePlayer player)) {
-                if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(AText.ofPlain("Can only enable eot as a player"));
-                }
+            if (!(source instanceof LivePlayer)) {
+                (source).sendMessage(AText.ofPlain("Can only enable eot as a player"));
+
                 return false;
             }
+            LivePlayer player = (LivePlayer) source;
             LiveTileEntity lste = eotSigns.stream().findAny().get().getTileEntity().get();
             sign.onSecondClick(player, lste.getPosition());
             return true;

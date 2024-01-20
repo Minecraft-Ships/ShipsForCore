@@ -36,10 +36,7 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        CommandSource source = commandContext.getSource();
-        if (!(source instanceof CommandViewer viewer)) {
-            return false;
-        }
+        CommandSource viewer = commandContext.getSource();
         Collection<ArgumentCommand> commands = new TreeSet<>((o1, o2) -> {
             List<CommandArgument<?>> a1 = o1.getArguments();
             List<CommandArgument<?>> a2 = o2.getArguments();

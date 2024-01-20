@@ -74,9 +74,10 @@ public class FallExecutor implements Consumer<Scheduler> {
                                 BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar));
                             });
                             v.getEntities().forEach(e -> e.setGravity(true));
-                            if (!(exc instanceof MoveException e)) {
+                            if (!(exc instanceof MoveException)) {
                                 return;
                             }
+                            MoveException e = (MoveException)exc;
 
                             context
                                     .getAdventureBossBar()

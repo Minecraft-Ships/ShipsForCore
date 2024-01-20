@@ -35,9 +35,9 @@ public class ShipsShipTeleportSetArgument implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
                              new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel crewVessel) {
+                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                                      User player = (User) source;
-                                     return crewVessel.getPermission(player.getUniqueId()).canCommand();
+                                     return ((CrewStoredVessel)vessel).getPermission(player.getUniqueId()).canCommand();
                                  }
                                  return vessel instanceof TeleportToVessel;
                              }, v -> "Ship is not teleport capable"), new ExactArgument(this.SHIP_TELEPORT_ARGUMENT),

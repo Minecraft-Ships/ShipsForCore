@@ -16,6 +16,7 @@ import org.core.command.argument.context.CommandContext;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
+import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifiable;
 import org.core.world.WorldExtent;
@@ -43,10 +44,10 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
         @Override
         public CommandArgumentResult<BlockType> parse(CommandContext context,
                                                       CommandArgumentContext<BlockType> argument) {
-            if (!(context.getSource() instanceof LivePlayer player)) {
+            if (!(context.getSource() instanceof LivePlayer)) {
                 return CommandArgumentResult.from(argument, 0, null);
             }
-            Optional<BlockPosition> opBlockType = player.getBlockLookingAt();
+            Optional<BlockPosition> opBlockType = ((LivePlayer)context.getSource()).getBlockLookingAt();
             return CommandArgumentResult.from(argument, 0, opBlockType.map(Position::getBlockType).orElse(null));
         }
     });
@@ -68,9 +69,7 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
-            return false;
-        }
+        CommandSource viewer = commandContext.getSource();
         BlockType bt = commandContext.getArgument(this, BLOCK_TYPE);
         if (bt == null) {
             viewer.sendMessage(AText.ofPlain("BlockType id isn't valid").withColour(NamedTextColours.RED));

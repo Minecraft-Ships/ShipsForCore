@@ -79,7 +79,8 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
                                      .match("%" + Message.VESSEL_NAME.adapterText() + "%")
                                      .replacement(Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                                      .build());
-        if (vessel instanceof IdentifiableShip ship) {
+        if (vessel instanceof IdentifiableShip) {
+            IdentifiableShip ship = (IdentifiableShip)vessel;
             Component infoId = AdventureMessageConfig.INFO_ID
                     .parseMessage(messages)
                     .replaceText(TextReplacementConfig
@@ -117,7 +118,8 @@ public class ShipsShipInfoArgumentCommand implements ArgumentCommand {
         viewer.sendMessage(altitudeSpeed);
         viewer.sendMessage(size);
 
-        if (vessel instanceof CrewStoredVessel ship) {
+        if (vessel instanceof CrewStoredVessel) {
+            CrewStoredVessel ship = (CrewStoredVessel)vessel;
             CrewPermission perm = ship.getDefaultPermission();
 
             Component replacementPermissionName = Component

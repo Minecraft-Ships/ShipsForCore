@@ -8,6 +8,7 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.inventory.item.ItemType;
 import org.core.permission.Permission;
+import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Identifiable;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
@@ -54,7 +55,8 @@ public class ReadFuelTypeArgumentCommand implements ArgumentCommand {
         FuelSlot fuelSlot = fuelRequirement.getFuelSlot();
         int take = fuelRequirement.getConsumption();
 
-        if (commandContext.getSource() instanceof CommandViewer viewer) {
+        if (commandContext.getSource() instanceof CommandViewer) {
+            CommandSource viewer = commandContext.getSource();
             viewer.sendMessage(AText.ofPlain("Consumption: " + take));
             viewer.sendMessage(AText.ofPlain("Slot: " + fuelSlot.name()));
             viewer.sendMessage(AText.ofPlain("Fuel Types: " + fuelTypes

@@ -261,7 +261,8 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     public void copyInto(@NotNull PositionableShipsStructure structure) {
-        if (structure instanceof AbstractPositionableShipsStructure abstractStructure && isEmpty()) {
+        if (structure instanceof AbstractPositionableShipsStructure && this.isEmpty()) {
+            AbstractPositionableShipsStructure abstractStructure = (AbstractPositionableShipsStructure) structure;
             this.cachedBounds = abstractStructure.cachedBounds;
             this.vectors.addAll(abstractStructure.vectors);
             this.outsideNorth.addAll(abstractStructure.outsideNorth);

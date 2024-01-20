@@ -10,6 +10,7 @@ import org.core.command.argument.arguments.simple.StringArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
+import org.core.source.command.CommandSource;
 import org.core.source.viewer.CommandViewer;
 import org.core.utils.Bounds;
 import org.core.world.structure.Structure;
@@ -55,9 +56,8 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
                              "Structure/" + ShipsPlugin.getPlugin().getPluginId() + "/" + id + ".structure");
         if (file.exists()) {
-            if (commandContext.getSource() instanceof CommandViewer viewer) {
-                viewer.sendMessage(AText.ofPlain("Cannot replace another structure file"));
-            }
+            commandContext.getSource().sendMessage(AText.ofPlain("Cannot replace another structure file"));
+
             return false;
         }
 
@@ -65,9 +65,8 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            if (commandContext.getSource() instanceof CommandViewer viewer) {
-                viewer.sendMessage(AText.ofPlain("Error when creating file: " + e.getMessage()));
-            }
+            commandContext.getSource().sendMessage(AText.ofPlain("Error when creating file: " + e.getMessage()));
+
             e.printStackTrace();
             return false;
         }
@@ -78,10 +77,11 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         bounds.addZ(1);
 
         if (bounds.getIntMax().equals(bounds.getIntMin())) {
-            if (commandContext.getSource() instanceof CommandViewer viewer) {
-                viewer.sendMessage(AText.ofPlain(
-                        "Size of ship is invalid. Manually updating the ship structure should fix this by sneaking and clicking the [ships] sign"));
-            }
+            commandContext
+                    .getSource()
+                    .sendMessage(AText.ofPlain(
+                            "Size of ship is invalid. Manually updating the ship structure should fix this by sneaking and clicking the [ships] sign"));
+
             return false;
         }
 
@@ -92,15 +92,13 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
                 .setBounds(bounds)
                 .setWorld(vessel.getPosition().getWorld());
         Structure structure = TranslateCore.getPlatform().register(structureBuilder);
+        CommandSource viewer = commandContext.getSource();
         try {
             structure.serialize(file);
-            if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Saved"));
-            }
+
         } catch (IOException e) {
-            if (commandContext.getSource() instanceof CommandViewer viewer) {
                 viewer.sendMessage(AText.ofPlain("Error saving: " + e.getMessage()));
-            }
             e.printStackTrace();
         }
         return true;

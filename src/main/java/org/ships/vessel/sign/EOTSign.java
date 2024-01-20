@@ -42,9 +42,10 @@ public class EOTSign implements ShipsSign {
     public Collection<Scheduler> getScheduler(Vessel vessel) {
         return TranslateCore.getScheduleManager().getSchedules().stream().filter(e -> {
             Consumer<Scheduler> consumer = e.getRunner();
-            if (!(consumer instanceof EOTExecutor runner)) {
+            if (!(consumer instanceof EOTExecutor)) {
                 return false;
             }
+            EOTExecutor runner = (EOTExecutor) consumer;
             return runner.getVessel().equals(vessel);
         }).collect(Collectors.toUnmodifiableSet());
     }
@@ -82,9 +83,10 @@ public class EOTSign implements ShipsSign {
             return false;
         }
         LiveTileEntity lte = opTile.get();
-        if (!(lte instanceof LiveSignTileEntity stes)) {
+        if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
+        LiveSignTileEntity stes = (LiveSignTileEntity) lte;
 
         new ShipsUpdateBlockLoader(position).loadOvertime(this.onLoad(player, stes), this.onException(player));
         return true;
@@ -122,11 +124,7 @@ public class EOTSign implements ShipsSign {
                                             .get()
                                             .getPosition()
                                             .equals(stes.getPosition()))
-                                    .forEach(sch -> {
-                                        if (sch instanceof Scheduler.Native nati) {
-                                            nati.cancel();
-                                        }
-                                    });
+                                    .forEach(Scheduler::cancel);
                             return;
                         }
                         side.setLineAt(1, Component.text("{Ahead}").color(NamedTextColor.GREEN));

@@ -131,7 +131,8 @@ public class Result extends ArrayList<Result.Run> {
         };
 
         Run COMMON_SPAWN_ENTITIES = (v, c) -> c.getEntities().keySet().forEach(e -> {
-            if (e instanceof EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot) {
+            if (e instanceof EntitySnapshot.NoneDestructibleSnapshot) {
+                EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity> snapshot = (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) e;
                 snapshot.teleportEntity(true);
                 return;
             }

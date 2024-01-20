@@ -48,9 +48,7 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer viewer)) {
-            return false;
-        }
+        CommandSource viewer = commandContext.getSource();
         Collection<BlockInstruction> bl = ShipsPlugin.getPlugin().getBlockList().getBlockList();
         Map<CollideType, Integer> values = new EnumMap<>(CollideType.class);
         for (CollideType type : CollideType.values()) {

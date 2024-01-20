@@ -59,9 +59,10 @@ public class MoveSign implements ShipsSign {
             return false;
         }
         LiveTileEntity lte = opTile.get();
-        if (!(lte instanceof LiveSignTileEntity lste)) {
+        if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
+        LiveSignTileEntity lste = (LiveSignTileEntity)lte;
         String defaultSpeed = ShipsPlugin.getPlugin().getConfig().getDefaultMoveSpeed() + "";
         String name = this
                 .getSide(lste)
@@ -186,7 +187,8 @@ public class MoveSign implements ShipsSign {
             return;
         }
         Direction originalDirection = opDirectional.get().getDirection();
-        if (originalDirection instanceof SixteenFacingDirection sixteenFacingDir) {
+        if (originalDirection instanceof SixteenFacingDirection) {
+            SixteenFacingDirection sixteenFacingDir = (SixteenFacingDirection)originalDirection;
             originalDirection = sixteenFacingDir.normal();
         }
         Vector3<Integer> direction = originalDirection.getOpposite().getAsVector().multiply(speed);

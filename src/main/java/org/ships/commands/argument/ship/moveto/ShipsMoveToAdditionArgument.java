@@ -64,8 +64,8 @@ public class ShipsMoveToAdditionArgument implements ArgumentCommand {
         if (config.isBossBarVisible()) {
             BossBar bar = BossBar.bossBar(Component.text("0 / " + trackLimit), 0, BossBar.Color.PURPLE,
                                           BossBar.Overlay.PROGRESS);
-            if (commandContext.getSource() instanceof Audience audience) {
-                audience.showBossBar(bar);
+            if (commandContext.getSource() instanceof Audience) {
+                ((Audience) commandContext.getSource()).showBossBar(bar);
             }
             builder.setAdventureBossBar(bar);
         }

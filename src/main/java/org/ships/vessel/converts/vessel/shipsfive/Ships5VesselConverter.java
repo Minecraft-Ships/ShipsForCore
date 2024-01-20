@@ -58,9 +58,10 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
             throw new IOException("Unable to locate licence sign");
         }
         LiveTileEntity lte = opTile.get();
-        if (!(lte instanceof LiveSignTileEntity lste)) {
+        if (!(lte instanceof LiveSignTileEntity)) {
             throw new IOException("Unable to locate licence sign");
         }
+        LiveSignTileEntity lste = (LiveSignTileEntity)lte;
         ShipsVessel vessel;
         switch (type) {
             case "Airship":

@@ -65,18 +65,19 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
         if (config.isBossBarVisible()) {
             BossBar bar = BossBar.bossBar(Component.text("0 / " + trackLimit), 0, BossBar.Color.PURPLE,
                                           BossBar.Overlay.PROGRESS);
-            if (commandContext.getSource() instanceof Audience audience) {
-                audience.showBossBar(bar);
+            if (commandContext.getSource() instanceof Audience) {
+                ((Audience) commandContext.getSource()).showBossBar(bar);
             }
             builder.setAdventureBossBar(bar);
         }
 
         BiConsumer<MovementContext, Throwable> exceptionSupplier = (context, exc) -> {
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            context.getAdventureBossBar().ifPresent(bar -> {
-                BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar));
-            });
-            if (exc instanceof MoveException e) {
+            context
+                    .getAdventureBossBar()
+                    .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar)));
+            if (exc instanceof MoveException) {
+                MoveException e = (MoveException) exc;
                 commandContext.getSource().sendMessage(e.getErrorMessage());
             } else {
                 exc.printStackTrace();
@@ -85,7 +86,7 @@ public class ShipsMoveToRotateArgument implements ArgumentCommand {
                     .getEntities()
                     .keySet()
                     .stream()
-                    .filter(snapshot -> snapshot instanceof EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>)
+                    .filter(snapshot -> snapshot instanceof EntitySnapshot.NoneDestructibleSnapshot)
                     .map(snapshot -> (EntitySnapshot.NoneDestructibleSnapshot<? extends LiveEntity>) snapshot)
                     .forEach(snapshot -> snapshot.getEntity().setGravity(true));
         };
