@@ -212,7 +212,9 @@ public class MovementContext {
     private void isClearFromColliding(@NotNull Vessel vessel) throws MoveException {
         Set<SyncBlockPosition> collided = this.getMovingStructure().stream().filter(mb -> {
             SyncBlockPosition after = mb.getAfterPosition();
-            if (this.getMovingStructure().stream().anyMatch(mb1 -> after.equals(mb1.getBeforePosition()))) {
+            if (this.getMovingStructure().stream().anyMatch(mb1 -> {
+                return after.equals(mb1.getBeforePosition());
+            })) {
                 return false;
             }
             for (BlockType type : vessel.getType().getIgnoredTypes()) {

@@ -174,7 +174,7 @@ public class AltitudeSign implements ShipsSign {
             if (finalBar != null) {
                 finalBar.name(Component.text(foundBlocks + "/" + newTotal));
 
-                float progress = newTotal / (float) foundBlocks;
+                float progress = (float) foundBlocks / newTotal;
                 progress = progress / 100;
                 finalBar.progress(progress);
             }
@@ -250,7 +250,7 @@ public class AltitudeSign implements ShipsSign {
             if (!(exc instanceof MoveException)) {
                 return;
             }
-            MoveException e = (MoveException)exc;
+            MoveException e = (MoveException) exc;
             player.sendMessage(e.getErrorMessage());
         };
 

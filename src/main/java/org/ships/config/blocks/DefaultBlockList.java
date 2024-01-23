@@ -7,6 +7,7 @@ import org.core.config.ConfigurationStream;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.blocktypes.post.BlockTypes1V13;
+import org.core.world.position.block.grouptype.BlockGroups;
 import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.core.world.position.block.grouptype.versions.CommonBlockGroups;
 import org.ships.config.blocks.instruction.BlockInstruction;
@@ -135,6 +136,7 @@ public class DefaultBlockList implements BlockList {
 
         ConfigurationStream.ConfigurationFile file = this.getFile();
         Collection<BlockType> completedBefore = new HashSet<>();
+        //TODO -> FIX getLike
         BlockTypes.OAK_SIGN
                 .getLike()
                 .forEach(w -> this.addToConfig(w, CollideType.MATERIAL, completedBefore, ignoreBlocks));
@@ -288,7 +290,7 @@ public class DefaultBlockList implements BlockList {
         if (current.stream().anyMatch(c -> c.equals(type))) {
             return;
         }
-        String[] idSplit = type.getId().split(":");
+       String[] idSplit = type.getId().split(":");
         this.file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]),
                       ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, new ModifiableBlockInstruction(type).setCollide(collide));
         current.add(type);
