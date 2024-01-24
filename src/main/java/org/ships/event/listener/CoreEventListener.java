@@ -28,6 +28,7 @@ import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.AttachableKeyedData;
 import org.core.world.position.block.details.data.keyed.KeyedData;
+import org.core.world.position.block.details.data.keyed.TileEntityKeyedData;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
@@ -491,12 +492,16 @@ public class CoreEventListener implements EventListener {
         SyncBlockPosition position = event.getPosition();
         for (Direction direction : list) {
             SyncBlockPosition pos = position.getRelative(direction);
-            Optional<LiveTileEntity> opTileEntity = pos.getTileEntity();
+            Optional<TileEntity> opTileEntity = pos.getTileEntity().map(lte -> lte);
+            if (opTileEntity.isEmpty() && direction.equals(FourFacingDirection.NONE)) {
+                //little hack -> breaking block isn't guaranteed to get the tileEntity -> this will get the tileEntity from the event
+                opTileEntity = event.getBeforeState().get(TileEntityKeyedData.class).map(tes -> tes);
+            }
             if (opTileEntity.isEmpty()) {
                 continue;
             }
-            LiveTileEntity lte = opTileEntity.get();
-            if (!(lte instanceof LiveSignTileEntity)) {
+            TileEntity lte = opTileEntity.get();
+            if (!(lte instanceof SignTileEntity)) {
                 continue;
             }
             SignTileEntity lste = (SignTileEntity) lte;
