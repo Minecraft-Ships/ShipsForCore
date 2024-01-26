@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
+import org.core.command.argument.CommandArgumentResult;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.config.ConfigurationNode;
@@ -45,8 +46,11 @@ public class AbstractShipsConfigSetArgument implements ArgumentCommand {
         return Arrays.asList(new ExactArgument(COMMAND_NAME, false, "config"), new ExactArgument("set"),
                              new ExactArgument(CONFIG_TYPE, false, this.configNames),
                              new ConfigKeyArgument<>(CONFIG_KEY, this.config.get()),
-                             new ConfigKeyValueArgument<>(CONFIG_VALUE, (context, argument) -> context.getArgument(this,
-                                                                                                                   CONFIG_KEY)));
+                             new ConfigKeyValueArgument<>(CONFIG_VALUE,
+                                                          (context, argument) -> CommandArgumentResult.from(argument,
+                                                                                                            context.getArgument(
+                                                                                                                    this,
+                                                                                                                    CONFIG_KEY))));
     }
 
     @Override

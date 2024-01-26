@@ -96,7 +96,7 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
 
     boolean removePositionRelativeToCenter(Vector3<Integer> remove);
 
-    void copyInto(@NotNull PositionableShipsStructure structure);
+    void copyFrom(@NotNull PositionableShipsStructure structure);
 
     boolean matchRelativeToCenter(PositionableShipsStructure structure);
 

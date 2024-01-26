@@ -87,7 +87,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                     }
 
                     PositionableShipsStructure structure2 = new AbstractPositionableShipsStructure(opBlock.get());
-                    structure.copyInto(structure2);
+                    structure2.copyFrom(structure);
 
                     LiveTileEntity tileEntity = structure2
                             .getPosition()
