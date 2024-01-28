@@ -80,7 +80,14 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return this.getRelativePositionsToCenter();
     }
 
-    Collection<Vector3<Integer>> getOriginalRelativePositionsToCenter();
+    @Deprecated(forRemoval = true)
+    default Collection<Vector3<Integer>> getOriginalRelativePositionsToCenter() {
+        return getOriginalRelativeVectorsToCenter();
+    }
+
+    Collection<Vector3<Integer>> getOriginalRelativeVectorsToWorld();
+
+    Collection<Vector3<Integer>> getOriginalRelativeVectorsToCenter();
 
     @Deprecated(forRemoval = true)
     default Collection<Vector3<Integer>> getOriginalRelativePositions() {

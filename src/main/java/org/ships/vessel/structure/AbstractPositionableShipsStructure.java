@@ -112,17 +112,17 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
                             .setDelay(0)
                             .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
                             .setRunner((s) -> future.complete(this))
-                            .build(ShipsPlugin.getPlugin())
+                            .buildDelayed(ShipsPlugin.getPlugin())
                             .run();
                 }))
-                .build(ShipsPlugin.getPlugin())
+                .buildDelayed(ShipsPlugin.getPlugin())
                 .run();
         return future;
     }
 
     @Override
     public Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter() {
-        Collection<Vector3<Integer>> vectors = new HashSet<>(this.getOriginalRelativePositionsToCenter());
+        Collection<Vector3<Integer>> vectors = new HashSet<>(this.getOriginalRelativeVectorsToCenter());
         if (vectors.stream().noneMatch(v -> v.equals(Vector3.valueOf(0, 0, 0)))) {
             vectors.add(Vector3.valueOf(0, 0, 0));
         }
@@ -172,7 +172,16 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
-    public Collection<Vector3<Integer>> getOriginalRelativePositionsToCenter() {
+    public Collection<Vector3<Integer>> getOriginalRelativeVectorsToWorld() {
+        return this
+                .getOriginalRelativeVectorsToCenter()
+                .parallelStream()
+                .map(vector -> this.position.getPosition().plus(vector))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Vector3<Integer>> getOriginalRelativeVectorsToCenter() {
         return this.vectors;
     }
 
@@ -261,7 +270,8 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     @Override
     public void copyFrom(@NotNull PositionableShipsStructure structure) {
-        if (structure instanceof AbstractPositionableShipsStructure && this.isEmpty()) {
+        if (structure instanceof AbstractPositionableShipsStructure && this.isEmpty() && this.position.equals(
+                structure.getPosition())) {
             AbstractPositionableShipsStructure abstractStructure = (AbstractPositionableShipsStructure) structure;
             this.cachedBounds = abstractStructure.cachedBounds;
             this.vectors.addAll(abstractStructure.vectors);
@@ -271,7 +281,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
             this.outsideWest.addAll(abstractStructure.outsideWest);
             return;
         }
-        structure.getRelativePositionsToCenter().parallelStream().forEach(this::addPositionRelativeToCenter);
+        structure.getOriginalRelativeVectorsToWorld().parallelStream().forEach(this::addPositionRelativeToWorld);
     }
 
     @Override
