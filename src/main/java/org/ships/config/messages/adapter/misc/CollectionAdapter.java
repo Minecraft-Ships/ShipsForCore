@@ -49,7 +49,7 @@ public class CollectionAdapter<T> implements MessageAdapter<Collection<T>> {
 
     @Override
     public Component processMessage(@NotNull Collection<T> obj) {
-        List<Component> list = obj.parallelStream().map(this.adapter::processMessage).collect(Collectors.toList());
+        List<Component> list = obj.stream().map(this.adapter::processMessage).collect(Collectors.toList());
         if (list.isEmpty()) {
             return Component.text("none");
         }

@@ -1,7 +1,10 @@
 package org.ships.plugin;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.util.RGBLike;
 import org.core.TranslateCore;
 import org.core.command.CommandRegister;
 import org.core.logger.Logger;
@@ -71,6 +74,7 @@ public class ShipsPlugin implements CorePlugin {
 
     public ShipsPlugin() {
         plugin = this;
+        TranslateCore.getPlatform().setDeveloperCommandsEnabled(true);
     }
 
     public @NotNull LockedSignManager getLockedSignManager() {
@@ -360,11 +364,33 @@ public class ShipsPlugin implements CorePlugin {
                                 if (fullVersionName.equals(currentVersionName)) {
                                     return;
                                 }
-                                this.logger.log("An update can be downloaded");
-                                this.logger.log("\tCurrent Version: " + currentVersionName);
-                                this.logger.log("\tUpdated Version: " + fullVersionName);
-                                this.logger.log("\tFor Minecraft: " + context.getVersion());
-                                this.logger.log("\tDownload At: " + context.getDownloadURL().toExternalForm());
+                                var console = TranslateCore.getConsole();
+                                console.sendMessage(Component
+                                                            .text("An update can be downloaded for Ships")
+                                                            .color(NamedTextColor.GREEN));
+                                console.sendMessage(Component
+                                                            .text("Current Version: ")
+                                                            .append(Component
+                                                                            .text(currentVersionName)
+                                                                            .color(TextColor.color(255, 100, 100))));
+                                console.sendMessage(Component
+                                                            .text("Updated Version: ")
+                                                            .append(Component
+                                                                            .text(fullVersionName)
+                                                                            .color(TextColor.color(100, 255, 100))
+                                                                            .append(Component
+                                                                                            .text(": For Minecraft: ")
+                                                                                            .append(Component.text(
+                                                                                                    context.getVersion())))));
+                                console.sendMessage(Component
+                                                            .text("Download At: ")
+                                                            .append(Component
+                                                                            .text(context
+                                                                                          .getDownloadURL()
+                                                                                          .toExternalForm())
+                                                                            .clickEvent(ClickEvent.openUrl(context
+                                                                                                                   .getDownloadURL()
+                                                                                                                   .toExternalForm()))));
                             }));
         }
     }

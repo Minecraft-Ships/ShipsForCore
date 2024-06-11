@@ -7,6 +7,7 @@ import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
+import org.core.world.position.block.details.data.keyed.TileEntityKeyedData;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.config.node.DedicatedNode;
@@ -109,33 +110,17 @@ public class Ships6Movement implements BasicMovement {
         }
     }
 
-    private final @NotNull RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> STACK_LIMIT_NODE = RawDedicatedNode.integer(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Stack", "Limit"),
-            "Advanced.Block.Movement.Stack.Limit");
-
-    private final @NotNull RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> STACK_DELAY = RawDedicatedNode.integer(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack",
-                                                            "Delay"), "Advanced.Block.Movement.Stack.Delay");
-
-    private final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> STACK_DELAY_UNIT = new ObjectDedicatedNode<>(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced",
-                                                            "Movement", "Stack", "DelayUnit"),
-            "Advanced.Block.Movement.Stack.DelayUnit");
-
     @Override
     public Result move(Vessel vessel, MovementContext context) throws MoveException {
-        ConfigurationStream config = this
-                .configuration()
-                .orElseThrow(() -> new RuntimeException("Configuration was optional empty"));
-        int stackLimit = config.parse(STACK_LIMIT_NODE.getNode()).orElse(7);
-        TimeUnit stackDelayUnit = config.parse(STACK_DELAY_UNIT.getNode()).orElse(TimeUnit.MINECRAFT_TICKS);
-        int stackDelay = config.parse(STACK_DELAY.getNode()).orElse(1);
+        var config = ShipsPlugin.getPlugin().getConfig();
+        int stackLimit = config.getDefaultMovementStackLimit();
+        TimeUnit stackDelayUnit = config.getDefaultMovementStackDelayUnit();
+        int stackDelay = config.getDefaultMovementStackDelay();
 
         context.getAdventureBossBar().ifPresent(b -> b.progress(0));
-        //ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
-        List<List<MovingBlock>> blocksToProcess = new ArrayList<>();
-        List<MovingBlock> currentlyAdding = new ArrayList<>();
+        List<List<MovingBlock>> blocksToProcess = new LinkedList<>();
+        List<MovingBlock> currentlyAdding = new LinkedList<>();
         context.getAdventureBossBar().ifPresent(bar -> bar.name(Component.text("Movement: optimising ")));
         final int total = blocks.size();
         for (int index = 0; index < blocks.size(); index++) {
@@ -170,13 +155,13 @@ public class Ships6Movement implements BasicMovement {
                 })
                 .buildDelayed(ShipsPlugin.getPlugin());
         int placedBlocks = 0;
-        for (int A = 0; A < blocksToProcess.size(); A++) {
-            List<MovingBlock> blocks2 = blocksToProcess.get(A);
+        for (int index = 0; index < blocksToProcess.size(); index++) {
+            List<MovingBlock> blocks2 = blocksToProcess.get(index);
             scheduler = TranslateCore
                     .getScheduleManager()
                     .schedule()
                     .setDisplayName("Set Block")
-                    .setRunner(new SetBlocks(placedBlocks + A, total, context, blocks2))
+                    .setRunner(new SetBlocks(placedBlocks + index, total, context, blocks2))
                     .setToRunAfter(scheduler)
                     .setDelay(stackDelay)
                     .setDelayUnit(stackDelayUnit)
@@ -195,6 +180,7 @@ public class Ships6Movement implements BasicMovement {
                 .buildDelayed(ShipsPlugin.getPlugin());
         for (int index = 0; index < blocksToProcess.size(); index++) {
             List<MovingBlock> blocks2 = blocksToProcess.get(index);
+
             scheduler = TranslateCore
                     .getScheduleManager()
                     .schedule()
@@ -222,19 +208,5 @@ public class Ships6Movement implements BasicMovement {
     @Override
     public String getName() {
         return "Ships 6 Movement";
-    }
-
-    @Override
-    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
-        return Arrays.asList(STACK_DELAY, STACK_DELAY_UNIT, STACK_LIMIT_NODE);
-    }
-
-    @Override
-    public Optional<File> configurationFile() {
-        return Optional.of(new File(TranslateCore.getPlatform().getPlatformConfigFolder(),
-                                    "Ships/Configuration/Movement/Ships Six." + TranslateCore
-                                            .getPlatform()
-                                            .getConfigFormat()
-                                            .getFileType()[0]));
     }
 }

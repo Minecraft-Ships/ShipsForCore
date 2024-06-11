@@ -174,14 +174,4 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
         this.vessel = vessel;
         return this;
     }
-
-    @Override
-    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Optional<File> configurationFile() {
-        return Optional.empty();
-    }
 }

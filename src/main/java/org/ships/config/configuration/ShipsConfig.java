@@ -36,38 +36,37 @@ public class ShipsConfig implements Config.KnownNodes {
                                                             "Track"), "Advanced.Block.Track",
             (f, v) -> f.set(v.getKey(), v.getValue()));
 
-    @Deprecated(forRemoval = true)
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_LIMIT = new RawDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack",
                                                             "Limit"), "Advanced.Block.Movement.Stack.Limit",
             (f, v) -> f.set(v.getKey(), v.getValue()));
-    @Deprecated(forRemoval = true)
+
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_MOVEMENT_STACK_DELAY = new RawDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack",
                                                             "Delay"), "Advanced.Block.Movement.Stack.Delay",
             (f, v) -> f.set(v.getKey(), v.getValue()));
-    @Deprecated(forRemoval = true)
+
     protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_MOVEMENT_STACK_DELAYUNIT = new ObjectDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced",
                                                             "Movement", "Stack", "DelayUnit"),
             "Advanced.Block.Movement.Stack.DelayUnit");
-    @Deprecated(forRemoval = true)
+
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_DELAY = new RawDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder",
                                                             "Stack", "Delay"), "Advanced.Block.Finder.Stack.Delay",
             (f, v) -> f.set(v.getKey(), v.getValue()));
-    @Deprecated(forRemoval = true)
+
     protected final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> ADVANCED_BLOCKFINDER_STACK_DELAYUNIT = new ObjectDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced",
                                                             "BlockFinder", "Stack", "DelayUnit"),
             "Advanced.Block.Finder.Stack.DelayUnit");
-    @Deprecated(forRemoval = true)
+
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_BLOCKFINDER_STACK_LIMIT = new RawDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "BlockFinder",
                                                             "Stack", "Limit"), "Advanced.Block.Finder.Stack.Limit",
             (f, v) -> f.set(v.getKey(), v.getValue()));
 
-    @Deprecated(forRemoval = true)
+
     protected final RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> ADVANCED_ENTITYFINDER_STACK_LIMIT = new RawDedicatedNode<>(
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "EntityFinder",
                                                             "Stack", "Limit"), "Advanced.Entity.Finder.Stack.Limit",
@@ -130,6 +129,7 @@ public class ShipsConfig implements Config.KnownNodes {
             new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_BOOLEAN, "Event", "OnLoad", "Failed",
                                                             "DeleteFile"), "Event.OnLoad.Failed.DeleteFile",
             (f, v) -> f.set(v.getKey(), v.getValue()));
+
     protected ConfigurationStream.ConfigurationFile file;
 
     public ShipsConfig() {
@@ -261,22 +261,22 @@ public class ShipsConfig implements Config.KnownNodes {
         return this.file.getInteger(this.EOT_SPEED.getNode(), 2);
     }
 
-    @Deprecated(forRemoval = true)
+
     public int getEntityTrackingLimit() {
         return this.file.getInteger(this.ADVANCED_ENTITYFINDER_STACK_LIMIT.getNode(), 75);
     }
 
-    @Deprecated(forRemoval = true)
+
     public int getDefaultFinderStackDelay() {
         return this.file.getInteger(this.ADVANCED_BLOCKFINDER_STACK_DELAY.getNode(), 1);
     }
 
-    @Deprecated(forRemoval = true)
+
     public TimeUnit getDefaultFinderStackDelayUnit() {
         return this.file.parse(this.ADVANCED_BLOCKFINDER_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
 
-    @Deprecated(forRemoval = true)
+
     public TimeUnit getDefaultMovementStackDelayUnit() {
         return this.file.parse(this.ADVANCED_MOVEMENT_STACK_DELAYUNIT.getNode(), TimeUnit.MINECRAFT_TICKS);
     }
@@ -285,17 +285,17 @@ public class ShipsConfig implements Config.KnownNodes {
         return this.file.getBoolean(this.STRUCTURE_UPDATE_CLICK.getNode(), false);
     }
 
-    @Deprecated(forRemoval = true)
+
     public int getDefaultMovementStackLimit() {
         return this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_LIMIT.getNode(), 7);
     }
 
-    @Deprecated(forRemoval = true)
+
     public int getDefaultFinderStackLimit() {
         return this.file.getInteger(this.ADVANCED_BLOCKFINDER_STACK_LIMIT.getNode(), 2);
     }
 
-    @Deprecated(forRemoval = true)
+
     public int getDefaultMovementStackDelay() {
         return this.file.getInteger(this.ADVANCED_MOVEMENT_STACK_DELAY.getNode(), 1);
     }

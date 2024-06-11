@@ -365,7 +365,8 @@ public class CoreEventListener implements EventListener {
                                 finalBar.name(text);
                                 finalBar.progress(progress);
                             })
-                            .buildDelayed(ShipsPlugin.getPlugin());
+                            .buildDelayed(ShipsPlugin.getPlugin())
+                            .run();
                 }
                 return OvertimeBlockFinderUpdate.BlockFindControl.USE;
             }).thenCompose(structure -> {

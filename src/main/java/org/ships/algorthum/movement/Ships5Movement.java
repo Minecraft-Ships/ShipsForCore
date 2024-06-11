@@ -62,14 +62,4 @@ public class Ships5Movement implements BasicMovement {
     public String getName() {
         return "Ships 5 Movement";
     }
-
-    @Override
-    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Optional<File> configurationFile() {
-        return Optional.empty();
-    }
 }

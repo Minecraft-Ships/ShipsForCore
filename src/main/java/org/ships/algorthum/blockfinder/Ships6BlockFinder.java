@@ -80,14 +80,14 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
         private Overtime(SyncBlockPosition position,
                          OvertimeBlockFinderUpdate update,
-                         ConfigurationStream config,
+                         ShipsConfig config,
                          CompletableFuture<PositionableShipsStructure> onComplete) {
             this.pss = new AbstractPositionableShipsStructure(position);
             this.update = update;
             this.process.add(position);
-            this.stackLimit = config.getInteger(STACK_LIMIT_NODE.getNode()).orElse(7);
-            this.stackDelay = config.getInteger(STACK_DELAY.getNode()).orElse(1);
-            this.stackDelayUnit = config.parse(STACK_DELAY_UNIT.getNode()).orElse(TimeUnit.MINECRAFT_TICKS);
+            this.stackLimit = config.getDefaultFinderStackLimit();
+            this.stackDelay = config.getDefaultFinderStackDelay();
+            this.stackDelayUnit = config.getDefaultFinderStackDelayUnit();
             this.onComplete = onComplete;
         }
 
@@ -160,18 +160,6 @@ public class Ships6BlockFinder implements BasicBlockFinder {
 
     }
 
-    private final @NotNull RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> STACK_DELAY = RawDedicatedNode.integer(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Advanced", "Movement", "Stack",
-                                                            "Delay"), "Advanced.Block.Movement.Stack.Delay");
-    private final ObjectDedicatedNode<TimeUnit, ConfigurationNode.KnownParser.SingleKnown<TimeUnit>> STACK_DELAY_UNIT = new ObjectDedicatedNode<>(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_MINECRAFT_TIME_UNIT, "Advanced",
-                                                            "Movement", "Stack", "DelayUnit"),
-            "Advanced.Block.Movement.Stack.DelayUnit");
-
-    private final @NotNull RawDedicatedNode<Integer, ConfigurationNode.KnownParser.SingleKnown<Integer>> STACK_LIMIT_NODE = RawDedicatedNode.integer(
-            new ConfigurationNode.KnownParser.SingleKnown<>(Parser.STRING_TO_INTEGER, "Stack", "Limit"),
-            "Advanced.Block.Movement.Stack.Limit");
-
     protected int limit;
     private BlockList list;
     private Vessel vessel;
@@ -189,15 +177,13 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
                                                                                     @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         CompletableFuture<PositionableShipsStructure> future = new CompletableFuture<>();
-        ConfigurationStream configuration = this
-                .configuration()
-                .orElseThrow(() -> new RuntimeException("Configuration is optional empty"));
+        var configuration = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(position.toSyncPosition(), runAfterFullSearch, configuration, future);
         TranslateCore
                 .getScheduleManager()
                 .schedule()
-                .setDelay(configuration.getInteger(STACK_DELAY.getNode()).orElse(1))
-                .setDelayUnit(configuration.parse(STACK_DELAY_UNIT.getNode()).orElse(TimeUnit.MINECRAFT_TICKS))
+                .setDelay(configuration.getDefaultFinderStackDelay())
+                .setDelayUnit(configuration.getDefaultFinderStackDelayUnit())
                 .setRunner(overtime.runnable)
                 .setDisplayName("Ships 6 block finder")
                 .buildDelayed(ShipsPlugin.getPlugin())
@@ -236,15 +222,5 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     @Override
     public String getName() {
         return "Ships 6 R2 BlockFinder";
-    }
-
-    @Override
-    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
-        return Arrays.asList(STACK_DELAY, STACK_DELAY_UNIT, STACK_LIMIT_NODE);
-    }
-
-    @Override
-    public Optional<File> configurationFile() {
-        return Optional.empty();
     }
 }

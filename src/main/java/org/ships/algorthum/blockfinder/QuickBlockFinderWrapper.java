@@ -63,18 +63,4 @@ public class QuickBlockFinderWrapper implements BasicBlockFinder {
         return this.finder.getName();
     }
 
-    @Override
-    public Collection<DedicatedNode<?, ?, ? extends ConfigurationNode.KnownParser<?, ?>>> getNodes() {
-        return this.finder.getNodes();
-    }
-
-    @Override
-    public Optional<ConfigurationStream> configuration() {
-        return this.finder.configuration();
-    }
-
-    @Override
-    public Optional<File> configurationFile() {
-        return this.finder.configurationFile();
-    }
 }
