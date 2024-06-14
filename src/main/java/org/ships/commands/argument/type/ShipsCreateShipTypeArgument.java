@@ -1,7 +1,7 @@
 package org.ships.commands.argument.type;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -11,11 +11,11 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,11 +33,9 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(
-                new ExactArgument(SHIP_TYPE),
-                new ExactArgument(CREATE),
-                new ShipIdentifiableArgument<>(CLONEABLE_SHIP_TYPE, CloneableShipType.class),
-                new RemainingArgument<>(NEW_SHIP_TYPE_NAME, new StringArgument(NEW_SHIP_TYPE_NAME)));
+        return Arrays.asList(new ExactArgument(SHIP_TYPE), new ExactArgument(CREATE),
+                             new ShipIdentifiableArgument<>(CLONEABLE_SHIP_TYPE, ShipTypes::cloneableShipTypes),
+                             new RemainingArgument<>(NEW_SHIP_TYPE_NAME, new StringArgument(NEW_SHIP_TYPE_NAME)));
     }
 
     @Override
@@ -54,47 +52,30 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
         CloneableShipType<?> type = ((CloneableShipType<?>) commandContext.getArgument(this,
-                CLONEABLE_SHIP_TYPE)).getOriginType();
+                                                                                       CLONEABLE_SHIP_TYPE)).getOriginType();
         List<String> names = commandContext.getArgument(this, NEW_SHIP_TYPE_NAME);
         names.forEach(name -> {
-            File file = new File(ShipsPlugin
-                    .getPlugin()
-                    .getConfigFolder(),
-                    "Configuration/ShipType/Custom/"
-                            + type
-                            .getId()
-                            .replace(":", ".")
-                            + "/"
-                            + name
-                            + "."
-                            + TranslateCore
-                            .getPlatform()
-                            .getConfigFormat()
-                            .getFileType()[0]);
+            File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
+                                 "Configuration/ShipType/Custom/" + type.getId().replace(":", ".") + "/" + name + "."
+                                         + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
             file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
             if (file.exists()) {
-                if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(
-                            AText.ofPlain("Custom ShipType " + name + " has already been " +
-                                    "created"));
-                }
+                (source).sendMessage(Component.text("Custom ShipType " + name + " has already been created"));
+
                 return;
             }
             try {
                 file.getParentFile().mkdirs();
                 Files.copy(type.getFile().getFile().toPath(), file.toPath());
             } catch (IOException e) {
-                if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(
-                            AText.ofPlain(name + " failed to created file. " + e.getMessage()));
-                }
+
+                source.sendMessage(Component.text(name + " failed to created file. " + e.getMessage()));
+
                 e.printStackTrace();
             }
             CloneableShipType<?> newType = type.cloneWithName(file, name);
-            ShipsPlugin.getPlugin().register(newType);
-            if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(AText.ofPlain(name + " created. "));
-            }
+            ShipTypes.registerType(newType);
+            source.sendMessage(Component.text(name + " created."));
         });
 
         return true;

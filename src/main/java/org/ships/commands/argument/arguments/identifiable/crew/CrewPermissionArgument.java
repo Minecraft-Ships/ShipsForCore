@@ -5,16 +5,15 @@ import org.core.command.argument.context.CommandContext;
 import org.core.utils.lamda.tri.TriPredicate;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.vessel.CrewPermission;
+import org.ships.permissions.vessel.CrewPermissions;
 
 public class CrewPermissionArgument extends ShipIdentifiableArgument<CrewPermission> {
-    public CrewPermissionArgument(String id, Class<CrewPermission> type) {
-        super(id, type);
+    public CrewPermissionArgument(String id) {
+        super(id, () -> CrewPermissions.permissions().stream());
     }
 
     public CrewPermissionArgument(String id,
-            Class<CrewPermission> type,
-            TriPredicate<? super CommandContext, ?
-                    super CommandArgumentContext<CrewPermission>, ? super CrewPermission> predicate) {
-        super(id, type, predicate);
+                                  TriPredicate<? super CommandContext, ? super CommandArgumentContext<CrewPermission>, ? super CrewPermission> predicate) {
+        super(id, () -> CrewPermissions.permissions().stream(), predicate);
     }
 }

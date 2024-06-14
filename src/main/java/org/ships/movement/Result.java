@@ -18,6 +18,7 @@ import org.ships.vessel.common.flag.FlightPathFlag;
 import org.ships.vessel.common.flag.SuccessfulMoveFlag;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.ArrayList;
@@ -116,14 +117,7 @@ public class Result extends ArrayList<Result.Run> {
         };
 
         Run COMMON_SET_POSITION_OF_LICENCE_SIGN = (v, c) -> {
-            Optional<MovingBlock> opSign = c
-                    .getMovingStructure()
-                    .getOriginal()
-                    .get(ShipsPlugin
-                                 .getPlugin()
-                                 .get(LicenceSign.class)
-                                 .orElseThrow(
-                                         () -> new RuntimeException("Cannot find licence sign, is it registered")));
+            Optional<MovingBlock> opSign = c.getMovingStructure().getOriginal().get(ShipsSigns.LICENCE);
             if (opSign.isEmpty()) {
                 return;
             }

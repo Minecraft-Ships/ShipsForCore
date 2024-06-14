@@ -5,7 +5,7 @@ import org.core.utils.Identifiable;
 
 import java.util.Optional;
 
-public interface VesselFlag<T> extends Identifiable {
+public interface VesselFlag<T> extends Identifiable, Cloneable {
 
     abstract class Builder<T, F extends VesselFlag<T>> {
 
@@ -41,4 +41,12 @@ public interface VesselFlag<T> extends Identifiable {
     StringParser<T> getParser();
 
     VesselFlag.Builder<T, ? extends VesselFlag<T>> toBuilder();
+
+    default VesselFlag<T> clone() {
+        Optional<String> opValueString = this.getValue().map(value -> this.getParser().unparse(value));
+        if (opValueString.isEmpty()) {
+            return this.toBuilder().buildEmpty();
+        }
+        return this.toBuilder().build(opValueString.get());
+    }
 }

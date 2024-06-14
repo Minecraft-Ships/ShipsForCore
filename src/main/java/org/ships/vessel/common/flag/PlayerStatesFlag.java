@@ -98,6 +98,13 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
         return opMap.filter(uuidVector3Map -> !uuidVector3Map.isEmpty()).isPresent();
     }
 
+    @Override
+    public PlayerStatesFlag clone() {
+        PlayerStatesFlag flag = new PlayerStatesFlag();
+        flag.setValue(new HashMap<>(this.playerStates));
+        return flag;
+    }
+
     public static class Builder extends VesselFlag.Builder<Map<UUID, Vector3<Double>>, PlayerStatesFlag> {
 
         @Override

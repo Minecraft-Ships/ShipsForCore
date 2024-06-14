@@ -7,19 +7,21 @@ import org.ships.plugin.ShipsPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StringToIdentifiable<T extends Identifiable> implements StringParser.Suggestible<T> {
 
-    protected final Class<T> class1;
+    protected final Supplier<Stream<T>> all;
 
-    public StringToIdentifiable(Class<T> class1) {
-        this.class1 = class1;
+    public StringToIdentifiable(Supplier<Stream<T>> class1) {
+        this.all = class1;
     }
 
     @Override
     public Optional<T> parse(String original) {
-        return ShipsPlugin.getPlugin().getAll(this.class1).stream().filter(t -> t.getId().equals(original)).findAny();
+        return all.get().filter(t -> t.getId().equals(original)).findAny();
     }
 
     @Override
@@ -38,6 +40,6 @@ public class StringToIdentifiable<T extends Identifiable> implements StringParse
 
     @Override
     public List<T> getSuggestions() {
-        return new ArrayList<>(ShipsPlugin.getPlugin().getAll(this.class1));
+        return all.get().collect(Collectors.toList());
     }
 }

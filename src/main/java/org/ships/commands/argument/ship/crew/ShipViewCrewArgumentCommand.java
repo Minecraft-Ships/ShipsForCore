@@ -1,7 +1,7 @@
 package org.ships.commands.argument.ship.crew;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -13,10 +13,10 @@ import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.core.utils.Else;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
+import org.ships.commands.argument.arguments.identifiable.crew.CrewPermissionArgument;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.vessel.common.assits.CrewStoredVessel;
 
@@ -36,14 +36,15 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
                              new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
                                  if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                                      User player = (User) source;
-                                     return ((CrewStoredVessel)vessel).getPermission(player.getUniqueId()).canCommand();
+                                     return ((CrewStoredVessel) vessel)
+                                             .getPermission(player.getUniqueId())
+                                             .canCommand();
                                  }
                                  return vessel instanceof CrewStoredVessel;
                              }, v -> "Vessel does not accept crew"), new ExactArgument(this.SHIP_CREW_ARGUMENT),
                              new ExactArgument(this.SHIP_VIEW_ARGUMENT), new OptionalArgument<>(
                         new RemainingArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT,
-                                                new ShipIdentifiableArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT,
-                                                                               CrewPermission.class)),
+                                                new CrewPermissionArgument(this.SHIP_CREW_PERMISSION_ARGUMENT)),
                         Collections.emptyList()));
     }
 
@@ -70,7 +71,7 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
         }
 
         permissionsToShow.forEach(crewPermission -> {
-            viewer.sendMessage(AText.ofPlain(crewPermission.getName()));
+            viewer.sendMessage(Component.text(crewPermission.getName()));
             vessel
                     .getCrew(crewPermission)
                     .stream()
@@ -80,7 +81,7 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
 
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .forEach(user -> viewer.sendMessage(AText.ofPlain("- " + user.getName())));
+                    .forEach(user -> viewer.sendMessage(Component.text("- " + user.getName())));
         });
         return true;
     }

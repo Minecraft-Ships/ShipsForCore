@@ -8,14 +8,13 @@ import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.blocktypes.post.BlockTypes1V13;
 import org.core.world.position.block.grouptype.BlockGroups;
-import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
-import org.core.world.position.block.grouptype.versions.CommonBlockGroups;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.blocks.instruction.ModifiableBlockInstruction;
 import org.ships.config.blocks.instruction.MoveIntoBlockInstruction;
 import org.ships.config.parsers.ShipsParsers;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.io.File;
 import java.util.*;
@@ -52,9 +51,8 @@ public class DefaultBlockList implements BlockList {
         }
         Collection<BlockInstruction> blockInstructions = new LinkedTransferQueue<>(this.blocks);
         blockInstructions.addAll(this.blocks);
-        Collection<MoveIntoBlockInstruction> moveIn = ShipsPlugin
-                .getPlugin()
-                .getAllShipTypes()
+        Collection<MoveIntoBlockInstruction> moveIn = ShipTypes
+                .shipTypes()
                 .parallelStream()
                 .flatMap(type -> Stream.of(type.getIgnoredTypes()))
                 .map(MoveIntoBlockInstruction::new)
@@ -68,16 +66,14 @@ public class DefaultBlockList implements BlockList {
         this.file.reload();
         this.blocks.clear();
 
-        Set<BlockType> moveInTypes = ShipsPlugin
-                .getPlugin()
-                .getAllShipTypes()
+        Set<BlockType> moveInTypes = ShipTypes
+                .shipTypes()
                 .parallelStream()
                 .flatMap(type -> Stream.of(type.getIgnoredTypes()))
                 .collect(Collectors.toSet());
 
 
-        Collection<BlockType> mBlocks = TranslateCore.getPlatform().getBlockTypes();
-        mBlocks.forEach(bt -> {
+        TranslateCore.getPlatform().getAllBlockTypes().forEach(bt -> {
             Optional<ModifiableBlockInstruction> opBlock = BlockList.getBlockInstruction(DefaultBlockList.this, bt);
             if (opBlock.isPresent()) {
                 this.blocks.add(opBlock.get());
@@ -100,7 +96,7 @@ public class DefaultBlockList implements BlockList {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Could not find Block instruction for " + blockInstruction.getType().getName()));
         if (bi instanceof ModifiableBlockInstruction) {
-            ModifiableBlockInstruction mbi = (ModifiableBlockInstruction)bi;
+            ModifiableBlockInstruction mbi = (ModifiableBlockInstruction) bi;
             mbi.setCollide(blockInstruction.getCollide());
             mbi.setBlockLimit(
                     blockInstruction.getBlockLimit().isPresent() ? blockInstruction.getBlockLimit().getAsInt() : null);
@@ -126,9 +122,8 @@ public class DefaultBlockList implements BlockList {
 
     @Override
     public synchronized void recreateFile() {
-        Set<BlockType> ignoreBlocks = ShipsPlugin
-                .getPlugin()
-                .getAllShipTypes()
+        Set<BlockType> ignoreBlocks = ShipTypes
+                .shipTypes()
                 .parallelStream()
                 .flatMap(type -> Stream.of(type.getIgnoredTypes()))
                 .collect(Collectors.toSet());
@@ -137,15 +132,13 @@ public class DefaultBlockList implements BlockList {
         ConfigurationStream.ConfigurationFile file = this.getFile();
         Collection<BlockType> completedBefore = new HashSet<>();
         //TODO -> FIX getLike
-        BlockTypes.OAK_SIGN
-                .getLike()
+        BlockGroups.SIGNS
+                .get()
+                .getBlocks()
                 .forEach(w -> this.addToConfig(w, CollideType.MATERIAL, completedBefore, ignoreBlocks));
-        BlockTypes.OAK_WALL_SIGN
+        /*BlockTypes.PURPUR_BLOCK
                 .getLike()
-                .forEach(w -> this.addToConfig(w, CollideType.MATERIAL, completedBefore, ignoreBlocks));
-        BlockTypes.PURPUR_BLOCK
-                .getLike()
-                .forEach(w -> this.addToConfig(w, CollideType.MATERIAL, completedBefore, ignoreBlocks));
+                .forEach(w -> this.addToConfig(w, CollideType.MATERIAL, completedBefore, ignoreBlocks));*/
         BlockTypes.ANVIL
                 .getLike()
                 .forEach(w -> this.addToConfig(w, CollideType.MATERIAL, completedBefore, ignoreBlocks));
@@ -290,7 +283,7 @@ public class DefaultBlockList implements BlockList {
         if (current.stream().anyMatch(c -> c.equals(type))) {
             return;
         }
-       String[] idSplit = type.getId().split(":");
+        String[] idSplit = type.getId().split(":");
         this.file.set(new ConfigurationNode("BlockList", idSplit[0], idSplit[1]),
                       ShipsParsers.NODE_TO_BLOCK_INSTRUCTION, new ModifiableBlockInstruction(type).setCollide(collide));
         current.add(type);

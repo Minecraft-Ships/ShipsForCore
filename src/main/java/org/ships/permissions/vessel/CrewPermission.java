@@ -4,18 +4,9 @@ import org.core.utils.Identifiable;
 
 public interface CrewPermission extends Identifiable {
 
-    CrewPermission CAPTAIN = new AbstractCrewPermission("ships.captain", "Captain")
-            .setCanMove(true)
-            .setCommand(true)
-            .setRemove(true);
-    CrewPermission CREW_MEMBER = new AbstractCrewPermission("ships.member", "Crew")
-            .setCanMove(true)
-            .setCommand(false)
-            .setRemove(false);
-    CrewPermission DEFAULT = new AbstractCrewPermission("ships.default", "Default")
-            .setCanMove(false)
-            .setCommand(false)
-            .setRemove(false);
+    CrewPermission CAPTAIN = CrewPermissions.CAPTAIN;
+    CrewPermission CREW_MEMBER = CrewPermissions.CREW_MEMBER;
+    CrewPermission DEFAULT = CrewPermissions.DEFAULT;
 
     boolean canMove();
 

@@ -62,7 +62,7 @@ public class MoveSign implements ShipsSign {
         if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity)lte;
+        LiveSignTileEntity lste = (LiveSignTileEntity) lte;
         String defaultSpeed = ShipsPlugin.getPlugin().getConfig().getDefaultMoveSpeed() + "";
         String name = this
                 .getSide(lste)
@@ -169,8 +169,14 @@ public class MoveSign implements ShipsSign {
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             player.sendMessage(
                     Component.text("Speed error: Your ship cannot move that fast").color(NamedTextColor.RED));
-            if (builder.getBossBar() != null) {
-                builder.getBossBar().deregisterPlayers();
+            if (builder.getAdventureBossBar() != null) {
+                position
+                        .getWorld()
+                        .getEntities()
+                        .stream()
+                        .filter(p -> p instanceof LivePlayer)
+                        .map(p -> (LivePlayer) p)
+                        .forEach(p -> p.hideBossBar(builder.getAdventureBossBar()));
             }
             return;
         }
@@ -181,14 +187,20 @@ public class MoveSign implements ShipsSign {
                                        .text("Unknown error: " + position.getBlockType().getId() + " is not "
                                                      + "directional")
                                        .color(NamedTextColor.RED));
-            if (builder.getBossBar() != null) {
-                builder.getBossBar().deregisterPlayers();
+            if (builder.getAdventureBossBar() != null) {
+                position
+                        .getWorld()
+                        .getEntities()
+                        .stream()
+                        .filter(p -> p instanceof LivePlayer)
+                        .map(p -> (LivePlayer) p)
+                        .forEach(p -> p.hideBossBar(builder.getAdventureBossBar()));
             }
             return;
         }
         Direction originalDirection = opDirectional.get().getDirection();
         if (originalDirection instanceof SixteenFacingDirection) {
-            SixteenFacingDirection sixteenFacingDir = (SixteenFacingDirection)originalDirection;
+            SixteenFacingDirection sixteenFacingDir = (SixteenFacingDirection) originalDirection;
             originalDirection = sixteenFacingDir.normal();
         }
         Vector3<Integer> direction = originalDirection.getOpposite().getAsVector().multiply(speed);

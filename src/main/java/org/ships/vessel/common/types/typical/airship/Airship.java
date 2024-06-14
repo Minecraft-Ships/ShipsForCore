@@ -42,20 +42,6 @@ public class Airship extends AbstractShipsVessel implements AirType, FallableReq
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
-    @SuppressWarnings("removal")
-    @Deprecated(forRemoval = true)
-    public Airship(ShipType<? extends Airship> type, LiveTileEntity licence) throws NoLicencePresent {
-        super(licence, type);
-        this.initRequirements();
-    }
-
-    @SuppressWarnings("removal")
-    @Deprecated(forRemoval = true)
-    public Airship(ShipType<? extends Airship> type, SignTileEntity ste, SyncBlockPosition position) {
-        super(ste, position, type);
-        this.initRequirements();
-    }
-
     public Airship(@NotNull LiveSignTileEntity licence,
                    boolean isFrontOfSign,
                    @NotNull ShipType<? extends AbstractShipsVessel> type) {

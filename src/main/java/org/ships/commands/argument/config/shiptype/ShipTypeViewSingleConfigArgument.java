@@ -14,6 +14,7 @@ import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgume
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleKeyArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +31,7 @@ public class ShipTypeViewSingleConfigArgument implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(COMMAND_NAME, false, "config"), new ExactArgument("view"),
                              new ExactArgument(CONFIG_TYPE, false, "shiptype"),
-                             new ShipIdentifiableArgument<>(SHIP_TYPE, ShipType.class),
+                             new ShipIdentifiableArgument<>(SHIP_TYPE, () -> ShipTypes.shipTypes().stream()),
                              new ShipTypeSingleKeyArgument(CONFIG_KEY));
     }
 

@@ -32,8 +32,10 @@ import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.finder.IdVesselFinder;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -45,7 +47,9 @@ import java.util.function.Function;
 public class CreateShipCommand implements ArgumentCommand {
 
     private static final ShipIdentifiableArgument<ShipType<?>> SHIP_TYPE = new ShipIdentifiableArgument<>("ship_type",
-                                                                                                          (Class<ShipType<?>>) (Object) ShipType.class);
+                                                                                                          () -> ShipTypes
+                                                                                                                  .shipTypes()
+                                                                                                                  .stream());
     private static final ShipsStructureArgument STRUCTURE = new ShipsStructureArgument("structure");
     private static final StringArgument NAME = new StringArgument("name");
 
@@ -167,10 +171,7 @@ public class CreateShipCommand implements ArgumentCommand {
                         continue;
                     }
                     LiveSignTileEntity ste = (LiveSignTileEntity) opTile.get();
-                    LicenceSign licence = ShipsPlugin
-                            .getPlugin()
-                            .get(LicenceSign.class)
-                            .orElseThrow(() -> new RuntimeException("Could not find licence sign in register."));
+                    LicenceSign licence = ShipsSigns.LICENCE;
                     if (licence.isSign(ste)) {
                         return Map.entry(ste, licence.getSide(ste).map(SignSide::isFront).orElse(false));
                     }

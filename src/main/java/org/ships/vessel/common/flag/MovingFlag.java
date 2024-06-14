@@ -64,4 +64,9 @@ public class MovingFlag implements VesselFlag<MovementContext> {
     public String getName() {
         return "Is Moving";
     }
+
+    @Override
+    public MovingFlag clone() {
+        return (MovingFlag) VesselFlag.super.clone();
+    }
 }

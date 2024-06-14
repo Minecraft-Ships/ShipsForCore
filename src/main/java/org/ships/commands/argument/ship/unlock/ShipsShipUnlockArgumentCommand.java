@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.unlock;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -8,7 +8,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
@@ -47,16 +46,13 @@ public class ShipsShipUnlockArgumentCommand implements ArgumentCommand {
         Vessel vessel = commandContext.getArgument(this, this.SHIP_ID_ARGUMENT);
         Collection<SignLock> locks = ShipsPlugin.getPlugin().getLockedSignManager().getLockedSigns(vessel);
         if (locks.isEmpty()) {
-            if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(AText.ofPlain("No locks could be found"));
-            }
+            source.sendMessage(Component.text("No locks could be found"));
             return true;
         }
         boolean successful = ShipsPlugin.getPlugin().getLockedSignManager().unlockAll(locks);
-        if (source instanceof CommandViewer) {
-            ((CommandViewer) source).sendMessage(AText.ofPlain(
-                    (successful ? "Cleared " : "Failed to clear") + " all (" + locks.size() + ") locked signs: "));
-        }
+        source.sendMessage(Component.text(
+                (successful ? "Cleared " : "Failed to clear") + " all (" + locks.size() + ") locked signs: "));
+
         return true;
     }
 }

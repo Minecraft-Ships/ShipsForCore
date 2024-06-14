@@ -39,6 +39,11 @@ public class SuccessfulMoveFlag implements VesselFlag<Boolean> {
         return "Has successfully moved";
     }
 
+    @Override
+    public SuccessfulMoveFlag clone() {
+        return (SuccessfulMoveFlag) VesselFlag.super.clone();
+    }
+
     public static class Builder extends VesselFlag.Builder<Boolean, SuccessfulMoveFlag> {
 
         @Override

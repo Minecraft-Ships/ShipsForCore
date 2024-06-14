@@ -55,6 +55,11 @@ public class EotFlag implements VesselFlag<Vector3<Integer>> {
         return "E.O.T";
     }
 
+    @Override
+    public EotFlag clone() {
+        return (EotFlag) VesselFlag.super.clone();
+    }
+
     public static class Builder extends VesselFlag.Builder<Vector3<Integer>, EotFlag> {
 
         @Override

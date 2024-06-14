@@ -6,8 +6,10 @@ import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 
 import java.util.Optional;
 
@@ -18,10 +20,7 @@ public final class ShipsSignVesselFinder {
     }
 
     public static Vessel find(SignTileEntity signTileEntity) throws LoadVesselException {
-        LicenceSign ls = ShipsPlugin
-                .getPlugin()
-                .get(LicenceSign.class)
-                .orElseThrow(() -> new RuntimeException("Could not find licence sign. is it registered?"));
+        LicenceSign ls = ShipsSigns.LICENCE;
 
         if (!ls.isSign(signTileEntity)) {
             throw new LoadVesselException("Unable to read sign");
@@ -34,9 +33,8 @@ public final class ShipsSignVesselFinder {
 
         String typeS = ComponentUtils.toPlain(
                 signSide.getLineAt(1).orElseThrow(() -> new RuntimeException("Could not read line 2")));
-        Optional<ShipType<?>> opType = ShipsPlugin
-                .getPlugin()
-                .getAllShipTypes()
+        Optional<ShipType<?>> opType = ShipTypes
+                .shipTypes()
                 .stream()
                 .filter(st -> st.getDisplayName().equalsIgnoreCase(typeS))
                 .findAny();

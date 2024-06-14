@@ -12,11 +12,20 @@ import java.util.concurrent.CompletableFuture;
 
 public interface BasicBlockFinder extends Algorithm {
 
-    Ships5BlockFinder SHIPS_FIVE = new Ships5BlockFinder();
-    Ships5AsyncBlockFinder SHIPS_FIVE_ASYNC = new Ships5AsyncBlockFinder();
-    Ships6BlockFinder SHIPS_SIX = new Ships6BlockFinder();
-    Ships6MultiAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_MULTI_ASYNC = new Ships6MultiAsyncBlockFinder();
-    Ships6SingleAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC = new Ships6SingleAsyncBlockFinder();
+    @Deprecated(forRemoval = true)
+    Ships5BlockFinder SHIPS_FIVE = BlockFinders.SHIPS_FIVE_SYNCED;
+
+    @Deprecated(forRemoval = true)
+    Ships5AsyncBlockFinder SHIPS_FIVE_ASYNC = BlockFinders.SHIPS_FIVE_ASYNCED;
+
+    @Deprecated(forRemoval = true)
+    Ships6BlockFinder SHIPS_SIX = BlockFinders.SHIPS_SIX_RELEASE_TWO_SYNCED;
+
+    @Deprecated(forRemoval = true)
+    Ships6MultiAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_MULTI_ASYNC = BlockFinders.SHIPS_SIX_RELEASE_ONE_ASYNC_MULTI_THREADED;
+
+    @Deprecated(forRemoval = true)
+    Ships6SingleAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC = BlockFinders.SHIPS_SIX_RELEASE_ONE_ASYNC_SINGLE_THREADED;
 
     @NotNull BasicBlockFinder init();
 

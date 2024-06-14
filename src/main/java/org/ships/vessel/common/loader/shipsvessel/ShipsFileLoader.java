@@ -1,13 +1,14 @@
 package org.ships.vessel.common.loader.shipsvessel;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.ComponentUtils;
 import org.core.utils.Else;
 import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
@@ -22,15 +23,19 @@ import org.ships.exceptions.load.FileLoadVesselException;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.WrappedFileLoadVesselException;
 import org.ships.permissions.vessel.CrewPermission;
+import org.ships.permissions.vessel.CrewPermissions;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.TeleportToVessel;
 import org.ships.vessel.common.flag.VesselFlag;
+import org.ships.vessel.common.flag.VesselFlags;
 import org.ships.vessel.common.loader.ShipsLoader;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
@@ -65,9 +70,8 @@ public class ShipsFileLoader implements ShipsLoader {
     public static final ConfigurationNode.KnownParser.CollectionKnown<Vector3<Integer>> META_STRUCTURE = new ConfigurationNode.KnownParser.CollectionKnown<>(
             Parser.STRING_TO_VECTOR3INT, "Meta", "Location", "Structure");
     public static final ConfigurationNode.GroupKnown<VesselFlag<?>> META_FLAGS = new ConfigurationNode.GroupKnown<>(
-            () -> ShipsPlugin
-                    .getPlugin()
-                    .getVesselFlags()
+            () -> VesselFlags
+                    .builders()
                     .entrySet()
                     .stream()
                     .collect(
@@ -102,7 +106,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 return ship.updateStructure().thenApply(structure -> {
                     TranslateCore
                             .getConsole()
-                            .sendMessage(AText.ofPlain(
+                            .sendMessage(Component.text(
                                     Else.throwOr(NoLicencePresent.class, StructureLoad.this.ship::getId, "Unknown")
                                             + " has loaded."));
                     return structure;
@@ -113,8 +117,8 @@ public class ShipsFileLoader implements ShipsLoader {
             this.ship.setLoading(false);
             TranslateCore
                     .getConsole()
-                    .sendMessage(
-                            AText.ofPlain(Else.throwOr(NoLicencePresent.class, this.ship::getId, "") + " has loaded."));
+                    .sendMessage(Component.text(
+                            Else.throwOr(NoLicencePresent.class, this.ship::getId, "") + " has loaded."));
             return CompletableFuture.completedFuture(pss);
 
         }
@@ -214,11 +218,7 @@ public class ShipsFileLoader implements ShipsLoader {
             throw new FileLoadVesselException(this.file, "Unknown Z value");
         }
         SyncBlockPosition position = opWorld.get().getPosition(opX.get(), opY.get(), opZ.get());
-        LicenceSign sign = ShipsPlugin
-                .getPlugin()
-                .get(LicenceSign.class)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Could not get licence sign from register. Something is really wrong"));
+        LicenceSign sign = ShipsSigns.LICENCE;
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
@@ -230,13 +230,20 @@ public class ShipsFileLoader implements ShipsLoader {
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
-        Optional<AText> opShipTypeS = lste.getTextAt(1);
+        var signSide = sign
+                .getSide(lste)
+                .orElseThrow(() -> new FileLoadVesselException(this.file,
+                                                               "LicenceSign is not at location " + position.getX() + ","
+                                                                       + position.getY() + "," + position.getZ() + ","
+                                                                       + position.getWorld().getName() + ": Error V4"));
+
+        Optional<Component> opShipTypeS = signSide.getLineAt(1);
         if (opShipTypeS.isEmpty()) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
-        String shipTypeS = opShipTypeS.get().toPlain();
-        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
+        String shipTypeS = ComponentUtils.toPlain(opShipTypeS.get());
+        Collection<ShipType<?>> types = ShipTypes.shipTypes();
         Optional<ShipType<?>> opShipType = types
                 .parallelStream()
                 .filter(s -> s.getDisplayName().equalsIgnoreCase(shipTypeS))
@@ -245,11 +252,11 @@ public class ShipsFileLoader implements ShipsLoader {
             throw new FileLoadVesselException(this.file, "Unknown ShipType");
         }
         ShipType<?> type = opShipType.get();
-        Vessel vessel = type.createNewVessel(lste);
+        Vessel vessel = type.createNewVessel(signSide, lste.getPosition());
         if (!(vessel instanceof ShipsVessel)) {
             throw new FileLoadVesselException(this.file, "ShipType requires to be ShipsVessel");
         }
-        ShipsVessel ship = (ShipsVessel)vessel;
+        ShipsVessel ship = (ShipsVessel) vessel;
 
         file.getInteger(SPEED_ALTITUDE).ifPresent(ship::setAltitudeSpeed);
         file.getInteger(SPEED_MAX).ifPresent(ship::setMaxSpeed);
@@ -283,9 +290,8 @@ public class ShipsFileLoader implements ShipsLoader {
                 .build(ShipsPlugin.getPlugin())
                 .run();
 
-        ShipsPlugin
-                .getPlugin()
-                .getAll(CrewPermission.class)
+        CrewPermissions
+                .permissions()
                 .forEach(p -> file
                         .parseCollection(new ConfigurationNode("Meta", "Permission", p.getId()),
                                          Parser.STRING_TO_UNIQUE_ID, new ArrayList<>())
@@ -317,7 +323,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public static Set<ShipsVessel> loadAll(Consumer<? super LoadVesselException> function) {
         Set<ShipsVessel> set = new HashSet<>();
-        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
+        Collection<ShipType<?>> types = ShipTypes.shipTypes();
         types.forEach(st -> {
             try {
                 File vesselDataFolder = getVesselDataFolder();
@@ -336,25 +342,24 @@ public class ShipsFileLoader implements ShipsLoader {
                     } catch (LoadVesselException e) {
                         TranslateCore
                                 .getConsole()
-                                .sendMessage(AText
-                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                                     .withColour(NamedTextColours.RED));
+                                .sendMessage(Component
+                                                     .text("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .color(NamedTextColor.RED));
                         function.accept(e);
                     } catch (Throwable e) {
                         TranslateCore
                                 .getConsole()
-                                .sendMessage(AText
-                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                                     .withColour(NamedTextColours.RED));
+                                .sendMessage(Component
+                                                     .text("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .color(NamedTextColor.RED));
                         e.printStackTrace();
                     }
                 }
             } catch (Throwable e) {
                 TranslateCore
                         .getConsole()
-                        .sendMessage(AText
-                                             .ofPlain("Could not load any ships of " + st.getId())
-                                             .withColour(NamedTextColours.RED));
+                        .sendMessage(
+                                Component.text("Could not load any ships of " + st.getId()).color(NamedTextColor.RED));
                 e.printStackTrace();
             }
         });

@@ -1,7 +1,7 @@
 package org.ships.commands.argument.config.shiptype;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -15,6 +15,7 @@ import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingl
 import org.ships.commands.argument.arguments.identifiable.shiptype.ShipTypeSingleValueArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(COMMAND_NAME, false, "config"), new ExactArgument("set"),
                              new ExactArgument(CONFIG_TYPE, false, "shiptype"),
-                             new ShipIdentifiableArgument<>(SHIP_TYPE, ShipType.class),
+                             new ShipIdentifiableArgument<>(SHIP_TYPE, () -> ShipTypes.shipTypes().stream()),
                              new ShipTypeSingleKeyArgument(CONFIG_KEY), new ShipTypeSingleValueArgument<>(CONFIG_VALUE,
                                                                                                           (c, a) -> c.getArgument(
                                                                                                                   this,
@@ -61,7 +62,7 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
         ConfigurationStream.ConfigurationFile file = type.getFile();
         file.set(parser, value);
         file.save();
-        AText text = AText.ofPlain("Value has been set").withColour(NamedTextColours.AQUA);
+        Component text = Component.text("Value has been set").color(NamedTextColor.AQUA);
         commandContext.getSource().sendMessage(text);
         return true;
     }

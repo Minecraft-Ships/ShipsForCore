@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.util.RGBLike;
 import org.core.TranslateCore;
 import org.core.command.CommandRegister;
 import org.core.logger.Logger;
@@ -17,11 +16,8 @@ import org.core.platform.update.result.FailedResult;
 import org.core.platform.update.result.SuccessfulResult;
 import org.core.schedule.Scheduler;
 import org.core.source.command.ConsoleSource;
-import org.core.utils.Identifiable;
 import org.core.world.structure.StructureFileBuilder;
 import org.jetbrains.annotations.NotNull;
-import org.ships.algorthum.blockfinder.BasicBlockFinder;
-import org.ships.algorthum.movement.BasicMovement;
 import org.ships.commands.argument.ShipsArgumentCommand;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.configuration.LegacyShipsConfig;
@@ -30,21 +26,19 @@ import org.ships.config.debug.DebugFile;
 import org.ships.config.messages.AdventureMessageConfig;
 import org.ships.event.listener.CoreEventListener;
 import org.ships.exceptions.load.FileLoadVesselException;
-import org.ships.movement.BlockPriority;
 import org.ships.movement.PreventMovementManager;
 import org.ships.movement.autopilot.path.FlightPathManager;
 import org.ships.movement.autopilot.scheduler.FallExecutor;
-import org.ships.permissions.vessel.CrewPermission;
 import org.ships.vessel.common.assits.shiptype.CloneableShipType;
 import org.ships.vessel.common.flag.PlayerStatesFlag;
-import org.ships.vessel.common.flag.VesselFlag;
+import org.ships.vessel.common.flag.VesselFlags;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipType;
+import org.ships.vessel.converts.ShipsConverters;
 import org.ships.vessel.converts.vessel.VesselConverter;
-import org.ships.vessel.converts.vessel.shipsfive.Ships5VesselConverter;
-import org.ships.vessel.sign.*;
 import org.ships.vessel.sign.lock.LockedSignManager;
 
 import java.io.File;
@@ -55,11 +49,9 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 16.4;
+    public static final double PRERELEASE_VERSION = 17;
     public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
-    private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
-    private final Collection<Identifiable> identifiables = new HashSet<>();
     private final LockedSignManager lockedSignManager = new LockedSignManager();
     private final Collection<Vessel> vessels = new LinkedHashSet<>();
     private final FlightPathManager flightPaths = new FlightPathManager();
@@ -74,7 +66,6 @@ public class ShipsPlugin implements CorePlugin {
 
     public ShipsPlugin() {
         plugin = this;
-        TranslateCore.getPlatform().setDeveloperCommandsEnabled(true);
     }
 
     public @NotNull LockedSignManager getLockedSignManager() {
@@ -128,7 +119,7 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     public void initShipType() {
-        for (ShipType<?> type : this.getAllShipTypes()) {
+        for (ShipType<?> type : ShipTypes.shipTypes()) {
             if (!(type instanceof AbstractShipType)) {
                 continue;
             }
@@ -138,7 +129,7 @@ public class ShipsPlugin implements CorePlugin {
 
     public void loadCustomShipType() {
         File folder = new File(this.getConfigFolder(), "Configuration/ShipType/Custom");
-        for (CloneableShipType<?> type : this.getAllCloneableShipTypes()) {
+        for (CloneableShipType<?> type : ShipTypes.cloneableShipTypes().collect(Collectors.toList())) {
             File folderType = new File(folder, type.getId().replace(":", ".") + "/");
             File[] files = folderType.listFiles();
             if (files == null) {
@@ -148,7 +139,7 @@ public class ShipsPlugin implements CorePlugin {
                 continue;
             }
             for (File file : files) {
-                this.identifiables.add(type.cloneWithName(file));
+                ShipTypes.registerType(type.cloneWithName(file));
             }
         }
     }
@@ -165,7 +156,7 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     public void loadConverts() {
-        this.getAll(VesselConverter.class).forEach(c -> {
+        ShipsConverters.converters().forEach(c -> {
             File folder = c.getFolder();
             File[] files = folder.listFiles();
             if (files == null) {
@@ -183,35 +174,7 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     private void init() {
-        this.identifiables.add(BasicMovement.SHIPS_FIVE);
-        this.identifiables.add(BasicMovement.SHIPS_SIX);
-
-        this.identifiables.add(BasicBlockFinder.SHIPS_FIVE);
-        this.identifiables.add(BasicBlockFinder.SHIPS_FIVE_ASYNC);
-        this.identifiables.add(BasicBlockFinder.SHIPS_SIX);
-        this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_MULTI_ASYNC);
-        this.identifiables.add(BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC);
-        this.identifiables.add(BlockPriority.AIR);
-        this.identifiables.add(BlockPriority.DIRECTIONAL);
-        this.identifiables.add(BlockPriority.ATTACHED);
-        this.identifiables.add(BlockPriority.NORMAL);
-        this.identifiables.add(new Ships5VesselConverter());
-        this.identifiables.add(new LicenceSign());
-        this.identifiables.add(new AltitudeSign());
-        this.identifiables.add(new WheelSign());
-        this.identifiables.add(new MoveSign());
-        this.identifiables.add(new EOTSign());
-        this.register(CrewPermission.CAPTAIN, CrewPermission.CREW_MEMBER, CrewPermission.DEFAULT);
-        this.vesselFlags.put("ships:player_states", new PlayerStatesFlag.Builder());
-    }
-
-    private void init2() {
-        this.identifiables.add(ShipType.OVERPOWERED_SHIP);
-        this.identifiables.add(ShipType.AIRSHIP);
-        this.identifiables.add(ShipType.WATERSHIP);
-        this.identifiables.add(ShipType.SUBMARINE);
-        this.identifiables.add(ShipType.MARSSHIP);
-        this.identifiables.add(ShipType.PLANE);
+        VesselFlags.registerBuilder("ships:player_states", new PlayerStatesFlag.Builder());
     }
 
     public ShipsConfig getConfig() {
@@ -235,10 +198,15 @@ public class ShipsPlugin implements CorePlugin {
     }
 
     public void loadVesselTypeFlagData() {
-        this.getAll(AbstractShipType.class).forEach(vt -> {
-            vt.initFlags();
-            vt.save();
-        });
+        ShipTypes
+                .shipTypes()
+                .stream()
+                .filter(t -> t instanceof AbstractShipType)
+                .map(t -> (AbstractShipType<?>) t)
+                .forEach(vt -> {
+                    vt.initFlags();
+                    vt.save();
+                });
     }
 
     public DebugFile getDebugFile() {
@@ -253,58 +221,12 @@ public class ShipsPlugin implements CorePlugin {
         return this.vessels;
     }
 
-    public <T extends Identifiable> Collection<T> getAll(Class<T> class1) {
-        return this.identifiables
-                .parallelStream()
-                .filter(class1::isInstance)
-                .map(t -> (T) t)
-                .collect(Collectors.toSet());
-    }
-
-    public Collection<ShipType<?>> getAllShipTypes() {
-        return (Collection<ShipType<?>>) (Object) this.getAll(ShipType.class);
-    }
-
-    public @NotNull Collection<CloneableShipType<?>> getAllCloneableShipTypes() {
-        return (Collection<CloneableShipType<?>>) (Object) this.getAll(CloneableShipType.class);
-    }
-
-    public <T extends Identifiable> Optional<T> get(@NotNull Class<T> class1) {
-        return this.identifiables.stream().filter(class1::isInstance).map(t -> (T) t).findAny();
-    }
-
-    public @NotNull Map<String, VesselFlag.Builder<?, ?>> getVesselFlags() {
-        return this.vesselFlags;
-    }
-
     public void registerVessel(@NotNull Vessel vessel) {
         this.vessels.add(vessel);
     }
 
     public void unregisterVessel(@NotNull Vessel vessel) {
         this.vessels.remove(vessel);
-    }
-
-    @Deprecated
-    public void register() {
-        throw new RuntimeException("Must specify a Identifiable to register");
-    }
-
-    public void register(Identifiable... identifiables) {
-        this.identifiables.addAll(Arrays.asList(identifiables));
-    }
-
-    @Deprecated
-    public void unregister() {
-        throw new RuntimeException("Must specify an Identifiable to unregister");
-    }
-
-    public void unregister(Identifiable... identifiables) {
-        Arrays.asList(identifiables).forEach(this.identifiables::remove);
-    }
-
-    public void register(@NotNull String id, @NotNull VesselFlag.Builder<?, ?> flag) {
-        this.vesselFlags.put(id, flag);
     }
 
     @Override
@@ -330,7 +252,6 @@ public class ShipsPlugin implements CorePlugin {
             Scheduler fallScheduler = FallExecutor.createScheduler();
             fallScheduler.run();
         }
-        this.init2();
     }
 
     @Override
@@ -364,7 +285,7 @@ public class ShipsPlugin implements CorePlugin {
                                 if (fullVersionName.equals(currentVersionName)) {
                                     return;
                                 }
-                                var console = TranslateCore.getConsole();
+                                ConsoleSource console = TranslateCore.getConsole();
                                 console.sendMessage(Component
                                                             .text("An update can be downloaded for Ships")
                                                             .color(NamedTextColor.GREEN));
@@ -427,7 +348,7 @@ public class ShipsPlugin implements CorePlugin {
 
     @Override
     public void onShutdown() {
-        shutdown = true;
+        this.shutdown = true;
     }
 
     public @NotNull Logger getLogger() {

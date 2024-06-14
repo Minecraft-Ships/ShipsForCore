@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.utils.ComponentUtils;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.adapter.MessageAdapter;
@@ -199,12 +198,6 @@ public class CollectionSingleAdapter<T> implements MessageAdapter<Collection<T>>
         String adapterText = adapting.substring(0, startAt);
 
         return this.adapters.parallelStream().anyMatch(ma -> ma.containsAdapter(adapterText));
-    }
-
-    @Override
-    @Deprecated
-    public boolean containsAdapter(AText text) {
-        return this.containsAdapter(text.toPlain());
     }
 
     @Override

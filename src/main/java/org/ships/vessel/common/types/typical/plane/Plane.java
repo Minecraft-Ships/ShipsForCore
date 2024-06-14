@@ -48,18 +48,6 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
-    @Deprecated(forRemoval = true)
-    public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
-        super(licence, type);
-        this.initRequirements();
-    }
-
-    @Deprecated(forRemoval = true)
-    public Plane(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends Plane> type) {
-        super(ste, position, type);
-        this.initRequirements();
-    }
-
     public Plane(@NotNull LiveSignTileEntity licence,
                  boolean isFrontOfSign,
                  @NotNull ShipType<? extends AbstractShipsVessel> type) {

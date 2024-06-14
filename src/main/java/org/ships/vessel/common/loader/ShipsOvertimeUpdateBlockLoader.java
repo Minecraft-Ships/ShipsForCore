@@ -16,6 +16,7 @@ import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.finder.ShipsSignVesselFinder;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -70,10 +71,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
         CompletableFuture<Optional<Vessel>> opVesselFuture = finder
                 .getConnectedBlocksOvertime(this.original, ShipsOvertimeUpdateBlockLoader.this::onBlockFind)
                 .thenApply(structure -> {
-                    LicenceSign ls = ShipsPlugin
-                            .getPlugin()
-                            .get(LicenceSign.class)
-                            .orElseThrow(() -> new IllegalStateException("Could" + " not get licence"));
+                    LicenceSign ls = ShipsSigns.LICENCE;
                     Optional<SyncBlockPosition> opBlock = structure.getAll(SignTileEntity.class).stream().filter(b -> {
                         SignTileEntity lste = (SignTileEntity) b
                                 .getTileEntity()

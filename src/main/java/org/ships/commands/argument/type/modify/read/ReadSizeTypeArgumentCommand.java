@@ -1,6 +1,6 @@
 package org.ships.commands.argument.type.modify.read;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -11,6 +11,7 @@ import org.core.source.command.CommandSource;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.assits.shiptype.SizedShipType;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,11 @@ public class ReadSizeTypeArgumentCommand implements ArgumentCommand {
     private final ExactArgument type = new ExactArgument("shiptype");
     private final ExactArgument modify = new ExactArgument("modify");
     private final ShipIdentifiableArgument<SizedShipType<?>> shipType = new ShipIdentifiableArgument<>("shiptype value",
-                                                                                                       (Class<SizedShipType<?>>) (Object) SizedShipType.class,
+                                                                                                       () -> ShipTypes
+                                                                                                               .shipTypes()
+                                                                                                               .stream()
+                                                                                                               .filter(t -> t instanceof SizedShipType)
+                                                                                                               .map(t -> (SizedShipType<?>) t),
                                                                                                        (c, a, t) -> true);
     private final ExactArgument get = new ExactArgument("get");
     private final ExactArgument size = new ExactArgument("size");
@@ -47,8 +52,8 @@ public class ReadSizeTypeArgumentCommand implements ArgumentCommand {
         int minSize = shipType.getMinSize();
         String maxSize = shipType.getMaxSize().stream().map(Object::toString).findAny().orElse("unspecified");
         CommandSource viewer = commandContext.getSource();
-        viewer.sendMessage(AText.ofPlain("Minimum size: " + minSize));
-        viewer.sendMessage(AText.ofPlain("Maximum size: " + maxSize));
+        viewer.sendMessage(Component.text("Minimum size: " + minSize));
+        viewer.sendMessage(Component.text("Maximum size: " + maxSize));
 
         return true;
     }

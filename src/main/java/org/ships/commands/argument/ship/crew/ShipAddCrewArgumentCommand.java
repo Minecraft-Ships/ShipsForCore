@@ -1,7 +1,7 @@
 package org.ships.commands.argument.ship.crew;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -12,9 +12,9 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
+import org.ships.commands.argument.arguments.identifiable.crew.CrewPermissionArgument;
 import org.ships.permissions.Permissions;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.vessel.common.assits.CrewStoredVessel;
@@ -43,7 +43,7 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
                                  return vessel instanceof CrewStoredVessel;
                              }, v -> "Vessel does not accept crew"), new ExactArgument(this.SHIP_CREW_ARGUMENT),
                              new ExactArgument(this.SHIP_VIEW_ARGUMENT),
-                             new ShipIdentifiableArgument<>(this.SHIP_CREW_PERMISSION_ARGUMENT, CrewPermission.class),
+                             new CrewPermissionArgument(this.SHIP_CREW_PERMISSION_ARGUMENT),
                              new RemainingArgument<>(this.SHIP_PLAYERS_ARGUMENT,
                                                      new UserArgument(this.SHIP_PLAYERS_ARGUMENT)));
     }
@@ -75,10 +75,8 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
                 map.put(user.getUniqueId(), permission);
             }
         });
-        if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(
-                    AText.ofPlain("Added crew member(s)").withColour(NamedTextColours.AQUA));
-        }
+        Component text = Component.text("Added crew members(s)").color(NamedTextColor.AQUA);
+        commandContext.getSource().sendMessage(text);
         return true;
     }
 }

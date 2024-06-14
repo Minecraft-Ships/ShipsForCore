@@ -6,7 +6,6 @@ import net.kyori.adventure.text.Component;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.source.Messageable;
-import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -20,6 +19,7 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.EotFlag;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.EOTSign;
+import org.ships.vessel.sign.ShipsSigns;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -36,11 +36,6 @@ public class EOTExecutor implements Consumer<Scheduler> {
 
     public @NotNull Vessel getVessel() {
         return this.vessel;
-    }
-
-    @Deprecated(forRemoval = true)
-    public @NotNull Optional<CommandViewer> getPlayer() {
-        return getMessenger().filter(t -> t instanceof CommandViewer).map(t -> (CommandViewer) t);
     }
 
     public @NotNull Optional<Messageable> getMessenger() {
@@ -76,10 +71,7 @@ public class EOTExecutor implements Consumer<Scheduler> {
         }
         LiveSignTileEntity liveSignTileEntity = opLiveSignTileEntity.get();
 
-        EOTSign signTools = ShipsPlugin
-                .getPlugin()
-                .get(EOTSign.class)
-                .orElseThrow(() -> new RuntimeException("EOT sign could not be found"));
+        EOTSign signTools = ShipsSigns.EOT;
         if (!signTools.isSign(liveSignTileEntity)) {
             scheduler.cancel();
             return;

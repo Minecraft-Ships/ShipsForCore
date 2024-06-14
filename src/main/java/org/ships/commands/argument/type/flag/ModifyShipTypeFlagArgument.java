@@ -14,6 +14,7 @@ import org.ships.commands.argument.arguments.identifiable.shiptype.flag.ShipType
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,9 @@ public class ModifyShipTypeFlagArgument implements ArgumentCommand {
     private final ExactArgument FLAG_KEY = new ExactArgument("flag key", false, "flag");
     private final ExactArgument MODIFY_KEY = new ExactArgument("modify");
     private final ShipIdentifiableArgument<ShipType<?>> VESSEL_TYPE = new ShipIdentifiableArgument<>("shiptype",
-                                                                                                     (Class<ShipType<?>>) (Object) ShipType.class,
+                                                                                                     () -> ShipTypes
+                                                                                                             .shipTypes()
+                                                                                                             .stream(),
                                                                                                      (c, a, v) -> !v
                                                                                                              .getFlags()
                                                                                                              .isEmpty());

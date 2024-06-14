@@ -1,9 +1,10 @@
 package org.ships.vessel.common.types.typical;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.exceptions.NoLicencePresent;
@@ -16,6 +17,8 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.*;
 import org.ships.vessel.common.flag.VesselFlag;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSign;
+import org.ships.vessel.sign.ShipsSigns;
 
 import java.io.File;
 import java.util.Collection;
@@ -42,11 +45,8 @@ public interface ShipsVessel
         if (!(tile instanceof LiveSignTileEntity)) {
             throw new NoLicencePresent(this);
         }
-        LiveSignTileEntity sign = (LiveSignTileEntity)tile;
-        LicenceSign licenceSign = ShipsPlugin
-                .getPlugin()
-                .get(LicenceSign.class)
-                .orElseThrow(() -> new IllegalStateException("Could not get licence sign builder"));
+        LiveSignTileEntity sign = (LiveSignTileEntity) tile;
+        LicenceSign licenceSign = ShipsSigns.LICENCE;
         if (!licenceSign.isSign(sign)) {
             throw new NoLicencePresent(this);
         }
@@ -55,7 +55,11 @@ public interface ShipsVessel
 
     @Override
     default @NotNull ShipsVessel setName(@NotNull String name) throws NoLicencePresent {
-        this.getSign().setTextAt(2, AText.ofPlain(name));
+        LiveSignTileEntity sign = this.getSign();
+        SignSide side = ShipsSigns.LICENCE
+                .getSide(sign)
+                .orElseThrow(() -> new RuntimeException("No licence sign found"));
+        side.setLineAt(2, Component.text(name));
         File file = this.getFile();
         String[] ext = file.getName().split(Pattern.quote("."));
         file.renameTo(new File(file.getParentFile(), name + "." + ext[ext.length - 1]));

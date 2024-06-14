@@ -8,7 +8,6 @@ import org.core.platform.plugin.Plugin;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignSide;
-import org.core.world.position.block.grouptype.versions.BlockGroups1V13;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.Permissions;

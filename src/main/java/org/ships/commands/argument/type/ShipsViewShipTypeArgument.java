@@ -1,6 +1,6 @@
 package org.ships.commands.argument.type;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -8,9 +8,9 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,8 +40,8 @@ public class ShipsViewShipTypeArgument implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource viewer = commandContext.getSource();
-        Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
-        types.forEach(st -> viewer.sendMessage(AText.ofPlain(" - " + st.getDisplayName())));
+        Collection<ShipType<?>> types = ShipTypes.shipTypes();
+        types.forEach(st -> viewer.sendMessage(Component.text(" - " + st.getDisplayName())));
         return true;
     }
 }

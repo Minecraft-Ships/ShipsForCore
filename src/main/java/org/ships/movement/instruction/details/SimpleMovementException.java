@@ -1,8 +1,8 @@
 package org.ships.movement.instruction.details;
 
 import org.core.entity.LiveEntity;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.source.Messageable;
-import org.core.world.boss.ServerBossBar;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 
@@ -34,12 +34,18 @@ public class SimpleMovementException implements BiConsumer<MovementContext, Thro
                 .map(snapshot -> snapshot.getCreatedFrom().get())
                 .collect(Collectors.toSet());
         entities.forEach(entity -> entity.setGravity(true));
-        context.getBossBar().ifPresent(ServerBossBar::deregisterPlayers);
+        context.getAdventureBossBar().ifPresent(bossBar -> {
+            entities
+                    .stream()
+                    .filter(entity -> entity instanceof LivePlayer)
+                    .map(entity -> (LivePlayer) entity)
+                    .forEach(player -> player.hideBossBar(bossBar));
+        });
         if (!(throwable instanceof MoveException)) {
             throwable.printStackTrace();
             return;
         }
         MoveException e = (MoveException) throwable;
-        this.messageReceivers.forEach(viewer -> viewer.sendMessage(e.getErrorMessageText()));
+        this.messageReceivers.forEach(viewer -> viewer.sendMessage(e.getErrorMessage()));
     }
 }

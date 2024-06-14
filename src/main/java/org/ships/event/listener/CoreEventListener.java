@@ -60,10 +60,12 @@ import org.ships.vessel.common.finder.VesselBlockFinder;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.PlayerStatesFlag;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.sign.ShipsSign;
+import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.io.File;
@@ -227,7 +229,7 @@ public class CoreEventListener implements EventListener {
         if (collideType != CollideType.MATERIAL) {
             return;
         }
-        ShipsPlugin.getPlugin().getAll(ShipsSign.class).stream().filter(s -> s.isSign(lste)).forEach(s -> {
+        ShipsSigns.signs().stream().filter(s -> s.isSign(lste)).forEach(s -> {
             if (ShipsPlugin.getPlugin().getLockedSignManager().isLocked(position)) {
                 LivePlayer player = event.getEntity();
                 Component text = AdventureMessageConfig.ERROR_SHIPS_SIGN_IS_MOVING.parseMessage();
@@ -262,9 +264,8 @@ public class CoreEventListener implements EventListener {
         if (opFirstLine.isEmpty()) {
             return;
         }
-        ShipsSign sign = ShipsPlugin
-                .getPlugin()
-                .getAll(ShipsSign.class)
+        ShipsSign sign = ShipsSigns
+                .signs()
                 .stream()
                 .filter(s -> s.isSign(event.getChangingSide().getLines()))
                 .findFirst()
@@ -290,9 +291,8 @@ public class CoreEventListener implements EventListener {
                 return;
             }
             String typeText = ComponentUtils.toPlain(opTypeText.get());
-            Optional<ShipType<?>> opType = ShipsPlugin
-                    .getPlugin()
-                    .getAllShipTypes()
+            Optional<ShipType<?>> opType = ShipTypes
+                    .shipTypes()
                     .stream()
                     .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
                     .findAny();
@@ -424,10 +424,7 @@ public class CoreEventListener implements EventListener {
         if (!config.isPreventingExplosions()) {
             return;
         }
-        LicenceSign licenceSign = ShipsPlugin
-                .getPlugin()
-                .get(LicenceSign.class)
-                .orElseThrow(() -> new RuntimeException("Could not " + "find licence sign? is it registered?"));
+        LicenceSign licenceSign = ShipsSigns.LICENCE;
         Optional<BlockSnapshot.SyncBlockSnapshot> opLicenceSignSnapshot = event
                 .getExplosion()
                 .getBlocks()
@@ -471,7 +468,7 @@ public class CoreEventListener implements EventListener {
                     .setDisplayName("restoring blocks")
                     .setDelay(1)
                     .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                    .build(ShipsPlugin.getPlugin())
+                    .buildDelayed(ShipsPlugin.getPlugin())
                     .run();
         }
     }
@@ -483,11 +480,7 @@ public class CoreEventListener implements EventListener {
         }
         ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         BlockDetails beforeDetails = event.getBeforeState();
-        LicenceSign licenceSign = ShipsPlugin
-                .getPlugin()
-                .get(LicenceSign.class)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Licence sign could not be found from register. Something is really wrong."));
+        LicenceSign licenceSign = ShipsSigns.LICENCE;
         Collection<Direction> list = new ArrayList<>(Arrays.asList(FourFacingDirection.getFourFacingDirections()));
         list.add(FourFacingDirection.NONE);
         SyncBlockPosition position = event.getPosition();

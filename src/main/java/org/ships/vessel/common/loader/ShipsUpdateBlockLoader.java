@@ -10,6 +10,7 @@ import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.finder.ShipsSignVesselFinder;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -56,10 +57,7 @@ public class ShipsUpdateBlockLoader {
     }
 
     private Vessel load(PositionableShipsStructure blocks) throws LoadVesselException {
-        LicenceSign ls = ShipsPlugin
-                .getPlugin()
-                .get(LicenceSign.class)
-                .orElseThrow(() -> new IllegalStateException("Could not fince licence sign"));
+        LicenceSign ls = ShipsSigns.LICENCE;
         Optional<SyncBlockPosition> opBlock = blocks.getAll(SignTileEntity.class).stream().filter(b -> {
             SignTileEntity lste = (SignTileEntity) b
                     .getTileEntity()

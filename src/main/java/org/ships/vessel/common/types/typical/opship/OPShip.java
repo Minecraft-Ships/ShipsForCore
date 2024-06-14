@@ -19,16 +19,6 @@ import java.util.Map;
 @Deprecated(forRemoval = true)
 public class OPShip extends AbstractShipsVessel implements AirType {
 
-    @Deprecated(forRemoval = true)
-    public OPShip(LiveTileEntity licence, ShipType<? extends OPShip> origin) throws NoLicencePresent {
-        super(licence, origin);
-    }
-
-    @Deprecated(forRemoval = true)
-    public OPShip(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends OPShip> origin) {
-        super(ste, position, origin);
-    }
-
     public OPShip(@NotNull LiveSignTileEntity licence,
                   boolean isFrontOfSign,
                   @NotNull ShipType<? extends AbstractShipsVessel> type) {

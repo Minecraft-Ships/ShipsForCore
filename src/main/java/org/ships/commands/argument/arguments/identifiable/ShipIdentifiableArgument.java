@@ -9,24 +9,28 @@ import org.core.utils.lamda.tri.TriPredicate;
 import org.ships.plugin.ShipsPlugin;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ShipIdentifiableArgument<T extends Identifiable> implements CommandArgument<T> {
 
     private final String id;
-    private final Class<T> type;
+    private final Supplier<Stream<T>> all;
     private final TriPredicate<? super CommandContext, ? super CommandArgumentContext<T>, ? super T> predicate;
 
-    public ShipIdentifiableArgument(String id, Class<T> type) {
-        this(id, type, (c, a, v) -> true);
+    public ShipIdentifiableArgument(String id, Supplier<Stream<T>> all) {
+        this(id, all, (c, a, v) -> true);
     }
 
-    public ShipIdentifiableArgument(String id, Class<T> type,
-            TriPredicate<? super CommandContext, ? super CommandArgumentContext<T>, ? super T> predicate) {
+    public ShipIdentifiableArgument(String id,
+                                    Supplier<Stream<T>> all,
+                                    TriPredicate<? super CommandContext, ? super CommandArgumentContext<T>, ? super T> predicate) {
         this.id = id;
-        this.type = type;
+        this.all = all;
         this.predicate = predicate;
     }
 
@@ -36,13 +40,11 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
     }
 
     @Override
-    public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument) throws
-            IOException {
+    public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument)
+            throws IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        Optional<T> opValue = ShipsPlugin
-                .getPlugin()
-                .getAll(this.type)
-                .parallelStream()
+        Optional<T> opValue = all
+                .get()
                 .filter(i -> i.getId().equalsIgnoreCase(arg))
                 .filter(v -> this.predicate.apply(context, argument, v))
                 .findAny();
@@ -55,10 +57,8 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
     @Override
     public List<String> suggest(CommandContext context, CommandArgumentContext<T> argument) {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        return ShipsPlugin
-                .getPlugin()
-                .getAll(this.type)
-                .parallelStream()
+        return this.all
+                .get()
                 .filter(i -> i.getId().startsWith(arg.toLowerCase()) || i.getName().startsWith(arg.toLowerCase()))
                 .filter(v -> this.predicate.apply(context, argument, v))
                 .map(Identifiable::getId)

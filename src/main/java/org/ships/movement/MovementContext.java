@@ -7,7 +7,6 @@ import org.core.entity.Entity;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
 import org.core.utils.BarUtils;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.BlockPosition;
@@ -32,6 +31,8 @@ import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSign;
+import org.ships.vessel.sign.ShipsSigns;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -52,11 +53,6 @@ public class MovementContext {
 
     public Optional<BlockPosition> getClicked() {
         return this.details.getClickedBlock();
-    }
-
-    @Deprecated(forRemoval = true)
-    public Optional<ServerBossBar> getBossBar() {
-        return this.details.getBossBar();
     }
 
     public Optional<BossBar> getAdventureBossBar() {
@@ -163,7 +159,7 @@ public class MovementContext {
             bossBar.progress(0.25f);
         });
         if (vessel instanceof SignBasedVessel) {
-            this.isLicenceSignValid((SignBasedVessel)vessel);
+            this.isLicenceSignValid((SignBasedVessel) vessel);
         }
         this.getAdventureBossBar().ifPresent(bossBar -> {
             bossBar.name(Component.text("Checking requirements: Vessel specific"));
@@ -243,12 +239,7 @@ public class MovementContext {
     }
 
     private void isLicenceSignValid(Vessel vessel) throws MoveException {
-        Optional<MovingBlock> opLicence = this
-                .getMovingStructure()
-                .get(ShipsPlugin
-                             .getPlugin()
-                             .get(LicenceSign.class)
-                             .orElseThrow(() -> new RuntimeException("Could not find licence sign class")));
+        Optional<MovingBlock> opLicence = this.getMovingStructure().get(ShipsSigns.LICENCE);
         if (opLicence.isPresent()) {
             return;
         }
@@ -307,7 +298,7 @@ public class MovementContext {
         }
         this.entities.put(snapshot, mBlock.get());
         this.getAdventureBossBar().ifPresent(bossBar -> {
-            float progress = this.entities.size() / (float)totalSize;
+            float progress = this.entities.size() / (float) totalSize;
             progress = progress / 100;
 
             bossBar.name(Component.text("Collecting entities: " + this.entities.size()));

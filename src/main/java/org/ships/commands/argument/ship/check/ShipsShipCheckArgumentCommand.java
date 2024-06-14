@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.check;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -72,7 +72,7 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
         CommandSource source = commandContext.getSource();
         Vessel vessel = commandContext.getArgument(this, SHIP_ID_ARGUMENT);
         if (vessel instanceof Fallable) {
-            source.sendMessage(AText.ofPlain("Will Fall: " + ((Fallable)vessel).shouldFall()));
+            source.sendMessage(Component.text("Will Fall: " + ((Fallable) vessel).shouldFall()));
         }
         if (!(vessel instanceof VesselRequirement)) {
             return true;
@@ -91,10 +91,10 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
 
         try {
             rVessel.checkRequirements(context);
-            source.sendMessage(AText.ofPlain("Meets Requirements: true"));
+            source.sendMessage(Component.text("Meets Requirements: true"));
         } catch (MoveException e) {
-            source.sendMessage(AText.ofPlain("Meets Requirements: false"));
-            source.sendMessage(e.getErrorMessageText());
+            source.sendMessage(Component.text("Meets Requirements: false"));
+            source.sendMessage(e.getErrorMessage());
         }
 
         return true;

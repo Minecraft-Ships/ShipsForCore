@@ -54,9 +54,8 @@ abstract class BlockGroupAdapter implements MessageAdapter<Collection<BlockType>
         var blockTypes = new ArrayList<>(obj);
         BlockType blockType = obj.iterator().next();
         List<BlockGroup> potentialBlockGroups = blockType
-                .getGroups()
-                .parallelStream()
-                .filter(blockGroup -> obj.parallelStream().anyMatch(type -> type.getGroups().contains(blockGroup)))
+                .getBlockGroups()
+                .filter(blockGroup -> obj.parallelStream().anyMatch(type -> type.getBlockGroups().anyMatch(group -> group.equals(blockGroup))))
                 .collect(Collectors.toList());
 
         var blockGroups = getValidBlockGroups(blockTypes, potentialBlockGroups);
@@ -75,8 +74,8 @@ abstract class BlockGroupAdapter implements MessageAdapter<Collection<BlockType>
     private Collection<BlockGroup> getValidBlockGroups(Collection<BlockType> types, Collection<BlockGroup> groups) {
         Optional<BlockGroup> allMatchGroup = groups
                 .parallelStream()
-                .filter(group -> group.getGrouped().length == types.size())
-                .filter(group -> Stream.of(group.getGrouped()).allMatch(types::contains))
+                .filter(group -> group.getBlocks().size() == types.size())
+                .filter(group -> types.containsAll(group.getBlocks()))
                 .findAny();
         if (allMatchGroup.isPresent()) {
             types.clear();
@@ -85,13 +84,13 @@ abstract class BlockGroupAdapter implements MessageAdapter<Collection<BlockType>
 
         List<BlockGroup> allMatchGroups = groups
                 .parallelStream()
-                .filter(group -> Arrays.stream(group.getGrouped()).allMatch(types::contains))
-                .sorted(Comparator.comparing(group -> group.getGrouped().length))
+                .filter(group -> types.containsAll(group.getBlocks()))
+                .sorted(Comparator.comparing(group -> group.getBlocks().size()))
                 .collect(Collectors.toList());
         Collection<BlockGroup> ret = new ArrayList<>();
         for (BlockGroup group : allMatchGroups) {
-            if (Stream.of(group.getGrouped()).allMatch(types::contains)) {
-                types.removeAll(Arrays.asList(group.getGrouped()));
+            if (types.containsAll(group.getBlocks())) {
+                types.removeAll(group.getBlocks());
                 ret.add(group);
             }
         }
