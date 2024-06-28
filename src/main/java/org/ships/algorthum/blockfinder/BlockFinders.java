@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.LinkedTransferQueue;
 
-public class BlockFinders {
+public final class BlockFinders {
 
     private static final Collection<BasicBlockFinder> registered = new LinkedTransferQueue<>();
 
@@ -19,6 +19,10 @@ public class BlockFinders {
     public static final Ships6MultiAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_ASYNC_MULTI_THREADED = register(new Ships6MultiAsyncBlockFinder());
 
     public static final Ships6SingleAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_ASYNC_SINGLE_THREADED = register(new Ships6SingleAsyncBlockFinder());
+
+    private BlockFinders() {
+        throw new RuntimeException("Do not create");
+    }
 
     public static <T extends BasicBlockFinder> T register(@NotNull T finder) {
         registered.add(finder);

@@ -6,9 +6,11 @@ import org.core.TranslateCore;
 import org.core.entity.Entity;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.utils.BarUtils;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
+import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +19,7 @@ import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
-import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.config.messages.messages.error.data.CollideDetectedMessageData;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.move.MoveException;
@@ -30,8 +32,6 @@ import org.ships.vessel.common.assits.SignBasedVessel;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.sign.LicenceSign;
-import org.ships.vessel.sign.ShipsSign;
 import org.ships.vessel.sign.ShipsSigns;
 
 import java.util.*;
@@ -39,6 +39,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MovementContext {
 
@@ -148,7 +149,7 @@ public class MovementContext {
         });
 
         if (ShipsPlugin.getPlugin().getPreventMovementManager().isMovementPrevented()) {
-            throw new MoveException(this, AdventureMessageConfig.ERROR_PREVENT_MOVEMENT, vessel);
+            throw new MoveException(this, Messages.ERROR_PREVENT_MOVEMENT, vessel);
         }
 
         if (this.isPreMoveEventCancelled(vessel)) {
@@ -206,8 +207,21 @@ public class MovementContext {
     }
 
     private void isClearFromColliding(@NotNull Vessel vessel) throws MoveException {
+        var player = vessel
+                .getPosition()
+                .getWorld()
+                .getLiveEntities()
+                .filter(e -> e instanceof LivePlayer)
+                .map(e -> (LivePlayer) e)
+                .findAny()
+                .orElseThrow();
         Set<SyncBlockPosition> collided = this.getMovingStructure().stream().filter(mb -> {
             SyncBlockPosition after = mb.getAfterPosition();
+
+            mb.getBeforePosition().setBlock(BlockTypes.GLOWSTONE.getDefaultBlockDetails(), player);
+            after.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player);
+
+
             if (this.getMovingStructure().stream().anyMatch(mb1 -> {
                 return after.equals(mb1.getBeforePosition());
             })) {
@@ -220,7 +234,10 @@ public class MovementContext {
             }
             BlockList list = ShipsPlugin.getPlugin().getBlockList();
             BlockInstruction bi = list.getBlockInstruction(after.getBlockType());
-            return bi.getCollide() != CollideType.IGNORE;
+            if (bi.getCollide() == CollideType.IGNORE) {
+                return false;
+            }
+            return true;
         }).map(MovingBlock::getAfterPosition).collect(Collectors.toSet());
         if (collided.isEmpty()) {
             return;
@@ -229,9 +246,9 @@ public class MovementContext {
         VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, this, collided);
         TranslateCore.getPlatform().callEvent(collideEvent);
 
-        throw new MoveException(this, AdventureMessageConfig.ERROR_COLLIDE_DETECTED,
-                                new CollideDetectedMessageData(vessel,
-                                                               collided.parallelStream().collect(Collectors.toSet())));
+        throw new MoveException(this, Messages.ERROR_COLLIDE_DETECTED, new CollideDetectedMessageData(vessel, collided
+                .parallelStream()
+                .collect(Collectors.toSet())));
     }
 
     private void isRequirementsValid(VesselRequirement vessel) throws MoveException {
@@ -243,7 +260,7 @@ public class MovementContext {
         if (opLicence.isPresent()) {
             return;
         }
-        throw new MoveException(this, AdventureMessageConfig.ERROR_FAILED_TO_FIND_LICENCE_SIGN, vessel.getStructure());
+        throw new MoveException(this, Messages.ERROR_FAILED_TO_FIND_LICENCE_SIGN, vessel.getStructure());
     }
 
     private boolean isPreMoveEventCancelled(Vessel vessel) {
@@ -283,9 +300,8 @@ public class MovementContext {
         Optional<MovingBlock> mBlock = this.getMovingStructure().getBefore(opAttached.get());
         if (mBlock.isEmpty()) {
             SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
-            Collection<SyncBlockPosition> positions = vessel.getStructure().getSyncedPositionsRelativeToWorld();
+            Stream<SyncBlockPosition> positions = vessel.getStructure().getSyncPositionsRelativeToPosition(vessel.getStructure().getPosition());
             Optional<SyncBlockPosition> opDown = positions
-                    .stream()
                     .filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN))
                     .findAny();
             if (opDown.isEmpty()) {
@@ -311,13 +327,13 @@ public class MovementContext {
         if (opMoving.isEmpty()) {
             return;
         }
-        throw new MoveException(this, AdventureMessageConfig.ERROR_ALREADY_MOVING, vessel);
+        throw new MoveException(this, Messages.ERROR_ALREADY_MOVING, vessel);
     }
 
     private void isVesselLoading(Vessel vessel) throws MoveException {
         if (!vessel.isLoading()) {
             return;
         }
-        throw new MoveException(this, AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING, vessel);
+        throw new MoveException(this, Messages.ERROR_VESSEL_STILL_LOADING, vessel);
     }
 }

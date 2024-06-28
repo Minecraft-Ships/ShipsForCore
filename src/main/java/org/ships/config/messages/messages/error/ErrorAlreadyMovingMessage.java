@@ -22,7 +22,7 @@ public class ErrorAlreadyMovingMessage implements Message<Vessel> {
     @Override
     public Component getDefaultMessage() {
         return Component.text(
-                Message.VESSEL_ID.adapterTextFormat() + " is already moving. Please wait for it to finish");
+                MessageAdapters.VESSEL_ID.adapterTextFormat() + " is already moving. Please wait for it to finish");
     }
 
     @Override

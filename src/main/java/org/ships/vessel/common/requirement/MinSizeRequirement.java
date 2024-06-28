@@ -6,6 +6,7 @@ import org.core.config.parser.Parser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.types.Vessel;
@@ -51,7 +52,7 @@ public class MinSizeRequirement implements Requirement<MinSizeRequirement> {
         int minSize = this.getMinimumSize();
 
         if (minSize > shipSize) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_UNDERSIZED,
+            throw new MoveException(context, Messages.ERROR_UNDERSIZED,
                                     new AbstractMap.SimpleImmutableEntry<>(vessel, minSize - shipSize));
         }
     }

@@ -2,9 +2,7 @@ package org.ships.config.parsers.identify;
 
 import org.core.config.parser.StringParser;
 import org.core.utils.Identifiable;
-import org.ships.plugin.ShipsPlugin;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -21,7 +19,7 @@ public class StringToIdentifiable<T extends Identifiable> implements StringParse
 
     @Override
     public Optional<T> parse(String original) {
-        return all.get().filter(t -> t.getId().equals(original)).findAny();
+        return this.all.get().filter(t -> t.getId().equals(original)).findAny();
     }
 
     @Override
@@ -40,6 +38,6 @@ public class StringToIdentifiable<T extends Identifiable> implements StringParse
 
     @Override
     public List<T> getSuggestions() {
-        return all.get().collect(Collectors.toList());
+        return this.all.get().collect(Collectors.toList());
     }
 }

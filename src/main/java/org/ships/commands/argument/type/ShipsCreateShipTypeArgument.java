@@ -58,7 +58,7 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
             File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
                                  "Configuration/ShipType/Custom/" + type.getId().replace(":", ".") + "/" + name + "."
                                          + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
-            file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
+            file = TranslateCore.getConfigManager().read(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
             if (file.exists()) {
                 (source).sendMessage(Component.text("Custom ShipType " + name + " has already been created"));
 

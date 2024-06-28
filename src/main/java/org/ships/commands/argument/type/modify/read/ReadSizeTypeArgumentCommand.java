@@ -49,8 +49,8 @@ public class ReadSizeTypeArgumentCommand implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         SizedShipType<?> shipType = commandContext.getArgument(this, this.shipType);
-        int minSize = shipType.getMinSize();
-        String maxSize = shipType.getMaxSize().stream().map(Object::toString).findAny().orElse("unspecified");
+        int minSize = shipType.getMinimumSize();
+        String maxSize = shipType.getMaximumSize().stream().boxed().map(Object::toString).findAny().orElse("unspecified");
         CommandSource viewer = commandContext.getSource();
         viewer.sendMessage(Component.text("Minimum size: " + minSize));
         viewer.sendMessage(Component.text("Maximum size: " + maxSize));

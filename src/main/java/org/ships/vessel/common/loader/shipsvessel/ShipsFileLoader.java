@@ -14,6 +14,7 @@ import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
+import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.config.parsers.ShipsParsers;
@@ -103,7 +104,7 @@ public class ShipsFileLoader implements ShipsLoader {
                                                                   Collection<? extends Vector3<Integer>> structureList) {
 
             if (structureList.isEmpty()) {
-                return ship.updateStructure().thenApply(structure -> {
+                return this.ship.updateStructure().thenApply(structure -> {
                     TranslateCore
                             .getConsole()
                             .sendMessage(Component.text(
@@ -132,7 +133,7 @@ public class ShipsFileLoader implements ShipsLoader {
 
     public void save(AbstractShipsVessel vessel) {
         try {
-            saveToFile(vessel);
+            this.saveToFile(vessel);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -184,7 +185,7 @@ public class ShipsFileLoader implements ShipsLoader {
         uuidList.forEach((key, value) -> file.set(
                 new ConfigurationNode.KnownParser.CollectionKnown<>(Parser.STRING_TO_STRING_PARSER, "Meta",
                                                                     "Permission", key.getId()), value));
-        file.set(META_STRUCTURE, vessel.getStructure().getRelativePositionsToCenter());
+        file.set(META_STRUCTURE, vessel.getStructure().getVectorsRelativeToLicence().collect(Collectors.toList()));
         Set<VesselFlag<?>> flags = vessel
                 .getFlags()
                 .stream()
@@ -230,7 +231,7 @@ public class ShipsFileLoader implements ShipsLoader {
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
-        var signSide = sign
+        SignSide signSide = sign
                 .getSide(lste)
                 .orElseThrow(() -> new FileLoadVesselException(this.file,
                                                                "LicenceSign is not at location " + position.getX() + ","

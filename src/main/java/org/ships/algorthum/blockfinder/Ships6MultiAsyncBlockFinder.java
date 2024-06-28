@@ -1,7 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
-import org.core.config.ConfigurationNode;
 import org.core.schedule.unit.TimeUnit;
 import org.core.vector.type.Vector3;
 import org.core.world.direction.Direction;
@@ -15,14 +14,15 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.config.node.DedicatedNode;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.io.File;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,14 +66,15 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                 .setDelay(0)
                 .setRunner((scheduler) -> {
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(
-                            Position.toSync(position));
+                            position.toSyncPosition());
                     LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new LinkedTransferQueue<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-                    toProcess.add(new AbstractMap.SimpleImmutableEntry<>(Position.toASync(position),
+                    toProcess.add(new AbstractMap.SimpleImmutableEntry<>(position.toAsyncPosition(),
                                                                          FourFacingDirection.NONE));
-                    while (!toProcess.isEmpty() && structure.getOriginalRelativePositionsToCenter().size() < limit
-                            && !ShipsPlugin.getPlugin().isShuttingDown()) {
-                        Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositionsToCenter();
+                    while (!toProcess.isEmpty() && structure.size() < limit && !ShipsPlugin
+                            .getPlugin()
+                            .isShuttingDown()) {
+                        Collection<Vector3<Integer>> positions = structure.getRelativePositionsToCenter();
                         LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedTransferQueue<>();
                         while (toProcess.hasWaitingConsumer()) {
                             continue;
@@ -112,11 +113,11 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                                         }
                                     });
                             OvertimeBlockFinderUpdate.BlockFindControl blockFind = runAfterFullSearch.onBlockFind(
-                                    structure, posEntry.getKey());
+                                    structure, posEntry.getKey().getPosition());
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 return;
                             }
-                            structure.addPositionRelativeToWorld(Position.toSync(posEntry.getKey()));
+                            structure.addPositionRelativeToWorld(posEntry.getKey().toSyncPosition());
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 shouldKill.set(true);
                                 TranslateCore

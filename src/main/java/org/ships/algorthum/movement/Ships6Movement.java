@@ -9,7 +9,9 @@ import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.world.position.block.details.data.keyed.TileEntityKeyedData;
 import org.jetbrains.annotations.NotNull;
+import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.config.node.DedicatedNode;
 import org.ships.config.node.ObjectDedicatedNode;
 import org.ships.config.node.RawDedicatedNode;
@@ -98,7 +100,7 @@ public class Ships6Movement implements BasicMovement {
                 final int finalIndex = index;
                 this.context.getAdventureBossBar().ifPresent(bar -> {
                     int currentBlock = this.current + finalIndex;
-                    float progress = (float) currentBlock / totalBlocks;
+                    float progress = (float) currentBlock / this.totalBlocks;
                     progress = Math.max(progress, 0);
                     progress = Math.min(progress, 1);
                     bar.progress(progress);
@@ -112,7 +114,7 @@ public class Ships6Movement implements BasicMovement {
 
     @Override
     public Result move(Vessel vessel, MovementContext context) throws MoveException {
-        var config = ShipsPlugin.getPlugin().getConfig();
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int stackLimit = config.getDefaultMovementStackLimit();
         TimeUnit stackDelayUnit = config.getDefaultMovementStackDelayUnit();
         int stackDelay = config.getDefaultMovementStackDelay();
@@ -193,7 +195,7 @@ public class Ships6Movement implements BasicMovement {
             placedBlocks = placedBlocks + blocks2.size();
         }
         if (scheduler == null) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_FAILED_IN_MOVEMENT, vessel);
+            throw new MoveException(context, Messages.ERROR_FAILED_IN_MOVEMENT, vessel);
         }
         scheduler.run();
 

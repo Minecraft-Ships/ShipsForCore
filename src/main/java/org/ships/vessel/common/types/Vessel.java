@@ -6,14 +6,15 @@ import org.core.utils.MathUtils;
 import org.core.vector.type.Vector2;
 import org.core.vector.type.Vector3;
 import org.core.world.Extent;
+import org.core.world.WorldExtent;
+import org.core.world.chunk.AsyncChunk;
+import org.core.world.chunk.Chunk;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.Positionable;
-import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
-import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,43 +26,51 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface Vessel extends Positionable<BlockPosition> {
 
-    @NotNull String getName() throws NoLicencePresent;
+    @NotNull
+    String getName() throws NoLicencePresent;
 
-    @NotNull PositionableShipsStructure getStructure();
+    @NotNull
+    PositionableShipsStructure getStructure();
 
     void setStructure(@NotNull PositionableShipsStructure pss);
 
     CompletableFuture<PositionableShipsStructure> updateStructure(OvertimeBlockFinderUpdate finder);
 
     default CompletableFuture<PositionableShipsStructure> updateStructure() {
-        return updateStructure((currentStructure, block) -> OvertimeBlockFinderUpdate.BlockFindControl.USE);
+        return this.updateStructure((currentStructure, block) -> OvertimeBlockFinderUpdate.BlockFindControl.USE);
     }
 
 
-    @NotNull ShipType<? extends Vessel> getType();
+    @NotNull
+    ShipType<? extends Vessel> getType();
 
     <T extends VesselFlag<?>> @NotNull Optional<T> get(@NotNull Class<T> clazz);
 
     <T> @NotNull Vessel set(@NotNull Class<? extends VesselFlag<T>> flag, T value);
 
-    @NotNull Vessel set(@NotNull VesselFlag<?> flag);
+    @NotNull
+    Vessel set(@NotNull VesselFlag<?> flag);
 
     int getMaxSpeed();
 
-    @NotNull Vessel setMaxSpeed(@Nullable Integer speed);
+    @NotNull
+    Vessel setMaxSpeed(@Nullable Integer speed);
 
     boolean isMaxSpeedSpecified();
 
     int getAltitudeSpeed();
 
-    @NotNull Vessel setAltitudeSpeed(@Nullable Integer speed);
+    @NotNull
+    Vessel setAltitudeSpeed(@Nullable Integer speed);
 
     boolean isAltitudeSpeedSpecified();
 
@@ -92,44 +101,37 @@ public interface Vessel extends Positionable<BlockPosition> {
         return this.get(flagClass).flatMap(VesselFlag::getValue);
     }
 
+    @Deprecated(forRemoval = true)
     default Collection<LiveEntity> getEntities() {
         return this.getEntities(e -> true);
     }
 
+    @Deprecated(forRemoval = true)
     default <X extends LiveEntity> Collection<X> getEntities(Class<X> clazz) {
         return (Collection<X>) this.getEntities(clazz::isInstance);
     }
 
+    @Deprecated(forRemoval = true)
     default Collection<LiveEntity> getEntities(Predicate<? super LiveEntity> check) {
+        return this.getLiveEntities(check).collect(Collectors.toSet());
+    }
+
+    default Stream<LiveEntity> getLiveEntities(Predicate<? super LiveEntity> check) {
         Bounds<Integer> bounds = this.getStructure().getBounds();
         bounds.add(1, Integer.MAX_VALUE, 1);
         bounds.add(-1, -1, -1);
-        Set<LiveEntity> entities = new HashSet<>();
-        this.getStructure().getChunks().stream().map(Extent::getEntities).forEach(entities::addAll);
-        entities = entities.stream().filter(e -> {
+        Collection<Vector3<Integer>> blocks = this
+                .getStructure()
+                .getVectorsRelativeToWorld()
+                .collect(Collectors.toList());
+        return this.getStructure().getLoadedChunks().flatMap(Extent::getLiveEntities).filter(e -> {
             Optional<SyncBlockPosition> opTo = e.getAttachedTo();
             return opTo.filter(syncBlockPosition -> bounds.contains(syncBlockPosition.getPosition())).isPresent();
-        }).collect(Collectors.toSet());
-        Collection<ASyncBlockPosition> blocks = this.getStructure().getAsyncedPositionsRelativeToWorld();
-        return entities.stream().filter(check).filter(e -> {
+        }).filter(check).filter(e -> {
             Optional<SyncBlockPosition> opBlock = e.getAttachedTo();
             //noinspection SuspiciousMethodCalls
             return opBlock.filter(blocks::contains).isPresent();
-        }).collect(Collectors.toSet());
-
-    }
-
-    @Deprecated(forRemoval = true)
-    default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
-                                    Consumer<? super Collection<LiveEntity>> output) {
-        this.getEntitiesAsynced(predicate, output, Throwable::printStackTrace);
-    }
-
-    @Deprecated(forRemoval = true)
-    default void getEntitiesAsynced(Predicate<? super LiveEntity> predicate,
-                                    Consumer<? super Collection<LiveEntity>> output,
-                                    Consumer<Throwable> onException) {
-        this.getEntitiesOvertime(predicate, onException).thenAccept(output);
+        });
     }
 
     default CompletableFuture<Collection<LiveEntity>> getEntitiesOvertime(Predicate<? super LiveEntity> predicate) {
@@ -144,17 +146,13 @@ public interface Vessel extends Positionable<BlockPosition> {
                 bounds.add(-1, -1, -1);
                 bounds.add(1, 5, 1);
 
-                Map<LiveEntity, Vector3<Integer>> entityPositions = chunks
+                return chunks
                         .stream()
-                        .flatMap(c -> c.getEntities().stream())
-                        .collect(Collectors.toMap(e -> e, e -> e
+                        .flatMap(Extent::getLiveEntities)
+                        .map(entity -> Map.entry(entity, entity
                                 .getAttachedTo()
                                 .map(Position::getPosition)
-                                .orElseGet(() -> e.getPosition().toBlockPosition().getPosition())));
-
-                return entityPositions
-                        .entrySet()
-                        .parallelStream()
+                                .orElseGet(() -> entity.getPosition().toBlockPosition().getPosition())))
                         .filter(entry -> bounds.contains(entry.getValue()))
                         .map(Map.Entry::getKey)
                         .filter(predicate)
@@ -174,38 +172,72 @@ public interface Vessel extends Positionable<BlockPosition> {
         this.rotateLeftAround(location, details);
     }
 
+    @Deprecated(forRemoval = true)
     default <T> Optional<Integer> getWaterLevel(Function<? super T, ? extends BlockPosition> function,
                                                 Collection<T> collection) {
-        Map<Vector2<Integer>, Integer> height = new HashMap<>();
-        int lowest = Integer.MIN_VALUE;
-        Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        for (T value : collection) {
-            BlockPosition position = function.apply(value);
-            for (Direction direction : directions) {
-                BlockType type = position.getRelative(direction).getBlockType();
-                if (!type.equals(BlockTypes.WATER)) {
-                    continue;
-                }
-                Vector2<Integer> vector = Vector2.valueOf(position.getX() + direction.getAsVector().getX(),
-                                                          position.getZ() + direction.getAsVector().getZ());
-                if (!height.containsKey(vector)) {
-                    height.put(vector, position.getY());
-                    continue;
-                }
-                if (height.getOrDefault(vector, lowest) < position.getY()) {
-                    height.replace(vector, position.getY());
-                }
-            }
-        }
-        if (height.isEmpty()) {
+        if (collection.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(MathUtils.getMostCommonNumber(height.values()));
+        WorldExtent world = function.apply(collection.iterator().next()).getWorld();
+        List<Vector3<Integer>> positions = collection
+                .stream()
+                .map(function)
+                .map(Position::getPosition)
+                .collect(Collectors.toList());
+
+        OptionalInt result = this.getWaterLevel(world, positions);
+        if (result.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(result.getAsInt());
+    }
+
+    default OptionalInt getWaterLevel(WorldExtent extent, Collection<Vector3<Integer>> collection) {
+        List<AsyncChunk> asyncChunks = extent
+                .getChunkExtents()
+                .filter(chunk -> collection.stream().anyMatch(vec -> chunk.getBounds().containsWithoutMax(vec)))
+                .map(Chunk::createAsync)
+                .collect(Collectors.toList());
+        Direction[] directions = FourFacingDirection.getFourFacingDirections();
+        Map<Vector2<Integer>, Integer> waterLevels = collection
+                .stream()
+                .flatMap(vec -> Stream.of(directions).map(direction -> vec.plus(direction.getAsVector())))
+                .map(vec -> asyncChunks
+                        .stream()
+                        .filter(chunk -> chunk.getBounds().containsWithoutMax(vec))
+                        .findAny()
+                        .map(chunk -> Map.entry(vec, chunk.getDetails(vec).getType()))
+                        .filter(entry -> entry.getValue().equals(BlockTypes.WATER))
+                        .map(Map.Entry::getKey))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toMap(vec -> Vector2.valueOf(vec.getX(), vec.getZ()), Vector3::getY));
+
+        Map<Vector2<Integer>, Integer> filteredWaterLevels = new ConcurrentHashMap<>();
+        for (Map.Entry<Vector2<Integer>, Integer> entry : waterLevels.entrySet()) {
+            Integer currentWaterLevel = filteredWaterLevels.get(entry.getKey());
+            if (currentWaterLevel == null) {
+                filteredWaterLevels.put(entry.getKey(), entry.getValue());
+                continue;
+            }
+            if (entry.getValue() > currentWaterLevel) {
+                filteredWaterLevels.replace(entry.getKey(), entry.getValue());
+            }
+        }
+        if (filteredWaterLevels.isEmpty()) {
+            return OptionalInt.empty();
+        }
+        return OptionalInt.of(MathUtils.getMostCommonNumber(filteredWaterLevels.values()));
     }
 
     default Optional<Integer> getWaterLevel() {
         PositionableShipsStructure pss = this.getStructure();
-        return this.getWaterLevel(p -> p, pss.getAsyncedPositionsRelativeToWorld());
+        OptionalInt result = this.getWaterLevel(this.getPosition().getWorld(),
+                                                pss.getVectorsRelativeToWorld().collect(Collectors.toList()));
+        if (result.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(result.getAsInt());
     }
 
 }

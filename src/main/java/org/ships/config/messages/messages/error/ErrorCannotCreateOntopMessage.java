@@ -23,7 +23,7 @@ public class ErrorCannotCreateOntopMessage implements Message<Vessel> {
     @Override
     public Component getDefaultMessage() {
         return Component
-                .text("Cannot create your ship on top of " + Message.VESSEL_NAME.adapterTextFormat())
+                .text("Cannot create your ship on top of " + MessageAdapters.VESSEL_NAME.adapterTextFormat())
                 .color(NamedTextColor.RED);
     }
 

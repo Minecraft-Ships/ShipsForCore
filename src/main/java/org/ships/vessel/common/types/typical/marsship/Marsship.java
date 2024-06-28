@@ -1,18 +1,14 @@
 package org.ships.vessel.common.types.typical.marsship;
 
-import org.array.utils.ArrayUtils;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
 import org.core.world.position.block.BlockType;
-import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
-import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.NoLicencePresent;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.requirement.MaxSizeRequirement;
@@ -24,6 +20,7 @@ import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Marsship extends AbstractShipsVessel implements AirType, VesselRequirement {
 
@@ -89,6 +86,12 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
         return Collections.unmodifiableCollection(this.requirements);
     }
 
+    @Override
+    public void setRequirement(@NotNull Requirement<?> updated) {
+        this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
+        this.requirements.add(updated);
+    }
+
     public boolean isSpecialBlocksSpecified() {
         return this.getSpecialBlocksRequirement().isBlocksSpecified();
     }
@@ -127,8 +130,11 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
     @Override
     public @NotNull Map<String, String> getExtraInformation() {
         Map<String, String> map = new HashMap<>();
-        map.put("Special Block",
-                ArrayUtils.toString(", ", Parser.STRING_TO_BLOCK_TYPE::unparse, this.getSpecialBlocks()));
+        map.put("Special Block", this
+                .getSpecialBlocks()
+                .stream()
+                .map(Parser.STRING_TO_BLOCK_TYPE::unparse)
+                .collect(Collectors.joining(", ")));
         map.put("Required Percent", this.getSpecialBlocksPercent() + "");
         return map;
     }
@@ -152,12 +158,6 @@ public class Marsship extends AbstractShipsVessel implements AirType, VesselRequ
                 file.parseCollection(this.configSpecialBlockType, new HashSet<>(), null));
         this.setRequirement(requirements);
         return this;
-    }
-
-    @Override
-    public void setRequirement(@NotNull Requirement<?> updated) {
-        this.getRequirement(updated.getClass()).ifPresent(this.requirements::remove);
-        this.requirements.add(updated);
     }
 
 }

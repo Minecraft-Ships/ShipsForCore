@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collection<BlockPosition>>> {
 
     private static final MappedAdapter<Position<?>, BlockType> BLOCK_TYPE_NAME = new MappedAdapter<>(BlockType.class,
-                                                                                                     Message.BLOCK_TYPE_NAME,
+                                                                                                     MessageAdapters.BLOCK_TYPE_NAME,
                                                                                                      Position::getBlockType);
     private static final MappedAdapter<Position<?>, BlockType> BLOCK_TYPE_ID = new MappedAdapter<>(BlockType.class,
-                                                                                                   Message.BLOCK_TYPE_ID,
+                                                                                                   MessageAdapters.BLOCK_TYPE_ID,
                                                                                                    Position::getBlockType);
 
     @Override
@@ -35,7 +35,7 @@ public class ErrorBlockInWayMessage implements Message<Map.Entry<Vessel, Collect
     @Override
     public Component getDefaultMessage() {
         return Component.text(
-                Message.VESSEL_ID.adapterTextFormat() + " cannot move due to " + Message.BLOCK_NAMES.adapterTextFormat()
+                MessageAdapters.VESSEL_ID.adapterTextFormat() + " cannot move due to " + MessageAdapters.BLOCK_NAMES.adapterTextFormat()
                         + " in way");
     }
 

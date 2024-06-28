@@ -25,7 +25,9 @@ public class InfoSizeMessage implements Message<Vessel> {
         return Component
                 .text("Current Size: ")
                 .color(NamedTextColor.AQUA)
-                .append(Component.text("%" + Message.STRUCTURE_SIZE.adapterText() + "%").color(NamedTextColor.GOLD));
+                .append(Component
+                                .text("%" + MessageAdapters.STRUCTURE_SIZE.adapterText() + "%")
+                                .color(NamedTextColor.GOLD));
     }
 
     @Override

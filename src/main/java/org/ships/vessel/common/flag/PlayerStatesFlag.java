@@ -13,6 +13,14 @@ import java.util.regex.Pattern;
 
 public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vector3<Double>>> {
 
+    public static class Builder extends VesselFlag.Builder<Map<UUID, Vector3<Double>>, PlayerStatesFlag> {
+
+        @Override
+        protected PlayerStatesFlag buildEmpty() {
+            return new PlayerStatesFlag();
+        }
+    }
+
     private Map<UUID, Vector3<Double>> playerStates = new HashMap<>();
 
     @Override
@@ -25,6 +33,7 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
         return "Player States";
     }
 
+    @SuppressWarnings("OptionalContainsCollection")
     @Override
     public Optional<Map<UUID, Vector3<Double>>> getValue() {
         return Optional.of(this.playerStates);
@@ -39,6 +48,7 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
     public StringParser<Map<UUID, Vector3<Double>>> getParser() {
         return new StringParser<>() {
 
+            @SuppressWarnings("OptionalContainsCollection")
             @Override
             public Optional<Map<UUID, Vector3<Double>>> parse(String original) {
                 Map<UUID, Vector3<Double>> map = new HashMap<>();
@@ -94,7 +104,9 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
 
     @Override
     public boolean isDeserializable(String idWithValue) {
-        Optional<Map<UUID, Vector3<Double>>> opMap = this.getParser().parse(idWithValue);
+        @SuppressWarnings("OptionalContainsCollection") Optional<Map<UUID, Vector3<Double>>> opMap = this
+                .getParser()
+                .parse(idWithValue);
         return opMap.filter(uuidVector3Map -> !uuidVector3Map.isEmpty()).isPresent();
     }
 
@@ -103,13 +115,5 @@ public class PlayerStatesFlag implements VesselFlag.Serializable<Map<UUID, Vecto
         PlayerStatesFlag flag = new PlayerStatesFlag();
         flag.setValue(new HashMap<>(this.playerStates));
         return flag;
-    }
-
-    public static class Builder extends VesselFlag.Builder<Map<UUID, Vector3<Double>>, PlayerStatesFlag> {
-
-        @Override
-        protected PlayerStatesFlag buildEmpty() {
-            return new PlayerStatesFlag();
-        }
     }
 }

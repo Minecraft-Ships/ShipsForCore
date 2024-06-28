@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 public class AltitudeSign implements ShipsSign {
 
@@ -53,7 +54,7 @@ public class AltitudeSign implements ShipsSign {
 
     @Override
     public boolean isSign(List<? extends Component> lines) {
-        return lines.size() >= 1 && ComponentUtils
+        return !lines.isEmpty() && ComponentUtils
                 .toPlain(lines.get(0))
                 .equalsIgnoreCase(ComponentUtils.toPlain(SIGN.get(0)));
     }
@@ -96,7 +97,7 @@ public class AltitudeSign implements ShipsSign {
                 player.sendMessage(Component.text("could not find the licence sign").color(NamedTextColor.RED));
                 entry
                         .getKey()
-                        .getSyncedPositionsRelativeToWorld()
+                        .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
                         .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                 TranslateCore
                         .getScheduleManager()
@@ -106,7 +107,7 @@ public class AltitudeSign implements ShipsSign {
                         .setDelayUnit(TimeUnit.SECONDS)
                         .setRunner((sch) -> entry
                                 .getKey()
-                                .getSyncedPositionsRelativeToWorld()
+                                .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
                                 .forEach(bp -> bp.resetBlock(player)))
                         .buildDelayed(ShipsPlugin.getPlugin())
                         .run();
@@ -169,7 +170,7 @@ public class AltitudeSign implements ShipsSign {
         ShipsPlugin.getPlugin().getLockedSignManager().lock(position);
 
         VesselBlockFinder.findOvertime(position, (currentStructure, block) -> {
-            int foundBlocks = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
+            int foundBlocks = currentStructure.size() + 1;
             int newTotal = Math.max(blockLimit, foundBlocks);
             if (finalBar != null) {
                 finalBar.name(Component.text(foundBlocks + "/" + newTotal));
@@ -184,7 +185,10 @@ public class AltitudeSign implements ShipsSign {
                                                entry.getValue().get());
                 return;
             }
-            Collection<? extends SyncBlockPosition> foundStructure = entry.getKey().getSyncedPositionsRelativeToWorld();
+            Collection<? extends SyncBlockPosition> foundStructure = entry
+                    .getKey()
+                    .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
+                    .collect(Collectors.toList());
             foundStructure.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .getScheduleManager()

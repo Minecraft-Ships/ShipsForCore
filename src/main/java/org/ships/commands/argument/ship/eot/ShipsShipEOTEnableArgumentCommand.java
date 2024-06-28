@@ -11,11 +11,10 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
 import org.core.world.position.block.entity.LiveTileEntity;
-import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.movement.autopilot.scheduler.EOTExecutor;
 import org.ships.permissions.Permissions;
-import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.EOTSign;
 import org.ships.vessel.sign.ShipsSigns;
@@ -24,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
 
@@ -69,7 +69,10 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
             });
             return true;
         }
-        Collection<SyncBlockPosition> eotSigns = vessel.getStructure().getAll(signFunctions);
+        Collection<LiveSignTileEntity> eotSigns = vessel
+                .getStructure()
+                .getRelativeToWorld(signFunctions)
+                .collect(Collectors.toList());
         if (eotSigns.size() == 1) {
             if (!(source instanceof LivePlayer)) {
                 (source).sendMessage(Component.text("Can only enable eot as a player"));
@@ -77,7 +80,7 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
                 return false;
             }
             LivePlayer player = (LivePlayer) source;
-            LiveTileEntity lste = eotSigns.stream().findAny().get().getTileEntity().get();
+            LiveTileEntity lste = eotSigns.stream().findAny().get();
             signFunctions.onSecondClick(player, lste.getPosition());
             return true;
         }

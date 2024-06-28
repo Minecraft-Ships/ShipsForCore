@@ -6,6 +6,7 @@ import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.config.messages.messages.error.data.RequirementPercentMessageData;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
@@ -99,13 +100,13 @@ public class SpecialBlocksRequirement implements Requirement<SpecialBlocksRequir
                 .filter(block -> specialBlocks.contains(block.getType()))
                 .count();
         if (blocksFound == 0) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH,
+            throw new MoveException(context, Messages.ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH,
                                     new RequirementPercentMessageData(vessel, 0, 0));
         }
 
         double totalPercent = (blocksFound * 100.0) / context.getMovingStructure().size();
         if (totalPercent < percentageRequired) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH,
+            throw new MoveException(context, Messages.ERROR_SPECIAL_BLOCK_PERCENT_NOT_ENOUGH,
                                     new RequirementPercentMessageData(vessel, totalPercent, (int) blocksFound));
         }
     }

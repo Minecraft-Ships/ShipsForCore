@@ -42,7 +42,7 @@ public class PlaneType extends AbstractShipType<Plane> implements FuelledShipTyp
 
     public PlaneType(String name, File file) {
         this(ShipsPlugin.getPlugin(), name,
-             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+             TranslateCore.getConfigManager().read(file, TranslateCore.getPlatform().getConfigFormat()),
              BlockTypes.AIR);
     }
 

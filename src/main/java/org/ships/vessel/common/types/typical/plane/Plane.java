@@ -147,7 +147,8 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return false;
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for (SyncBlockPosition loc : this.getStructure().getSyncedPositionsRelativeToWorld()) {
+        for (SyncBlockPosition loc : this.getStructure().getSyncPositionsRelativeToPosition(this.getPosition()).collect(
+                Collectors.toList())) {
             BlockSnapshot<SyncBlockPosition> snapshot = loc.getBlockDetails();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = snapshot.get(KeyedData.TILED_ENTITY);
             if (opTiled.isPresent()) {

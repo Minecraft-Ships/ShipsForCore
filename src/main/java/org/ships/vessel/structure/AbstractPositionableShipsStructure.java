@@ -9,16 +9,21 @@ import org.core.world.WorldExtent;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockTypes;
+import org.core.world.position.block.entity.LiveTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.plugin.ShipsPlugin;
+import org.ships.vessel.sign.ShipsSign;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AbstractPositionableShipsStructure implements PositionableShipsStructure {
 
@@ -27,6 +32,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     private final Collection<Vector3<Integer>> outsideEast = new LinkedTransferQueue<>();
     private final Collection<Vector3<Integer>> outsideSouth = new LinkedTransferQueue<>();
     private final Collection<Vector3<Integer>> outsideWest = new LinkedTransferQueue<>();
+    private final Collection<Vector3<Integer>> tileEntityVectors = new LinkedTransferQueue<>();
 
     private SyncBlockPosition position;
     private Bounds<Integer> cachedBounds;
@@ -35,6 +41,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     public AbstractPositionableShipsStructure(SyncBlockPosition position) {
         this.position = position;
     }
+
 
     public boolean isEmpty() {
         if (!this.vectors.isEmpty()) {
@@ -60,6 +67,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     @Override
     public PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos) {
         this.position = pos;
+        this.cachedBounds = null;
         return this;
     }
 
@@ -171,6 +179,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         return new Bounds<>(Vector3.valueOf(minX, minY, minZ), Vector3.valueOf(maxX, maxY, maxZ));
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public Collection<Vector3<Integer>> getOriginalRelativeVectorsToWorld() {
         return this
@@ -180,9 +189,16 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
                 .collect(Collectors.toList());
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public Collection<Vector3<Integer>> getOriginalRelativeVectorsToCenter() {
         return this.vectors;
+    }
+
+    @Override
+    public Stream<Vector3<Integer>> getVectorsRelativeTo(@NotNull Vector3<Integer> vector) {
+        Stream<Vector3<Integer>> stream = this.vectors.stream().map(vector::plus);
+        return Stream.concat(Stream.of(vector), stream);
     }
 
     @Override
@@ -281,12 +297,15 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
             this.outsideWest.addAll(abstractStructure.outsideWest);
             return;
         }
-        structure.getOriginalRelativeVectorsToWorld().parallelStream().forEach(this::addPositionRelativeToWorld);
+        structure.getVectorsRelativeToWorld().parallel().forEach(this::addPositionRelativeToWorld);
     }
 
     @Override
     public boolean matchRelativeToCenter(PositionableShipsStructure structure) {
-        return this.getRelativePositionsToCenter().equals(structure.getRelativePositionsToCenter());
+        if (!(structure instanceof AbstractPositionableShipsStructure)) {
+            throw new IllegalArgumentException("Structure must be a AbstractPositionableShipsStructure");
+        }
+        return this.vectors.equals(((AbstractPositionableShipsStructure) structure).vectors);
     }
 
     @Override
@@ -303,9 +322,65 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         return this;
     }
 
-    private void addPositionRelativeToWorld(@NotNull Vector3<Integer> position) {
+    @Override
+    public boolean addPositionRelativeToWorld(@NotNull BlockPosition position) {
+        if (position instanceof SyncBlockPosition) {
+            SyncPosition<Integer> syncedPosition = (SyncPosition<Integer>) position;
+            Optional<LiveTileEntity> opTileEntityData = syncedPosition.getTileEntity();
+            if (opTileEntityData.isPresent()) {
+                Vector3<Integer> original = this.getPosition().getPosition();
+                Vector3<Integer> resultPosition = position.getPosition().minus(original);
+                this.tileEntityVectors.add(resultPosition);
+            }
+        }
+
+        return this.addPositionRelativeToWorld(position.getPosition());
+    }
+
+    @Override
+    public boolean removePositionRelativeToWorld(BlockPosition position) {
         Vector3<Integer> original = this.getPosition().getPosition();
-        this.addPositionRelativeToCenter(position.minus(original));
+        Vector3<Integer> resultPosition = position.getPosition().minus(original);
+        this.tileEntityVectors.remove(resultPosition);
+        return this.removePositionRelativeToCenter(resultPosition);
+    }
+
+    @Override
+    public int size() {
+        return this.vectors.size();
+    }
+
+    @Override
+    public <L extends LiveTileEntity> Stream<L> getRelativeToWorld(@NotNull Class<L> class1) {
+        Stream<L> cachedTileEntities = this.tileEntityVectors
+                .stream()
+                .map(vector -> this.position.getRelative(vector).getTileEntity())
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(class1::isInstance)
+                .map(lte -> (L) lte);
+
+        Stream<L> allTileEntities = this
+                .getSyncPositionsRelativeToPosition(this.position)
+                .map(SyncPosition::getTileEntity)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .peek(lte -> this.tileEntityVectors.add(
+                        lte.getPosition().getPosition().minus(this.position.getPosition())))
+                .filter(class1::isInstance)
+                .map(lte -> (L) lte);
+        return Stream.concat(cachedTileEntities, allTileEntities).distinct();
+
+    }
+
+    @Override
+    public Stream<LiveSignTileEntity> getRelativeToWorld(@NotNull ShipsSign sign) {
+        return this.getRelativeToWorld(LiveSignTileEntity.class).filter(sign::isSign);
+    }
+
+    private boolean addPositionRelativeToWorld(@NotNull Vector3<Integer> position) {
+        Vector3<Integer> original = this.getPosition().getPosition();
+        return this.addPositionRelativeToCenter(position.minus(original));
     }
 
     private static Optional<BlockPosition> getNextInLine(Position<Integer> pos,

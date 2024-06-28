@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.LinkedTransferQueue;
 
-public class ShipsSigns {
+public final class ShipsSigns {
 
     private static final @NotNull Collection<ShipsSign> registered = new LinkedTransferQueue<>();
 
@@ -16,6 +16,10 @@ public class ShipsSigns {
     public static final LicenceSign LICENCE = register(new LicenceSign());
     public static final WheelSign WHEEL = register(new WheelSign());
     public static final MoveSign MOVE = register(new MoveSign());
+
+    private ShipsSigns() {
+        throw new RuntimeException("Do not create");
+    }
 
 
     private static <T extends ShipsSign> T register(@NotNull T shipType) {

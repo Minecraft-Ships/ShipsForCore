@@ -23,9 +23,11 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
     @Override
     public Component getDefaultMessage() {
         return Component
-                .text("%" + Message.VESSEL_INFO_KEY.adapterText() + "%: ")
+                .text("%" + MessageAdapters.VESSEL_INFO_KEY.adapterText() + "%: ")
                 .color(NamedTextColor.AQUA)
-                .append(Component.text("%" + Message.VESSEL_INFO_VALUE.adapterText() + "%").color(NamedTextColor.GOLD));
+                .append(Component
+                                .text("%" + MessageAdapters.VESSEL_INFO_VALUE.adapterText() + "%")
+                                .color(NamedTextColor.GOLD));
     }
 
     @Override
@@ -35,7 +37,9 @@ public class InfoVesselInfoMessage implements Message<Map.Entry<String, String>>
 
     @Override
     public Component processMessage(@NotNull Component text, Map.Entry<String, String> obj) {
-        List<MessageAdapter<Map.Entry<String, String>>> infoAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL_INFO).collect(Collectors.toList());
+        List<MessageAdapter<Map.Entry<String, String>>> infoAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL_INFO)
+                .collect(Collectors.toList());
         for (MessageAdapter<Map.Entry<String, String>> adapter : infoAdapters) {
             text = adapter.processMessage(obj, text);
         }

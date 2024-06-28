@@ -9,7 +9,7 @@ import org.core.utils.BarUtils;
 import org.core.utils.time.TimeRange;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.movement.instruction.details.MovementDetailsBuilder;
@@ -70,20 +70,20 @@ public class FallExecutor implements Consumer<Scheduler> {
                         builder.setPostMovementEvents(vessel -> vessel.set(new CooldownFlag(
                                 new TimeRange(config.getFallingDelayUnit().toTicks(config.getFallingDelay())))));
                         BiConsumer<MovementContext, ? super Throwable> exception = (context, exc) -> {
-                            context.getAdventureBossBar().ifPresent(bar -> {
-                                BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar));
-                            });
-                            v.getEntities().forEach(e -> e.setGravity(true));
+                            context
+                                    .getAdventureBossBar()
+                                    .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar)));
+                            v.getLiveEntities(t -> true).forEach(e -> e.setGravity(true));
                             if (!(exc instanceof MoveException)) {
                                 return;
                             }
-                            MoveException e = (MoveException)exc;
+                            MoveException e = (MoveException) exc;
 
                             context
                                     .getAdventureBossBar()
                                     .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(user -> user.hideBossBar(bar)));
 
-                            if (!e.getDisplayMessage().equals(AdventureMessageConfig.ERROR_COLLIDE_DETECTED)) {
+                            if (!e.getDisplayMessage().equals(Messages.ERROR_COLLIDE_DETECTED)) {
                                 return;
                             }
                             if (v instanceof FileBasedVessel) {

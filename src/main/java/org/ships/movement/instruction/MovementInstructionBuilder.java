@@ -2,7 +2,6 @@ package org.ships.movement.instruction;
 
 import org.core.vector.type.Vector3;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.algorthum.movement.BasicMovement;
@@ -14,6 +13,7 @@ import org.ships.movement.instruction.actions.PostMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
+import java.util.Comparator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,7 +37,7 @@ public class MovementInstructionBuilder {
 
     public MovementInstructionBuilder setTeleportToMovementBlocks(PositionableShipsStructure structure,
                                                                   BlockPosition position) {
-        SyncBlockPosition syncedBlock = Position.toSync(position);
+        SyncBlockPosition syncedBlock = position.toSyncPosition();
         return this.setMovementBlocks(structure, block -> {
             Vector3<Integer> relative = block.getPosition().minus(structure.getPosition().getPosition());
             SyncBlockPosition newType = syncedBlock.getRelative(relative);
@@ -78,10 +78,10 @@ public class MovementInstructionBuilder {
     public MovementInstructionBuilder setMovementBlocks(PositionableShipsStructure structure,
                                                         Function<SyncBlockPosition, MovingBlock> function) {
         this.movingBlocks = structure
-                .getSyncedPositionsRelativeToWorld()
-                .stream()
+                .getSyncPositionsRelativeToPosition(structure.getPosition())
                 .map(function)
                 .collect(Collectors.toCollection(MovingBlockSet::new));
+
         return this;
     }
 

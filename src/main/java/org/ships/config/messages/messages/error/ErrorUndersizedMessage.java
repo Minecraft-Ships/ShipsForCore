@@ -7,7 +7,6 @@ import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.MessageAdapters;
 import org.ships.config.messages.adapter.category.AdapterCategories;
 import org.ships.config.messages.adapter.category.AdapterCategory;
-import org.ships.config.messages.adapter.config.ConfigAdapter;
 import org.ships.config.messages.adapter.specific.number.NumberAdapter;
 import org.ships.vessel.common.types.Vessel;
 
@@ -25,7 +24,7 @@ public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text(Message.VESSEL_ID.adapterTextFormat() + " is under the min size of "
+        return Component.text(MessageAdapters.VESSEL_ID.adapterTextFormat() + " is under the min size of "
                                       + UNDERSIZED_BY.adapterTextFormat());
     }
 
@@ -43,8 +42,9 @@ public class ErrorUndersizedMessage implements Message<Map.Entry<Vessel, Integer
 
     @Override
     public Component processMessage(@NotNull Component text, Map.Entry<Vessel, Integer> obj) {
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
-                Collectors.toList());
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL)
+                .collect(Collectors.toList());
         for (MessageAdapter<Vessel> adapter : vesselAdapters) {
             text = adapter.processMessage(obj.getKey(), text);
         }

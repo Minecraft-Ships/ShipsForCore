@@ -17,7 +17,6 @@ import org.ships.vessel.common.flag.EotFlag;
 import org.ships.vessel.common.flag.FlightPathFlag;
 import org.ships.vessel.common.flag.SuccessfulMoveFlag;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.sign.LicenceSign;
 import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -49,8 +48,7 @@ public class Result extends ArrayList<Result.Run> {
                     .getWhoClicked()
                     .flatMap(uuid -> TranslateCore
                             .getServer()
-                            .getOnlinePlayers()
-                            .parallelStream()
+                            .getLivePlayers()
                             .filter(p -> p.getUniqueId().equals(uuid))
                             .findAny())
                     .orElse(null);
@@ -61,7 +59,7 @@ public class Result extends ArrayList<Result.Run> {
                     .setDelayUnit(unit)
                     .setDisplayName("Repeating display name")
                     .setRunner(new EOTExecutor(v, player))
-                    .build(ShipsPlugin.getPlugin())
+                    .buildDelayed(ShipsPlugin.getPlugin())
                     .run();
         };
 
@@ -77,7 +75,7 @@ public class Result extends ArrayList<Result.Run> {
                     .setDelayUnit(TimeUnit.SECONDS)
                     .setDisplayName("Repeating autopilot")
                     .setRunner(new AutopilotExecutor(v))
-                    .build(ShipsPlugin.getPlugin())
+                    .buildDelayed(ShipsPlugin.getPlugin())
                     .run();
         };
 
@@ -101,7 +99,7 @@ public class Result extends ArrayList<Result.Run> {
             Vector3<Double> position2 = after.toExactPosition().getPosition();
             position = position2.plus(position);
             if (!entity.setPosition(position)) {
-                System.err.println("Teleport failed. Likely due to a plugin cancelling");
+                ShipsPlugin.getPlugin().getLogger().error("Teleport failed. Likely due to a plugin cancelling");
             }
             entity.setYaw(yaw);
             entity.setRoll(roll);

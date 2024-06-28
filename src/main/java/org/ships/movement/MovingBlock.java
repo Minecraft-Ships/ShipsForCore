@@ -35,7 +35,7 @@ public interface MovingBlock {
         }
         if (opLive.get() instanceof ContainerTileEntity) {
             ContainerTileEntity cte = (ContainerTileEntity) opLive.get();
-            cte.getInventory().getSlots().forEach(s -> s.setItem(null));
+            cte.getInventory().getItemSlots().forEach(s -> s.setItem(null));
         }
         return this;
     }

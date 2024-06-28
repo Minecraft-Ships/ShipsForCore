@@ -80,8 +80,7 @@ public class ShipsShipCheckArgumentCommand implements ArgumentCommand {
         VesselRequirement rVessel = (VesselRequirement) vessel;
         MovingBlockSet set = rVessel
                 .getStructure()
-                .getSyncedPositionsRelativeToWorld()
-                .stream()
+                .getSyncPositionsRelativeToPosition(rVessel.getPosition())
                 .map(block -> new SetMovingBlock(block, block))
                 .collect(Collectors.toCollection(MovingBlockSet::new));
 

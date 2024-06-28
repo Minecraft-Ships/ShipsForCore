@@ -170,14 +170,13 @@ public interface Message<R> {
     Collection<AdapterCategory<?>> getCategories();
 
     default Collection<MessageAdapter<?>> getAdapters() {
-        List<? extends MessageAdapter<?>> adapters = this
+        return this
                 .getCategories()
                 .parallelStream()
                 .flatMap(MessageAdapters::getAdaptersFor)
                 .distinct()
                 .map(adapter -> (MessageAdapter<?>) adapter)
-                .collect(Collectors.toList());
-        return new LinkedTransferQueue<>(adapters);
+                .collect(Collectors.toCollection(LinkedTransferQueue::new));
     }
 
 

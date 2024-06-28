@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MoveSign implements ShipsSign {
@@ -42,7 +43,7 @@ public class MoveSign implements ShipsSign {
 
     @Override
     public boolean isSign(List<? extends Component> lines) {
-        return lines.size() >= 1 && ComponentUtils
+        return !lines.isEmpty() && ComponentUtils
                 .toPlain(lines.get(0))
                 .equalsIgnoreCase(ComponentUtils.toPlain(this.getSignText().get(0)));
     }
@@ -89,7 +90,10 @@ public class MoveSign implements ShipsSign {
             }
             player.sendMessage(Component.text("Could not find [Ships] sign").color(NamedTextColor.RED));
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            Collection<SyncBlockPosition> positions = entry.getKey().getSyncedPositionsRelativeToWorld();
+            Collection<SyncBlockPosition> positions = entry
+                    .getKey()
+                    .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
+                    .collect(Collectors.toList());
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .getScheduleManager()
@@ -172,8 +176,7 @@ public class MoveSign implements ShipsSign {
             if (builder.getAdventureBossBar() != null) {
                 position
                         .getWorld()
-                        .getEntities()
-                        .stream()
+                        .getLiveEntities()
                         .filter(p -> p instanceof LivePlayer)
                         .map(p -> (LivePlayer) p)
                         .forEach(p -> p.hideBossBar(builder.getAdventureBossBar()));
@@ -190,8 +193,7 @@ public class MoveSign implements ShipsSign {
             if (builder.getAdventureBossBar() != null) {
                 position
                         .getWorld()
-                        .getEntities()
-                        .stream()
+                        .getLiveEntities()
                         .filter(p -> p instanceof LivePlayer)
                         .map(p -> (LivePlayer) p)
                         .forEach(p -> p.hideBossBar(builder.getAdventureBossBar()));

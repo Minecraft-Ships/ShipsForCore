@@ -6,9 +6,11 @@ import org.core.inventory.item.ItemTypes;
 import org.core.inventory.item.type.post.ItemTypes1V13;
 import org.core.permission.CorePermission;
 import org.core.platform.plugin.Plugin;
+import org.core.utils.Identifiable;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.sign.SignSide;
+import org.core.world.position.block.grouptype.BlockGroups;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.Permissions;
@@ -24,8 +26,10 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AirshipType extends AbstractShipType<Airship>
         implements CloneableShipType<Airship>, SpecialBlocksShipType<Airship>, FuelledShipType<Airship>,
@@ -50,7 +54,7 @@ public class AirshipType extends AbstractShipType<Airship>
 
     public AirshipType(String displayName, File file) {
         this(ShipsPlugin.getPlugin(), displayName,
-             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+             TranslateCore.getConfigManager().read(file, TranslateCore.getPlatform().getConfigFormat()),
              BlockTypes.AIR);
     }
 
@@ -105,7 +109,11 @@ public class AirshipType extends AbstractShipType<Airship>
     protected void createDefault(ConfigurationStream.@NotNull ConfigurationFile file) {
         this.file.set(BURNER_BLOCK, true);
         this.file.set(SPECIAL_BLOCK_PERCENT, 60.0f);
-        this.file.set(SPECIAL_BLOCK_TYPE, BlockGroups1V13.WOOL.getBlocks());
+        this.file.set(SPECIAL_BLOCK_TYPE, BlockGroups.WOOL
+                .get()
+                .getBlocks()
+                .sorted(Comparator.comparing(Identifiable::getId))
+                .collect(Collectors.toList()));
         this.file.set(FUEL_CONSUMPTION, 1);
         this.file.set(FUEL_SLOT, FuelSlot.BOTTOM);
         this.file.set(FUEL_TYPES, Set.of(ItemTypes.COAL.get(), ItemTypes1V13.CHARCOAL.get()));

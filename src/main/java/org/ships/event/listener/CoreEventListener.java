@@ -45,6 +45,7 @@ import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.event.vessel.create.VesselCreateEvent;
 import org.ships.exceptions.NoLicencePresent;
 import org.ships.exceptions.load.LoadVesselException;
@@ -232,7 +233,7 @@ public class CoreEventListener implements EventListener {
         ShipsSigns.signs().stream().filter(s -> s.isSign(lste)).forEach(s -> {
             if (ShipsPlugin.getPlugin().getLockedSignManager().isLocked(position)) {
                 LivePlayer player = event.getEntity();
-                Component text = AdventureMessageConfig.ERROR_SHIPS_SIGN_IS_MOVING.parseMessage();
+                Component text = Messages.ERROR_SHIPS_SIGN_IS_MOVING.parseMessage();
                 player.sendMessage(text);
                 return;
             }
@@ -297,7 +298,7 @@ public class CoreEventListener implements EventListener {
                     .filter(t -> typeText.equalsIgnoreCase(t.getDisplayName()))
                     .findAny();
             if (opType.isEmpty()) {
-                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_TYPE.processMessage(typeText));
+                event.getEntity().sendMessage(Messages.ERROR_INVALID_SHIP_TYPE.processMessage(typeText));
                 event.setCancelled(true);
                 return;
             }
@@ -305,8 +306,8 @@ public class CoreEventListener implements EventListener {
             if (!(event.getEntity().hasPermission(type.getMakePermission()) || event
                     .getEntity()
                     .hasPermission(Permissions.SHIP_REMOVE_OTHER))) {
-                Component text = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.processMessage(
-                        AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.parseMessage(
+                Component text = Messages.ERROR_PERMISSION_MISS_MATCH.processMessage(
+                        Messages.ERROR_PERMISSION_MISS_MATCH.parseMessage(
                                 ShipsPlugin.getPlugin().getAdventureMessageConfig()),
                         new AbstractMap.SimpleImmutableEntry<>(event.getEntity(),
                                                                type.getMakePermission().getPermissionValue()));
@@ -322,7 +323,7 @@ public class CoreEventListener implements EventListener {
                 }
                 String name = ComponentUtils.toPlain(opName.get());
                 IdVesselFinder.load("ships:" + type.getName().toLowerCase() + "." + name.toLowerCase());
-                event.getEntity().sendMessage(AdventureMessageConfig.ERROR_INVALID_SHIP_NAME.processMessage(name));
+                event.getEntity().sendMessage(Messages.ERROR_INVALID_SHIP_NAME.processMessage(name));
                 event.setCancelled(true);
                 return;
             } catch (LoadVesselException ignored) {
@@ -332,9 +333,7 @@ public class CoreEventListener implements EventListener {
                 for (Direction direction : FourFacingDirection.getFourFacingDirections()) {
                     SyncBlockPosition position = event.getPosition().getRelative(direction);
                     Vessel vessel = VesselBlockFinder.findCached(position);
-                    event
-                            .getEntity()
-                            .sendMessage(AdventureMessageConfig.ERROR_CANNOT_CREATE_ONTOP.processMessage(vessel));
+                    event.getEntity().sendMessage(Messages.ERROR_CANNOT_CREATE_ONTOP.processMessage(vessel));
                     event.setCancelled(true);
                     return;
                 }
@@ -358,9 +357,8 @@ public class CoreEventListener implements EventListener {
                                 if ((finalBar.progress() * 100) > trackSize) {
                                     return;
                                 }
-                                Component text = AdventureMessageConfig.BAR_BLOCK_FINDER_ON_FIND.processMessage(
-                                        currentStructure);
-                                int blockAmount = (currentStructure.getOriginalRelativePositionsToCenter().size() + 1);
+                                Component text = Messages.BAR_BLOCK_FINDER_ON_FIND.processMessage(currentStructure);
+                                int blockAmount = (currentStructure.size() + 1);
                                 float progress = (trackSize / (float) Math.max(trackSize, blockAmount));
                                 finalBar.name(text);
                                 finalBar.progress(progress);

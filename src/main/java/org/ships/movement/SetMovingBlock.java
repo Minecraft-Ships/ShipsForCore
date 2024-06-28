@@ -27,14 +27,14 @@ public class SetMovingBlock implements MovingBlock {
     }
 
     @Override
-    public SyncBlockPosition getAfterPosition() {
-        return this.after;
-    }
-
-    @Override
     public MovingBlock setBeforePosition(SyncBlockPosition position) {
         this.before = position;
         return this;
+    }
+
+    @Override
+    public SyncBlockPosition getAfterPosition() {
+        return this.after;
     }
 
     @Override
@@ -57,12 +57,12 @@ public class SetMovingBlock implements MovingBlock {
     @Override
     public BlockPriority getBlockPriority() {
         if ((this.detail.getType().equals(BlockTypes.AIR))) {
-            return BlockPriority.AIR;
+            return BlockPriorities.AIR;
         } else if (this.detail.get(KeyedData.ATTACHABLE).isPresent()) {
-            return BlockPriority.ATTACHED;
+            return BlockPriorities.ATTACHED;
         } else if (this.detail.getDirectionalData().isPresent()) {
-            return BlockPriority.DIRECTIONAL;
+            return BlockPriorities.DIRECTIONAL;
         }
-        return BlockPriority.NORMAL;
+        return BlockPriorities.NORMAL;
     }
 }

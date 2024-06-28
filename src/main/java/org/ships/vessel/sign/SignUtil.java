@@ -9,14 +9,14 @@ import org.core.entity.LiveEntity;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
 import org.core.utils.BarUtils;
+import org.core.vector.type.Vector3;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.Nullable;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.exceptions.load.LoadVesselException;
 import org.ships.exceptions.load.UnableToFindLicenceSign;
 import org.ships.exceptions.move.MoveException;
@@ -33,6 +33,8 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public interface SignUtil {
 
@@ -62,12 +64,12 @@ public interface SignUtil {
 
         @Override
         protected OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure,
-                                                                         BlockPosition block) {
+                                                                         Vector3<Integer> block) {
             var bossBar = this.context.getAdventureBossBar();
             if (bossBar == null) {
                 return OvertimeBlockFinderUpdate.BlockFindControl.USE;
             }
-            int foundBlocks = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
+            int foundBlocks = currentStructure.size() + 1;
             int trackLimit = Math.max(foundBlocks, this.trackLimit);
             float progress = foundBlocks / (float) trackLimit;
             progress = progress / 100;
@@ -83,26 +85,27 @@ public interface SignUtil {
             if (bar != null) {
                 BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar));
             }
-            if (!(e instanceof UnableToFindLicenceSign)) {
+            if (e instanceof UnableToFindLicenceSign) {
                 this.player.sendMessage(Component.text(e.getReason()).color(NamedTextColor.RED));
+                UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
+                this.showPlayer(() -> e1
+                        .getFoundStructure()
+                        .getSyncPositionsRelativeToPosition(e1.getFoundStructure().getPosition()));
+
                 return;
             }
-            UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
-            this.player.sendMessage(Component.text(e1.getReason()).color(NamedTextColor.RED));
-            e1
-                    .getFoundStructure()
-                    .getSyncedPositionsRelativeToWorld()
-                    .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
+            this.player.sendMessage(Component.text(e.getReason()).color(NamedTextColor.RED));
+        }
+
+        private void showPlayer(Supplier<Stream<SyncBlockPosition>> toShow) {
+            toShow.get().forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), this.player));
             TranslateCore
                     .getScheduleManager()
                     .schedule()
                     .setDelay(5)
                     .setDisplayName("bedrock reset")
                     .setDelayUnit(TimeUnit.SECONDS)
-                    .setRunner((sch) -> e1
-                            .getFoundStructure()
-                            .getSyncedPositionsRelativeToWorld()
-                            .forEach(bp -> bp.resetBlock(this.player)))
+                    .setRunner((sch) -> toShow.get().forEach(bp -> bp.resetBlock(this.player)))
                     .buildDelayed(ShipsPlugin.getPlugin())
                     .run();
         }
@@ -137,7 +140,7 @@ public interface SignUtil {
             return false;
         }
 
-        Component permissionMessage = AdventureMessageConfig.ERROR_PERMISSION_MISS_MATCH.processMessage(
+        Component permissionMessage = Messages.ERROR_PERMISSION_MISS_MATCH.processMessage(
                 Map.entry(player, stored.getType().getMoveOtherPermission().getPermissionValue()));
         player.sendMessage(permissionMessage);
         ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
@@ -165,7 +168,7 @@ public interface SignUtil {
             }
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             if (exc instanceof MoveException) {
-                MoveException e = (MoveException)exc;
+                MoveException e = (MoveException) exc;
                 player.sendMessage(e.getErrorMessage());
             }
             context
@@ -200,9 +203,8 @@ public interface SignUtil {
                     .filter(vessel -> vessel.getStructure().getBounds().contains(sign.getPosition()))
                     .filter(vessel -> vessel
                             .getStructure()
-                            .getAsyncedPositionsRelativeToWorld()
-                            .parallelStream()
-                            .anyMatch(pos -> pos.getPosition().equals(sign.getPosition())))
+                            .getVectorsRelativeToWorld()
+                            .anyMatch(pos -> pos.equals(sign.getPosition())))
                     .findAny();
             if (opVessel.isPresent()) {
                 new OnOvertimeAutoUpdate(sign, builder, player, movement,

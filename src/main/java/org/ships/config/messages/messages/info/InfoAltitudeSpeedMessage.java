@@ -25,7 +25,7 @@ public class InfoAltitudeSpeedMessage implements Message<Vessel> {
         return Component
                 .text("Max Altitude Speed: ")
                 .color(NamedTextColor.AQUA)
-                .append(Component.text("%" + Message.VESSEL_SPEED.adapterText() + "%").color(NamedTextColor.GOLD));
+                .append(Component.text("%" + MessageAdapters.VESSEL_SPEED.adapterText() + "%").color(NamedTextColor.GOLD));
     }
 
     @Override

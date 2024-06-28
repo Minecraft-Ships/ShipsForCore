@@ -25,7 +25,7 @@ public class InfoDefaultPermissionMessage implements Message<CrewPermission> {
         return Component
                 .text("Default Permission: ")
                 .color(NamedTextColor.AQUA)
-                .append(Component.text("%" + Message.CREW_ID.adapterText() + "%").color(NamedTextColor.GOLD));
+                .append(Component.text("%" + MessageAdapters.CREW_ID.adapterText() + "%").color(NamedTextColor.GOLD));
     }
 
     @Override

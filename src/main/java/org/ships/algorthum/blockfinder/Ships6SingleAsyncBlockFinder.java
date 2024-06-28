@@ -1,30 +1,33 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
-import org.core.config.ConfigurationNode;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.Bounds;
 import org.core.vector.type.Vector3;
+import org.core.world.chunk.AsyncChunk;
 import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
+import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.impl.BlockPosition;
-import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.config.node.DedicatedNode;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.io.File;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
@@ -56,6 +59,13 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
     public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
                                                                                     @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         CompletableFuture<PositionableShipsStructure> future = new CompletableFuture<>();
+        Vector3<Integer> originalChunkPos = position.getChunkPosition();
+        Map<AsyncChunk, Bounds<Integer>> asyncChunks = position
+                .getWorld()
+                .getChunkExtents()
+                .filter(chunk -> chunk.getChunkPosition().distanceSquared(originalChunkPos) <= 2)
+                .map(chunk -> chunk.createAsync())
+                .collect(Collectors.toMap(c -> c, c -> c.getBounds()));
         int limit = this.limit;
         TranslateCore
                 .getScheduleManager()
@@ -66,17 +76,20 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                 .setRunner((scheduler) -> {
                     PositionableShipsStructure structure = new AbstractPositionableShipsStructure(
                             position.toSyncPosition());
-                    LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> toProcess = new LinkedTransferQueue<>();
+                    LinkedTransferQueue<Map.Entry<Vector3<Integer>, Direction>> toProcess = new LinkedTransferQueue<>();
                     Direction[] directions = Direction.withYDirections(FourFacingDirection.getFourFacingDirections());
-                    toProcess.add(Map.entry(position.toAsyncPosition(), FourFacingDirection.NONE));
-                    while (!toProcess.isEmpty() && structure.getOriginalRelativePositionsToCenter().size() < limit
-                            && !ShipsPlugin.getPlugin().isShuttingDown()) {
-                        Collection<Vector3<Integer>> positions = structure.getOriginalRelativePositionsToCenter();
-                        LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedTransferQueue<>();
+                    toProcess.add(Map.entry(position.getPosition(), FourFacingDirection.NONE));
+                    while (!toProcess.isEmpty() && structure.size() < limit && !ShipsPlugin
+                            .getPlugin()
+                            .isShuttingDown()) {
+                        Collection<Vector3<Integer>> positions = structure
+                                .getVectorsRelativeToWorld()
+                                .collect(Collectors.toList());
+                        LinkedTransferQueue<Map.Entry<Vector3<Integer>, Direction>> next = new LinkedTransferQueue<>();
                         while (toProcess.hasWaitingConsumer()) {
                             continue;
                         }
-                        final Collection<Map.Entry<ASyncBlockPosition, Direction>> finalToProcess = toProcess;
+                        final Collection<Map.Entry<Vector3<Integer>, Direction>> finalToProcess = toProcess;
                         AtomicBoolean shouldKill = new AtomicBoolean();
                         toProcess.forEach(posEntry -> {
                             if (ShipsPlugin.getPlugin().isShuttingDown()) {
@@ -90,22 +103,27 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                                         if (shouldKill.get()) {
                                             return;
                                         }
-                                        ASyncBlockPosition block = posEntry.getKey().getRelative(direction);
-                                        Vector3<Integer> vector = block.getPosition().minus(position.getPosition());
-                                        BlockInstruction bi = this.list.getBlockInstruction(block.getBlockType());
+                                        Vector3<Integer> blockPosition = posEntry
+                                                .getKey()
+                                                .plus(direction.getAsVector());
+                                        BlockDetails blockDetails = asyncChunks
+                                                .entrySet()
+                                                .stream()
+                                                .filter(entry -> entry.getValue().containsWithoutMax(blockPosition))
+                                                .map(entry -> entry.getKey().getDetails(blockPosition))
+                                                .findFirst()
+                                                .orElseThrow(() -> new RuntimeException(
+                                                        "Cannot find " + blockPosition + " in loaded chunks"));
+                                        BlockInstruction bi = this.list.getBlockInstruction(blockDetails.getType());
                                         if (bi.getCollide() == CollideType.MATERIAL) {
-                                            if (positions.contains(vector) || finalToProcess
+                                            if (positions.contains(blockPosition) || finalToProcess
                                                     .stream()
-                                                    .anyMatch(entry -> entry.getKey().equals(block))) {
+                                                    .anyMatch(entry -> entry.getKey().equals(blockPosition))) {
                                                 return;
                                             }
-                                            if (next
-                                                    .stream()
-                                                    .noneMatch(b -> b
-                                                            .getKey()
-                                                            .getPosition()
-                                                            .equals(block.getPosition()))) {
-                                                next.add(new AbstractMap.SimpleImmutableEntry<>(block, direction));
+                                            if (next.stream().noneMatch(b -> b.getKey().equals(blockPosition))) {
+                                                next.add(new AbstractMap.SimpleImmutableEntry<>(blockPosition,
+                                                                                                direction));
                                             }
                                         }
                                     });
@@ -114,7 +132,10 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                 return;
                             }
-                            structure.addPositionRelativeToWorld(posEntry.getKey().toSyncPosition());
+
+                            Vector3<Integer> vector = posEntry.getKey().minus(structure.getPosition().getPosition());
+                            structure.addPositionRelativeToCenter(vector);
+
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 shouldKill.set(true);
                                 TranslateCore

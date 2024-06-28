@@ -2,7 +2,6 @@ package org.ships.commands.argument.blockinfo;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
@@ -94,15 +93,14 @@ public class ShipsBlockInfoArgumentCommand implements ArgumentCommand {
             viewer.sendMessage(Component.text(" |- Directional"));
         }
         viewer.sendMessage(Component.text("---[Priority]---"));
-        WorldExtent world = TranslateCore.getServer().getWorlds().iterator().next();
+        WorldExtent world = TranslateCore.getServer().getWorldExtents().findFirst().orElseThrow(() -> new RuntimeException("Minecraft server should always have a world loaded"));
         BlockPriority priority = new SetMovingBlock(world.getPosition(0, 0, 0), world.getPosition(0, 0, 0),
                                                     details).getBlockPriority();
         viewer.sendMessage(Component.text(" |- ID: " + priority.getId()));
         viewer.sendMessage(Component.text(" |- Value: " + priority.getPriorityNumber()));
         viewer.sendMessage(Component.text("---[Like]---"));
         String like = bt
-                .getLike()
-                .parallelStream()
+                .getAlike()
                 .limit(5)
                 .map(Identifiable::getName)
                 .collect(Collectors.joining("\n |- "));

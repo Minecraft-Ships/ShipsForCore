@@ -23,7 +23,7 @@ public class ErrorVesselStillLoadingMessage implements Message<Vessel> {
     @Override
     public Component getDefaultMessage() {
         return Component
-                .text(Message.VESSEL_NAME.adapterTextFormat()
+                .text(MessageAdapters.VESSEL_NAME.adapterTextFormat()
                               + " is loading. All movement controls are locked until it is loaded")
                 .color(NamedTextColor.RED);
     }

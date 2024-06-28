@@ -1,6 +1,6 @@
 package org.ships.vessel.common.loader;
 
-import org.core.world.position.block.entity.sign.SignTileEntity;
+import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.algorthum.blockfinder.OvertimeBlockFinderUpdate;
 import org.ships.exceptions.load.LoadVesselException;
@@ -53,27 +53,19 @@ public class ShipsUpdateBlockLoader {
 
     @Deprecated(forRemoval = true)
     public void loadOvertime(Consumer<? super Vessel> consumer, Consumer<? super LoadVesselException> ex) {
-        loadOvertime(ex).thenAccept(opVessel -> opVessel.ifPresent(consumer::accept));
+        this.loadOvertime(ex).thenAccept(opVessel -> opVessel.ifPresent(consumer::accept));
     }
 
     private Vessel load(PositionableShipsStructure blocks) throws LoadVesselException {
         LicenceSign ls = ShipsSigns.LICENCE;
-        Optional<SyncBlockPosition> opBlock = blocks.getAll(SignTileEntity.class).stream().filter(b -> {
-            SignTileEntity lste = (SignTileEntity) b
-                    .getTileEntity()
-                    .orElseThrow(() -> new IllegalStateException("Could not get tile entity"));
-            return ls.isSign(lste);
-        }).findAny();
+        Optional<LiveSignTileEntity> opBlock = blocks.getRelativeToWorld(ls).findAny();
         if (opBlock.isEmpty()) {
             throw new UnableToFindLicenceSign(blocks, "Failed to find licence sign");
         }
-        SyncBlockPosition block = opBlock.get();
-        Vessel vessel = ShipsSignVesselFinder.find((SignTileEntity) opBlock
-                .get()
-                .getTileEntity()
-                .orElseThrow(() -> new IllegalStateException("Could not get tile entity")));
-        PositionableShipsStructure apss = new AbstractPositionableShipsStructure(block);
-        blocks.getSyncedPositionsRelativeToWorld().forEach(apss::addPositionRelativeToWorld);
+        LiveSignTileEntity block = opBlock.get();
+        Vessel vessel = ShipsSignVesselFinder.find(opBlock.get());
+        PositionableShipsStructure apss = new AbstractPositionableShipsStructure(block.getPosition());
+        blocks.getSyncPositionsRelativeToPosition(blocks.getPosition()).forEach(apss::addPositionRelativeToWorld);
         vessel.setStructure(apss);
         return vessel;
     }

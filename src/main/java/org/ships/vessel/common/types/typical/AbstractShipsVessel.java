@@ -105,7 +105,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     private void init(ShipType<? extends AbstractShipsVessel> type) {
-        ConfigurationStream.ConfigurationFile configuration = TranslateCore.createConfigurationFile(this.file,
+        ConfigurationStream.ConfigurationFile configuration = TranslateCore.getConfigManager().read(this.file,
                                                                                                     TranslateCore
                                                                                                             .getPlatform()
                                                                                                             .getConfigFormat());
@@ -172,16 +172,14 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 .getConnectedBlocksOvertime(this.getPosition(), update)
                 .thenApplyAsync(updatedStructure -> {
                     Set<Vector3<Integer>> updatedBlocks = updatedStructure
-                            .getAsyncedPositionsRelativeToWorld()
-                            .parallelStream()
+                            .getSyncPositionsRelativeToPosition(updatedStructure.getPosition())
                             .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
                             .map(Position::getPosition)
                             .collect(Collectors.toSet());
 
                     PositionableShipsStructure currentStructure = this.getStructure();
                     boolean sameStructure = currentStructure
-                            .getAsyncedPositionsRelativeToWorld()
-                            .parallelStream()
+                            .getSyncPositionsRelativeToPosition(currentStructure.getPosition())
                             .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
                             .map(Position::getPosition)
                             .allMatch(updatedBlocks::contains);

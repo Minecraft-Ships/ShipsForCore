@@ -23,7 +23,7 @@ public interface ShipsSign extends Identifiable {
     boolean onSecondClick(@NotNull LivePlayer player, @NotNull SyncBlockPosition position);
 
     default boolean isSign(@NotNull SignTileEntity entity) {
-        return getSide(entity).isPresent();
+        return this.getSide(entity).isPresent();
     }
 
     default Optional<SignSide> getSide(SignTileEntity entity) {

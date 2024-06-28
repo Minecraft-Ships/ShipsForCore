@@ -6,10 +6,8 @@ import org.core.command.argument.context.CommandArgumentContext;
 import org.core.command.argument.context.CommandContext;
 import org.core.utils.Identifiable;
 import org.core.utils.lamda.tri.TriPredicate;
-import org.ships.plugin.ShipsPlugin;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -43,7 +41,7 @@ public class ShipIdentifiableArgument<T extends Identifiable> implements Command
     public CommandArgumentResult<T> parse(CommandContext context, CommandArgumentContext<T> argument)
             throws IOException {
         String arg = context.getCommand()[argument.getFirstArgument()];
-        Optional<T> opValue = all
+        Optional<T> opValue = this.all
                 .get()
                 .filter(i -> i.getId().equalsIgnoreCase(arg))
                 .filter(v -> this.predicate.apply(context, argument, v))

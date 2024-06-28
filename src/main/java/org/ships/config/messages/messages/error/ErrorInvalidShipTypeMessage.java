@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
 import org.ships.config.messages.adapter.MessageAdapter;
+import org.ships.config.messages.adapter.MessageAdapters;
 import org.ships.config.messages.adapter.category.AdapterCategory;
 
 import java.util.Collection;
@@ -18,7 +19,7 @@ public class ErrorInvalidShipTypeMessage implements Message<String> {
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text("Invalid Shiptype of '" + Message.INVALID_NAME.adapterTextFormat() + "'");
+        return Component.text("Invalid Shiptype of '" + MessageAdapters.INVALID_NAME.adapterTextFormat() + "'");
     }
 
     @Override
@@ -28,11 +29,11 @@ public class ErrorInvalidShipTypeMessage implements Message<String> {
 
     @Override
     public Collection<MessageAdapter<?>> getAdapters() {
-        return List.of(Message.INVALID_NAME);
+        return List.of(MessageAdapters.INVALID_NAME);
     }
 
     @Override
     public Component processMessage(@NotNull Component text, String obj) {
-        return Message.INVALID_NAME.processMessage(obj, text);
+        return MessageAdapters.INVALID_NAME.processMessage(obj, text);
     }
 }

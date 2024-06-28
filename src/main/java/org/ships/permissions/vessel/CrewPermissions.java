@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.LinkedTransferQueue;
 
-public class CrewPermissions {
+public final class CrewPermissions {
 
     private static final Collection<CrewPermission> registered = new LinkedTransferQueue<>();
 
@@ -20,6 +20,9 @@ public class CrewPermissions {
                                                                   .setCanMove(false)
                                                                   .setCommand(false)
                                                                   .setRemove(false));
+
+    private CrewPermissions() {
+    }
 
     public static CrewPermission register(CrewPermission permission) {
         registered.add(permission);

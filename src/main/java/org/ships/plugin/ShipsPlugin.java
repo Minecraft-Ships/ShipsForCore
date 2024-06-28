@@ -134,7 +134,7 @@ public class ShipsPlugin implements CorePlugin {
             File[] files = folderType.listFiles();
             if (files == null) {
                 if (!folderType.exists() && !folderType.mkdirs()) {
-                    System.err.println("Could not create folder at '" + folderType.getPath() + "'");
+                    this.logger.error("Could not create folder at '" + folderType.getPath() + "'");
                 }
                 continue;
             }
@@ -166,7 +166,7 @@ public class ShipsPlugin implements CorePlugin {
                 try {
                     this.registerVessel(c.convert(f));
                 } catch (IOException e) {
-                    System.err.println("Error converting vessel with " + c.getId() + " at: " + f.getPath());
+                    this.logger.error("Error converting vessel with " + c.getId() + " at: " + f.getPath());
                     e.printStackTrace();
                 }
             });

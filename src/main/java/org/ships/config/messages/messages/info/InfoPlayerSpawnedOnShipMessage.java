@@ -22,7 +22,7 @@ public class InfoPlayerSpawnedOnShipMessage implements Message<Vessel> {
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text("You have spawned on " + Message.VESSEL_NAME.adapterTextFormat());
+        return Component.text("You have spawned on " + MessageAdapters.VESSEL_NAME.adapterTextFormat());
     }
 
     @Override

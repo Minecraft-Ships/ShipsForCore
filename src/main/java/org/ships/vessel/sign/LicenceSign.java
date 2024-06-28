@@ -7,13 +7,14 @@ import org.core.TranslateCore;
 import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
+import org.core.utils.BarUtils;
 import org.core.utils.ComponentUtils;
+import org.core.vector.type.Vector3;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
 import org.core.world.position.block.entity.sign.SignTileEntity;
-import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
 
 public class LicenceSign implements ShipsSign {
 
-    private static class VesselStructureUpdate implements OvertimeBlockFinderUpdate {
+    private final static class VesselStructureUpdate implements OvertimeBlockFinderUpdate {
 
         private final @Nullable BossBar finalBar;
         private final int totalBlockCount;
@@ -54,9 +55,9 @@ public class LicenceSign implements ShipsSign {
 
         @Override
         public OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                                                                      @NotNull BlockPosition block) {
+                                                                      @NotNull Vector3<Integer> block) {
             if (this.finalBar != null) {
-                float blockCount = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
+                float blockCount = currentStructure.size() + 1;
                 this.finalBar.name(Component.text(blockCount + "/" + this.totalBlockCount));
                 try {
                     this.finalBar.progress(this.totalBlockCount / blockCount);
@@ -82,7 +83,7 @@ public class LicenceSign implements ShipsSign {
 
     @Override
     public boolean isSign(List<? extends Component> lines) {
-        return lines.size() >= 1 && ComponentUtils.toPlain(lines.get(0)).equalsIgnoreCase("[Ships]");
+        return !lines.isEmpty() && "[Ships]".equalsIgnoreCase(ComponentUtils.toPlain(lines.get(0)));
     }
 
     @Override
@@ -133,7 +134,8 @@ public class LicenceSign implements ShipsSign {
         } catch (UnableToFindLicenceSign e1) {
             Collection<? extends SyncBlockPosition> foundStructure = e1
                     .getFoundStructure()
-                    .getSyncedPositionsRelativeToWorld();
+                    .getSyncPositionsRelativeToPosition(e1.getFoundStructure().getPosition())
+                    .collect(Collectors.toList());
             foundStructure.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .getScheduleManager()
@@ -148,7 +150,7 @@ public class LicenceSign implements ShipsSign {
             Optional<LiveTileEntity> opTile = position.getTileEntity();
             Optional<SignSide> opSide = opTile
                     .filter(lte -> lte instanceof LiveSignTileEntity)
-                    .flatMap(lste -> getSide((SignTileEntity) lste));
+                    .flatMap(lste -> this.getSide((SignTileEntity) lste));
             if (opSide.isEmpty()) {
                 player.sendMessage(Component.text(e.getMessage()).color(NamedTextColor.RED));
                 return true;
@@ -157,7 +159,8 @@ public class LicenceSign implements ShipsSign {
 
             String type = side.getLineAt(1).map(ComponentUtils::toPlain).orElse("");
             String name = side.getLineAt(2).map(ComponentUtils::toPlain).orElse("");
-            Optional<ShipType<?>> opType = ShipTypes.shipTypes()
+            Optional<ShipType<?>> opType = ShipTypes
+                    .shipTypes()
                     .stream()
                     .filter(t -> t.getDisplayName().equalsIgnoreCase(type))
                     .findAny();
@@ -175,9 +178,9 @@ public class LicenceSign implements ShipsSign {
                         Component.text("Could not find the file associated with the ship").color(NamedTextColor.RED));
                 return false;
             }
-            ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file, TranslateCore
-                    .getPlatform()
-                    .getConfigFormat());
+            ConfigurationStream.ConfigurationFile config = TranslateCore
+                    .getConfigManager()
+                    .read(file, TranslateCore.getPlatform().getConfigFormat());
             config.set(ShipsFileLoader.META_LOCATION_X, position.getX());
             config.set(ShipsFileLoader.META_LOCATION_Y, position.getY());
             config.set(ShipsFileLoader.META_LOCATION_Z, position.getZ());
@@ -222,20 +225,12 @@ public class LicenceSign implements ShipsSign {
             }
             final BossBar finalBar = bar;
             s.updateStructure(new VesselStructureUpdate(totalCount, bar)).thenAccept(structure -> {
-                int originalSize = structure.getOriginalRelativePositionsToCenter().size();
+                int originalSize = structure.size();
                 s.save();
-                player.sendMessage(Component.text(
-                        "Vessel structure has updated by " + (structure.getOriginalRelativePositionsToCenter().size()
-                                - originalSize)));
+                player.sendMessage(
+                        Component.text("Vessel structure has updated by " + (structure.size() - originalSize)));
                 if (finalBar != null) {
-                    structure
-                            .getPosition()
-                            .getWorld()
-                            .getEntities()
-                            .stream()
-                            .filter(play -> play instanceof LivePlayer)
-                            .map(play -> (LivePlayer) play)
-                            .forEach(play -> play.hideBossBar(finalBar));
+                    BarUtils.getPlayers(finalBar).forEach(play -> play.hideBossBar(finalBar));
                 }
             });
         }

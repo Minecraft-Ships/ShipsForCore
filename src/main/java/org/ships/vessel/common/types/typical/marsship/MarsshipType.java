@@ -20,6 +20,7 @@ import org.ships.vessel.common.requirement.MinSizeRequirement;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.typical.AbstractShipType;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class MarsshipType extends AbstractShipType<Marsship>
 
     public MarsshipType(String name, File file) {
         this(ShipsPlugin.getPlugin(), name,
-             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR,
+             TranslateCore.getConfigManager().read(file, TranslateCore.getPlatform().getConfigFormat()), BlockTypes.AIR,
              BlockTypes.WATER);
     }
 
@@ -97,7 +98,7 @@ public class MarsshipType extends AbstractShipType<Marsship>
 
     @Override
     public MarsshipType getOriginType() {
-        return ShipType.MARSSHIP;
+        return ShipTypes.MARSSHIP;
     }
 
     @Override

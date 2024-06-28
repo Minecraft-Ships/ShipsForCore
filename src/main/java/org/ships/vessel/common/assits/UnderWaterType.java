@@ -9,6 +9,7 @@ import org.ships.vessel.structure.PositionableShipsStructure;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 public interface UnderWaterType extends WaterType {
 
@@ -17,7 +18,7 @@ public interface UnderWaterType extends WaterType {
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
         int height = pss.getYSize();
         Collection<Integer> values = new HashSet<>();
-        for (SyncBlockPosition position : pss.getSyncedPositionsRelativeToWorld()) {
+        for (SyncBlockPosition position : pss.getSyncPositionsRelativeToPosition(pss.getPosition()).collect(Collectors.toList())) {
             if (values.contains(position.getY())) {
                 continue;
             }

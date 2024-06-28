@@ -8,6 +8,7 @@ import org.core.config.parser.Parser;
 import org.core.schedule.unit.TimeUnit;
 import org.core.world.WorldExtent;
 import org.ships.algorthum.blockfinder.BasicBlockFinder;
+import org.ships.algorthum.blockfinder.BlockFinders;
 import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.Config;
 import org.ships.config.node.CollectionDedicatedNode;
@@ -135,7 +136,7 @@ public class ShipsConfig implements Config.KnownNodes {
     public ShipsConfig() {
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
                              "Configuration/Config." + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
-        this.file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat());
+        this.file = TranslateCore.getConfigManager().read(file, TranslateCore.getPlatform().getConfigFormat());
         boolean modified = false;
         if (!this.file.getFile().exists()) {
             this.recreateFile();
@@ -310,7 +311,7 @@ public class ShipsConfig implements Config.KnownNodes {
 
     public BasicBlockFinder getDefaultFinder() {
         return this.file
-                .parse(this.ADVANCED_BLOCKFINDER.getNode(), BasicBlockFinder.SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC)
+                .parse(this.ADVANCED_BLOCKFINDER.getNode(), BlockFinders.SHIPS_SIX_RELEASE_ONE_ASYNC_SINGLE_THREADED)
                 .init();
     }
 

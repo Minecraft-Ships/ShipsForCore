@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.common.types.typical.airship.Airship;
 import org.ships.vessel.converts.vessel.VesselConverter;
@@ -70,7 +71,7 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
         ShipsVessel vessel;
         switch (type) {
             case "Airship":
-                vessel = ShipType.AIRSHIP.createNewVessel(side, lste.getPosition());
+                vessel = ShipTypes.AIRSHIP.createNewVessel(side, lste.getPosition());
                 if (consumption != null) {
                     ((Airship) vessel).setFuelConsumption(consumption);
                 }

@@ -7,6 +7,7 @@ import org.core.world.position.block.BlockType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.config.messages.messages.error.data.NamedBlockMessageData;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
@@ -100,7 +101,7 @@ public class SpecialBlockRequirement implements Requirement<SpecialBlockRequirem
                 .map(moving -> moving.getStoredBlockData().getType().equals(requiredType))
                 .count();
         if (found < amount) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_FAILED_TO_FIND_NAMED_BLOCK,
+            throw new MoveException(context, Messages.ERROR_FAILED_TO_FIND_NAMED_BLOCK,
                                     new NamedBlockMessageData()
                                             .setVessel(vessel)
                                             .setType(requiredType)

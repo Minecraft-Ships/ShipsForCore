@@ -27,22 +27,25 @@ public interface BasicBlockFinder extends Algorithm {
     @Deprecated(forRemoval = true)
     Ships6SingleAsyncBlockFinder SHIPS_SIX_RELEASE_ONE_SINGLE_ASYNC = BlockFinders.SHIPS_SIX_RELEASE_ONE_ASYNC_SINGLE_THREADED;
 
-    @NotNull BasicBlockFinder init();
+    @NotNull
+    BasicBlockFinder init();
 
     CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
                                                                              @NotNull OvertimeBlockFinderUpdate runAfterFullSearch);
 
     default CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position) {
-        return getConnectedBlocksOvertime(position,
-                                          (currentStructure, block) -> OvertimeBlockFinderUpdate.BlockFindControl.USE);
+        return this.getConnectedBlocksOvertime(position,
+                                               (currentStructure, block) -> OvertimeBlockFinderUpdate.BlockFindControl.USE);
     }
 
     int getBlockLimit();
 
-    @NotNull BasicBlockFinder setBlockLimit(int limit);
+    @NotNull
+    BasicBlockFinder setBlockLimit(int limit);
 
     Optional<Vessel> getConnectedVessel();
 
-    @NotNull BasicBlockFinder setConnectedVessel(@Nullable Vessel vessel);
+    @NotNull
+    BasicBlockFinder setConnectedVessel(@Nullable Vessel vessel);
 
 }

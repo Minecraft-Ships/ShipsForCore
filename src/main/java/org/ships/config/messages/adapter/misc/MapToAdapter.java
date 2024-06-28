@@ -6,15 +6,14 @@ import org.ships.config.messages.adapter.MessageAdapter;
 import org.ships.config.messages.adapter.category.AdapterCategory;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MapToAdapter<O, T> implements MessageAdapter<O> {
 
-    private MessageAdapter<T> adapter;
-    private Function<O, T> to;
-    private Class<?> adapterType;
+    private final MessageAdapter<T> adapter;
+    private final Function<O, T> to;
+    private final Class<?> adapterType;
 
     public MapToAdapter(Class<?> type, MessageAdapter<T> adapter, Function<O, T> to) {
         this.to = to;
@@ -39,7 +38,11 @@ public class MapToAdapter<O, T> implements MessageAdapter<O> {
 
     @Override
     public Collection<AdapterCategory<O>> categories() {
-        return this.adapter.categories().parallelStream().map(t -> t.<O>map(this.adapterType)).collect(Collectors.toList());
+        return this.adapter
+                .categories()
+                .parallelStream()
+                .map(t -> t.<O>map(this.adapterType))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -85,7 +85,8 @@ public class CreateShipCommand implements ArgumentCommand {
 
     @Override
     public List<CommandArgument<?>> getArguments() {
-        return Arrays.asList(new ExactArgument("create"), X, Y, Z, WORLD, STRUCTURE, SHIP_TYPE, NAME);
+        return Arrays.asList(new ExactArgument("create"), this.X, this.Y, this.Z, this.WORLD, STRUCTURE, SHIP_TYPE,
+                             NAME);
     }
 
     @Override
@@ -100,10 +101,10 @@ public class CreateShipCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        Integer x = commandContext.getArgument(this, X);
-        Integer y = commandContext.getArgument(this, Y);
-        Integer z = commandContext.getArgument(this, Z);
-        WorldExtent world = commandContext.getArgument(this, WORLD);
+        Integer x = commandContext.getArgument(this, this.X);
+        Integer y = commandContext.getArgument(this, this.Y);
+        Integer z = commandContext.getArgument(this, this.Z);
+        WorldExtent world = commandContext.getArgument(this, this.WORLD);
         ShipType<?> shipType = commandContext.getArgument(this, SHIP_TYPE);
         Structure structure = commandContext.getArgument(this, STRUCTURE);
         String name = commandContext.getArgument(this, NAME);

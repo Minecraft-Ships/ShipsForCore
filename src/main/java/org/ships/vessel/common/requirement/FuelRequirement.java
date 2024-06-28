@@ -9,7 +9,7 @@ import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.config.messages.messages.error.data.FuelRequirementMessageData;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
@@ -99,16 +99,6 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
         return false;
     }
 
-    private Stream<FurnaceInventory> getInventories(MovementContext context) {
-        return context
-                .getMovingStructure()
-                .stream()
-                .map(movingBlock -> (movingBlock.getStoredBlockData()).get(KeyedData.TILED_ENTITY))
-                .filter(Optional::isPresent)
-                .filter(opTileEntity -> opTileEntity.get() instanceof FurnaceTileEntity)
-                .map(opTileEntity -> ((FurnaceTileEntity) opTileEntity.get()).getInventory());
-    }
-
     @Override
     public void onCheckRequirement(@NotNull MovementContext context, @NotNull Vessel vessel) throws MoveException {
         Collection<ItemType> fuelTypes = this.getFuelTypes();
@@ -126,12 +116,12 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
                 .map(opItem -> opItem.get().getQuantity())
                 .collect(Collectors.toCollection(TreeSet::new));
         if (fuelSlots.isEmpty()) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_NOT_ENOUGH_FUEL,
+            throw new MoveException(context, Messages.ERROR_NOT_ENOUGH_FUEL,
                                     new FuelRequirementMessageData(vessel, fuelTypes, 0));
         }
         int slot = fuelSlots.last();
         if (slot < toTakeAmount) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_NOT_ENOUGH_FUEL,
+            throw new MoveException(context, Messages.ERROR_NOT_ENOUGH_FUEL,
                                     new FuelRequirementMessageData(vessel, fuelTypes, fuelSlots.last()));
         }
     }
@@ -196,18 +186,6 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
         return new FuelRequirement(this.parent, this.slot, this.takeAmount, this.fuelTypes);
     }
 
-    public @NotNull FuelRequirement createCopyWithSlot(@Nullable FuelSlot slot) {
-        return new FuelRequirement(this.parent, slot, this.takeAmount, this.fuelTypes);
-    }
-
-    public @NotNull FuelRequirement createCopyWithConsumption(@Nullable Integer amount) {
-        return new FuelRequirement(this.parent, this.slot, amount, this.fuelTypes);
-    }
-
-    public @NotNull FuelRequirement createCopyWithFuel(Collection<ItemType> items) {
-        return new FuelRequirement(this.parent, this.slot, this.takeAmount, items);
-    }
-
     @Override
     public Optional<FuelRequirement> getParent() {
         return Optional.ofNullable(this.parent);
@@ -228,6 +206,28 @@ public class FuelRequirement implements Requirement<FuelRequirement> {
             return;
         }
         this.serializeInstance(stream);
+    }
+
+    private Stream<FurnaceInventory> getInventories(MovementContext context) {
+        return context
+                .getMovingStructure()
+                .stream()
+                .map(movingBlock -> (movingBlock.getStoredBlockData()).get(KeyedData.TILED_ENTITY))
+                .filter(Optional::isPresent)
+                .filter(opTileEntity -> opTileEntity.get() instanceof FurnaceTileEntity)
+                .map(opTileEntity -> ((FurnaceTileEntity) opTileEntity.get()).getInventory());
+    }
+
+    public @NotNull FuelRequirement createCopyWithSlot(@Nullable FuelSlot slot) {
+        return new FuelRequirement(this.parent, slot, this.takeAmount, this.fuelTypes);
+    }
+
+    public @NotNull FuelRequirement createCopyWithConsumption(@Nullable Integer amount) {
+        return new FuelRequirement(this.parent, this.slot, amount, this.fuelTypes);
+    }
+
+    public @NotNull FuelRequirement createCopyWithFuel(Collection<ItemType> items) {
+        return new FuelRequirement(this.parent, this.slot, this.takeAmount, items);
     }
 
     private void serializeInstance(@NotNull ConfigurationStream stream) {

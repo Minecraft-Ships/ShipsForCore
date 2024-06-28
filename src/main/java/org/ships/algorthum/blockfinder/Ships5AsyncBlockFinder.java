@@ -46,7 +46,7 @@ public class Ships5AsyncBlockFinder implements BasicBlockFinder {
             OvertimeBlockFinderUpdate.BlockFindControl blockFind = null;
             if (bi.getCollide() == CollideType.MATERIAL) {
                 if (event != null) {
-                    blockFind = event.onBlockFind(this.shipsStructure, block);
+                    blockFind = event.onBlockFind(this.shipsStructure, block.getPosition());
                     if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                         this.getNextBlock(event, block, directions);
                     }

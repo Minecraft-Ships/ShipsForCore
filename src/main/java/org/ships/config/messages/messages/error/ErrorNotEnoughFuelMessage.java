@@ -31,9 +31,9 @@ public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessage
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text(
-                "Not enough fuel, you need " + Message.FUEL_LEFT_REQUIREMENT.adapterTextFormat() + " more of either "
-                        + new CollectionAdapter<>(Message.ITEM_NAME).adapterTextFormat());
+        return Component.text("Not enough fuel, you need " + MessageAdapters.FUEL_LEFT_REQUIREMENT.adapterTextFormat()
+                                      + " more of either " + new CollectionAdapter<>(
+                MessageAdapters.ITEM_NAME).adapterTextFormat());
     }
 
     @Override
@@ -55,8 +55,9 @@ public class ErrorNotEnoughFuelMessage implements Message<FuelRequirementMessage
         int toTakeAmount = obj.getToTakeAmount();
         Collection<ItemType> fuelTypes = obj.getFuelTypes();
 
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
-                Collectors.toList());
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL)
+                .collect(Collectors.toList());
         List<CollectionAdapter<ItemType>> itemTypeAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.ITEM_TYPE)
                 .map(CollectionAdapter::new)

@@ -23,6 +23,7 @@ import org.ships.vessel.common.types.Vessel;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
 
@@ -55,21 +56,19 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
             return true;
         }
         LivePlayer player = (LivePlayer)source;
-        vessel
+        var blocks = vessel
                 .getStructure()
-                .getSyncedPositionsRelativeToWorld()
-                .forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
+                .getSyncPositionsRelativeToPosition(vessel.getPosition()).collect(Collectors.toList());
+                blocks.forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
         TranslateCore
                 .getScheduleManager()
                 .schedule()
                 .setDisplayName("ShipsTrack:" + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown"))
                 .setDelay(10)
                 .setDelayUnit(TimeUnit.SECONDS)
-                .setRunner((sch) -> vessel
-                        .getStructure()
-                        .getSyncedPositionsRelativeToWorld()
+                .setRunner((sch) -> blocks
                         .forEach(bp -> bp.resetBlock(player)))
-                .build(ShipsPlugin.getPlugin())
+                .buildDelayed(ShipsPlugin.getPlugin())
                 .run();
         return true;
     }

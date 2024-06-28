@@ -29,8 +29,8 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text("You have " + Message.PERCENT_FOUND.adapterTextFormat() + "% of one of "
-                                      + Message.BLOCK_NAMES.adapterTextFormat() + ". You require more");
+        return Component.text("You have " + MessageAdapters.PERCENT_FOUND.adapterTextFormat() + "% of one of "
+                                      + MessageAdapters.BLOCK_NAMES.adapterTextFormat() + ". You require more");
     }
 
     @Override
@@ -41,15 +41,16 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
     @Override
     public Collection<MessageAdapter<?>> getAdapters() {
         Collection<MessageAdapter<?>> collection = new HashSet<>(Message.super.getAdapters());
-        collection.add(Message.PERCENT_FOUND);
-        collection.add(Message.TOTAL_FOUND_BLOCKS);
+        collection.add(MessageAdapters.PERCENT_FOUND);
+        collection.add(MessageAdapters.TOTAL_FOUND_BLOCKS);
         return collection;
     }
 
     @Override
     public Component processMessage(@NotNull Component text, RequirementPercentMessageData obj) {
-        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters.getAdaptersFor(AdapterCategories.VESSEL).collect(
-                Collectors.toList());
+        List<MessageAdapter<Vessel>> vesselAdapters = MessageAdapters
+                .getAdaptersFor(AdapterCategories.VESSEL)
+                .collect(Collectors.toList());
         List<MessageAdapter<Collection<BlockType>>> blockGroupsAdapters = MessageAdapters
                 .getAdaptersFor(AdapterCategories.BLOCK_GROUP)
                 .collect(Collectors.toList());
@@ -59,7 +60,7 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
         }
 
         if (obj.getVessel() instanceof VesselRequirement) {
-            VesselRequirement shipVessel = (VesselRequirement)obj.getVessel();
+            VesselRequirement shipVessel = (VesselRequirement) obj.getVessel();
             Optional<SpecialBlocksRequirement> opRequirement = shipVessel.getRequirement(
                     SpecialBlocksRequirement.class);
             if (opRequirement.isPresent()) {
@@ -69,8 +70,8 @@ public class ErrorSpecialBlockPercentNotEnough implements Message<RequirementPer
             }
         }
 
-        text = Message.PERCENT_FOUND.processMessage(obj.getPercentageMet(), text);
-        text = Message.TOTAL_FOUND_BLOCKS.processMessage(obj.getBlocksMeetingRequirements(), text);
+        text = MessageAdapters.PERCENT_FOUND.processMessage(obj.getPercentageMet(), text);
+        text = MessageAdapters.TOTAL_FOUND_BLOCKS.processMessage(obj.getBlocksMeetingRequirements(), text);
 
         return text;
     }
