@@ -10,18 +10,15 @@ import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
 import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.KeyedData;
-import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
-import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.NoLicencePresent;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
@@ -147,8 +144,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return false;
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for (SyncBlockPosition loc : this.getStructure().getSyncPositionsRelativeToPosition(this.getPosition()).collect(
-                Collectors.toList())) {
+        for (SyncBlockPosition loc : this.getStructure().getPositionsRelativeToWorld().collect(Collectors.toList())) {
             BlockSnapshot<SyncBlockPosition> snapshot = loc.getBlockDetails();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = snapshot.get(KeyedData.TILED_ENTITY);
             if (opTiled.isPresent()) {

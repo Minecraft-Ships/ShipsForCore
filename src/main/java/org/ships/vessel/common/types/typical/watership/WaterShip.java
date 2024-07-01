@@ -174,7 +174,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         boolean inWater = false;
         for (SyncBlockPosition blockPosition : this
                 .getStructure()
-                .getSyncPositionsRelativeToPosition(this.getPosition())
+                .getPositionsRelativeToWorld()
                 .collect(Collectors.toList())) {
             if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))) {
                 specialBlockCount++;

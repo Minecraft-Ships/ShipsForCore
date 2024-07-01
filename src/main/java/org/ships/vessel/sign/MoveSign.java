@@ -92,7 +92,7 @@ public class MoveSign implements ShipsSign {
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             Collection<SyncBlockPosition> positions = entry
                     .getKey()
-                    .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
+                    .getPositionsRelativeToWorld()
                     .collect(Collectors.toList());
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore

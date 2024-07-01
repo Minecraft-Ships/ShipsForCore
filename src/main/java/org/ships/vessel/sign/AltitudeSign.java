@@ -97,7 +97,7 @@ public class AltitudeSign implements ShipsSign {
                 player.sendMessage(Component.text("could not find the licence sign").color(NamedTextColor.RED));
                 entry
                         .getKey()
-                        .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
+                        .getPositionsRelativeToWorld()
                         .forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
                 TranslateCore
                         .getScheduleManager()
@@ -107,7 +107,7 @@ public class AltitudeSign implements ShipsSign {
                         .setDelayUnit(TimeUnit.SECONDS)
                         .setRunner((sch) -> entry
                                 .getKey()
-                                .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
+                                .getPositionsRelativeToWorld()
                                 .forEach(bp -> bp.resetBlock(player)))
                         .buildDelayed(ShipsPlugin.getPlugin())
                         .run();
@@ -187,7 +187,7 @@ public class AltitudeSign implements ShipsSign {
             }
             Collection<? extends SyncBlockPosition> foundStructure = entry
                     .getKey()
-                    .getSyncPositionsRelativeToPosition(entry.getKey().getPosition())
+                    .getPositionsRelativeToWorld()
                     .collect(Collectors.toList());
             foundStructure.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore

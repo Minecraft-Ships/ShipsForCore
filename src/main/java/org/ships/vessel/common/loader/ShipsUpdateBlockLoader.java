@@ -43,12 +43,7 @@ public class ShipsUpdateBlockLoader {
                         return Optional.empty();
                     }
                 });
-        return opVesselFuture.thenCompose(opVessel -> {
-            if (opVessel.isPresent() && opVessel.get() instanceof WaterType) {
-                return opVessel.get().getStructure().fillAir().thenApply(structure -> opVessel);
-            }
-            return CompletableFuture.completedFuture(opVessel);
-        });
+        return opVesselFuture;
     }
 
     @Deprecated(forRemoval = true)
@@ -65,7 +60,7 @@ public class ShipsUpdateBlockLoader {
         LiveSignTileEntity block = opBlock.get();
         Vessel vessel = ShipsSignVesselFinder.find(opBlock.get());
         PositionableShipsStructure apss = new AbstractPositionableShipsStructure(block.getPosition());
-        blocks.getSyncPositionsRelativeToPosition(blocks.getPosition()).forEach(apss::addPositionRelativeToWorld);
+        blocks.getPositionsRelativeToWorld().forEach(apss::addPositionRelativeToWorld);
         vessel.setStructure(apss);
         return vessel;
     }

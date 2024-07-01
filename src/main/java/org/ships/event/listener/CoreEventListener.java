@@ -376,9 +376,6 @@ public class CoreEventListener implements EventListener {
                     ((TeleportToVessel) vessel).setTeleportPosition(bp);
                 }
                 vessel.setStructure(structure);
-                if (vessel instanceof WaterType) {
-                    return structure.fillAir().thenApply(str -> vessel);
-                }
                 return CompletableFuture.completedFuture(vessel);
             }).thenAccept(vessel -> {
                 if (vessel instanceof CrewStoredVessel) {

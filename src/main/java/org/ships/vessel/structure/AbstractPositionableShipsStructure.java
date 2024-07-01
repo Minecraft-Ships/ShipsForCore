@@ -1,9 +1,8 @@
 package org.ships.vessel.structure;
 
-import org.core.TranslateCore;
 import org.core.exceptions.DirectionNotSupported;
-import org.core.schedule.unit.TimeUnit;
 import org.core.utils.Bounds;
+import org.core.vector.RangeVectorSpliterator;
 import org.core.vector.type.Vector3;
 import org.core.world.WorldExtent;
 import org.core.world.direction.Direction;
@@ -16,14 +15,13 @@ import org.core.world.position.impl.Position;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.core.world.position.impl.sync.SyncPosition;
 import org.jetbrains.annotations.NotNull;
-import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class AbstractPositionableShipsStructure implements PositionableShipsStructure {
 
@@ -72,69 +70,42 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
-    public Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter(@NotNull FourFacingDirection direction) {
+    public Stream<Vector3<Integer>> getOutsideVectorsRelativeToLicence(@NotNull FourFacingDirection direction) {
         if (direction.equals(FourFacingDirection.EAST)) {
-            return Collections.unmodifiableCollection(this.outsideEast);
+            return this.outsideEast.stream();
         }
         if (direction.equals(FourFacingDirection.WEST)) {
-            return Collections.unmodifiableCollection(this.outsideWest);
+            return this.outsideWest.stream();
         }
         if (direction.equals(FourFacingDirection.NORTH)) {
-            return Collections.unmodifiableCollection(this.outsideNorth);
+            return this.outsideNorth.stream();
         }
         if (direction.equals(FourFacingDirection.SOUTH)) {
-            return Collections.unmodifiableCollection(this.outsideSouth);
+            return this.outsideSouth.stream();
         }
         throw new RuntimeException("Unknown direction of " + direction.getName());
     }
 
     @Override
-    public CompletableFuture<PositionableShipsStructure> fillAir() {
-        CompletableFuture<PositionableShipsStructure> future = new CompletableFuture<>();
-        Bounds<Integer> bounds = this.getBounds();
-        Vector3<Integer> max = bounds.getIntMax();
-        Vector3<Integer> min = bounds.getIntMin();
-        WorldExtent world = this.getPosition().getWorld();
-        TranslateCore
-                .getScheduleManager()
-                .schedule()
-                .setDisplayName("Air getter")
-                .setDelay(0)
-                .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                .setAsync(true)
-                .setRunner((scheduler -> {
-                    for (int x = min.getX(); x < max.getX(); x++) {
-                        for (int y = min.getY(); y < max.getY(); y++) {
-                            for (int z = min.getZ(); z < max.getZ(); z++) {
-                                BlockPosition position = world.getAsyncPosition(x, y, z);
-                                if (position.getBlockType().equals(BlockTypes.AIR)) {
-                                    this.addPositionRelativeToWorld(position);
-                                }
-                            }
-                        }
-                    }
-                    TranslateCore
-                            .getScheduleManager()
-                            .schedule()
-                            .setDisplayName("from air getter")
-                            .setDelay(0)
-                            .setDelayUnit(TimeUnit.MINECRAFT_TICKS)
-                            .setRunner((s) -> future.complete(this))
-                            .buildDelayed(ShipsPlugin.getPlugin())
-                            .run();
-                }))
-                .buildDelayed(ShipsPlugin.getPlugin())
-                .run();
-        return future;
+    public Stream<SyncBlockPosition> getAir() {
+        Spliterator<Vector3<Integer>> split = new RangeVectorSpliterator(this.getBounds());
+        WorldExtent world = this.position.getWorld();
+        return StreamSupport
+                .stream(split, false)
+                .map(pos -> (SyncBlockPosition) world.getPosition(pos))
+                .filter(pos -> pos.getBlockType().equals(BlockTypes.AIR));
     }
 
     @Override
-    public Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter() {
-        Collection<Vector3<Integer>> vectors = new HashSet<>(this.getOriginalRelativeVectorsToCenter());
-        if (vectors.stream().noneMatch(v -> v.equals(Vector3.valueOf(0, 0, 0)))) {
-            vectors.add(Vector3.valueOf(0, 0, 0));
-        }
-        return vectors;
+    public Stream<Vector3<Integer>> getOutsideVectorsRelativeToLicence() {
+        Stream<Vector3<Integer>> east = this.outsideEast.stream();
+        Stream<Vector3<Integer>> west = this.outsideWest.stream();
+        Stream<Vector3<Integer>> north = this.outsideNorth.stream();
+        Stream<Vector3<Integer>> south = this.outsideSouth.stream();
+        Stream<Vector3<Integer>> result = Stream.concat(east, west);
+        result = Stream.concat(north, result);
+        result = Stream.concat(south, result);
+        return result.distinct();
     }
 
     @Override
@@ -142,21 +113,19 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         if (this.cachedBounds != null) {
             return this.cachedBounds;
         }
-        Set<Vector3<Integer>> positions = this
-                .getOutsidePositionsRelativeToWorld()
-                .parallelStream()
-                .collect(Collectors.toSet());
-        if (positions.isEmpty()) {
+        Iterator<Vector3<Integer>> positions = this.getOutsideVectorsRelativeToWorld().iterator();
+        if (!positions.hasNext()) {
             throw new IllegalStateException("No structure found");
         }
-        Vector3<Integer> randomVector = positions.iterator().next();
+        Vector3<Integer> randomVector = positions.next();
         int minX = randomVector.getX();
         int minY = randomVector.getY();
         int minZ = randomVector.getZ();
         int maxX = minX;
         int maxY = minY;
         int maxZ = minZ;
-        for (Vector3<Integer> vector : positions) {
+        while (positions.hasNext()) {
+            Vector3<Integer> vector = positions.next();
             if (minX <= vector.getX()) {
                 minX = vector.getX();
             }
@@ -179,22 +148,6 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         return new Bounds<>(Vector3.valueOf(minX, minY, minZ), Vector3.valueOf(maxX, maxY, maxZ));
     }
 
-    @Deprecated(forRemoval = true)
-    @Override
-    public Collection<Vector3<Integer>> getOriginalRelativeVectorsToWorld() {
-        return this
-                .getOriginalRelativeVectorsToCenter()
-                .parallelStream()
-                .map(vector -> this.position.getPosition().plus(vector))
-                .collect(Collectors.toList());
-    }
-
-    @Deprecated(forRemoval = true)
-    @Override
-    public Collection<Vector3<Integer>> getOriginalRelativeVectorsToCenter() {
-        return this.vectors;
-    }
-
     @Override
     public Stream<Vector3<Integer>> getVectorsRelativeTo(@NotNull Vector3<Integer> vector) {
         Stream<Vector3<Integer>> stream = this.vectors.stream().map(vector::plus);
@@ -202,7 +155,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     }
 
     @Override
-    public boolean addPositionRelativeToCenter(Vector3<Integer> add) {
+    public boolean addVectorRelativeToLicence(Vector3<Integer> add) {
         if (this.vectors.parallelStream().anyMatch(v -> v.equals(add))) {
             return false;
         }
@@ -318,7 +271,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
     @Override
     public PositionableShipsStructure setRawPositionsRelativeToCenter(Collection<? extends Vector3<Integer>> collection) {
         this.clear();
-        collection.forEach(this::addPositionRelativeToCenter);
+        collection.forEach(this::addVectorRelativeToLicence);
         return this;
     }
 
@@ -361,7 +314,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
                 .map(lte -> (L) lte);
 
         Stream<L> allTileEntities = this
-                .getSyncPositionsRelativeToPosition(this.position)
+                .getPositionsRelativeToWorld()
                 .map(SyncPosition::getTileEntity)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -380,7 +333,7 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
 
     private boolean addPositionRelativeToWorld(@NotNull Vector3<Integer> position) {
         Vector3<Integer> original = this.getPosition().getPosition();
-        return this.addPositionRelativeToCenter(position.minus(original));
+        return this.addVectorRelativeToLicence(position.minus(original));
     }
 
     private static Optional<BlockPosition> getNextInLine(Position<Integer> pos,

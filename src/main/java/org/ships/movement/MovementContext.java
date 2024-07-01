@@ -300,7 +300,7 @@ public class MovementContext {
         Optional<MovingBlock> mBlock = this.getMovingStructure().getBefore(opAttached.get());
         if (mBlock.isEmpty()) {
             SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
-            Stream<SyncBlockPosition> positions = vessel.getStructure().getSyncPositionsRelativeToPosition(vessel.getStructure().getPosition());
+            Stream<SyncBlockPosition> positions = vessel.getStructure().getPositionsRelativeToWorld();
             Optional<SyncBlockPosition> opDown = positions
                     .filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN))
                     .findAny();

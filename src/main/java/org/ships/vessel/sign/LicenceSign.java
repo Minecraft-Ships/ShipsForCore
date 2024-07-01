@@ -134,7 +134,7 @@ public class LicenceSign implements ShipsSign {
         } catch (UnableToFindLicenceSign e1) {
             Collection<? extends SyncBlockPosition> foundStructure = e1
                     .getFoundStructure()
-                    .getSyncPositionsRelativeToPosition(e1.getFoundStructure().getPosition())
+                    .getPositionsRelativeToWorld()
                     .collect(Collectors.toList());
             foundStructure.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore

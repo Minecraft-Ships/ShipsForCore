@@ -9,6 +9,7 @@ import org.core.world.position.flags.physics.ApplyPhysicsFlags;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
+import org.ships.movement.action.MovementAction;
 
 import java.util.Optional;
 
@@ -20,11 +21,16 @@ public interface MovingBlock {
 
     SyncBlockPosition getAfterPosition();
 
+    @Deprecated(forRemoval = true)
     MovingBlock setAfterPosition(SyncBlockPosition position);
 
     BlockDetails getStoredBlockData();
 
     MovingBlock setStoredBlockData(BlockDetails blockDetails);
+
+    MovementAction getAction();
+
+    MovingBlock setAction(@NotNull MovementAction action);
 
     BlockPriority getBlockPriority();
 

@@ -64,8 +64,8 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
 
 
         BasicBlockFinder finder = ShipsPlugin.getPlugin().getConfig().getDefaultFinder();
-        CompletableFuture<Optional<Vessel>> opVesselFuture = finder
-                .getConnectedBlocksOvertime(this.original, ShipsOvertimeUpdateBlockLoader.this::onBlockFind)
+        return finder
+                .getConnectedBlocksOvertime(this.original, this::onBlockFind)
                 .thenApply(structure -> {
                     LicenceSign ls = ShipsSigns.LICENCE;
                     Optional<SyncBlockPosition> opBlock = structure
@@ -73,7 +73,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                             .findAny()
                             .map(LiveTileEntity::getPosition);
                     if (opBlock.isEmpty()) {
-                        ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(
+                        this.onExceptionThrown(
                                 new UnableToFindLicenceSign(structure, "Failed to find licence sign"));
                         return Optional.empty();
                     }
@@ -89,20 +89,12 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                         Vessel vessel = ShipsSignVesselFinder.find((SignTileEntity) tileEntity);
                         vessel.setStructure(structure2);
 
-                        ShipsOvertimeUpdateBlockLoader.this.onStructureUpdate(vessel);
+                        this.onStructureUpdate(vessel);
                         return Optional.of(vessel);
                     } catch (LoadVesselException e) {
-                        ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(e);
+                        this.onExceptionThrown(e);
                         return Optional.empty();
                     }
                 });
-        return opVesselFuture.thenCompose(opVessel -> {
-            if (opVessel.isPresent()) {
-                if (opVessel.get() instanceof WaterType) {
-                    return opVessel.get().getStructure().fillAir().thenApply(pss -> opVessel);
-                }
-            }
-            return CompletableFuture.completedFuture(opVessel);
-        });
     }
 }

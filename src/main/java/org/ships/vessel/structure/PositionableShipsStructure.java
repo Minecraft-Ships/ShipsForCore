@@ -31,40 +31,20 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
 
     PositionableShipsStructure setPosition(@NotNull SyncBlockPosition pos);
 
-    Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter(FourFacingDirection direction);
+    Stream<Vector3<Integer>> getOutsideVectorsRelativeToLicence(@NotNull FourFacingDirection direction);
 
-    CompletableFuture<PositionableShipsStructure> fillAir();
+    Stream<SyncBlockPosition> getAir();
 
-    Collection<Vector3<Integer>> getOutsidePositionsRelativeToCenter();
+    Stream<Vector3<Integer>> getOutsideVectorsRelativeToLicence();
 
-    default Collection<Vector3<Integer>> getOutsidePositionsRelativeToWorld() {
+    default Stream<Vector3<Integer>> getOutsideVectorsRelativeToWorld() {
         Vector3<Integer> position = this.getPosition().getPosition();
         return this
-                .getOutsidePositionsRelativeToCenter()
-                .parallelStream()
-                .map(position::plus)
-                .collect(Collectors.toSet());
-    }
-
-    @Deprecated(forRemoval = true)
-    default Collection<Vector3<Integer>> getOutsideBlocks() {
-        return this.getOutsidePositionsRelativeToCenter();
+                .getOutsideVectorsRelativeToLicence()
+                .map(position::plus);
     }
 
     Bounds<Integer> getBounds();
-
-    @Deprecated(forRemoval = true)
-    default Collection<Vector3<Integer>> getRelativePositionsToCenter() {
-        Collection<Vector3<Integer>> originalPositions = new HashSet<>(this.getOriginalRelativeVectorsToCenter());
-        originalPositions.add(Vector3.valueOf(0, 0, 0));
-        return originalPositions;
-    }
-
-    @Deprecated(forRemoval = true)
-    Collection<Vector3<Integer>> getOriginalRelativeVectorsToWorld();
-
-    @Deprecated(forRemoval = true)
-    Collection<Vector3<Integer>> getOriginalRelativeVectorsToCenter();
 
     Stream<Vector3<Integer>> getVectorsRelativeTo(@NotNull Vector3<Integer> vector);
 
@@ -81,18 +61,20 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return this.getVectorsRelativeTo(pos.getPosition()).map(toPos);
     }
 
-    @Deprecated(forRemoval = true)
-    default Stream<ASyncBlockPosition> getAsyncPositionsRelativeToPosition(@NotNull BlockPosition pos) {
-        WorldExtent world = pos.getWorld();
-        return this.getPositionsRelativeToPosition(pos, vector -> (ASyncBlockPosition) world.getAsyncPosition(vector));
-    }
-
-    default Stream<SyncBlockPosition> getSyncPositionsRelativeToPosition(@NotNull BlockPosition pos) {
+    default Stream<SyncBlockPosition> getPositionsRelativeToPosition(@NotNull BlockPosition pos) {
         WorldExtent world = pos.getWorld();
         return this.getPositionsRelativeToPosition(pos, vector -> (SyncBlockPosition) world.getPosition(vector));
     }
 
-    boolean addPositionRelativeToCenter(Vector3<Integer> add);
+    default Stream<SyncBlockPosition> getPositionsRelativeToWorld(){
+        return getPositionsRelativeToPosition(this.getPosition());
+    }
+
+    default Stream<SyncBlockPosition> getPositionsRelativeToLicence(){
+        return getPositionsRelativeToPosition(this.getPosition().getWorld().getPosition(0, 0, 0));
+    }
+
+    boolean addVectorRelativeToLicence(Vector3<Integer> add);
 
     boolean removePositionRelativeToCenter(Vector3<Integer> remove);
 
@@ -124,7 +106,7 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
     default int getSpecificSize(Function<? super Vector3<Integer>, Integer> function) {
         Integer min = null;
         Integer max = null;
-        for (Vector3<Integer> vector : this.getOriginalRelativeVectorsToCenter()) {
+        for (Vector3<Integer> vector : this.getVectorsRelativeToLicence().collect(Collectors.toList())) {
             int value = function.apply(vector);
             if (min == null && max == null) {
                 max = value;
@@ -144,36 +126,8 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return max - min;
     }
 
-    @Deprecated(forRemoval = true)
-    default <T extends BlockPosition> Collection<T> getPositionsRelativeTo(Positionable<? extends T> positionable) {
-        return this.getPositionsRelativeTo(positionable.getPosition());
-    }
-
-    @Deprecated(forRemoval = true)
-    default <T extends BlockPosition> Collection<T> getPositionsRelativeTo(T position) {
-        WorldExtent world = position.getWorld();
-        Function<Vector3<Integer>, T> toType;
-        if (position instanceof SyncBlockPosition) {
-            toType = vec -> (T) world.getPosition(vec);
-        } else {
-            toType = vec -> (T) world.getAsyncPosition(vec);
-        }
-        return this.getPositionsRelativeToPosition(position, toType).collect(Collectors.toSet());
-    }
-
-    @Deprecated(forRemoval = true)
-    default Set<ChunkExtent> getChunks() {
-        Collection<Vector3<Integer>> positions = this
-                .getAsyncedPositionsRelativeToWorld()
-                .parallelStream()
-                .map(Position::getChunkPosition)
-                .collect(Collectors.toSet());
-        WorldExtent world = this.getPosition().getWorld();
-        return positions.stream().map(world::loadChunk).collect(Collectors.toSet());
-    }
-
     default Stream<Vector3<Integer>> getChunkPositions() {
-        return this.getAsyncPositionsRelativeToPosition(this.getPosition()).parallel().map(Position::getChunkPosition);
+        return this.getPositionsRelativeToPosition(this.getPosition()).parallel().map(Position::getChunkPosition);
     }
 
     default Stream<ChunkExtent> getLoadedChunks() {
@@ -186,79 +140,31 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return this.getChunkPositions().map(world::loadChunk);
     }
 
-    default CompletableFuture<Collection<ChunkExtent>> getChunksAsynced() {
-        Collection<Vector3<Integer>> positions = this
-                .getAsyncedPositionsRelativeToWorld()
-                .parallelStream()
-                .map(Position::getChunkPosition)
-                .collect(Collectors.toSet());
+    default CompletableFuture<Stream<ChunkExtent>> getChunksAsynced() {
         WorldExtent world = this.getPosition().getWorld();
-        Set<CompletableFuture<ChunkExtent>> chunkAsync = positions
-                .stream()
+        CompletableFuture<ChunkExtent>[] futures = this
+                .getPositionsRelativeToWorld()
+                .map(Position::getChunkPosition)
                 .map(world::loadChunkAsynced)
-                .collect(Collectors.toSet());
+                .toArray(CompletableFuture[]::new);
         return CompletableFuture
-                .allOf(chunkAsync.toArray(new CompletableFuture[0]))
-                .thenApply(v -> chunkAsync.parallelStream().map(f -> {
+                .allOf(futures)
+                .thenApply(v -> Stream.of(futures).parallel().map(f -> {
                     try {
                         return f.get();
                     } catch (InterruptedException | ExecutionException e) {
                         throw new RuntimeException("This should be impossible", e);
                     }
-                }).collect(Collectors.toSet()));
+                }));
     }
 
     boolean addPositionRelativeToWorld(BlockPosition position);
 
     boolean removePositionRelativeToWorld(BlockPosition position);
 
-    @Deprecated(forRemoval = true)
-    default <P extends BlockPosition, T> Collection<T> getAllLike(Function<? super SyncBlockPosition, P> toPos,
-                                                                  Function<P, ? extends T> function) {
-        return this.getPositionsRelativeTo(toPos).stream().map(function).collect(Collectors.toUnmodifiableSet());
-    }
-
-    @Deprecated(forRemoval = true)
-    default <T extends BlockPosition> Collection<T> getAll(BlockType type,
-                                                           Function<? super SyncBlockPosition, ? extends T> function) {
-        return this
-                .getPositionsRelativeTo(function)
-                .stream()
-                .filter(p -> p.getBlockType().equals(type))
-                .collect(Collectors.toUnmodifiableSet());
-    }
-
-    @Deprecated(forRemoval = true)
-    default Collection<SyncBlockPosition> getAll(Class<? extends TileEntity> class1) {
-        return this
-                .getRelativeToWorld((Class<? extends LiveTileEntity>) class1)
-                .map(LiveTileEntity::getPosition)
-                .collect(Collectors.toSet());
-    }
-
-    @Deprecated(forRemoval = true)
-    default Collection<SyncBlockPosition> getAll(ShipsSign sign) {
-        return this.getRelativeToWorld(sign).map(LiveTileEntity::getPosition).collect(Collectors.toSet());
-    }
-
     int size();
 
     <L extends LiveTileEntity> Stream<L> getRelativeToWorld(@NotNull Class<L> class1);
 
     Stream<LiveSignTileEntity> getRelativeToWorld(@NotNull ShipsSign sign);
-
-    @Deprecated(forRemoval = true)
-    default Collection<SyncBlockPosition> getSyncedPositionsRelativeToWorld() {
-        return this.getPositionsRelativeTo(this.getPosition());
-    }
-
-    @Deprecated(forRemoval = true)
-    default Collection<ASyncBlockPosition> getAsyncedPositionsRelativeToWorld() {
-        return this.getPositionsRelativeTo(this.getPosition().toAsyncPosition());
-    }
-
-    @Deprecated(forRemoval = true)
-    default <T extends BlockPosition> Collection<T> getPositionsRelativeTo(Function<? super SyncBlockPosition, ? extends T> function) {
-        return this.getPositionsRelativeTo(function.apply(this.getPosition()));
-    }
 }

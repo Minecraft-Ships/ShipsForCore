@@ -181,7 +181,7 @@ public class DefaultBlockList implements BlockList {
                 .get()
                 .getBlocks()
                 .forEach(t -> this.addToConfig(t, CollideType.MATERIAL, completedBefore, ignoreBlocks));
-        BlockGroups.BED
+        BlockGroups.BEDS
                 .get()
                 .getBlocks()
                 .forEach(t -> this.addToConfig(t, CollideType.MATERIAL, completedBefore, ignoreBlocks));
@@ -193,7 +193,7 @@ public class DefaultBlockList implements BlockList {
                 .get()
                 .getBlocks()
                 .forEach(t -> this.addToConfig(t, CollideType.MATERIAL, completedBefore, ignoreBlocks));
-        BlockGroups.PRESSURE_PLATE
+        BlockGroups.PRESSURE_PLATES
                 .get()
                 .getBlocks()
                 .forEach(t -> this.addToConfig(t, CollideType.MATERIAL, completedBefore, ignoreBlocks));

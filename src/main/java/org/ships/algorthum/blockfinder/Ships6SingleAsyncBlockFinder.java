@@ -134,7 +134,7 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                             }
 
                             Vector3<Integer> vector = posEntry.getKey().minus(structure.getPosition().getPosition());
-                            structure.addPositionRelativeToCenter(vector);
+                            structure.addVectorRelativeToLicence(vector);
 
                             if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.USE_AND_FINISH) {
                                 shouldKill.set(true);

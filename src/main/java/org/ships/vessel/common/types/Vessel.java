@@ -147,7 +147,6 @@ public interface Vessel extends Positionable<BlockPosition> {
                 bounds.add(1, 5, 1);
 
                 return chunks
-                        .stream()
                         .flatMap(Extent::getLiveEntities)
                         .map(entity -> Map.entry(entity, entity
                                 .getAttachedTo()

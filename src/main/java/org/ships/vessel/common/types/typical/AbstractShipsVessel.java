@@ -172,14 +172,14 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 .getConnectedBlocksOvertime(this.getPosition(), update)
                 .thenApplyAsync(updatedStructure -> {
                     Set<Vector3<Integer>> updatedBlocks = updatedStructure
-                            .getSyncPositionsRelativeToPosition(updatedStructure.getPosition())
+                            .getPositionsRelativeToWorld()
                             .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
                             .map(Position::getPosition)
                             .collect(Collectors.toSet());
 
                     PositionableShipsStructure currentStructure = this.getStructure();
                     boolean sameStructure = currentStructure
-                            .getSyncPositionsRelativeToPosition(currentStructure.getPosition())
+                            .getPositionsRelativeToWorld()
                             .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
                             .map(Position::getPosition)
                             .allMatch(updatedBlocks::contains);
@@ -188,14 +188,10 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                     }
                     return Map.entry(currentStructure, sameStructure);
                 })
-                .thenCompose(entry -> {
+                .thenComposeAsync(entry -> {
                     PositionableShipsStructure updated = entry.getKey();
                     if (entry.getValue()) {
                         return CompletableFuture.completedFuture(entry);
-                    }
-                    if (AbstractShipsVessel.this instanceof WaterType) {
-                        CompletableFuture<PositionableShipsStructure> filled = updated.fillAir();
-                        return filled.thenApply(structure -> Map.entry(structure, entry.getValue()));
                     }
                     return CompletableFuture.completedFuture(entry);
                 })
@@ -205,9 +201,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                         return CompletableFuture.completedFuture(updated);
                     }
                     this.setStructure(updated);
-                    if (AbstractShipsVessel.this instanceof WaterType) {
-                        return updated.fillAir();
-                    }
                     return CompletableFuture.completedFuture(updated);
                 });
     }

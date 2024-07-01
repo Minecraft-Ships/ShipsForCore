@@ -58,7 +58,7 @@ public class ShipsShipTrackArgumentCommand implements ArgumentCommand {
         LivePlayer player = (LivePlayer)source;
         var blocks = vessel
                 .getStructure()
-                .getSyncPositionsRelativeToPosition(vessel.getPosition()).collect(Collectors.toList());
+                .getPositionsRelativeToWorld().collect(Collectors.toList());
                 blocks.forEach(bp -> bp.setBlock(BlockTypes.OBSIDIAN.getDefaultBlockDetails(), (LivePlayer) source));
         TranslateCore
                 .getScheduleManager()

@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
@@ -74,7 +75,8 @@ public class Ships6MultiAsyncBlockFinder implements BasicBlockFinder {
                     while (!toProcess.isEmpty() && structure.size() < limit && !ShipsPlugin
                             .getPlugin()
                             .isShuttingDown()) {
-                        Collection<Vector3<Integer>> positions = structure.getRelativePositionsToCenter();
+                        Collection<Vector3<Integer>> positions = structure.getVectorsRelativeToLicence().collect(
+                                Collectors.toList());
                         LinkedTransferQueue<Map.Entry<ASyncBlockPosition, Direction>> next = new LinkedTransferQueue<>();
                         while (toProcess.hasWaitingConsumer()) {
                             continue;

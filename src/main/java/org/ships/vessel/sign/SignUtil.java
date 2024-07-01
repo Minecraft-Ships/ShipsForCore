@@ -90,8 +90,7 @@ public interface SignUtil {
                 UnableToFindLicenceSign e1 = (UnableToFindLicenceSign) e;
                 this.showPlayer(() -> e1
                         .getFoundStructure()
-                        .getSyncPositionsRelativeToPosition(e1.getFoundStructure().getPosition()));
-
+                        .getPositionsRelativeToWorld());
                 return;
             }
             this.player.sendMessage(Component.text(e.getReason()).color(NamedTextColor.RED));

@@ -1,23 +1,38 @@
 package org.ships.movement;
 
+import org.core.vector.type.Vector3;
+import org.core.world.WorldExtent;
 import org.core.world.position.block.BlockTypes;
 import org.core.world.position.block.details.BlockDetails;
 import org.core.world.position.block.details.data.keyed.KeyedData;
 import org.core.world.position.impl.sync.SyncBlockPosition;
+import org.jetbrains.annotations.NotNull;
+import org.ships.movement.action.MovementAction;
 
 public class SetMovingBlock implements MovingBlock {
 
     protected SyncBlockPosition before;
-    protected SyncBlockPosition after;
     protected BlockDetails detail;
+    private MovementAction action;
+
+    public SetMovingBlock(SyncBlockPosition before, MovementAction action) {
+        this(before, action, before.getBlockDetails());
+    }
+
+    public SetMovingBlock(SyncBlockPosition before, MovementAction action, BlockDetails details) {
+        this.before = before;
+        this.action = action;
+        this.detail = details;
+    }
 
     public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after) {
         this(before, after, before.getBlockDetails());
     }
 
+    @Deprecated
     public SetMovingBlock(SyncBlockPosition before, SyncBlockPosition after, BlockDetails details) {
         this.before = before;
-        this.after = after;
+        this.action = MovementAction.plus(after.getPosition().minus(before.getPosition()));
         this.detail = details;
     }
 
@@ -34,12 +49,15 @@ public class SetMovingBlock implements MovingBlock {
 
     @Override
     public SyncBlockPosition getAfterPosition() {
-        return this.after;
+        WorldExtent world = this.before.getWorld();
+        Vector3<Integer> newPos = this.action.move(this.before.getPosition());
+        return (SyncBlockPosition) world.getPosition(newPos);
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public MovingBlock setAfterPosition(SyncBlockPosition position) {
-        this.after = position;
+        this.action = MovementAction.plus(position.getPosition().minus(this.before.getPosition()));
         return this;
     }
 
@@ -51,6 +69,17 @@ public class SetMovingBlock implements MovingBlock {
     @Override
     public MovingBlock setStoredBlockData(BlockDetails blockDetails) {
         this.detail = blockDetails;
+        return this;
+    }
+
+    @Override
+    public MovementAction getAction() {
+        return this.action;
+    }
+
+    @Override
+    public MovingBlock setAction(@NotNull MovementAction action) {
+        this.action = action;
         return this;
     }
 
