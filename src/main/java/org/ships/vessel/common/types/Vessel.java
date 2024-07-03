@@ -198,7 +198,7 @@ public interface Vessel extends Positionable<BlockPosition> {
                 .map(Chunk::createAsync)
                 .collect(Collectors.toList());
         Direction[] directions = FourFacingDirection.getFourFacingDirections();
-        Map<Vector2<Integer>, Integer> waterLevels = collection
+        Map<Vector3<Integer>, Integer> waterLevels = collection
                 .stream()
                 .flatMap(vec -> Stream.of(directions).map(direction -> vec.plus(direction.getAsVector())))
                 .map(vec -> asyncChunks
@@ -210,17 +210,18 @@ public interface Vessel extends Positionable<BlockPosition> {
                         .map(Map.Entry::getKey))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toMap(vec -> Vector2.valueOf(vec.getX(), vec.getZ()), Vector3::getY));
+                .collect(Collectors.toMap(vec -> vec, Vector3::getY));
 
         Map<Vector2<Integer>, Integer> filteredWaterLevels = new ConcurrentHashMap<>();
-        for (Map.Entry<Vector2<Integer>, Integer> entry : waterLevels.entrySet()) {
-            Integer currentWaterLevel = filteredWaterLevels.get(entry.getKey());
+        for (Map.Entry<Vector3<Integer>, Integer> entry : waterLevels.entrySet()) {
+            Vector2<Integer> as2dVector = Vector2.valueOf(entry.getKey().getX(), entry.getKey().getZ());
+            Integer currentWaterLevel = filteredWaterLevels.get(as2dVector);
             if (currentWaterLevel == null) {
-                filteredWaterLevels.put(entry.getKey(), entry.getValue());
+                filteredWaterLevels.put(as2dVector, entry.getValue());
                 continue;
             }
             if (entry.getValue() > currentWaterLevel) {
-                filteredWaterLevels.replace(entry.getKey(), entry.getValue());
+                filteredWaterLevels.replace(as2dVector, entry.getValue());
             }
         }
         if (filteredWaterLevels.isEmpty()) {

@@ -10,7 +10,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.utils.BarUtils;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
-import org.core.world.position.block.BlockTypes;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
@@ -117,21 +116,23 @@ public class MovementContext {
         this.isVesselMoving(vessel);
         vessel.set(MovingFlag.class, this);
         Consumer<? super Collection<LiveEntity>> consumer = entities -> {
-            try {
-                this.movePostEntity(vessel);
-            } catch (Throwable e) {
-                this
-                        .getAdventureBossBar()
-                        .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar)));
-                vessel.set(new MovingFlag());
-                entities.forEach(entity -> entity.setGravity(true));
-                this.getException().accept(this, e);
+            TranslateCore.getScheduleManager().schedule().setAsync(false).setRunner(sch -> {
+                try {
+                    this.movePostEntity(vessel);
+                } catch (Throwable e) {
+                    this
+                            .getAdventureBossBar()
+                            .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar)));
+                    vessel.set(new MovingFlag());
+                    entities.forEach(entity -> entity.setGravity(true));
+                    this.getException().accept(this, e);
 
-                if (e instanceof MoveException) {
-                    return;
+                    if (e instanceof MoveException) {
+                        return;
+                    }
+                    e.printStackTrace();
                 }
-                e.printStackTrace();
-            }
+            }).setDisplayName("Back to sync").buildDelayed(ShipsPlugin.getPlugin()).run();
         };
         if (updateStructure) {
             return vessel
@@ -218,13 +219,7 @@ public class MovementContext {
         Set<SyncBlockPosition> collided = this.getMovingStructure().stream().filter(mb -> {
             SyncBlockPosition after = mb.getAfterPosition();
 
-            mb.getBeforePosition().setBlock(BlockTypes.GLOWSTONE.getDefaultBlockDetails(), player);
-            after.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player);
-
-
-            if (this.getMovingStructure().stream().anyMatch(mb1 -> {
-                return after.equals(mb1.getBeforePosition());
-            })) {
+            if (this.getMovingStructure().stream().anyMatch(mb1 -> after.equals(mb1.getBeforePosition()))) {
                 return false;
             }
             for (BlockType type : vessel.getType().getIgnoredTypes()) {

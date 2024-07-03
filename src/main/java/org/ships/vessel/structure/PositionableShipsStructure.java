@@ -6,21 +6,16 @@ import org.core.world.ChunkExtent;
 import org.core.world.WorldExtent;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.Positionable;
-import org.core.world.position.block.BlockType;
 import org.core.world.position.block.entity.LiveTileEntity;
-import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.impl.BlockPosition;
 import org.core.world.position.impl.Position;
-import org.core.world.position.impl.async.ASyncBlockPosition;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.vessel.sign.ShipsSign;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -39,9 +34,7 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
 
     default Stream<Vector3<Integer>> getOutsideVectorsRelativeToWorld() {
         Vector3<Integer> position = this.getPosition().getPosition();
-        return this
-                .getOutsideVectorsRelativeToLicence()
-                .map(position::plus);
+        return this.getOutsideVectorsRelativeToLicence().map(position::plus);
     }
 
     Bounds<Integer> getBounds();
@@ -66,11 +59,11 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
         return this.getPositionsRelativeToPosition(pos, vector -> (SyncBlockPosition) world.getPosition(vector));
     }
 
-    default Stream<SyncBlockPosition> getPositionsRelativeToWorld(){
+    default Stream<SyncBlockPosition> getPositionsRelativeToWorld() {
         return getPositionsRelativeToPosition(this.getPosition());
     }
 
-    default Stream<SyncBlockPosition> getPositionsRelativeToLicence(){
+    default Stream<SyncBlockPosition> getPositionsRelativeToLicence() {
         return getPositionsRelativeToPosition(this.getPosition().getWorld().getPosition(0, 0, 0));
     }
 
@@ -147,15 +140,13 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
                 .map(Position::getChunkPosition)
                 .map(world::loadChunkAsynced)
                 .toArray(CompletableFuture[]::new);
-        return CompletableFuture
-                .allOf(futures)
-                .thenApply(v -> Stream.of(futures).parallel().map(f -> {
-                    try {
-                        return f.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException("This should be impossible", e);
-                    }
-                }));
+        return CompletableFuture.allOf(futures).thenApply(v -> Stream.of(futures).parallel().map(f -> {
+            try {
+                return f.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException("This should be impossible", e);
+            }
+        }));
     }
 
     boolean addPositionRelativeToWorld(BlockPosition position);
@@ -167,4 +158,6 @@ public interface PositionableShipsStructure extends Positionable<SyncBlockPositi
     <L extends LiveTileEntity> Stream<L> getRelativeToWorld(@NotNull Class<L> class1);
 
     Stream<LiveSignTileEntity> getRelativeToWorld(@NotNull ShipsSign sign);
+
+    boolean matchStructure(@NotNull PositionableShipsStructure updatedStructure);
 }

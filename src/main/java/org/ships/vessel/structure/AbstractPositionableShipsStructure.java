@@ -331,6 +331,15 @@ public class AbstractPositionableShipsStructure implements PositionableShipsStru
         return this.getRelativeToWorld(LiveSignTileEntity.class).filter(sign::isSign);
     }
 
+    @Override
+    public boolean matchStructure(@NotNull PositionableShipsStructure updatedStructure) {
+        if(!(updatedStructure instanceof AbstractPositionableShipsStructure)){
+            throw new IllegalArgumentException("Match structure must be run on a AbstractPositionableShipsStructure");
+        }
+        AbstractPositionableShipsStructure arg = (AbstractPositionableShipsStructure) updatedStructure;
+        return arg.vectors.equals(this.vectors);
+    }
+
     private boolean addPositionRelativeToWorld(@NotNull Vector3<Integer> position) {
         Vector3<Integer> original = this.getPosition().getPosition();
         return this.addVectorRelativeToLicence(position.minus(original));

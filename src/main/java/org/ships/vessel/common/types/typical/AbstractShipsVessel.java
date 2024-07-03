@@ -171,18 +171,8 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 .setConnectedVessel(this)
                 .getConnectedBlocksOvertime(this.getPosition(), update)
                 .thenApplyAsync(updatedStructure -> {
-                    Set<Vector3<Integer>> updatedBlocks = updatedStructure
-                            .getPositionsRelativeToWorld()
-                            .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
-                            .map(Position::getPosition)
-                            .collect(Collectors.toSet());
-
                     PositionableShipsStructure currentStructure = this.getStructure();
-                    boolean sameStructure = currentStructure
-                            .getPositionsRelativeToWorld()
-                            .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
-                            .map(Position::getPosition)
-                            .allMatch(updatedBlocks::contains);
+                    boolean sameStructure = currentStructure.matchStructure(updatedStructure);
                     if (sameStructure) {
                         currentStructure.setPosition(updatedStructure.getPosition());
                     }
