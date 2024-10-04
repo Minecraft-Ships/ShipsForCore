@@ -69,7 +69,7 @@ public class ShipsOvertimeBlockFinder {
             CompletableFuture<Vessel> future = new CompletableFuture<>();
             ShipsPlugin.getPlugin().getVessels().forEach(v -> {
                 PositionableShipsStructure pss = v.getStructure();
-                Collection<ASyncBlockPosition> collection = pss.getAsyncedPositionsRelativeToWorld();
+                List<Vector3<Integer>> collection = pss.getVectorsRelativeToWorld().collect(Collectors.toList());
                 TranslateCore
                         .getScheduleManager()
                         .schedule()
@@ -78,7 +78,7 @@ public class ShipsOvertimeBlockFinder {
                         .setDisplayName("Ship Finder")
                         .setAsync(true)
                         .setRunner((sch) -> {
-                            if (collection.parallelStream().anyMatch(p -> p.equals(this.position))) {
+                            if (collection.parallelStream().anyMatch(p -> p.equals(this.position.getPosition()))) {
                                 future.complete(v);
                             }
                         })
@@ -92,7 +92,7 @@ public class ShipsOvertimeBlockFinder {
         return finder.getConnectedBlocksOvertime(this.position, (currentStructure, block) -> {
             Optional<Map.Entry<Vector3<Integer>, Vessel>> opFirst = vessels
                     .parallelStream()
-                    .filter(e -> e.getKey().equals(block.getPosition()))
+                    .filter(e -> e.getKey().equals(block))
                     .findFirst();
             if (opFirst.isPresent()) {
                 passed.setValue(opFirst.get().getValue());
@@ -110,6 +110,6 @@ public class ShipsOvertimeBlockFinder {
     @Deprecated(forRemoval = true)
     public void loadOvertimeSynced(Consumer<? super Vessel> consumer,
                                    Consumer<? super PositionableShipsStructure> exceptionRunner) {
-        loadOvertime(exceptionRunner).thenAccept(consumer);
+        this.loadOvertime(exceptionRunner).thenAccept(consumer);
     }
 }

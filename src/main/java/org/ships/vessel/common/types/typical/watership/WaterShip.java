@@ -8,14 +8,11 @@ import org.core.world.direction.Direction;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.block.BlockTypes;
-import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
-import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.NoLicencePresent;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FileBasedVessel;
 import org.ships.vessel.common.assits.VesselRequirement;
@@ -31,6 +28,7 @@ import org.ships.vessel.common.types.typical.AbstractShipType;
 import org.ships.vessel.common.types.typical.AbstractShipsVessel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class WaterShip extends AbstractShipsVessel implements WaterType, Fallable, VesselRequirement {
 
@@ -40,20 +38,6 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
             Parser.STRING_TO_BLOCK_TYPE, "Block", "Special", "Type");
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
-
-    @Deprecated(forRemoval = true)
-    public WaterShip(ShipType<WaterShip> type, LiveTileEntity licence) throws NoLicencePresent {
-        super(licence, type);
-        this.flags.add(new AltitudeLockFlag(true));
-        this.initRequirements();
-    }
-
-    @Deprecated(forRemoval = true)
-    public WaterShip(ShipType<WaterShip> type, SignTileEntity ste, SyncBlockPosition position) {
-        super(ste, position, type);
-        this.flags.add(new AltitudeLockFlag(true));
-        this.initRequirements();
-    }
 
     public WaterShip(@NotNull LiveSignTileEntity licence,
                      boolean isFrontOfSign,
@@ -188,7 +172,10 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
     public boolean shouldFall() {
         int specialBlockCount = 0;
         boolean inWater = false;
-        for (SyncBlockPosition blockPosition : this.getStructure().getSyncedPositionsRelativeToWorld()) {
+        for (SyncBlockPosition blockPosition : this
+                .getStructure()
+                .getPositionsRelativeToWorld()
+                .collect(Collectors.toList())) {
             if (this.getSpecialBlocks().stream().anyMatch(b -> b.equals(blockPosition.getBlockType()))) {
                 specialBlockCount++;
             }
@@ -201,10 +188,7 @@ public class WaterShip extends AbstractShipsVessel implements WaterType, Fallabl
         if (!inWater) {
             return true;
         }
-        float specialBlockPercent = ((specialBlockCount * 100.0f) / this
-                .getStructure()
-                .getOriginalRelativePositionsToCenter()
-                .size());
+        float specialBlockPercent = ((specialBlockCount * 100.0f) / this.getStructure().size());
         return (!(this.getSpecialBlockPercent() == 0) || !(specialBlockPercent <= this.getSpecialBlockPercent()));
     }
 }

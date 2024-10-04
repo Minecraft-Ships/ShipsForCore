@@ -1,5 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
+import org.core.vector.type.Vector3;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.vessel.common.types.Vessel;
@@ -16,7 +17,7 @@ public class FindAirOvertimeBlockFinderUpdate implements OvertimeBlockFinderUpda
 
     @Override
     public BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
-                                        @NotNull BlockPosition block) {
+                                        @NotNull Vector3<Integer> block) {
         return this.update.onBlockFind(currentStructure, block);
     }
 }

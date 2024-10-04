@@ -13,6 +13,7 @@ import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgume
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.assits.shiptype.SpecialBlocksShipType;
 import org.ships.vessel.common.requirement.SpecialBlocksRequirement;
+import org.ships.vessel.common.types.ShipTypes;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,8 +25,11 @@ public class ReadSpecialBlocksTypeArgumentCommand implements ArgumentCommand {
     private final ExactArgument type = new ExactArgument("shiptype");
     private final ExactArgument modify = new ExactArgument("modify");
     private final ShipIdentifiableArgument<SpecialBlocksShipType<?>> shipType = new ShipIdentifiableArgument<>(
-            "shiptype value", (Class<SpecialBlocksShipType<?>>) (Object) SpecialBlocksShipType.class,
-            (c, a, t) -> true);
+            "shiptype value", () -> ShipTypes
+            .shipTypes()
+            .stream()
+            .filter(t -> t instanceof SpecialBlocksShipType<?>)
+            .map(t -> (SpecialBlocksShipType<?>) t), (c, a, t) -> true);
     private final ExactArgument get = new ExactArgument("get");
     private final ExactArgument specialBlocks = new ExactArgument("blocks");
 

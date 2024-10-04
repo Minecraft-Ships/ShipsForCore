@@ -22,7 +22,7 @@ public class InfoEntitiesListMessage implements Message<Entity<?>> {
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text(Message.ENTITY_NAME.adapterTextFormat()).color(NamedTextColor.GOLD);
+        return Component.text(MessageAdapters.ENTITY_NAME.adapterTextFormat()).color(NamedTextColor.GOLD);
     }
 
     @Override

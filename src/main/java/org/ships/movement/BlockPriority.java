@@ -4,10 +4,17 @@ import org.core.utils.Identifiable;
 
 public interface BlockPriority extends Identifiable {
 
-    BlockPriority ATTACHED = new PackagedBlockPriority("attached", 5);
-    BlockPriority DIRECTIONAL = new PackagedBlockPriority("directional", 10);
-    BlockPriority NORMAL = new PackagedBlockPriority("normal", 100);
-    BlockPriority AIR = new PackagedBlockPriority("air", 200);
+    @Deprecated(forRemoval = true)
+    BlockPriority ATTACHED = BlockPriorities.ATTACHED;
+
+    @Deprecated(forRemoval = true)
+    BlockPriority DIRECTIONAL = BlockPriorities.DIRECTIONAL;
+
+    @Deprecated(forRemoval = true)
+    BlockPriority NORMAL = BlockPriorities.NORMAL;
+
+    @Deprecated(forRemoval = true)
+    BlockPriority AIR = BlockPriorities.AIR;
 
     int getPriorityNumber();
 

@@ -10,18 +10,15 @@ import org.core.inventory.item.stack.ItemStack;
 import org.core.inventory.parts.Slot;
 import org.core.world.position.block.details.BlockSnapshot;
 import org.core.world.position.block.details.data.keyed.KeyedData;
-import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.TileEntity;
 import org.core.world.position.block.entity.TileEntitySnapshot;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntity;
 import org.core.world.position.block.entity.container.furnace.FurnaceTileEntitySnapshot;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignSide;
-import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ships.exceptions.NoLicencePresent;
 import org.ships.vessel.common.assits.AirType;
 import org.ships.vessel.common.assits.Fallable;
 import org.ships.vessel.common.assits.FuelSlot;
@@ -47,18 +44,6 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
 
     private final Collection<Requirement<?>> requirements = new HashSet<>();
-
-    @Deprecated(forRemoval = true)
-    public Plane(LiveTileEntity licence, ShipType<? extends Plane> type) throws NoLicencePresent {
-        super(licence, type);
-        this.initRequirements();
-    }
-
-    @Deprecated(forRemoval = true)
-    public Plane(SignTileEntity ste, SyncBlockPosition position, ShipType<? extends Plane> type) {
-        super(ste, position, type);
-        this.initRequirements();
-    }
 
     public Plane(@NotNull LiveSignTileEntity licence,
                  boolean isFrontOfSign,
@@ -159,7 +144,7 @@ public class Plane extends AbstractShipsVessel implements AirType, VesselRequire
             return false;
         }
         Collection<FurnaceInventory> furnaceInventories = new HashSet<>();
-        for (SyncBlockPosition loc : this.getStructure().getSyncedPositionsRelativeToWorld()) {
+        for (SyncBlockPosition loc : this.getStructure().getPositionsRelativeToWorld().collect(Collectors.toList())) {
             BlockSnapshot<SyncBlockPosition> snapshot = loc.getBlockDetails();
             Optional<TileEntitySnapshot<? extends TileEntity>> opTiled = snapshot.get(KeyedData.TILED_ENTITY);
             if (opTiled.isPresent()) {

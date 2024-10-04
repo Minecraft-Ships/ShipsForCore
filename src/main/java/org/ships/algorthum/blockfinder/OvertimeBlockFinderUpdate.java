@@ -1,6 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
-import org.core.world.position.impl.BlockPosition;
+import org.core.vector.type.Vector3;
 import org.jetbrains.annotations.NotNull;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -14,6 +14,7 @@ public interface OvertimeBlockFinderUpdate {
 
     }
 
-    BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure, @NotNull BlockPosition block);
+    BlockFindControl onBlockFind(@NotNull PositionableShipsStructure currentStructure,
+                                 @NotNull Vector3<Integer> blockPosition);
 
 }

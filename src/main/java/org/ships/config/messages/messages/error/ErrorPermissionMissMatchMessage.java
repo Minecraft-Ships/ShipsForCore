@@ -24,7 +24,7 @@ public class ErrorPermissionMissMatchMessage implements Message<Map.Entry<LivePl
     @Override
     public Component getDefaultMessage() {
         return Component
-                .text("Missing permission of " + Message.PERMISSION_NODE.adapterTextFormat())
+                .text("Missing permission of " + MessageAdapters.PERMISSION_NODE.adapterTextFormat())
                 .color(NamedTextColor.RED);
     }
 

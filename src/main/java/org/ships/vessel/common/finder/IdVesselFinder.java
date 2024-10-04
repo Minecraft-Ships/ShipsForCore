@@ -5,7 +5,11 @@ import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.assits.IdentifiableShip;
 import org.ships.vessel.common.types.Vessel;
 
-public class IdVesselFinder {
+public final class IdVesselFinder {
+
+    private IdVesselFinder() {
+        throw new RuntimeException("Do not create");
+    }
 
     public static Vessel load(String id) throws LoadVesselException {
         return ShipsPlugin.getPlugin().getVessels().stream().filter(v -> v instanceof IdentifiableShip).filter(v -> {

@@ -31,7 +31,7 @@ public class EntityNameAdapter implements MessageAdapter<Entity<?>> {
 
     @Override
     public Set<String> examples() {
-        Collection<LivePlayer> collection = TranslateCore.getServer().getOnlinePlayers();
+        Collection<LivePlayer> collection = TranslateCore.getServer().getLivePlayers().collect(Collectors.toList());
         if (collection.isEmpty()) {
             return Collections.singleton("Creeper");
         }

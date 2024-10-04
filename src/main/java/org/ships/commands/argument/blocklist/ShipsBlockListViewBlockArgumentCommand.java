@@ -12,7 +12,6 @@ import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.Messageable;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.permissions.Permissions;
@@ -46,9 +45,6 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
 
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
-        if (!(commandContext.getSource() instanceof CommandViewer)) {
-            return false;
-        }
         Messageable viewer = commandContext.getSource();
         BlockType type = commandContext.getArgument(this, SHIP_BLOCK_TYPE_ARGUMENT);
         BlockInstruction bi = ShipsPlugin.getPlugin().getBlockList().getBlockInstruction(type);
@@ -70,6 +66,6 @@ public class ShipsBlockListViewBlockArgumentCommand implements ArgumentCommand {
         if (source instanceof LivePlayer) {
             return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
         }
-        return source instanceof CommandViewer;
+        return true;
     }
 }

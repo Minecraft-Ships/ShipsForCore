@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 
-@Deprecated(forRemoval = true)
 public class OPShipType extends AbstractShipType<OPShip> {
 
     public OPShipType() {
@@ -31,7 +30,7 @@ public class OPShipType extends AbstractShipType<OPShip> {
 
     public OPShipType(String name, File file) {
         this(ShipsPlugin.getPlugin(), name,
-             TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()),
+             TranslateCore.getConfigManager().read(file, TranslateCore.getPlatform().getConfigFormat()),
              BlockTypes.AIR);
     }
 

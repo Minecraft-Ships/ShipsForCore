@@ -23,12 +23,22 @@ import java.util.Set;
 public interface ShipType<T extends Vessel> extends Identifiable {
 
     @Deprecated(forRemoval = true)
-    OPShipType OVERPOWERED_SHIP = new OPShipType();
-    MarsshipType MARSSHIP = new MarsshipType();
-    AirshipType AIRSHIP = new AirshipType();
-    WaterShipType WATERSHIP = new WaterShipType();
-    SubmarineType SUBMARINE = new SubmarineType();
-    PlaneType PLANE = new PlaneType();
+    OPShipType OVERPOWERED_SHIP = ShipTypes.OVERPOWERED_SHIP;
+
+    @Deprecated
+    MarsshipType MARSSHIP = ShipTypes.MARSSHIP;
+
+    @Deprecated(forRemoval = true)
+    AirshipType AIRSHIP = ShipTypes.AIRSHIP;
+
+    @Deprecated(forRemoval = true)
+    WaterShipType WATERSHIP = ShipTypes.WATERSHIP;
+
+    @Deprecated(forRemoval = true)
+    SubmarineType SUBMARINE = ShipTypes.SUBMARINE;
+
+    @Deprecated(forRemoval = true)
+    PlaneType PLANE = ShipTypes.PLANE;
 
     @NotNull String getDisplayName();
 
@@ -51,11 +61,6 @@ public interface ShipType<T extends Vessel> extends Identifiable {
     @NotNull CorePermission getMoveOtherPermission();
 
     @NotNull CorePermission getMakePermission();
-
-    @Deprecated(forRemoval = true)
-    default T createNewVessel(@NotNull LiveSignTileEntity position) {
-        return this.createNewVessel(position.getSide(true), position.getPosition());
-    }
 
     default <E> @NotNull Optional<E> getFlag(@NotNull Class<E> class1) {
         return this.getFlags().stream().filter(class1::isInstance).map(f -> (E) f).findAny();

@@ -21,8 +21,8 @@ public class BlockFinderBarMessage implements Message<PositionableShipsStructure
 
     @Override
     public Component getDefaultMessage() {
-        return Component.text(
-                Message.STRUCTURE_SIZE.adapterTextFormat() + " / " + Message.CONFIG_TRACK_LIMIT.adapterTextFormat());
+        return Component.text(MessageAdapters.STRUCTURE_SIZE.adapterTextFormat() + " / "
+                                      + MessageAdapters.CONFIG_TRACK_LIMIT.adapterTextFormat());
     }
 
     @Override

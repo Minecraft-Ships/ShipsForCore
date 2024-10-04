@@ -66,4 +66,9 @@ public class FlightPathFlag implements VesselFlag<FlightPath> {
     public String getName() {
         return "Flight Path";
     }
+
+    @Override
+    public FlightPathFlag clone() {
+        return (FlightPathFlag) VesselFlag.super.clone();
+    }
 }

@@ -1,7 +1,7 @@
 package org.ships.commands.argument.help;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -10,7 +10,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.ShipsArgumentCommand;
 
 import java.util.*;
@@ -78,15 +77,13 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
         for (ArgumentCommand cmd : commands) {
             List<CommandArgument<?>> arguments = cmd.getArguments();
             if (arguments.isEmpty()) {
-                viewer.sendMessage(AText.ofPlain(cmd.getDescription()).withColour(NamedTextColours.YELLOW));
+                viewer.sendMessage(Component.text(cmd.getDescription()).color(NamedTextColor.YELLOW));
                 continue;
             }
-            viewer.sendMessage(AText
-                                       .ofPlain(arguments.get(0).getUsage() + ":")
-                                       .withColour(NamedTextColours.AQUA)
-                                       .append(AText
-                                                       .ofPlain(cmd.getDescription())
-                                                       .withColour(NamedTextColours.YELLOW)));
+            viewer.sendMessage(Component.text(arguments.get(0).getUsage() + ":")
+                                       .color(NamedTextColor.AQUA)
+                                       .append(Component.text(cmd.getDescription())
+                                                       .color(NamedTextColor.YELLOW)));
         }
         return true;
     }

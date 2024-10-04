@@ -2,7 +2,6 @@ package org.ships.movement.instruction.details;
 
 import net.kyori.adventure.bossbar.BossBar;
 import org.core.TranslateCore;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.ships.movement.MovementContext;
@@ -46,16 +45,6 @@ public class MovementDetailsBuilder {
     public MovementDetailsBuilder setClickedBlock(BlockPosition clickedBlock) {
         this.clickedBlock = clickedBlock;
         return this;
-    }
-
-    @Deprecated(forRemoval = true)
-    public ServerBossBar getBossBar() {
-        return TranslateCore.createBossBar(getAdventureBossBar());
-    }
-
-    @Deprecated(forRemoval = true)
-    public MovementDetailsBuilder setBossBar(ServerBossBar bossBar) {
-        return setAdventureBossBar(bossBar.bossBar());
     }
 
     public BossBar getAdventureBossBar() {

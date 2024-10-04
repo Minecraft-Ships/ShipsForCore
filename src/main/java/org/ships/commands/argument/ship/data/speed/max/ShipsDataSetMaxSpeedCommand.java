@@ -1,6 +1,6 @@
 package org.ships.commands.argument.ship.data.speed.max;
 
-import org.core.adventureText.AText;
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
@@ -35,7 +35,7 @@ public class ShipsDataSetMaxSpeedCommand extends AbstractShipsDataSetCommand {
         int displayValue = Objects.requireNonNullElseGet(value, () -> vessel.getType().getDefaultMaxSpeed());
         context
                 .getSource()
-                .sendMessage(AText.ofPlain(
+                .sendMessage(Component.text(
                         "Updated " + Else.throwOr(NoLicencePresent.class, vessel::getName, "Unknown") + " max speed to "
                                 + displayValue));
 

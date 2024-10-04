@@ -36,7 +36,7 @@ public class ErrorFailedToFindNamedBlockMessage implements Message<NamedBlockMes
     @Override
     public Collection<MessageAdapter<?>> getAdapters() {
         Collection<MessageAdapter<?>> adapters = new HashSet<>(Message.super.getAdapters());
-        adapters.add(Message.NAMED_BLOCK_NAME);
+        adapters.add(MessageAdapters.NAMED_BLOCK_NAME);
         return adapters;
     }
 
@@ -54,7 +54,7 @@ public class ErrorFailedToFindNamedBlockMessage implements Message<NamedBlockMes
         for (MessageAdapter<BlockType> adapter : blockTypeAdapters) {
             text = adapter.processMessage(obj.getType(), text);
         }
-        text = Message.NAMED_BLOCK_NAME.processMessage(obj.getNamedBlock(), text);
+        text = MessageAdapters.NAMED_BLOCK_NAME.processMessage(obj.getNamedBlock(), text);
         return text;
     }
 }

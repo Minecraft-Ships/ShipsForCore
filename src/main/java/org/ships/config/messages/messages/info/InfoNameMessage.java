@@ -24,7 +24,9 @@ public class InfoNameMessage implements Message<Vessel> {
         return Component
                 .text("Name: ")
                 .color(NamedTextColor.AQUA)
-                .append(Component.text("%" + Message.VESSEL_NAME.adapterText() + "%").color(NamedTextColor.GOLD));
+                .append(Component
+                                .text("%" + MessageAdapters.VESSEL_NAME.adapterText() + "%")
+                                .color(NamedTextColor.GOLD));
     }
 
     @Override
@@ -50,7 +52,7 @@ public class InfoNameMessage implements Message<Vessel> {
 
     @Deprecated(forRemoval = true)
     public Set<MessageAdapter<Vessel>> getExactAdapters() {
-        return Collections.singleton(Message.VESSEL_NAME);
+        return Collections.singleton(MessageAdapters.VESSEL_NAME);
     }
 
 }

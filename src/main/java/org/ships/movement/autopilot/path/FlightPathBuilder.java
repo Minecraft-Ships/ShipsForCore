@@ -77,7 +77,7 @@ public class FlightPathBuilder {
             this.addCheckpoint(new FlightCheckpoint(world.getPosition(to.getX(), travelHeight, to.getZ())));
         }
         if (travelHeight != to.getY()) {
-            this.addCheckpoint(new FlightCheckpoint(Position.toBlock(world.getPosition(to))));
+            this.addCheckpoint(new FlightCheckpoint(world.getPosition(to).toBlockPosition()));
         }
         this.asExact = false;
         this.name = "Autopilot";

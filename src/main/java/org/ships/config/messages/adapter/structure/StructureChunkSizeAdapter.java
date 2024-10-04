@@ -36,6 +36,6 @@ public class StructureChunkSizeAdapter implements MessageAdapter<PositionableShi
 
     @Override
     public Component processMessage(@NotNull PositionableShipsStructure obj) {
-        return Component.text(obj.getChunks().size() + "");
+        return Component.text(obj.getLoadedChunks().count() + "");
     }
 }

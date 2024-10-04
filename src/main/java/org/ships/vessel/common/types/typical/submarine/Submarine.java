@@ -40,18 +40,6 @@ public class Submarine extends AbstractShipsVessel implements UnderWaterType, Ve
             Parser.STRING_TO_ITEM_TYPE, "Block", "Fuel", "Types");
     private final Collection<Requirement<?>> requirements = new HashSet<>();
 
-    @Deprecated(forRemoval = true)
-    public Submarine(ShipType<? extends Submarine> type, LiveTileEntity licence) throws NoLicencePresent {
-        super(licence, type);
-        this.initRequirements();
-    }
-
-    @Deprecated(forRemoval = true)
-    public Submarine(ShipType<? extends Submarine> type, SignTileEntity ste, SyncBlockPosition position) {
-        super(ste, position, type);
-        this.initRequirements();
-    }
-
     public Submarine(@NotNull LiveSignTileEntity licence,
                      boolean isFrontOfSign,
                      @NotNull ShipType<? extends AbstractShipsVessel> type) {

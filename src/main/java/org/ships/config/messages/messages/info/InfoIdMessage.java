@@ -25,7 +25,7 @@ public class InfoIdMessage implements Message<Vessel> {
         return Component
                 .text("Id: ")
                 .color(NamedTextColor.AQUA)
-                .append(Component.text("%" + Message.VESSEL_ID.adapterText() + "%").color(NamedTextColor.GOLD));
+                .append(Component.text("%" + MessageAdapters.VESSEL_ID.adapterText() + "%").color(NamedTextColor.GOLD));
     }
 
     @Override

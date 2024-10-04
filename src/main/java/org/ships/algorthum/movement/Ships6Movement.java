@@ -2,30 +2,22 @@ package org.ships.algorthum.movement;
 
 import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
-import org.core.config.ConfigurationNode;
-import org.core.config.ConfigurationStream;
-import org.core.config.parser.Parser;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
-import org.core.world.position.block.details.data.keyed.TileEntityKeyedData;
-import org.jetbrains.annotations.NotNull;
-import org.ships.config.messages.AdventureMessageConfig;
-import org.ships.config.node.DedicatedNode;
-import org.ships.config.node.ObjectDedicatedNode;
-import org.ships.config.node.RawDedicatedNode;
+import org.core.world.position.block.BlockTypes;
+import org.ships.config.configuration.ShipsConfig;
+import org.ships.config.messages.Messages;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.move.MoveException;
-import org.ships.movement.MovementContext;
-import org.ships.movement.MovingBlock;
-import org.ships.movement.MovingBlockSet;
-import org.ships.movement.Result;
+import org.ships.movement.*;
 import org.ships.movement.instruction.actions.PostMovement;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
 
-import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -83,7 +75,6 @@ public class Ships6Movement implements BasicMovement {
         private final int current;
         private final int totalBlocks;
 
-
         private SetBlocks(int current, int totalBlocks, MovementContext context, List<? extends MovingBlock> blocks) {
             this.toProcess = blocks;
             this.context = context;
@@ -98,7 +89,7 @@ public class Ships6Movement implements BasicMovement {
                 final int finalIndex = index;
                 this.context.getAdventureBossBar().ifPresent(bar -> {
                     int currentBlock = this.current + finalIndex;
-                    float progress = (float) currentBlock / totalBlocks;
+                    float progress = (float) currentBlock / this.totalBlocks;
                     progress = Math.max(progress, 0);
                     progress = Math.min(progress, 1);
                     bar.progress(progress);
@@ -112,13 +103,22 @@ public class Ships6Movement implements BasicMovement {
 
     @Override
     public Result move(Vessel vessel, MovementContext context) throws MoveException {
-        var config = ShipsPlugin.getPlugin().getConfig();
+        ShipsConfig config = ShipsPlugin.getPlugin().getConfig();
         int stackLimit = config.getDefaultMovementStackLimit();
         TimeUnit stackDelayUnit = config.getDefaultMovementStackDelayUnit();
         int stackDelay = config.getDefaultMovementStackDelay();
 
         context.getAdventureBossBar().ifPresent(b -> b.progress(0));
-        List<MovingBlock> blocks = context.getMovingStructure().order(MovingBlockSet.ORDER_ON_PRIORITY);
+        List<MovingBlock> blocks = new LinkedList<>(context.getMovingStructure());
+        if (!blocks.isEmpty()) {
+            var action = blocks.get(0).getAction();
+            vessel
+                    .getStructure()
+                    .getAir()
+                    .forEach(pos -> blocks.add(
+                            new SetMovingBlock(pos, action, BlockTypes.AIR.getDefaultBlockDetails())));
+        }
+        blocks.sort(MovingBlockSet.ORDER_ON_PRIORITY);
         List<List<MovingBlock>> blocksToProcess = new LinkedList<>();
         List<MovingBlock> currentlyAdding = new LinkedList<>();
         context.getAdventureBossBar().ifPresent(bar -> bar.name(Component.text("Movement: optimising ")));
@@ -193,7 +193,7 @@ public class Ships6Movement implements BasicMovement {
             placedBlocks = placedBlocks + blocks2.size();
         }
         if (scheduler == null) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_FAILED_IN_MOVEMENT, vessel);
+            throw new MoveException(context, Messages.ERROR_FAILED_IN_MOVEMENT, vessel);
         }
         scheduler.run();
 

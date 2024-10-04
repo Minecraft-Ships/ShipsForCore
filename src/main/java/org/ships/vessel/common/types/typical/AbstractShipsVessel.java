@@ -32,11 +32,14 @@ import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.assits.shiptype.SizedShipType;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.flag.VesselFlag;
+import org.ships.vessel.common.flag.VesselFlags;
 import org.ships.vessel.common.loader.shipsvessel.ShipsFileLoader;
 import org.ships.vessel.common.requirement.Requirement;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -60,17 +63,6 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     protected boolean isLoading = true;
     protected String cachedName;
 
-    @Deprecated(forRemoval = true)
-    public AbstractShipsVessel(@NotNull LiveTileEntity licence, @NotNull ShipType<? extends AbstractShipsVessel> type)
-            throws NoLicencePresent {
-        this((LiveSignTileEntity) licence, ShipsPlugin
-                .getPlugin()
-                .get(LicenceSign.class)
-                .flatMap(lic -> lic.getSide((SignTileEntity) licence))
-                .orElseThrow(() -> new IllegalStateException("Invalid license sign"))
-                .isFront(), type);
-    }
-
     public AbstractShipsVessel(@SuppressWarnings("TypeMayBeWeakened") @NotNull LiveSignTileEntity licence,
                                boolean isFrontOfSign,
                                @NotNull ShipType<? extends AbstractShipsVessel> type) {
@@ -86,25 +78,13 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
         }
     }
 
-    @Deprecated(forRemoval = true)
-    public AbstractShipsVessel(@NotNull SignTileEntity ste,
-                               @NotNull SyncBlockPosition position,
-                               @NotNull ShipType<? extends AbstractShipsVessel> type) {
-        this(ShipsPlugin
-                     .getPlugin()
-                     .get(LicenceSign.class)
-                     .flatMap(licence -> licence.getSide(ste))
-                     .orElseThrow(() -> new IllegalStateException("Not valid sign")), position, type);
-    }
-
     public AbstractShipsVessel(SignSide signSide,
                                SyncBlockPosition position,
                                ShipType<? extends AbstractShipsVessel> type) {
         this.isFrontOfSign = signSide.isFront();
         this.positionableShipsStructure = new AbstractPositionableShipsStructure(position);
-        this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData/" + ShipsPlugin
-                .getPlugin()
-                .getAllShipTypes()
+        this.file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "VesselData/" + ShipTypes
+                .shipTypes()
                 .stream()
                 .filter(t -> signSide
                         .getLineAt(1)
@@ -125,10 +105,9 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     private void init(ShipType<? extends AbstractShipsVessel> type) {
-        ConfigurationStream.ConfigurationFile configuration = TranslateCore.createConfigurationFile(this.file,
-                                                                                                    TranslateCore
-                                                                                                            .getPlatform()
-                                                                                                            .getConfigFormat());
+        ConfigurationStream.ConfigurationFile configuration = TranslateCore
+                .getConfigManager()
+                .read(this.file, TranslateCore.getPlatform().getConfigFormat());
         this.file = configuration.getFile();
         this.type = type;
 
@@ -191,44 +170,14 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 .setConnectedVessel(this)
                 .getConnectedBlocksOvertime(this.getPosition(), update)
                 .thenApplyAsync(updatedStructure -> {
-                    Set<Vector3<Integer>> updatedBlocks = updatedStructure
-                            .getAsyncedPositionsRelativeToWorld()
-                            .parallelStream()
-                            .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
-                            .map(Position::getPosition)
-                            .collect(Collectors.toSet());
-
                     PositionableShipsStructure currentStructure = this.getStructure();
-                    boolean sameStructure = currentStructure
-                            .getAsyncedPositionsRelativeToWorld()
-                            .parallelStream()
-                            .filter(position -> !position.getBlockType().equals(BlockTypes.AIR))
-                            .map(Position::getPosition)
-                            .allMatch(updatedBlocks::contains);
-                    if (sameStructure) {
-                        currentStructure.setPosition(updatedStructure.getPosition());
-                    }
-                    return Map.entry(currentStructure, sameStructure);
+                    boolean sameStructure = currentStructure.matchStructure(updatedStructure);
+                    return Map.entry(updatedStructure, sameStructure);
                 })
                 .thenCompose(entry -> {
                     PositionableShipsStructure updated = entry.getKey();
-                    if (entry.getValue()) {
-                        return CompletableFuture.completedFuture(entry);
-                    }
-                    if (AbstractShipsVessel.this instanceof WaterType) {
-                        CompletableFuture<PositionableShipsStructure> filled = updated.fillAir();
-                        return filled.thenApply(structure -> Map.entry(structure, entry.getValue()));
-                    }
-                    return CompletableFuture.completedFuture(entry);
-                })
-                .thenCompose(entry -> {
-                    PositionableShipsStructure updated = entry.getKey();
-                    if (entry.getValue()) {
-                        return CompletableFuture.completedFuture(updated);
-                    }
-                    this.setStructure(updated);
-                    if (AbstractShipsVessel.this instanceof WaterType) {
-                        return updated.fillAir();
+                    if (!entry.getValue()) {
+                        this.setStructure(updated);
                     }
                     return CompletableFuture.completedFuture(updated);
                 });
@@ -248,7 +197,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     public <T> @NotNull Vessel set(@NotNull Class<? extends VesselFlag<T>> flag, T value) {
         Optional<VesselFlag<?>> opFlag = this.getFlags().stream().filter(flag::isInstance).findFirst();
         if (opFlag.isEmpty()) {
-            Optional<? extends VesselFlag<T>> opNewFlag = ShipsPlugin.getPlugin().get(flag);
+            Optional<? extends VesselFlag<T>> opNewFlag = VesselFlags.getDefault(flag);
             if (opNewFlag.isEmpty()) {
                 Component error = Component.text(
                         "Class of '" + flag.getName() + "' is not registered in ShipsPlugin.Failed to set for '"
@@ -256,7 +205,7 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 TranslateCore.getConsole().sendMessage(error);
                 return this;
             }
-            VesselFlag<T> vFlag = opNewFlag.get();
+            VesselFlag<T> vFlag = opNewFlag.get().clone();
             vFlag.setValue(value);
             this.flags.add(vFlag);
             return this;

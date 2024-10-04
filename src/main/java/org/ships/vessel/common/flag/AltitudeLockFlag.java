@@ -47,6 +47,11 @@ public class AltitudeLockFlag implements VesselFlag<Boolean> {
         return "Altitude Lock";
     }
 
+    @Override
+    public VesselFlag<Boolean> clone() {
+        return VesselFlag.super.clone();
+    }
+
     public static class Builder extends VesselFlag.Builder<Boolean, AltitudeLockFlag> {
 
         @Override

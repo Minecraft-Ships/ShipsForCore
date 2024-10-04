@@ -21,7 +21,7 @@ public class WheelSign implements ShipsSign {
 
     @Override
     public boolean isSign(List<? extends Component> lines) {
-        return lines.size() >= 1 && ComponentUtils
+        return !lines.isEmpty() && ComponentUtils
                 .toPlain(lines.get(0))
                 .equalsIgnoreCase(ComponentUtils.toPlain(SIGN.get(0)));
 

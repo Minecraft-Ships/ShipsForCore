@@ -1,5 +1,7 @@
 package org.ships.exceptions.load;
 
+import org.ships.plugin.ShipsPlugin;
+
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -15,19 +17,19 @@ public class WrappedFileLoadVesselException extends FileLoadVesselException {
 
     @Override
     public void printStackTrace() {
-        System.err.println("An error occurred in file: " + this.getFile().getPath());
+        ShipsPlugin.getPlugin().getLogger().error("An error occurred in file: " + this.getFile().getPath());
         this.throwable.printStackTrace();
     }
 
     @Override
     public void printStackTrace(PrintStream stream) {
-        System.err.println("An error occurred in file: " + this.getFile().getPath());
+        ShipsPlugin.getPlugin().getLogger().error("An error occurred in file: " + this.getFile().getPath());
         this.throwable.printStackTrace(stream);
     }
 
     @Override
     public void printStackTrace(PrintWriter writer) {
-        System.err.println("An error occurred in file: " + this.getFile().getPath());
+        ShipsPlugin.getPlugin().getLogger().error("An error occurred in file: " + this.getFile().getPath());
         this.throwable.printStackTrace(writer);
     }
 }

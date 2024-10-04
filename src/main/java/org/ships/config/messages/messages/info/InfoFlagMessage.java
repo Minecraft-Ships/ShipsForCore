@@ -25,7 +25,7 @@ public class InfoFlagMessage implements Message<VesselFlag<?>> {
         return Component
                 .text("Flags: ")
                 .color(NamedTextColor.AQUA)
-                .append(Component.text(Message.VESSEL_FLAG_ID.adapterTextFormat()).color(NamedTextColor.GOLD));
+                .append(Component.text(MessageAdapters.VESSEL_FLAG_ID.adapterTextFormat()).color(NamedTextColor.GOLD));
     }
 
     @Override

@@ -2,7 +2,6 @@ package org.ships.movement.instruction.details;
 
 import net.kyori.adventure.bossbar.BossBar;
 import org.core.TranslateCore;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.position.impl.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,11 +45,6 @@ public class MovementDetails {
 
     public Optional<BlockPosition> getClickedBlock() {
         return Optional.ofNullable(this.clickedBlock);
-    }
-
-    @Deprecated(forRemoval = true)
-    public Optional<ServerBossBar> getBossBar() {
-        return getAdventureBossBar().map(TranslateCore::createBossBar);
     }
 
     public Optional<BossBar> getAdventureBossBar() {

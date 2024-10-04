@@ -48,6 +48,11 @@ public class CooldownFlag implements VesselFlag<TimeRange> {
         return new Builder();
     }
 
+    @Override
+    public CooldownFlag clone() {
+        return (CooldownFlag) VesselFlag.super.clone();
+    }
+
     public static class Builder extends VesselFlag.Builder<TimeRange, CooldownFlag> {
 
         @Override

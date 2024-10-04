@@ -6,6 +6,7 @@ import org.core.config.parser.Parser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.exceptions.move.MoveException;
 import org.ships.movement.MovementContext;
 import org.ships.vessel.common.types.Vessel;
@@ -61,7 +62,7 @@ public class MaxSizeRequirement implements Requirement<MaxSizeRequirement> {
             return;
         }
         if (opMaxSize.getAsInt() < size) {
-            throw new MoveException(context, AdventureMessageConfig.ERROR_OVERSIZED,
+            throw new MoveException(context, Messages.ERROR_OVERSIZED,
                                     new AbstractMap.SimpleEntry<>(vessel, size - opMaxSize.getAsInt()));
         }
     }

@@ -36,7 +36,7 @@ public class LegacyShipsConfig implements Config {
 
     public LegacyShipsConfig() {
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(), "Configuration/Config.yml");
-        this.configuration = TranslateCore.createConfigurationFile(file, ConfigurationFormat.FORMAT_YAML);
+        this.configuration = TranslateCore.getConfigManager().read(file, ConfigurationFormat.FORMAT_YAML);
     }
 
     @Override

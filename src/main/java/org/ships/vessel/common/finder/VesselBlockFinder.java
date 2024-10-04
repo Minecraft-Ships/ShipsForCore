@@ -36,10 +36,7 @@ public final class VesselBlockFinder {
                 .filter(v -> v.getStructure().getBounds().contains(position.getPosition()))
                 .filter(v -> {
                     PositionableShipsStructure pss = v.getStructure();
-                    Collection<ASyncBlockPosition> collection = pss.getAsyncedPositionsRelativeToWorld();
-                    return collection
-                            .parallelStream()
-                            .map(Position::getPosition)
+                    return pss.getVectorsRelativeToWorld()
                             .anyMatch(p -> p.equals(position.getPosition()));
                 })
                 .findAny();
@@ -50,7 +47,7 @@ public final class VesselBlockFinder {
     }
 
     public static CompletableFuture<Map.Entry<PositionableShipsStructure, Optional<Vessel>>> findOvertime(BlockPosition position,
-                                                                                                          BiConsumer<PositionableShipsStructure, BlockPosition> consumer) {
+                                                                                                          BiConsumer<PositionableShipsStructure, Vector3<Integer>> consumer) {
         Optional<Vessel> opVessel = findCachedVessel(position);
         if (opVessel.isPresent()) {
             Map.Entry<@NotNull PositionableShipsStructure, Optional<Vessel>> ret = Map.entry(
@@ -69,9 +66,8 @@ public final class VesselBlockFinder {
                 .getPlugin()
                 .getConfig()
                 .getDefaultFinder()
-                .getConnectedBlocksOvertime(position, (currentStructure, block) -> {
-                    consumer.accept(currentStructure, block);
-                    Vector3<Integer> pos = block.getPosition();
+                .getConnectedBlocksOvertime(position, (currentStructure, pos) -> {
+                    consumer.accept(currentStructure, pos);
                     Vessel vessel = map.get(pos);
                     if (vessel == null) {
                         return OvertimeBlockFinderUpdate.BlockFindControl.USE;

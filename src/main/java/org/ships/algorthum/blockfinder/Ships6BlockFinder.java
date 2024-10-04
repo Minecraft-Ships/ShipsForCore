@@ -1,9 +1,6 @@
 package org.ships.algorthum.blockfinder;
 
 import org.core.TranslateCore;
-import org.core.config.ConfigurationNode;
-import org.core.config.ConfigurationStream;
-import org.core.config.parser.Parser;
 import org.core.schedule.Scheduler;
 import org.core.schedule.unit.TimeUnit;
 import org.core.world.direction.Direction;
@@ -16,16 +13,15 @@ import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.config.configuration.ShipsConfig;
-import org.ships.config.node.DedicatedNode;
-import org.ships.config.node.ObjectDedicatedNode;
-import org.ships.config.node.RawDedicatedNode;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
-import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -107,8 +103,8 @@ public class Ships6BlockFinder implements BasicBlockFinder {
             Scheduler scheduler = TranslateCore
                     .getScheduleManager()
                     .schedule()
-                    .setDelay(stackDelay)
-                    .setDelayUnit(stackDelayUnit)
+                    .setDelay(this.stackDelay)
+                    .setDelayUnit(this.stackDelayUnit)
                     .setRunner((sch1) -> {
                         if ((this.total.size() <= Ships6BlockFinder.this.limit) && (!this.ret.isEmpty())) {
                             this.process = this.ret;
@@ -117,8 +113,8 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                             TranslateCore
                                     .getScheduleManager()
                                     .schedule()
-                                    .setDelay(stackDelay)
-                                    .setDelayUnit(stackDelayUnit)
+                                    .setDelay(this.stackDelay)
+                                    .setDelayUnit(this.stackDelayUnit)
                                     .setRunner(this.runnable)
                                     .setDisplayName("Ships 6 ASync Block Finder")
                                     .buildDelayed(ShipsPlugin.getPlugin())
@@ -134,14 +130,14 @@ public class Ships6BlockFinder implements BasicBlockFinder {
                 scheduler = TranslateCore
                         .getScheduleManager()
                         .schedule()
-                        .setDelay(stackDelay)
-                        .setDelayUnit(stackDelayUnit)
+                        .setDelay(this.stackDelay)
+                        .setDelayUnit(this.stackDelayUnit)
                         .setRunner((scheduler2) -> {
                             OvertimeSection section = new OvertimeSection(list, this.total);
                             section.runnable.accept(scheduler2);
                             section.ret.forEach(p -> {
                                 OvertimeBlockFinderUpdate.BlockFindControl blockFind = this.update.onBlockFind(this.pss,
-                                                                                                               p);
+                                                                                                               p.getPosition());
                                 if (blockFind == OvertimeBlockFinderUpdate.BlockFindControl.IGNORE) {
                                     return;
                                 }
@@ -177,7 +173,7 @@ public class Ships6BlockFinder implements BasicBlockFinder {
     public CompletableFuture<PositionableShipsStructure> getConnectedBlocksOvertime(@NotNull BlockPosition position,
                                                                                     @NotNull OvertimeBlockFinderUpdate runAfterFullSearch) {
         CompletableFuture<PositionableShipsStructure> future = new CompletableFuture<>();
-        var configuration = ShipsPlugin.getPlugin().getConfig();
+        ShipsConfig configuration = ShipsPlugin.getPlugin().getConfig();
         Overtime overtime = new Overtime(position.toSyncPosition(), runAfterFullSearch, configuration, future);
         TranslateCore
                 .getScheduleManager()

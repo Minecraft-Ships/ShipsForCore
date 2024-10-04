@@ -12,9 +12,12 @@ import org.jetbrains.annotations.NotNull;
 import org.ships.permissions.vessel.CrewPermission;
 import org.ships.plugin.ShipsPlugin;
 import org.ships.vessel.common.types.ShipType;
+import org.ships.vessel.common.types.ShipTypes;
 import org.ships.vessel.common.types.typical.ShipsVessel;
 import org.ships.vessel.common.types.typical.airship.Airship;
 import org.ships.vessel.converts.vessel.VesselConverter;
+import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,11 +64,14 @@ public class Ships5VesselConverter implements VesselConverter<ShipsVessel> {
         if (!(lte instanceof LiveSignTileEntity)) {
             throw new IOException("Unable to locate licence sign");
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity)lte;
+        LiveSignTileEntity lste = (LiveSignTileEntity) lte;
+        var side = ShipsSigns.LICENCE
+                .getSide(lste)
+                .orElseThrow(() -> new IOException("Unable to read side of licence sign"));
         ShipsVessel vessel;
         switch (type) {
             case "Airship":
-                vessel = ShipType.AIRSHIP.createNewVessel(lste);
+                vessel = ShipTypes.AIRSHIP.createNewVessel(side, lste.getPosition());
                 if (consumption != null) {
                     ((Airship) vessel).setFuelConsumption(consumption);
                 }

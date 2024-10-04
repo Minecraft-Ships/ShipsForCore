@@ -1,7 +1,7 @@
 package org.ships.commands.argument.blocklist.set;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypesArgument;
@@ -10,7 +10,6 @@ import org.core.command.argument.arguments.simple.number.IntegerArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.blocks.instruction.ModifiableBlockInstruction;
@@ -32,8 +31,9 @@ public class ShipsBlockListSetBlockLimitArgumentCommand implements ArgumentComma
     @Override
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(SHIP_BLOCK_LIST_ARGUMENT), new ExactArgument(SHIP_SET_ARGUMENT),
-                new ExactArgument(SHIP_BLOCK_LIMIT_ARGUMENT), new IntegerArgument(SHIP_LIMIT_VALUE_ARGUMENT),
-                new BlockTypesArgument(SHIP_BLOCK_TYPE_ARGUMENT));
+                             new ExactArgument(SHIP_BLOCK_LIMIT_ARGUMENT),
+                             new IntegerArgument(SHIP_LIMIT_VALUE_ARGUMENT),
+                             new BlockTypesArgument(SHIP_BLOCK_TYPE_ARGUMENT));
     }
 
     @Override
@@ -56,13 +56,13 @@ public class ShipsBlockListSetBlockLimitArgumentCommand implements ArgumentComma
                 .stream()
                 .filter(bi -> blocks.stream().anyMatch(b -> bi.getType().equals(b)))
                 .filter(bi -> bi instanceof ModifiableBlockInstruction)
-                .forEach(bi -> blocklist.replaceBlockInstruction(((ModifiableBlockInstruction)bi).setBlockLimit(limit)));
+                .forEach(bi -> blocklist.replaceBlockInstruction(
+                        ((ModifiableBlockInstruction) bi).setBlockLimit(limit)));
         blocklist.saveChanges();
-        if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(AText.ofPlain(blocks.size() + " have been set to" +
-                    " have a block limit of " + limit).withColour(NamedTextColours.AQUA));
-
-        }
+        Component text = Component
+                .text(blocks.size() + " have been set to have a block limit of " + limit)
+                .color(NamedTextColor.AQUA);
+        commandContext.getSource().sendMessage(text);
         return true;
     }
 }

@@ -1,5 +1,6 @@
 package org.ships.vessel.common.loader;
 
+import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
 import org.core.world.position.impl.BlockPosition;
@@ -16,6 +17,7 @@ import org.ships.vessel.common.assits.WaterType;
 import org.ships.vessel.common.finder.ShipsSignVesselFinder;
 import org.ships.vessel.common.types.Vessel;
 import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 import org.ships.vessel.structure.AbstractPositionableShipsStructure;
 import org.ships.vessel.structure.PositionableShipsStructure;
 
@@ -36,7 +38,7 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
     protected abstract void onStructureUpdate(Vessel vessel);
 
     protected abstract OvertimeBlockFinderUpdate.BlockFindControl onBlockFind(PositionableShipsStructure currentStructure,
-                                                                              BlockPosition block);
+                                                                              Vector3<Integer> block);
 
     protected abstract void onExceptionThrown(LoadVesselException e);
 
@@ -46,14 +48,9 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
             Optional<Vessel> opVessel = vessels
                     .parallelStream()
                     .filter(vessel -> vessel.getPosition().getWorld().equals(this.original.getWorld()))
-                    .filter(v -> {
-                        Collection<ASyncBlockPosition> positions = v
-                                .getStructure()
-                                .getPositionsRelativeTo(Position.toASync(this.original));
-                        return positions
-                                .parallelStream()
-                                .anyMatch(position -> position.getPosition().equals(this.original.getPosition()));
-                    })
+                    .filter(v -> v
+                            .getStructure()
+                            .getVectorsRelativeTo(this.original.getPosition()).anyMatch(position -> position.equals(this.original.getPosition())))
                     .findAny();
             if (opVessel.isEmpty()) {
                 this.onExceptionThrown(
@@ -67,21 +64,16 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
 
 
         BasicBlockFinder finder = ShipsPlugin.getPlugin().getConfig().getDefaultFinder();
-        CompletableFuture<Optional<Vessel>> opVesselFuture = finder
-                .getConnectedBlocksOvertime(this.original, ShipsOvertimeUpdateBlockLoader.this::onBlockFind)
+        return finder
+                .getConnectedBlocksOvertime(this.original, this::onBlockFind)
                 .thenApply(structure -> {
-                    LicenceSign ls = ShipsPlugin
-                            .getPlugin()
-                            .get(LicenceSign.class)
-                            .orElseThrow(() -> new IllegalStateException("Could" + " not get licence"));
-                    Optional<SyncBlockPosition> opBlock = structure.getAll(SignTileEntity.class).stream().filter(b -> {
-                        SignTileEntity lste = (SignTileEntity) b
-                                .getTileEntity()
-                                .orElseThrow(() -> new IllegalStateException("Could not get tile entity"));
-                        return ls.isSign(lste);
-                    }).findAny();
+                    LicenceSign ls = ShipsSigns.LICENCE;
+                    Optional<SyncBlockPosition> opBlock = structure
+                            .getRelativeToWorld(ls)
+                            .findAny()
+                            .map(LiveTileEntity::getPosition);
                     if (opBlock.isEmpty()) {
-                        ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(
+                        this.onExceptionThrown(
                                 new UnableToFindLicenceSign(structure, "Failed to find licence sign"));
                         return Optional.empty();
                     }
@@ -97,20 +89,12 @@ public abstract class ShipsOvertimeUpdateBlockLoader extends ShipsUpdateBlockLoa
                         Vessel vessel = ShipsSignVesselFinder.find((SignTileEntity) tileEntity);
                         vessel.setStructure(structure2);
 
-                        ShipsOvertimeUpdateBlockLoader.this.onStructureUpdate(vessel);
+                        this.onStructureUpdate(vessel);
                         return Optional.of(vessel);
                     } catch (LoadVesselException e) {
-                        ShipsOvertimeUpdateBlockLoader.this.onExceptionThrown(e);
+                        this.onExceptionThrown(e);
                         return Optional.empty();
                     }
                 });
-        return opVesselFuture.thenCompose(opVessel -> {
-            if (opVessel.isPresent()) {
-                if (opVessel.get() instanceof WaterType) {
-                    return opVessel.get().getStructure().fillAir().thenApply(pss -> opVessel);
-                }
-            }
-            return CompletableFuture.completedFuture(opVessel);
-        });
     }
 }

@@ -25,7 +25,7 @@ public class ErrorTooManyOfBlockMessage implements Message<Map.Entry<Vessel, Blo
     @Override
     public Component getDefaultMessage() {
         return Component
-                .text("Too many of " + Message.BLOCK_TYPE_NAME.adapterTextFormat() + " found")
+                .text("Too many of " + MessageAdapters.BLOCK_TYPE_NAME.adapterTextFormat() + " found")
                 .color(NamedTextColor.RED);
     }
 

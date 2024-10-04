@@ -1,7 +1,7 @@
 package org.ships.commands.argument.blocklist;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -10,7 +10,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
 import org.ships.permissions.Permissions;
@@ -43,7 +42,7 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
         if (source instanceof LivePlayer) {
             return ((LivePlayer) source).hasPermission(this.getPermissionNode().get());
         }
-        return source instanceof CommandViewer;
+        return true;
     }
 
     @Override
@@ -57,12 +56,12 @@ public class ShipsBlockListViewArgumentCommand implements ArgumentCommand {
         for (BlockInstruction bi : bl) {
             values.replace(bi.getCollide(), values.get(bi.getCollide()) + 1);
         }
-        values.forEach((c, a) -> viewer.sendMessage(AText
-                                                            .ofPlain(c.name() + ": ")
-                                                            .withColour(NamedTextColours.AQUA)
-                                                            .append(AText
-                                                                            .ofPlain(a.toString())
-                                                                            .withColour(NamedTextColours.YELLOW))));
+        values.forEach((c, a) -> viewer.sendMessage(Component
+                                                            .text(c.name() + ": ")
+                                                            .color(NamedTextColor.AQUA)
+                                                            .append(Component
+                                                                            .text(a.toString())
+                                                                            .color(NamedTextColor.YELLOW))));
         return true;
     }
 }

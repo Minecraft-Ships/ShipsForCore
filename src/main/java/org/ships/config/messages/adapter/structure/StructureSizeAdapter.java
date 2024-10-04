@@ -36,6 +36,6 @@ public class StructureSizeAdapter implements MessageAdapter<PositionableShipsStr
 
     @Override
     public Component processMessage(@NotNull PositionableShipsStructure obj) {
-        return Component.text((obj.getOriginalRelativePositionsToCenter().size() + 1) + "");
+        return Component.text((obj.size() + 1) + "");
     }
 }

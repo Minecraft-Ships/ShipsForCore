@@ -6,8 +6,8 @@ import org.core.TranslateCore;
 import org.core.entity.Entity;
 import org.core.entity.EntitySnapshot;
 import org.core.entity.LiveEntity;
+import org.core.entity.living.human.player.LivePlayer;
 import org.core.utils.BarUtils;
-import org.core.world.boss.ServerBossBar;
 import org.core.world.direction.FourFacingDirection;
 import org.core.world.position.block.BlockType;
 import org.core.world.position.impl.BlockPosition;
@@ -18,7 +18,7 @@ import org.ships.algorthum.movement.BasicMovement;
 import org.ships.config.blocks.BlockList;
 import org.ships.config.blocks.instruction.BlockInstruction;
 import org.ships.config.blocks.instruction.CollideType;
-import org.ships.config.messages.AdventureMessageConfig;
+import org.ships.config.messages.Messages;
 import org.ships.config.messages.messages.error.data.CollideDetectedMessageData;
 import org.ships.event.vessel.move.VesselMoveEvent;
 import org.ships.exceptions.move.MoveException;
@@ -31,13 +31,14 @@ import org.ships.vessel.common.assits.SignBasedVessel;
 import org.ships.vessel.common.assits.VesselRequirement;
 import org.ships.vessel.common.flag.MovingFlag;
 import org.ships.vessel.common.types.Vessel;
-import org.ships.vessel.sign.LicenceSign;
+import org.ships.vessel.sign.ShipsSigns;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MovementContext {
 
@@ -52,11 +53,6 @@ public class MovementContext {
 
     public Optional<BlockPosition> getClicked() {
         return this.details.getClickedBlock();
-    }
-
-    @Deprecated(forRemoval = true)
-    public Optional<ServerBossBar> getBossBar() {
-        return this.details.getBossBar();
     }
 
     public Optional<BossBar> getAdventureBossBar() {
@@ -120,21 +116,23 @@ public class MovementContext {
         this.isVesselMoving(vessel);
         vessel.set(MovingFlag.class, this);
         Consumer<? super Collection<LiveEntity>> consumer = entities -> {
-            try {
-                this.movePostEntity(vessel);
-            } catch (Throwable e) {
-                this
-                        .getAdventureBossBar()
-                        .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar)));
-                vessel.set(new MovingFlag());
-                entities.forEach(entity -> entity.setGravity(true));
-                this.getException().accept(this, e);
+            TranslateCore.getScheduleManager().schedule().setAsync(false).setRunner(sch -> {
+                try {
+                    this.movePostEntity(vessel);
+                } catch (Throwable e) {
+                    this
+                            .getAdventureBossBar()
+                            .ifPresent(bar -> BarUtils.getPlayers(bar).forEach(player -> player.hideBossBar(bar)));
+                    vessel.set(new MovingFlag());
+                    entities.forEach(entity -> entity.setGravity(true));
+                    this.getException().accept(this, e);
 
-                if (e instanceof MoveException) {
-                    return;
+                    if (e instanceof MoveException) {
+                        return;
+                    }
+                    e.printStackTrace();
                 }
-                e.printStackTrace();
-            }
+            }).setDisplayName("Back to sync").buildDelayed(ShipsPlugin.getPlugin()).run();
         };
         if (updateStructure) {
             return vessel
@@ -152,7 +150,7 @@ public class MovementContext {
         });
 
         if (ShipsPlugin.getPlugin().getPreventMovementManager().isMovementPrevented()) {
-            throw new MoveException(this, AdventureMessageConfig.ERROR_PREVENT_MOVEMENT, vessel);
+            throw new MoveException(this, Messages.ERROR_PREVENT_MOVEMENT, vessel);
         }
 
         if (this.isPreMoveEventCancelled(vessel)) {
@@ -163,7 +161,7 @@ public class MovementContext {
             bossBar.progress(0.25f);
         });
         if (vessel instanceof SignBasedVessel) {
-            this.isLicenceSignValid((SignBasedVessel)vessel);
+            this.isLicenceSignValid((SignBasedVessel) vessel);
         }
         this.getAdventureBossBar().ifPresent(bossBar -> {
             bossBar.name(Component.text("Checking requirements: Vessel specific"));
@@ -210,11 +208,18 @@ public class MovementContext {
     }
 
     private void isClearFromColliding(@NotNull Vessel vessel) throws MoveException {
+        var player = vessel
+                .getPosition()
+                .getWorld()
+                .getLiveEntities()
+                .filter(e -> e instanceof LivePlayer)
+                .map(e -> (LivePlayer) e)
+                .findAny()
+                .orElseThrow();
         Set<SyncBlockPosition> collided = this.getMovingStructure().stream().filter(mb -> {
             SyncBlockPosition after = mb.getAfterPosition();
-            if (this.getMovingStructure().stream().anyMatch(mb1 -> {
-                return after.equals(mb1.getBeforePosition());
-            })) {
+
+            if (this.getMovingStructure().stream().anyMatch(mb1 -> after.equals(mb1.getBeforePosition()))) {
                 return false;
             }
             for (BlockType type : vessel.getType().getIgnoredTypes()) {
@@ -224,7 +229,10 @@ public class MovementContext {
             }
             BlockList list = ShipsPlugin.getPlugin().getBlockList();
             BlockInstruction bi = list.getBlockInstruction(after.getBlockType());
-            return bi.getCollide() != CollideType.IGNORE;
+            if (bi.getCollide() == CollideType.IGNORE) {
+                return false;
+            }
+            return true;
         }).map(MovingBlock::getAfterPosition).collect(Collectors.toSet());
         if (collided.isEmpty()) {
             return;
@@ -233,9 +241,9 @@ public class MovementContext {
         VesselMoveEvent.CollideDetected collideEvent = new VesselMoveEvent.CollideDetected(vessel, this, collided);
         TranslateCore.getPlatform().callEvent(collideEvent);
 
-        throw new MoveException(this, AdventureMessageConfig.ERROR_COLLIDE_DETECTED,
-                                new CollideDetectedMessageData(vessel,
-                                                               collided.parallelStream().collect(Collectors.toSet())));
+        throw new MoveException(this, Messages.ERROR_COLLIDE_DETECTED, new CollideDetectedMessageData(vessel, collided
+                .parallelStream()
+                .collect(Collectors.toSet())));
     }
 
     private void isRequirementsValid(VesselRequirement vessel) throws MoveException {
@@ -243,16 +251,11 @@ public class MovementContext {
     }
 
     private void isLicenceSignValid(Vessel vessel) throws MoveException {
-        Optional<MovingBlock> opLicence = this
-                .getMovingStructure()
-                .get(ShipsPlugin
-                             .getPlugin()
-                             .get(LicenceSign.class)
-                             .orElseThrow(() -> new RuntimeException("Could not find licence sign class")));
+        Optional<MovingBlock> opLicence = this.getMovingStructure().get(ShipsSigns.LICENCE);
         if (opLicence.isPresent()) {
             return;
         }
-        throw new MoveException(this, AdventureMessageConfig.ERROR_FAILED_TO_FIND_LICENCE_SIGN, vessel.getStructure());
+        throw new MoveException(this, Messages.ERROR_FAILED_TO_FIND_LICENCE_SIGN, vessel.getStructure());
     }
 
     private boolean isPreMoveEventCancelled(Vessel vessel) {
@@ -292,9 +295,8 @@ public class MovementContext {
         Optional<MovingBlock> mBlock = this.getMovingStructure().getBefore(opAttached.get());
         if (mBlock.isEmpty()) {
             SyncBlockPosition position = snapshot.getPosition().toBlockPosition();
-            Collection<SyncBlockPosition> positions = vessel.getStructure().getSyncedPositionsRelativeToWorld();
+            Stream<SyncBlockPosition> positions = vessel.getStructure().getPositionsRelativeToWorld();
             Optional<SyncBlockPosition> opDown = positions
-                    .stream()
                     .filter(f -> position.isInLineOfSight(f.getPosition(), FourFacingDirection.DOWN))
                     .findAny();
             if (opDown.isEmpty()) {
@@ -307,7 +309,7 @@ public class MovementContext {
         }
         this.entities.put(snapshot, mBlock.get());
         this.getAdventureBossBar().ifPresent(bossBar -> {
-            float progress = this.entities.size() / (float)totalSize;
+            float progress = this.entities.size() / (float) totalSize;
             progress = progress / 100;
 
             bossBar.name(Component.text("Collecting entities: " + this.entities.size()));
@@ -320,13 +322,13 @@ public class MovementContext {
         if (opMoving.isEmpty()) {
             return;
         }
-        throw new MoveException(this, AdventureMessageConfig.ERROR_ALREADY_MOVING, vessel);
+        throw new MoveException(this, Messages.ERROR_ALREADY_MOVING, vessel);
     }
 
     private void isVesselLoading(Vessel vessel) throws MoveException {
         if (!vessel.isLoading()) {
             return;
         }
-        throw new MoveException(this, AdventureMessageConfig.ERROR_VESSEL_STILL_LOADING, vessel);
+        throw new MoveException(this, Messages.ERROR_VESSEL_STILL_LOADING, vessel);
     }
 }

@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MoveSign implements ShipsSign {
@@ -42,7 +43,7 @@ public class MoveSign implements ShipsSign {
 
     @Override
     public boolean isSign(List<? extends Component> lines) {
-        return lines.size() >= 1 && ComponentUtils
+        return !lines.isEmpty() && ComponentUtils
                 .toPlain(lines.get(0))
                 .equalsIgnoreCase(ComponentUtils.toPlain(this.getSignText().get(0)));
     }
@@ -62,7 +63,7 @@ public class MoveSign implements ShipsSign {
         if (!(lte instanceof LiveSignTileEntity)) {
             return false;
         }
-        LiveSignTileEntity lste = (LiveSignTileEntity)lte;
+        LiveSignTileEntity lste = (LiveSignTileEntity) lte;
         String defaultSpeed = ShipsPlugin.getPlugin().getConfig().getDefaultMoveSpeed() + "";
         String name = this
                 .getSide(lste)
@@ -89,7 +90,10 @@ public class MoveSign implements ShipsSign {
             }
             player.sendMessage(Component.text("Could not find [Ships] sign").color(NamedTextColor.RED));
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
-            Collection<SyncBlockPosition> positions = entry.getKey().getSyncedPositionsRelativeToWorld();
+            Collection<SyncBlockPosition> positions = entry
+                    .getKey()
+                    .getPositionsRelativeToWorld()
+                    .collect(Collectors.toList());
             positions.forEach(bp -> bp.setBlock(BlockTypes.BEDROCK.getDefaultBlockDetails(), player));
             TranslateCore
                     .getScheduleManager()
@@ -169,8 +173,13 @@ public class MoveSign implements ShipsSign {
             ShipsPlugin.getPlugin().getLockedSignManager().unlock(position);
             player.sendMessage(
                     Component.text("Speed error: Your ship cannot move that fast").color(NamedTextColor.RED));
-            if (builder.getBossBar() != null) {
-                builder.getBossBar().deregisterPlayers();
+            if (builder.getAdventureBossBar() != null) {
+                position
+                        .getWorld()
+                        .getLiveEntities()
+                        .filter(p -> p instanceof LivePlayer)
+                        .map(p -> (LivePlayer) p)
+                        .forEach(p -> p.hideBossBar(builder.getAdventureBossBar()));
             }
             return;
         }
@@ -181,14 +190,19 @@ public class MoveSign implements ShipsSign {
                                        .text("Unknown error: " + position.getBlockType().getId() + " is not "
                                                      + "directional")
                                        .color(NamedTextColor.RED));
-            if (builder.getBossBar() != null) {
-                builder.getBossBar().deregisterPlayers();
+            if (builder.getAdventureBossBar() != null) {
+                position
+                        .getWorld()
+                        .getLiveEntities()
+                        .filter(p -> p instanceof LivePlayer)
+                        .map(p -> (LivePlayer) p)
+                        .forEach(p -> p.hideBossBar(builder.getAdventureBossBar()));
             }
             return;
         }
         Direction originalDirection = opDirectional.get().getDirection();
         if (originalDirection instanceof SixteenFacingDirection) {
-            SixteenFacingDirection sixteenFacingDir = (SixteenFacingDirection)originalDirection;
+            SixteenFacingDirection sixteenFacingDir = (SixteenFacingDirection) originalDirection;
             originalDirection = sixteenFacingDir.normal();
         }
         Vector3<Integer> direction = originalDirection.getOpposite().getAsVector().multiply(speed);

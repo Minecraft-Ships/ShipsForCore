@@ -1,7 +1,7 @@
 package org.ships.commands.argument.ship.data.block.special.percent;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;
@@ -45,7 +45,7 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
         if (!(vessel instanceof VesselRequirement)) {
             return false;
         }
-        VesselRequirement requirementVessel = (VesselRequirement)vessel;
+        VesselRequirement requirementVessel = (VesselRequirement) vessel;
         Optional<SpecialBlocksRequirement> opRequirement = requirementVessel.getRequirement(
                 SpecialBlocksRequirement.class);
         if (opRequirement.isEmpty()) {
@@ -57,14 +57,12 @@ public class ShipsDataSetSpecialBlockPercentCommand extends AbstractShipsDataSet
             if (value > 100) {
                 context
                         .getSource()
-                        .sendMessage(AText.ofPlain("Percent cannot be above 100%").withColour(NamedTextColours.RED));
+                        .sendMessage(Component.text("Percent cannot be above 100%").color(NamedTextColor.RED));
 
                 return false;
             }
             if (value < 0) {
-                context
-                        .getSource()
-                        .sendMessage(AText.ofPlain("Percent cannot be below 0%").withColour(NamedTextColours.RED));
+                context.getSource().sendMessage(Component.text("Percent cannot be below 0%").color(NamedTextColor.RED));
 
                 return false;
             }

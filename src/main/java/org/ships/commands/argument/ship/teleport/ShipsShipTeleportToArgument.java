@@ -1,7 +1,7 @@
 package org.ships.commands.argument.ship.teleport;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -12,7 +12,6 @@ import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.core.world.position.impl.ExactPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.arguments.ShipTeleportLocationArgument;
@@ -37,7 +36,9 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
                              new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
                                  if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
                                      User player = (User) source;
-                                     return ((CrewStoredVessel)vessel).getPermission(player.getUniqueId()).canCommand();
+                                     return ((CrewStoredVessel) vessel)
+                                             .getPermission(player.getUniqueId())
+                                             .canCommand();
                                  }
                                  return vessel instanceof TeleportToVessel;
                              }, v -> "Ship is not teleport capable"), new ExactArgument(this.SHIP_TELEPORT_ARGUMENT),
@@ -63,7 +64,7 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         CommandSource source = commandContext.getSource();
         if (!(source instanceof LivePlayer)) {
-                source.sendMessage(AText.ofPlain("Teleport requires to be ran as a player"));
+            source.sendMessage(Component.text("Teleport requires to be ran as a player"));
             return false;
         }
         LivePlayer player = (LivePlayer) source;
@@ -71,7 +72,7 @@ public class ShipsShipTeleportToArgument implements ArgumentCommand {
         String telPos = commandContext.getArgument(this, this.SHIP_LOCATION);
         ExactPosition position = tVessel.getTeleportPositions().get(telPos);
         if (position == null) {
-            player.sendMessage(AText.ofPlain("Unknown part of ship").withColour(NamedTextColours.RED));
+            player.sendMessage(Component.text("Unknown part of ship").color(NamedTextColor.RED));
             return false;
         }
         player.setPosition(position);
