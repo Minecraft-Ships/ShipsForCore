@@ -105,10 +105,9 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
     }
 
     private void init(ShipType<? extends AbstractShipsVessel> type) {
-        ConfigurationStream.ConfigurationFile configuration = TranslateCore.getConfigManager().read(this.file,
-                                                                                                    TranslateCore
-                                                                                                            .getPlatform()
-                                                                                                            .getConfigFormat());
+        ConfigurationStream.ConfigurationFile configuration = TranslateCore
+                .getConfigManager()
+                .read(this.file, TranslateCore.getPlatform().getConfigFormat());
         this.file = configuration.getFile();
         this.type = type;
 
@@ -173,24 +172,13 @@ public abstract class AbstractShipsVessel implements ShipsVessel {
                 .thenApplyAsync(updatedStructure -> {
                     PositionableShipsStructure currentStructure = this.getStructure();
                     boolean sameStructure = currentStructure.matchStructure(updatedStructure);
-                    if (sameStructure) {
-                        currentStructure.setPosition(updatedStructure.getPosition());
-                    }
-                    return Map.entry(currentStructure, sameStructure);
-                })
-                .thenComposeAsync(entry -> {
-                    PositionableShipsStructure updated = entry.getKey();
-                    if (entry.getValue()) {
-                        return CompletableFuture.completedFuture(entry);
-                    }
-                    return CompletableFuture.completedFuture(entry);
+                    return Map.entry(updatedStructure, sameStructure);
                 })
                 .thenCompose(entry -> {
                     PositionableShipsStructure updated = entry.getKey();
-                    if (entry.getValue()) {
-                        return CompletableFuture.completedFuture(updated);
+                    if (!entry.getValue()) {
+                        this.setStructure(updated);
                     }
-                    this.setStructure(updated);
                     return CompletableFuture.completedFuture(updated);
                 });
     }

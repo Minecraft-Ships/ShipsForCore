@@ -106,6 +106,9 @@ public class Ships6SingleAsyncBlockFinder implements BasicBlockFinder {
                                         Vector3<Integer> blockPosition = posEntry
                                                 .getKey()
                                                 .plus(direction.getAsVector());
+                                        if (blockPosition.equals(Vector3.valueOf(149, 64, 166))) {
+                                            System.out.println("Found");
+                                        }
                                         BlockDetails blockDetails = asyncChunks
                                                 .entrySet()
                                                 .stream()
