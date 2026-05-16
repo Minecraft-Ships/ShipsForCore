@@ -1,5 +1,6 @@
 package org.ships.commands.argument.ship.crew;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
@@ -68,7 +69,7 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
         }
 
         permissionsToShow.forEach(crewPermission -> {
-            viewer.sendMessage(AText.ofPlain(crewPermission.getName()));
+            viewer.sendMessage(Component.text(crewPermission.getName()));
             vessel
                     .getCrew(crewPermission)
                     .stream()
@@ -78,7 +79,7 @@ public class ShipViewCrewArgumentCommand implements ArgumentCommand {
 
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .forEach(user -> viewer.sendMessage(AText.ofPlain("- " + user.getName())));
+                    .forEach(user -> viewer.sendMessage(Component.text("- " + user.getName())));
         });
         return true;
     }

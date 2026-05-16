@@ -1,5 +1,6 @@
 package org.ships.vessel.common.types.typical;
 
+import net.kyori.adventure.text.Component;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
@@ -54,7 +55,7 @@ public interface ShipsVessel
 
     @Override
     default @NotNull ShipsVessel setName(@NotNull String name) throws NoLicencePresent {
-        this.getSign().setTextAt(2, AText.ofPlain(name));
+        this.getSign().getFront().setLineAt(2, Component.text(name));
         File file = this.getFile();
         String[] ext = file.getName().split(Pattern.quote("."));
         file.renameTo(new File(file.getParentFile(), name + "." + ext[ext.length - 1]));

@@ -1,6 +1,7 @@
 package org.ships.commands.argument.help;
 
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -76,15 +77,13 @@ public class ShipsHelpArgumentCommand implements ArgumentCommand {
         for (ArgumentCommand cmd : commands) {
             List<CommandArgument<?>> arguments = cmd.getArguments();
             if (arguments.isEmpty()) {
-                viewer.sendMessage(AText.ofPlain(cmd.getDescription()).withColour(NamedTextColours.YELLOW));
+                viewer.sendMessage(Component.text(cmd.getDescription()).color(NamedTextColor.YELLOW));
                 continue;
             }
-            viewer.sendMessage(AText
-                                       .ofPlain(arguments.get(0).getUsage() + ":")
-                                       .withColour(NamedTextColours.AQUA)
-                                       .append(AText
-                                                       .ofPlain(cmd.getDescription())
-                                                       .withColour(NamedTextColours.YELLOW)));
+            viewer.sendMessage(Component
+                                       .text(arguments.get(0).getUsage() + ":")
+                                       .color(NamedTextColor.AQUA)
+                                       .append(Component.text(cmd.getDescription()).color(NamedTextColor.YELLOW)));
         }
         return true;
     }

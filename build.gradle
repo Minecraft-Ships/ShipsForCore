@@ -3,10 +3,6 @@ plugins {
     id 'maven-publish'
 }
 
-test {
-    useJUnitPlatform()
-}
-
 repositories {
     mavenLocal()
     mavenCentral()
@@ -25,9 +21,6 @@ dependencies {
     implementation group: 'net.kyori', name: 'adventure-text-serializer-gson', version: '5.1.1'
 
     compileOnly 'org.jetbrains:annotations:20.1.0'
-    testImplementation 'org.mockito:mockito-inline:5.23.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.1.0'
 }
 
 group = 'org.ships'
@@ -35,7 +28,7 @@ version = '6.0.0.0-Beta'
 description = 'ShipsForCore'
 
 java {
-    sourceCompatibility = JavaLanguageVersion.of(Integer.parseInt(JAVA_VERSION));
+    sourceCompatibility = JavaLanguageVersion.of(Integer.parseInt(JAVA_VERSION))
 }
 
 publishing {

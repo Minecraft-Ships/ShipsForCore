@@ -2,8 +2,8 @@ package org.ships.vessel.sign;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.core.TranslateCore;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;
 import org.core.schedule.unit.TimeUnit;
@@ -57,7 +57,7 @@ public class LicenceSign implements ShipsSign {
                                                                       @NotNull BlockPosition block) {
             if (this.finalBar != null) {
                 int blockCount = currentStructure.getOriginalRelativePositionsToCenter().size() + 1;
-                this.finalBar.setTitle(AText.ofPlain(blockCount + "/" + this.totalBlockCount));
+                this.finalBar.bossBar().name((Component.text(blockCount + "/" + this.totalBlockCount)));
                 try {
                     this.finalBar.setValue(blockCount, this.totalBlockCount);
                 } catch (IllegalArgumentException ignore) {
@@ -151,8 +151,8 @@ public class LicenceSign implements ShipsSign {
             if (opTile.isPresent()) {
                 if (opTile.get() instanceof LiveSignTileEntity) {
                     SignTileEntity lste = (SignTileEntity) opTile.get();
-                    String type = lste.getTextAt(1).map(AText::toPlain).orElse("");
-                    String name = lste.getTextAt(2).map(AText::toPlain).orElse("");
+                    String type = lste.getFront().getLineAt(1).map(component -> PlainTextComponentSerializer.plainText().serialize(component)).orElse("");
+                    String name = lste.getFront().getLineAt(2).map(component -> PlainTextComponentSerializer.plainText().serialize(component)).orElse("");
                     Optional<ShipType<?>> opType = ShipsPlugin
                             .getPlugin()
                             .getAllShipTypes()
@@ -160,18 +160,16 @@ public class LicenceSign implements ShipsSign {
                             .filter(t -> t.getDisplayName().equalsIgnoreCase(type))
                             .findAny();
                     if (opType.isEmpty()) {
-                        player.sendMessage(AText
-                                                   .ofPlain("Could not find ShipType with display name of " + type)
-                                                   .withColour(NamedTextColours.RED));
+                        player.sendMessage(Component.text("Could not find ShipType with display name of " + type)
+                                                   .color(NamedTextColor.RED));
                         return false;
                     }
                     File file = new File(TranslateCore.getPlatform().getPlatformConfigFolder(),
                                          "VesselData/" + opType.get().getId().replaceAll(":", ".") + "/" + name + "."
                                                  + TranslateCore.getPlatform().getConfigFormat().getFileType()[0]);
                     if (!file.exists()) {
-                        player.sendMessage(AText
-                                                   .ofPlain("Could not find the file associated with the ship")
-                                                   .withColour(NamedTextColours.RED));
+                        player.sendMessage(Component.text("Could not find the file associated with the ship")
+                                                   .color(NamedTextColor.RED));
                         return false;
                     }
                     ConfigurationStream.ConfigurationFile config = TranslateCore.createConfigurationFile(file,
@@ -186,15 +184,15 @@ public class LicenceSign implements ShipsSign {
                     try {
                         ShipsVessel vessel = new ShipsFileLoader(file).load();
                         ShipsPlugin.getPlugin().registerVessel(vessel);
-                        player.sendMessage(AText.ofPlain("Ship has resynced"));
+                        player.sendMessage(Component.text("Ship has resynced"));
                     } catch (LoadVesselException loadVesselException) {
-                        player.sendMessage(AText.ofPlain(loadVesselException.getReason()));
+                        player.sendMessage(Component.text(loadVesselException.getReason()));
                         return false;
                     }
                     return true;
                 }
             }
-            player.sendMessage(AText.ofPlain(e.getMessage()).withColour(NamedTextColours.RED));
+            player.sendMessage(Component.text(e.getMessage()).color(NamedTextColor.RED));
             return true;
         }
     }
@@ -220,13 +218,14 @@ public class LicenceSign implements ShipsSign {
             ServerBossBar bar = null;
             int totalCount = config.getDefaultTrackSize();
             if (config.isBossBarVisible()) {
-                bar = TranslateCore.createBossBar().register(player).setTitle(AText.ofPlain("0 / " + totalCount));
+                bar = TranslateCore.createBossBar().register(player);
+                bar.bossBar().name(Component.text("0 / " + totalCount));
             }
             final ServerBossBar finalBar = bar;
             s.updateStructure(new VesselStructureUpdate(totalCount, bar)).thenAccept(structure -> {
                 int originalSize = structure.getOriginalRelativePositionsToCenter().size();
                 s.save();
-                player.sendMessage(AText.ofPlain(
+                player.sendMessage(Component.text(
                         "Vessel structure has updated by " + (structure.getOriginalRelativePositionsToCenter().size()
                                 - originalSize)));
                 if (finalBar != null) {

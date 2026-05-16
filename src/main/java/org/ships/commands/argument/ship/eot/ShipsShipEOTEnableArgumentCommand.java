@@ -1,5 +1,6 @@
 package org.ships.commands.argument.ship.eot;
 
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -9,7 +10,6 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.impl.sync.SyncBlockPosition;
 import org.ships.commands.argument.arguments.ShipIdArgument;
@@ -59,8 +59,8 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
             sign.getScheduler(vessel).forEach(s -> {
                 EOTExecutor exe = (EOTExecutor) s.getRunner();
                 exe.getSign().ifPresent(liveSignTileEntity -> {
-                    liveSignTileEntity.setTextAt(1, AText.ofPlain("Ahead"));
-                    liveSignTileEntity.setTextAt(2, AText.ofPlain("{Stop}"));
+                    liveSignTileEntity.getFront().setLineAt(1, Component.text("Ahead"));
+                    liveSignTileEntity.getFront().setLineAt(2, Component.text("{Stop}"));
                 });
                 s.cancel();
             });
@@ -69,7 +69,7 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
         Collection<SyncBlockPosition> eotSigns = vessel.getStructure().getAll(sign);
         if (eotSigns.size() == 1) {
             if (!(source instanceof LivePlayer)) {
-                (source).sendMessage(AText.ofPlain("Can only enable eot as a player"));
+                (source).sendMessage(Component.text("Can only enable eot as a player"));
 
                 return false;
             }
@@ -77,8 +77,8 @@ public class ShipsShipEOTEnableArgumentCommand implements ArgumentCommand {
             LiveTileEntity lste = eotSigns.stream().findAny().get().getTileEntity().get();
             sign.onSecondClick(player, lste.getPosition());
             return true;
-        } else if (source instanceof CommandViewer) {
-            ((CommandViewer) source).sendMessage(AText.ofPlain("Found more then one EOT sign, unable to enable."));
+        } else if (source instanceof CommandSource cmdSource) {
+            cmdSource.sendMessage(Component.text("Found more then one EOT sign, unable to enable."));
         }
         return false;
     }

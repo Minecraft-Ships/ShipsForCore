@@ -1,5 +1,6 @@
 package org.ships.commands.argument.type.modify.read;
 
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -46,8 +47,8 @@ public class ReadSizeTypeArgumentCommand implements ArgumentCommand {
         int minSize = shipType.getMinSize();
         String maxSize = shipType.getMaxSize().stream().map(Object::toString).findAny().orElse("unspecified");
         CommandSource viewer = commandContext.getSource();
-        viewer.sendMessage(AText.ofPlain("Minimum size: " + minSize));
-        viewer.sendMessage(AText.ofPlain("Maximum size: " + maxSize));
+        viewer.sendMessage(Component.text("Minimum size: " + minSize));
+        viewer.sendMessage(Component.text("Maximum size: " + maxSize));
 
         return true;
     }

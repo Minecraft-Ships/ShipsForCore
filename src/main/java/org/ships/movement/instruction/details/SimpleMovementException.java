@@ -40,6 +40,6 @@ public class SimpleMovementException implements BiConsumer<MovementContext, Thro
             return;
         }
         MoveException e = (MoveException) throwable;
-        this.messageReceivers.forEach(viewer -> viewer.sendMessage(e.getErrorMessageText()));
+        this.messageReceivers.forEach(viewer -> viewer.sendMessage(e.getErrorMessage()));
     }
 }

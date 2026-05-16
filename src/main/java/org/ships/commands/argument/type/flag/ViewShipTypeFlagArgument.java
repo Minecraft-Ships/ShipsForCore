@@ -1,5 +1,6 @@
 package org.ships.commands.argument.type.flag;
 
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -7,7 +8,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
 import org.ships.vessel.common.flag.VesselFlag;
@@ -47,7 +47,7 @@ public class ViewShipTypeFlagArgument implements ArgumentCommand {
 
     @Override
     public boolean hasPermission(CommandSource source) {
-        if (!(source instanceof CommandViewer)) {
+        if (!(source instanceof CommandSource)) {
             return false;
         }
         return ArgumentCommand.super.hasPermission(source);
@@ -56,14 +56,14 @@ public class ViewShipTypeFlagArgument implements ArgumentCommand {
     @Override
     public boolean run(CommandContext commandContext, String... args) throws NotEnoughArguments {
         ShipType<?> type = commandContext.getArgument(this, this.SHIP_TYPE);
-        CommandViewer viewer = (CommandViewer) commandContext.getSource();
+        CommandSource viewer = commandContext.getSource();
         type.getFlags().forEach(vf -> this.sendMessage(viewer, vf));
         return true;
     }
 
-    private <F> void sendMessage(CommandViewer viewer, VesselFlag<F> flag) {
+    private <F> void sendMessage(CommandSource viewer, VesselFlag<F> flag) {
         viewer.sendMessage(
-                AText.ofPlain(flag.getId() + ": " + flag.getValue().map(f -> flag.getParser().unparse(f)).orElse("")));
+                Component.text(flag.getId() + ": " + flag.getValue().map(f -> flag.getParser().unparse(f)).orElse("")));
 
     }
 }

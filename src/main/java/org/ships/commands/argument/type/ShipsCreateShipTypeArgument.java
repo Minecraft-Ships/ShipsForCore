@@ -1,5 +1,6 @@
 package org.ships.commands.argument.type;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
@@ -10,7 +11,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
@@ -72,9 +72,9 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
                             .getFileType()[0]);
             file = TranslateCore.createConfigurationFile(file, TranslateCore.getPlatform().getConfigFormat()).getFile();
             if (file.exists()) {
-                if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(
-                            AText.ofPlain("Custom ShipType " + name + " has already been " +
+                if (source instanceof CommandSource cmdSource) {
+                    cmdSource.sendMessage(
+                            Component.text("Custom ShipType " + name + " has already been " +
                                     "created"));
                 }
                 return;
@@ -83,16 +83,16 @@ public class ShipsCreateShipTypeArgument implements ArgumentCommand {
                 file.getParentFile().mkdirs();
                 Files.copy(type.getFile().getFile().toPath(), file.toPath());
             } catch (IOException e) {
-                if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(
-                            AText.ofPlain(name + " failed to created file. " + e.getMessage()));
+                if (source instanceof CommandSource cmdSource) {
+                    cmdSource.sendMessage(
+                            Component.text(name + " failed to created file. " + e.getMessage()));
                 }
                 e.printStackTrace();
             }
             CloneableShipType<?> newType = type.cloneWithName(file, name);
             ShipsPlugin.getPlugin().register(newType);
-            if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(AText.ofPlain(name + " created. "));
+            if (source instanceof CommandSource cmdSource) {
+                cmdSource.sendMessage(Component.text(name + " created. "));
             }
         });
 

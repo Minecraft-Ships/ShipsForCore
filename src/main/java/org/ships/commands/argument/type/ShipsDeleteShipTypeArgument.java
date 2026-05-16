@@ -1,5 +1,6 @@
 package org.ships.commands.argument.type;
 
+import net.kyori.adventure.text.Component;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -8,7 +9,6 @@ import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
 import org.core.source.command.CommandSource;
-import org.core.source.viewer.CommandViewer;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
 import org.ships.plugin.ShipsPlugin;
@@ -68,9 +68,9 @@ public class ShipsDeleteShipTypeArgument implements ArgumentCommand {
                 }
             }).count();
             if (count != vessels.size()) {
-                if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(
-                            AText.ofPlain("Could not delete. Could not convert all vessels " +
+                if (source instanceof CommandSource cmdSource) {
+                    cmdSource.sendMessage(
+                            Component.text("Could not delete. Could not convert all vessels " +
                                     "into " + type.getOriginType().getId() + ". Did convert " + count));
                 }
                 return;
@@ -78,14 +78,14 @@ public class ShipsDeleteShipTypeArgument implements ArgumentCommand {
             try {
                 Files.delete(type.getFile().getFile().toPath());
             } catch (IOException e) {
-                if (source instanceof CommandViewer) {
-                    ((CommandViewer) source).sendMessage(AText.ofPlain("Could not delete. " + e.getMessage()));
+                if (source instanceof CommandSource cmdSource) {
+                    cmdSource.sendMessage(Component.text("Could not delete. " + e.getMessage()));
                 }
                 throw new IllegalStateException(e);
             }
             ShipsPlugin.getPlugin().unregister(type);
-            if (source instanceof CommandViewer) {
-                ((CommandViewer) source).sendMessage(AText.ofPlain("Deleted " + type.getDisplayName() + " deleted. " +
+            if (source instanceof CommandSource cmdSource) {
+                cmdSource.sendMessage(Component.text("Deleted " + type.getDisplayName() + " deleted. " +
                         "All " + count + " ships are now " + type.getOriginType().getDisplayName()));
             }
         });

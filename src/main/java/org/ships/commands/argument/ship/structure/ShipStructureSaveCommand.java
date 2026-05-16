@@ -1,5 +1,6 @@
 package org.ships.commands.argument.ship.structure;
 
+import net.kyori.adventure.text.Component;
 import org.core.TranslateCore;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
@@ -54,7 +55,7 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         File file = new File(ShipsPlugin.getPlugin().getConfigFolder(),
                              "Structure/" + ShipsPlugin.getPlugin().getPluginId() + "/" + id + ".structure");
         if (file.exists()) {
-            commandContext.getSource().sendMessage(AText.ofPlain("Cannot replace another structure file"));
+            commandContext.getSource().sendMessage(Component.text("Cannot replace another structure file"));
 
             return false;
         }
@@ -63,7 +64,7 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            commandContext.getSource().sendMessage(AText.ofPlain("Error when creating file: " + e.getMessage()));
+            commandContext.getSource().sendMessage(Component.text("Error when creating file: " + e.getMessage()));
 
             e.printStackTrace();
             return false;
@@ -77,7 +78,7 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         if (bounds.getIntMax().equals(bounds.getIntMin())) {
             commandContext
                     .getSource()
-                    .sendMessage(AText.ofPlain(
+                    .sendMessage(Component.text(
                             "Size of ship is invalid. Manually updating the ship structure should fix this by sneaking and clicking the [ships] sign"));
 
             return false;
@@ -93,10 +94,10 @@ public class ShipStructureSaveCommand implements ArgumentCommand {
         CommandSource viewer = commandContext.getSource();
         try {
             structure.serialize(file);
-                viewer.sendMessage(AText.ofPlain("Saved"));
+                viewer.sendMessage(Component.text("Saved"));
 
         } catch (IOException e) {
-                viewer.sendMessage(AText.ofPlain("Error saving: " + e.getMessage()));
+                viewer.sendMessage(Component.text("Error saving: " + e.getMessage()));
             e.printStackTrace();
         }
         return true;

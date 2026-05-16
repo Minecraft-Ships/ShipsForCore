@@ -1,6 +1,7 @@
 package org.ships.commands.argument.ship.crew;
 
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -11,7 +12,7 @@ import org.core.entity.living.human.player.LivePlayer;
 import org.core.entity.living.human.player.User;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
+import org.core.source.command.CommandSource;
 import org.ships.commands.argument.arguments.ShipIdArgument;
 import org.ships.commands.argument.arguments.identifiable.ShipIdentifiableArgument;
 import org.ships.permissions.Permissions;
@@ -33,8 +34,7 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
     public List<CommandArgument<?>> getArguments() {
         return Arrays.asList(new ExactArgument(this.SHIP_ARGUMENT),
                              new ShipIdArgument<>(this.SHIP_ID_ARGUMENT, (source, vessel) -> {
-                                 if (source instanceof LivePlayer && vessel instanceof CrewStoredVessel) {
-                                     User player = (User) source;
+                                 if (source instanceof LivePlayer player && vessel instanceof CrewStoredVessel) {
                                      return ((CrewStoredVessel) vessel)
                                              .getPermission(player.getUniqueId())
                                              .canCommand();
@@ -74,9 +74,8 @@ public class ShipAddCrewArgumentCommand implements ArgumentCommand {
                 map.put(user.getUniqueId(), permission);
             }
         });
-        if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(
-                    AText.ofPlain("Added crew member(s)").withColour(NamedTextColours.AQUA));
+        if (commandContext.getSource() instanceof CommandSource source) {
+            source.sendMessage(Component.text("Added crew member(s)").color(NamedTextColor.AQUA));
         }
         return true;
     }

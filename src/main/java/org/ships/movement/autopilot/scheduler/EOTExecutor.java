@@ -6,7 +6,6 @@ import net.kyori.adventure.text.Component;
 import org.core.entity.LiveEntity;
 import org.core.schedule.Scheduler;
 import org.core.source.Messageable;
-import org.core.source.viewer.CommandViewer;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.details.data.DirectionalData;
 import org.core.world.position.block.entity.LiveTileEntity;
@@ -36,11 +35,6 @@ public class EOTExecutor implements Consumer<Scheduler> {
 
     public @NotNull Vessel getVessel() {
         return this.vessel;
-    }
-
-    @Deprecated(forRemoval = true)
-    public @NotNull Optional<CommandViewer> getPlayer() {
-        return getMessenger().filter(t -> t instanceof CommandViewer).map(t -> (CommandViewer) t);
     }
 
     public @NotNull Optional<Messageable> getMessenger() {

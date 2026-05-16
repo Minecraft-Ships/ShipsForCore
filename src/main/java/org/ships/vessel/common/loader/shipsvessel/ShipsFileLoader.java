@@ -1,8 +1,10 @@
 package org.ships.vessel.common.loader.shipsvessel;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
-import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;
 import org.core.config.parser.Parser;
@@ -101,7 +103,7 @@ public class ShipsFileLoader implements ShipsLoader {
                 return ship.updateStructure().thenApply(structure -> {
                     TranslateCore
                             .getConsole()
-                            .sendMessage(AText.ofPlain(
+                            .sendMessage(Component.text(
                                     Else.throwOr(NoLicencePresent.class, StructureLoad.this.ship::getId, "Unknown")
                                             + " has loaded."));
                     return structure;
@@ -113,7 +115,7 @@ public class ShipsFileLoader implements ShipsLoader {
             TranslateCore
                     .getConsole()
                     .sendMessage(
-                            AText.ofPlain(Else.throwOr(NoLicencePresent.class, this.ship::getId, "") + " has loaded."));
+                            Component.text(Else.throwOr(NoLicencePresent.class, this.ship::getId, "") + " has loaded."));
             return CompletableFuture.completedFuture(pss);
 
         }
@@ -229,12 +231,12 @@ public class ShipsFileLoader implements ShipsLoader {
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V2");
         }
 
-        Optional<AText> opShipTypeS = lste.getTextAt(1);
+        Optional<Component> opShipTypeS = lste.getFront().getLineAt(1);
         if (opShipTypeS.isEmpty()) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
                     + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V3");
         }
-        String shipTypeS = opShipTypeS.get().toPlain();
+        String shipTypeS = PlainTextComponentSerializer.plainText().serialize(opShipTypeS.get());
         Collection<ShipType<?>> types = ShipsPlugin.getPlugin().getAllShipTypes();
         Optional<ShipType<?>> opShipType = types
                 .parallelStream()
@@ -335,25 +337,22 @@ public class ShipsFileLoader implements ShipsLoader {
                     } catch (LoadVesselException e) {
                         TranslateCore
                                 .getConsole()
-                                .sendMessage(AText
-                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                                     .withColour(NamedTextColours.RED));
+                                .sendMessage(Component.text("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .color(NamedTextColor.RED));
                         function.accept(e);
                     } catch (Throwable e) {
                         TranslateCore
                                 .getConsole()
-                                .sendMessage(AText
-                                                     .ofPlain("Failed to load " + file.getAbsolutePath() + ":")
-                                                     .withColour(NamedTextColours.RED));
+                                .sendMessage(Component.text("Failed to load " + file.getAbsolutePath() + ":")
+                                                     .color(NamedTextColor.RED));
                         e.printStackTrace();
                     }
                 }
             } catch (Throwable e) {
                 TranslateCore
                         .getConsole()
-                        .sendMessage(AText
-                                             .ofPlain("Could not load any ships of " + st.getId())
-                                             .withColour(NamedTextColours.RED));
+                        .sendMessage(Component.text("Could not load any ships of " + st.getId())
+                                             .color(NamedTextColor.RED));
                 e.printStackTrace();
             }
         });

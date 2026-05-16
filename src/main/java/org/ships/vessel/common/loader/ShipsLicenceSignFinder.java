@@ -1,5 +1,6 @@
 package org.ships.vessel.common.loader;
 
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;
 import org.core.world.position.block.entity.sign.SignTileEntity;
@@ -43,7 +44,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
         if (!ls.isSign(this.ste)) {
             throw new LoadVesselException("Unable to read sign");
         }
-        String typeS = this.ste.getTextAt(1).orElseThrow(() -> new RuntimeException("You broke logic")).toPlain();
+        String typeS = this.ste.getFront().getLineAt(1).map(component -> PlainTextComponentSerializer.plainText().serialize(component)).orElseThrow(() -> new RuntimeException("You broke logic"));
         Optional<ShipType<?>> opType = ShipsPlugin
                 .getPlugin()
                 .getAllShipTypes()
@@ -53,7 +54,7 @@ public class ShipsLicenceSignFinder implements ShipsLoader {
         if (opType.isEmpty()) {
             throw new LoadVesselException("Unable to find shiptype of " + typeS);
         }
-        String name = this.ste.getTextAt(2).get().toPlain().toLowerCase();
+        String name = PlainTextComponentSerializer.plainText().serialize(this.ste.getFront().getLineAt(2).get()).toLowerCase();
         String id = "ships:" + opType.get().getName().toLowerCase() + "." + name;
         return IdVesselFinder.load(id);
     }
