@@ -1,6 +1,5 @@
 package org.ships.commands.argument.ship.data.speed.max;
 
-import org.core.adventureText.AText;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
 import org.core.command.argument.arguments.operation.OptionalArgument;

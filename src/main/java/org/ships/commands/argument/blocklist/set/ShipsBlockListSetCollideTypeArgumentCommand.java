@@ -1,7 +1,7 @@
 package org.ships.commands.argument.blocklist.set;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.id.BlockTypesArgument;
@@ -10,7 +10,7 @@ import org.core.command.argument.arguments.simple.EnumArgument;
 import org.core.command.argument.context.CommandContext;
 import org.core.exceptions.NotEnoughArguments;
 import org.core.permission.Permission;
-import org.core.source.viewer.CommandViewer;
+import org.core.source.command.CommandSource;
 import org.core.world.position.block.BlockType;
 import org.ships.config.blocks.DefaultBlockList;
 import org.ships.config.blocks.instruction.CollideType;
@@ -61,12 +61,9 @@ public class ShipsBlockListSetCollideTypeArgumentCommand implements ArgumentComm
                 .forEach(bi -> blocklist.replaceBlockInstruction(
                         ((ModifiableBlockInstruction) bi).setCollide(collideType)));
         blocklist.saveChanges();
-        if (commandContext.getSource() instanceof CommandViewer) {
-            ((CommandViewer) commandContext.getSource()).sendMessage(AText
-                                                                             .ofPlain(blocks.size()
-                                                                                              + " have been set to "
-                                                                                              + collideType.name())
-                                                                             .withColour(NamedTextColours.AQUA));
+        if (commandContext.getSource() instanceof CommandSource source) {
+            source.sendMessage(Component.text(blocks.size() + " have been set to " + collideType.name())
+                                       .color(NamedTextColor.AQUA));
         }
         return true;
     }

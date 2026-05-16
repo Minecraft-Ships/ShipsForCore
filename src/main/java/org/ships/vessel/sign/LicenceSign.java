@@ -3,7 +3,6 @@ package org.ships.vessel.sign;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationStream;
 import org.core.entity.living.human.player.LivePlayer;

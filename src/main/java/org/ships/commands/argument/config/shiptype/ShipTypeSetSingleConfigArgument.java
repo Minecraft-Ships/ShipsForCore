@@ -1,7 +1,8 @@
 package org.ships.commands.argument.config.shiptype;
 
-import org.core.adventureText.AText;
-import org.core.adventureText.format.NamedTextColours;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.core.command.argument.ArgumentCommand;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;
@@ -61,7 +62,7 @@ public class ShipTypeSetSingleConfigArgument implements ArgumentCommand {
         ConfigurationStream.ConfigurationFile file = type.getFile();
         file.set(parser, value);
         file.save();
-        AText text = AText.ofPlain("Value has been set").withColour(NamedTextColours.AQUA);
+        TextComponent text = Component.text("Value has been set").color(NamedTextColor.AQUA);
         commandContext.getSource().sendMessage(text);
         return true;
     }

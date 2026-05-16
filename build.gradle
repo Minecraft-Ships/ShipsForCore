@@ -20,11 +20,14 @@ dependencies {
         System.out.println("Could not find subModule of ShipsCore, using jit instead")
         api 'com.github.Minecraft-Ships:TranslateCore:master-SNAPSHOT'
     }
-    compileOnly 'net.kyori:adventure-api:4.12.0' //some reason this doesnt get picked up
+    implementation group: 'net.kyori', name: 'adventure-text-serializer-plain', version: '5.1.1'
+    implementation group: 'net.kyori', name: 'adventure-text-serializer-legacy', version: '5.1.1'
+    implementation group: 'net.kyori', name: 'adventure-text-serializer-gson', version: '5.1.1'
+
     compileOnly 'org.jetbrains:annotations:20.1.0'
-    testImplementation 'org.mockito:mockito-inline:4.11.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.mockito:mockito-inline:5.23.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.1.0'
 }
 
 group = 'org.ships'
@@ -32,7 +35,7 @@ version = '6.0.0.0-Beta'
 description = 'ShipsForCore'
 
 java {
-    sourceCompatibility = JavaLanguageVersion.of(11);
+    sourceCompatibility = JavaLanguageVersion.of(Integer.parseInt(JAVA_VERSION));
 }
 
 publishing {

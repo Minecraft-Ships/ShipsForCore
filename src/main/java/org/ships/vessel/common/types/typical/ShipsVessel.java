@@ -1,6 +1,5 @@
 package org.ships.vessel.common.types.typical;
 
-import org.core.adventureText.AText;
 import org.core.vector.type.Vector3;
 import org.core.world.position.block.entity.LiveTileEntity;
 import org.core.world.position.block.entity.sign.LiveSignTileEntity;

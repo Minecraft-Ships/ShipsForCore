@@ -2,7 +2,6 @@ package org.ships.vessel.common.loader.shipsvessel;
 
 import org.array.utils.ArrayUtils;
 import org.core.TranslateCore;
-import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.config.ConfigurationNode;
 import org.core.config.ConfigurationStream;

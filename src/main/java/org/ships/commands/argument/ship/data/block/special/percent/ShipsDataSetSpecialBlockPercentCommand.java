@@ -1,6 +1,5 @@
 package org.ships.commands.argument.ship.data.block.special.percent;
 
-import org.core.adventureText.AText;
 import org.core.adventureText.format.NamedTextColours;
 import org.core.command.argument.CommandArgument;
 import org.core.command.argument.arguments.operation.ExactArgument;

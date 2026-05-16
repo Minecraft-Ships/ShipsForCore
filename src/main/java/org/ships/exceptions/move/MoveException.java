@@ -1,8 +1,6 @@
 package org.ships.exceptions.move;
 
 import net.kyori.adventure.text.Component;
-import org.core.adventureText.AText;
-import org.core.adventureText.adventure.AdventureText;
 import org.core.utils.ComponentUtils;
 import org.jetbrains.annotations.NotNull;
 import org.ships.config.messages.Message;
@@ -30,11 +28,6 @@ public class MoveException extends IOException {
         this.errorMessage = errorMessage;
         this.message = message;
         this.data = data;
-    }
-
-    @Deprecated(forRemoval = true)
-    public @NotNull AText getErrorMessageText() {
-        return new AdventureText(this.errorMessage);
     }
 
     public @NotNull Component getErrorMessage() {
