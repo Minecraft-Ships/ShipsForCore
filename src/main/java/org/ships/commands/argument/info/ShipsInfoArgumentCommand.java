@@ -55,10 +55,6 @@ public class ShipsInfoArgumentCommand implements ArgumentCommand {
                                    .color(NamedTextColor.AQUA)
                                    .append(Component.text(ShipsPlugin.getPlugin().getPluginVersion().asString())
                                                    .color(NamedTextColor.GOLD)));
-        viewer.sendMessage(Component.text("Ships " + ShipsPlugin.PRERELEASE_TAG + " Version: ")
-                                   .color(NamedTextColor.AQUA)
-                                   .append(Component.text(ShipsPlugin.PRERELEASE_VERSION + "")
-                                                   .color(NamedTextColor.GOLD)));
         viewer.sendMessage(this.readVersion(TranslateCore.getPlatform().getDetails()));
         viewer.sendMessage(this.readVersion(TranslateCore.getPlatform().getTranslateCoreDetails()));
         viewer.sendMessage(this.readVersion(TranslateCore.getPlatform().getImplementationDetails()));

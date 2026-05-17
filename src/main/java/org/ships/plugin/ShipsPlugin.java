@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.util.RGBLike;
 import org.core.TranslateCore;
 import org.core.command.CommandRegister;
 import org.core.logger.Logger;
@@ -55,8 +54,6 @@ import java.util.stream.Stream;
 
 public class ShipsPlugin implements CorePlugin {
 
-    public static final double PRERELEASE_VERSION = 16.4;
-    public static final String PRERELEASE_TAG = "Beta";
     private static ShipsPlugin plugin;
     private final Map<String, VesselFlag.Builder<?, ?>> vesselFlags = new HashMap<>();
     private final Collection<Identifiable> identifiables = new HashSet<>();
@@ -156,8 +153,7 @@ public class ShipsPlugin implements CorePlugin {
     public void loadVessels() {
         ShipsConfig config = this.getConfig();
         this.vessels.addAll(ShipsFileLoader.loadAll((e) -> {
-            if (e instanceof FileLoadVesselException && config.willDeleteFilesIfFailedToLoad()) {
-                FileLoadVesselException flve = (FileLoadVesselException) e;
+            if (e instanceof FileLoadVesselException flve && config.willDeleteFilesIfFailedToLoad()) {
                 flve.getFile().delete();
             }
             e.printStackTrace();
@@ -224,9 +220,7 @@ public class ShipsPlugin implements CorePlugin {
         source.sendMessage(Component
                                    .text("Ships Version: ")
                                    .color(NamedTextColor.AQUA)
-                                   .append(Component.text(
-                                           this.getPluginVersion().asString() + ":" + PRERELEASE_TAG + "-"
-                                                   + PRERELEASE_VERSION)));
+                                   .append(Component.text(this.getPluginVersion().asString())));
         source.sendMessage(Component
                                    .text("Vessels: ")
                                    .color(NamedTextColor.AQUA)
@@ -349,8 +343,7 @@ public class ShipsPlugin implements CorePlugin {
                     .ifPresent(devBukkit -> devBukkit
                             .checkForUpdate(new DevBukkitUpdateOption(36846))
                             .thenAcceptAsync((result) -> {
-                                if (result instanceof FailedResult) {
-                                    FailedResult failed = (FailedResult) result;
+                                if (result instanceof FailedResult failed) {
                                     this.logger.error("Failed to update: " + failed.getReason());
                                     return;
                                 }
@@ -359,12 +352,11 @@ public class ShipsPlugin implements CorePlugin {
                                 String fullVersionName = context.getName();
                                 String currentVersionName =
                                         "Ships -" + TranslateCore.getPlatform().getImplementationDetails().getTagChar()
-                                                + " " + this.getPluginVersion().asString() + ".0 R2 " + PRERELEASE_TAG
-                                                + " " + PRERELEASE_VERSION;
+                                                + " " + this.getPluginVersion().asString() + ".0 R2";
                                 if (fullVersionName.equals(currentVersionName)) {
                                     return;
                                 }
-                                var console = TranslateCore.getConsole();
+                                ConsoleSource console = TranslateCore.getConsole();
                                 console.sendMessage(Component
                                                             .text("An update can be downloaded for Ships")
                                                             .color(NamedTextColor.GREEN));
@@ -422,12 +414,12 @@ public class ShipsPlugin implements CorePlugin {
 
     @Override
     public @NotNull CorePluginVersion getPluginVersion() {
-        return new CorePluginVersion(6, 0, 0);
+        return new CorePluginVersion(6, 1, 0);
     }
 
     @Override
     public void onShutdown() {
-        shutdown = true;
+        this.shutdown = true;
     }
 
     public @NotNull Logger getLogger() {

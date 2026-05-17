@@ -24,7 +24,7 @@ dependencies {
 }
 
 group = 'org.ships'
-version = '6.0.0.0-Beta'
+version = '6.1.0.0'
 description = 'ShipsForCore'
 
 java {

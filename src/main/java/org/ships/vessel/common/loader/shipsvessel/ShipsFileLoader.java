@@ -223,7 +223,7 @@ public class ShipsFileLoader implements ShipsLoader {
         Optional<LiveTileEntity> opTile = position.getTileEntity();
         if (!(opTile.isPresent() && opTile.get() instanceof LiveSignTileEntity)) {
             throw new FileLoadVesselException(this.file, "LicenceSign is not at location " + position.getX() + ","
-                    + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ": Error V1");
+                    + position.getY() + "," + position.getZ() + "," + position.getWorld().getName() + ". Found block of " + position.getBlockType().getId() + ": Error V1");
         }
         LiveSignTileEntity lste = (LiveSignTileEntity) opTile.get();
         if (!sign.isSign(lste)) {
